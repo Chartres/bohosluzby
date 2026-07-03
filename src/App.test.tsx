@@ -9,6 +9,10 @@ import type { IndexRow } from './domain/data'
 // Friday 3 Jul 2026 17:00 Prague. Vitest fake timers pin "now".
 const NOW = new Date('2026-07-03T15:00:00Z')
 
+// Time assertions scope to the service list — the "kolem" select's 48 options
+// put every "HH:MM" string into the DOM.
+const seznam = () => within(screen.getByTestId('seznam'))
+
 const INDEX: IndexRow[] = [
   ['1', 'kostel Nejsvětějšího Salvátora', 'Praha 1', 50.086, 14.417, 1, '50-14', 'https://www.farnostsalvator.cz'],
   ['2', 'kostel sv. Havla', 'Praha 1', 50.0855, 14.4229, 0, '50-14'],
@@ -353,7 +357,7 @@ describe('Marie finds the nearest mass', () => {
     await user.click(screen.getByRole('button', { name: 'jen mše svaté' }))
     // …with the mass filter on, Havel shows its 19:30 mass instead of vanishing
     expect(screen.queryByText(/růženec/)).not.toBeInTheDocument()
-    expect(screen.getByText('19:30')).toBeInTheDocument()
+    expect(seznam().getByText('19:30')).toBeInTheDocument()
     expect(screen.getByText(/sv\. Havla/)).toBeInTheDocument()
   })
 
@@ -403,7 +407,7 @@ describe('Marie finds the nearest mass', () => {
     // večer: Salvátor's 18:00 stays
     await user.click(screen.getByRole('button', { name: 'večer' }))
     expect(window.location.search).toBe('?cas=vecer')
-    expect(screen.getByText('18:00')).toBeInTheDocument()
+    expect(seznam().getByText('18:00')).toBeInTheDocument()
 
     // dopoledne: Salvátor has no 10–13 service and vanishes; Havel falls back
     // to Sunday 10:00 instead of disappearing with its Friday evening services
@@ -411,7 +415,7 @@ describe('Marie finds the nearest mass', () => {
     expect(window.location.search).toBe('?cas=dopoledne')
     expect(screen.queryByText(/Salvátora/)).not.toBeInTheDocument()
     expect(screen.getByText(/sv\. Havla/)).toBeInTheDocument()
-    expect(screen.getAllByText('10:00').length).toBeGreaterThan(0)
+    expect(seznam().getAllByText('10:00').length).toBeGreaterThan(0)
 
     // sticky like the other filters
     expect(localStorage.getItem('bohosluzby:cas')).toBe('dopoledne')
@@ -420,8 +424,8 @@ describe('Marie finds the nearest mass', () => {
     await user.click(screen.getByRole('button', { name: /^neděle/ }))
     fireEvent.change(screen.getByLabelText('Kolem času'), { target: { value: '09:00' } })
     expect(window.location.search).toBe('?cas=09:00&den=nedele')
-    expect(screen.getAllByText('10:00').length).toBeGreaterThan(0)
-    expect(screen.queryByText('14:00')).not.toBeInTheDocument() // Salvátor Sunday, outside ±90
+    expect(seznam().getAllByText('10:00').length).toBeGreaterThan(0)
+    expect(seznam().queryByText('14:00')).not.toBeInTheDocument() // Salvátor Sunday, outside ±90
 
     // toggle off clears the param and the sticky value
     await user.click(screen.getByRole('button', { name: 'hned' }))
@@ -441,8 +445,8 @@ describe('Marie finds the nearest mass', () => {
 
     // Salvátor's two Sunday masses, chronological, grouped under one day rubric
     expect(screen.getByText('neděle 5. 7.')).toBeInTheDocument()
-    expect(screen.getByText('14:00')).toBeInTheDocument()
-    expect(screen.getByText('20:00')).toBeInTheDocument()
+    expect(seznam().getByText('14:00')).toBeInTheDocument()
+    expect(seznam().getByText('20:00')).toBeInTheDocument()
     // the Sunday one-off pobožnost appears in its day
     expect(screen.getByText(/pobožnost/)).toBeInTheDocument()
     // Friday's services are not in the Sunday ordo
@@ -462,7 +466,7 @@ describe('Marie finds the nearest mass', () => {
     render(<App />)
     await screen.findByText(/Salvátora/)
     await user.click(screen.getByRole('button', { name: /^neděle/ })) // 14:00 has no type
-    expect(screen.getByText('14:00')).toBeInTheDocument()
+    expect(seznam().getByText('14:00')).toBeInTheDocument()
     const metas = document.querySelectorAll('ol .group p.text-sm')
     expect(metas.length).toBeGreaterThan(0)
     for (const m of metas) expect(m.textContent).not.toMatch(/·\s*$/)
@@ -491,9 +495,9 @@ describe('Marie finds the nearest mass', () => {
     await screen.findByText(/Salvátora/)
 
     // kaple sv. Anny: 20:00 "kromě července a srpna" must NOT appear on 3 July…
-    expect(screen.queryByText('20:00')).not.toBeInTheDocument()
+    expect(seznam().queryByText('20:00')).not.toBeInTheDocument()
     // …its 21:00 with an unparseable conditional note appears, note set as warning rubric
-    expect(screen.getByText('21:00')).toBeInTheDocument()
+    expect(seznam().getByText('21:00')).toBeInTheDocument()
     const note = screen.getByText(/nepravidelně, dle ohlášení/)
     expect(note).toHaveClass('text-rubric')
     // parsed/descriptive notes stay quiet (Salvátor's Sunday studentská in the ordo)
@@ -512,11 +516,11 @@ describe('Marie finds the nearest mass', () => {
     await screen.findByText(/Salvátora/)
 
     await user.click(screen.getByRole('button', { name: /^neděle/ }))
-    expect(screen.getAllByText('10:00')).toHaveLength(2) // both Sunday variants listed
+    expect(seznam().getAllByText('10:00')).toHaveLength(2) // both Sunday variants listed
 
     await user.click(screen.getByRole('button', { name: 'hned' }))
     // "hned" on Friday 17:00: Havel's best is today 19:00 — no Sunday 10:00 row may survive
-    expect(screen.queryByText('10:00')).not.toBeInTheDocument()
+    expect(seznam().queryByText('10:00')).not.toBeInTheDocument()
     // and the reachable-now list is intact (one row per church, countdown present)
     expect(screen.getByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
   })

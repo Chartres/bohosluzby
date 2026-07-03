@@ -36,9 +36,9 @@ test('kolem 09:00: fallback to the next matching service, composes with neděle'
 
   // kolem 09:00 (±90 min): the cathedral's 09:30 today stays; Panny Marie
   // Sněžné falls back from tonight's 18:00 to its Sunday 09:00
-  await page.getByLabel('Kolem času').fill('09:00')
+  await page.getByLabel('Kolem času').selectOption('09:00')
   await expect(page).toHaveURL(/\?cas=09:00/)
-  await expect(page.getByText('09:30')).toBeVisible()
+  await expect(page.getByTestId('seznam').getByText('09:30')).toBeVisible()
   await expect(page.getByText('kostel Panny Marie Sněžné')).toBeVisible()
   await expect(page.getByText('kostel sv. Klimenta (řeckokatolická katedrála)')).not.toBeVisible()
   await shot(page, 'kdy-kolem')
@@ -48,8 +48,8 @@ test('kolem 09:00: fallback to the next matching service, composes with neděle'
   await expect(page).toHaveURL(/cas=09:00/)
   await expect(page).toHaveURL(/den=nedele/)
   await expect(page.getByText('neděle 12. 7.')).toBeVisible()
-  await expect(page.getByText('08:30')).toBeVisible() // katedrála
-  await expect(page.getByText('11:30')).not.toBeVisible() // outside ±90 min
+  await expect(page.getByTestId('seznam').getByText('08:30')).toBeVisible() // katedrála
+  await expect(page.getByTestId('seznam').getByText('11:30')).toHaveCount(0) // outside ±90 min
   await shot(page, 'kdy-kolem-nedele')
 })
 
@@ -57,7 +57,7 @@ test('bookmark /?den=nedele&cas=9:00 restores both; 375px wraps typographically'
   await page.setViewportSize({ width: 375, height: 812 })
   await page.goto('/?den=nedele&cas=9:00')
   await expect(page.getByText('neděle 12. 7.')).toBeVisible()
-  await expect(page.getByText('08:30')).toBeVisible()
+  await expect(page.getByTestId('seznam').getByText('08:30')).toBeVisible()
   await expect(page.getByText('kostel Nejsvětějšího Salvátora')).not.toBeVisible() // 12:00 Sunday
   await shot(page, 'kdy-mobile-375')
 })

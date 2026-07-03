@@ -1,7 +1,7 @@
 // "Kdy" windowing: time-of-day bands + "kolem HH:MM" (±90 min, circular —
 // midnight-adjacent times must not fall off the clock edge).
 import { describe, expect, it } from 'vitest'
-import { matchesCas, parseCas } from './timeband'
+import { HALF_HOURS, matchesCas, parseCas } from './timeband'
 
 describe('parseCas (?cas= validation)', () => {
   it('accepts band names', () => {
@@ -9,10 +9,23 @@ describe('parseCas (?cas= validation)', () => {
       expect(parseCas(band)).toBe(band)
     }
   })
-  it('accepts HH:MM', () => {
+  it('accepts HH:MM (half-hour values pass through, zero-padded)', () => {
     expect(parseCas('18:00')).toBe('18:00')
-    expect(parseCas('9:05')).toBe('9:05')
+    expect(parseCas('9:30')).toBe('09:30')
     expect(parseCas('00:00')).toBe('00:00')
+  })
+  it('rounds old minute-precision links to the nearest half-hour', () => {
+    expect(parseCas('9:05')).toBe('09:00')
+    expect(parseCas('9:15')).toBe('09:30') // .5 rounds up
+    expect(parseCas('17:44')).toBe('17:30')
+    expect(parseCas('17:46')).toBe('18:00')
+    expect(parseCas('23:50')).toBe('00:00') // wraps, doesn't invent 24:00
+  })
+  it('HALF_HOURS is the 48-step day, each value canonical', () => {
+    expect(HALF_HOURS).toHaveLength(48)
+    expect(HALF_HOURS[0]).toBe('00:00')
+    expect(HALF_HOURS[47]).toBe('23:30')
+    for (const t of HALF_HOURS) expect(parseCas(t)).toBe(t)
   })
   it('rejects garbage', () => {
     expect(parseCas(null)).toBeNull()

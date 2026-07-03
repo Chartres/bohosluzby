@@ -23,11 +23,22 @@ const toMinutes = (s: string, strict = false): number | null => {
   return hh <= 23 && mm <= 59 ? hh * 60 + mm : null
 }
 
-/** Validate a ?cas= value: a band name or strict "HH:MM"; anything else → null. */
+/** The 48 half-hours of the day — the "kolem" selector's options ("00:00" … "23:30"). */
+export const HALF_HOURS: string[] = Array.from({ length: 48 }, (_, i) => fmtMinutes(i * 30))
+
+function fmtMinutes(t: number): string {
+  return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`
+}
+
+/** Validate a ?cas= value: a band name or "HH:MM". Times are canonicalized to
+ * the nearest half-hour ("9:05" → "09:00") — the selector is 30-min-step, but
+ * old minute-precision links keep working. Anything else → null. */
 export function parseCas(param: string | null): string | null {
   if (!param) return null
   if (param in BANDS) return param
-  return toMinutes(param, true) !== null ? param : null
+  const t = toMinutes(param, true)
+  if (t === null) return null
+  return fmtMinutes((Math.round(t / 30) * 30) % 1440)
 }
 
 /** Does a service's wall-clock "HH:MM" fall inside the cas window? */

@@ -16,7 +16,7 @@ import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
-import { BANDS, parseCas, type Band } from './domain/timeband'
+import { BANDS, HALF_HOURS, parseCas, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
@@ -759,7 +759,7 @@ function ServiceList({
   const now = new Date()
   let lastDay = ''
   return (
-    <ol className="mt-2">
+    <ol className="mt-2" data-testid="seznam">
       {rows.map((r, i) => {
         const day = dayLabel(now, r.start)
         const showDay = day !== lastDay
@@ -927,6 +927,7 @@ function FilterBar({
             {BANDS[band].label}
           </button>
         ))}
+        {/* 30-min-step typographic selector — native step=1800 isn't honored cross-browser */}
         <label
           className={`-my-2 flex items-baseline gap-1.5 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
             around ? '' : 'text-ink-faded'
@@ -934,13 +935,20 @@ function FilterBar({
           style={around ? { color: 'var(--season)' } : undefined}
         >
           kolem
-          <input
-            type="time"
+          <select
             aria-label="Kolem času"
-            value={around ? around.padStart(5, '0') : ''}
+            value={around ?? ''}
             onChange={(e) => onCas(e.target.value || null)}
-            className="w-[4.5rem] cursor-pointer border-0 bg-transparent font-sans text-xs font-semibold"
-          />
+            className="cursor-pointer border-0 bg-transparent font-sans text-xs font-semibold tabular-nums"
+            style={around ? { color: 'var(--season)' } : undefined}
+          >
+            <option value="">—</option>
+            {HALF_HOURS.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
     </div>
