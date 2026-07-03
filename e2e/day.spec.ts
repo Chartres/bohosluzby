@@ -22,9 +22,11 @@ test('Sunday ordo: every service that day, chronological, no countdowns', async 
 
   await shot(page, 'day-sunday', true)
 
-  // "hned" restores the reachable-now ranking
+  // "hned" restores the reachable-now ranking — no phantom rows from the ordo view
   await page.getByRole('button', { name: 'hned' }).click()
   await expect(page.getByText('za 29 min')).toBeVisible()
+  await expect(page.locator('ol li a > p:first-child').first()).toHaveText('09:30')
+  await shot(page, 'day-back-to-hned', true)
 })
 
 test('day picker at 375px', async ({ page }) => {

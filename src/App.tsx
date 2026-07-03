@@ -495,12 +495,14 @@ function ServiceList({
   let lastDay = ''
   return (
     <ol className="mt-2">
-      {rows.map((r) => {
+      {rows.map((r, i) => {
         const day = dayLabel(now, r.start)
         const showDay = day !== lastDay
         lastDay = day
+        // index suffix: the ordo can hold two rows with the same (church, start) —
+        // duplicate keys corrupted reconciliation and left phantom rows on day switch
         return (
-          <li key={`${r.church.id}-${r.start.getTime()}`}>
+          <li key={`${r.church.id}-${r.start.getTime()}-${i}`}>
             {showDay && <p className="rubric mt-6 mb-1">{day}</p>}
             <a
               href={`/kostel/${r.church.id}/`}

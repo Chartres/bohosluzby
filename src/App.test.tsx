@@ -41,6 +41,9 @@ const SHARD_50_14 = {
     s: [
       ['5', '19:00', 'česky', 0, 'růženec', ''],
       ['5', '19:30', 'Latine', 0, 'mše sv.', 'tridentská'],
+      // the registry lists the same Sunday slot twice (real pattern: seasonal variants)
+      ['7', '10:00', 'česky', 0, 'mše sv.', ''],
+      ['7', '10:00', 'česky', 0, 'mše sv.', 'varianta'],
     ],
   },
 }
@@ -302,6 +305,25 @@ describe('Marie finds the nearest mass', () => {
     // back to "hned" — the reachable-now ranking returns
     await user.click(screen.getByRole('button', { name: 'hned' }))
     expect(await screen.findByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
+  })
+
+  it('day picker: switching to a day ordo and back to "hned" leaves no phantom rows', async () => {
+    // The ordo can contain two rows with the same (church, start) — sv. Havla's
+    // duplicated Sunday 10:00. With non-unique React keys the next render left
+    // stale rows from the previous view in the list (past masses on "hned").
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    await user.click(screen.getByRole('button', { name: 'neděle' }))
+    expect(screen.getAllByText('10:00')).toHaveLength(2) // both Sunday variants listed
+
+    await user.click(screen.getByRole('button', { name: 'hned' }))
+    // "hned" on Friday 17:00: Havel's best is today 19:00 — no Sunday 10:00 row may survive
+    expect(screen.queryByText('10:00')).not.toBeInTheDocument()
+    // and the reachable-now list is intact (one row per church, countdown present)
+    expect(screen.getByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
   })
 
   it('falls back to the last known position when geolocation fails', async () => {
