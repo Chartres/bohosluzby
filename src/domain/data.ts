@@ -1,5 +1,7 @@
 // Dataset types + decoding of the compact JSON written by data/extract.mjs.
 
+import { normalizeLang } from './format'
+
 export interface Church {
   id: string
   name: string
@@ -17,7 +19,7 @@ export type IndexRow = [string, string, string, number, number, 0 | 1, string]
 export interface Service {
   days: string // ISO weekday digits, 1=Mon…7=Sun
   time: string // "HH:MM" Prague wall clock
-  lang: string // "česky", "Latine", "polsky"…
+  lang: string // normalized Czech lowercase: "česky", "latinsky", "polsky"…
   greek: boolean // Greek-Catholic (byzantine) rite
   type: string // "mše sv.", "nešpory"…
   note: string
@@ -68,7 +70,7 @@ export function decodeShard(shard: Record<string, ShardEntry>): Map<string, Chur
       regular: e.s.map(([days, time, lang, greek, type, note]) => ({
         days,
         time,
-        lang,
+        lang: normalizeLang(lang),
         greek: greek === 1,
         type,
         note,
@@ -76,7 +78,7 @@ export function decodeShard(shard: Record<string, ShardEntry>): Map<string, Chur
       extra: (e.x ?? []).map(([date, time, lang, greek, type, note]) => ({
         date,
         time,
-        lang,
+        lang: normalizeLang(lang),
         greek: greek === 1,
         type,
         note,

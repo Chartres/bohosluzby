@@ -37,6 +37,46 @@ const weekdayFmt = new Intl.DateTimeFormat('cs-CZ', {
   month: 'numeric',
 })
 
+/** Registry language values are inconsistent endonyms ("Latine", "po polsku",
+ * "deutsch"…); normalize to Czech lowercase adverbs so chips and filters read
+ * like one voice. Applied once at shard decode. */
+const LANG_MAP: Record<string, string> = {
+  '': 'česky',
+  'česky': 'česky',
+  'čeština': 'česky',
+  latine: 'latinsky',
+  latina: 'latinsky',
+  'latinsky (trident)': 'latinsky (tridentská)',
+  english: 'anglicky',
+  italiana: 'italsky',
+  'en español': 'španělsky',
+  'en français': 'francouzsky',
+  filipino: 'filipínsky',
+  magyarul: 'maďarsky',
+  'po polsku': 'polsky',
+  'viet nam': 'vietnamsky',
+  deutsch: 'německy',
+}
+
+export function normalizeLang(raw: string): string {
+  const key = raw.trim().toLowerCase()
+  return LANG_MAP[key] ?? key
+}
+
+const dateCzFmt = new Intl.DateTimeFormat('cs-CZ', {
+  timeZone: TZ,
+  day: 'numeric',
+  month: 'numeric',
+  year: 'numeric',
+})
+
+/** "YYYY-MM-DD" → "30. 1. 2026" (empty string for anything unparsable). */
+export function fmtDateCz(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
+  if (!m) return ''
+  return dateCzFmt.format(new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12)))
+}
+
 export function dayLabel(now: Date, start: Date): string {
   const key = dateKeyFmt.format(start)
   if (key === dateKeyFmt.format(now)) return 'dnes'

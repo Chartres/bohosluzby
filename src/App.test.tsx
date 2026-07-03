@@ -1,7 +1,7 @@
 // Persona journey: Marie is in an unfamiliar part of Prague on a Friday
 // afternoon and wants the nearest mass she can still make. One primary
 // journey, all its states (Standard: persona-journey test per journey).
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 import type { IndexRow } from './domain/data'
@@ -18,9 +18,20 @@ const SHARD_50_14 = {
   '1': {
     u: '2026-06-01',
     p: 'Akademická farnost Praha',
-    pa: '',
-    c: [],
-    s: [['5', '18:00', 'česky', 0, 'mše sv.', '']],
+    pa: 'Křižovnické nám. 4, Praha 1',
+    c: [
+      ['www', 'https://www.farnostsalvator.cz'],
+      ['phone', '222 221 339'],
+    ],
+    s: [
+      ['5', '18:00', 'česky', 0, 'mše sv.', ''],
+      ['7', '14:00', 'česky', 0, 'mše sv.', ''],
+      ['7', '20:00', 'česky', 0, 'mše sv.', 'studentská'],
+    ],
+    x: [
+      ['2026-07-05', '15:00', 'česky', 0, 'pobožnost', 'první neděle'],
+      ['2026-01-06', '18:00', 'česky', 0, 'mše sv.', 'Tři králové'], // past → hidden
+    ],
   },
   '2': {
     u: '2026-06-01',
@@ -95,8 +106,9 @@ describe('Marie finds the nearest mass', () => {
     // fake clock ticks with real time → "za 1 h" can slip to "za 59 min" on slow CI
     expect(screen.getByText(/za (1 h|59 min)/)).toBeInTheDocument()
     expect(screen.getByText(/dnes/)).toBeInTheDocument()
-    // language chip only for the non-Czech service
-    expect(screen.getByText('Latine')).toBeInTheDocument()
+    // language chip only for the non-Czech service, normalized to Czech lowercase
+    expect(screen.getByText('latinsky')).toBeInTheDocument()
+    expect(screen.queryByText('Latine')).not.toBeInTheDocument()
     // barrier-free chip from the index
     expect(screen.getByText('bezbariérový přístup')).toBeInTheDocument()
     // Brno (>30 km) is not in the list
@@ -115,6 +127,71 @@ describe('Marie finds the nearest mass', () => {
     expect(await screen.findByText(/sv\. Tomáše/)).toBeInTheDocument()
     // the list header names the chosen city
     expect(screen.getByRole('button', { name: 'změnit' })).toBeInTheDocument()
+  })
+
+  it('opens a church detail: full weekly ordo, extras, parish, freshness', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+
+    await user.click(await screen.findByText('kostel Nejsvětějšího Salvátora'))
+    expect(window.location.pathname).toBe('/kostel/1/')
+
+    // weekly schedule grouped by day, Sunday first (printed-ordo order)
+    const ordo = await screen.findByLabelText('Pořad bohoslužeb')
+    expect(ordo).toHaveTextContent('neděle')
+    expect(ordo).toHaveTextContent('pátek')
+    const dayHeads = within(ordo).getAllByRole('heading', { level: 4 })
+    expect(dayHeads.map((h) => h.textContent)).toEqual(['neděle', 'pátek'])
+    // Sunday's two masses sorted by time
+    expect(ordo).toHaveTextContent(/14:00.*20:00/s)
+    expect(within(ordo).getByText(/studentská/)).toBeInTheDocument()
+
+    // one-off services in their own rubric section; past one-offs hidden
+    const extra = screen.getByLabelText('Mimořádné bohoslužby')
+    expect(extra).toHaveTextContent('5. 7. 2026')
+    expect(extra).toHaveTextContent('pobožnost')
+    expect(extra).not.toHaveTextContent('Tři králové')
+
+    // parish + contacts
+    const parish = screen.getByLabelText('Farnost')
+    expect(parish).toHaveTextContent('Akademická farnost Praha')
+    expect(parish).toHaveTextContent('Křižovnické nám. 4, Praha 1')
+    expect(within(parish).getByRole('link', { name: 'farnostsalvator.cz' })).toHaveAttribute(
+      'href',
+      'https://www.farnostsalvator.cz',
+    )
+    expect(within(parish).getByRole('link', { name: '222 221 339' })).toHaveAttribute(
+      'href',
+      'tel:+420222221339',
+    )
+
+    // maps link + data freshness (honest about staleness)
+    expect(screen.getByRole('link', { name: 'mapa' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('mapy.cz'),
+    )
+    expect(screen.getByText(/naposledy ověřeno 1\. 6\. 2026/)).toBeInTheDocument()
+
+    // back returns to the list
+    await user.click(screen.getByRole('button', { name: '‹ zpět na seznam' }))
+    expect(await screen.findByText('kostel sv. Havla')).toBeInTheDocument()
+  })
+
+  it('renders a church detail from a direct URL (share link)', async () => {
+    stubGeolocation('denied')
+    window.history.pushState(null, '', '/kostel/2/')
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: 'kostel sv. Havla' })).toBeInTheDocument()
+    expect(await screen.findByText('19:30')).toBeInTheDocument()
+    expect(screen.getByText('latinsky')).toBeInTheDocument()
+  })
+
+  it('unknown church id explains itself', async () => {
+    stubGeolocation('denied')
+    window.history.pushState(null, '', '/kostel/nope/')
+    render(<App />)
+    expect(await screen.findByText('Kostel nenalezen')).toBeInTheDocument()
   })
 
   it('empty area: reports no services within 30 km and keeps the picker', async () => {

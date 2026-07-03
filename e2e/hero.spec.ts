@@ -48,7 +48,7 @@ test('hero list: nearest services, soonest first', async ({ page }) => {
 
   // day grouping rubric, language chip, greek-rite chip, barrier-free chip
   await expect(page.getByText('dnes').first()).toBeVisible()
-  await expect(page.getByText('Latine')).toBeVisible()
+  await expect(page.getByText('latinsky', { exact: true })).toBeVisible()
   await expect(page.getByText('řeckokatolická', { exact: true })).toBeVisible()
   await expect(page.getByText('bezbariérový přístup').first()).toBeVisible()
 

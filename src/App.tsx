@@ -7,6 +7,7 @@ import { haversineKm } from './domain/distance'
 import { rankUpcoming, type Upcoming } from './domain/ranking'
 import { currentLiturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
+import { ChurchDetail, Chip } from './ChurchDetail'
 import { track, conversion, logError } from './analytics'
 
 const NEARBY_KM = 30
@@ -28,6 +29,30 @@ const SEASON_VAR: Record<LiturgicalDay['color'], string> = {
 
 type Origin = { lat: number; lng: number; source: 'geo' | 'city'; label?: string }
 
+// Minimal history routing (GH Pages serves 404.html = the app for deep links).
+type Route = { view: 'home' } | { view: 'church'; id: string }
+
+export function parseRoute(path: string): Route {
+  const kostel = /^\/kostel\/([^/]+)\/?$/.exec(path)
+  if (kostel) return { view: 'church', id: decodeURIComponent(kostel[1]) }
+  return { view: 'home' }
+}
+
+function useRoute(): { route: Route; navigate: (to: string) => void } {
+  const [path, setPath] = useState(() => location.pathname)
+  useEffect(() => {
+    const onPop = () => setPath(location.pathname)
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+  const navigate = (to: string) => {
+    history.pushState(null, '', to)
+    setPath(to)
+    window.scrollTo(0, 0)
+  }
+  return { route: parseRoute(path), navigate }
+}
+
 export default function App() {
   const [index, setIndex] = useState<Church[] | null>(null)
   const [dataError, setDataError] = useState(false)
@@ -36,6 +61,7 @@ export default function App() {
   const [rows, setRows] = useState<Upcoming[] | null>(null)
   const season = useMemo(() => currentLiturgicalDay(), [])
   const convertedRef = useRef(false)
+  const { route, navigate } = useRoute()
 
   useEffect(() => {
     document.documentElement.style.setProperty('--season', SEASON_VAR[season.color])
@@ -123,6 +149,17 @@ export default function App() {
           </p>
         )}
 
+        {!dataError && route.view === 'church' && index && (
+          <DetailRoute id={route.id} index={index} onBack={() => navigate('/')} />
+        )}
+        {!dataError && route.view === 'church' && !index && (
+          <p className="mt-8 text-ink-faded" role="status">
+            Načítám…
+          </p>
+        )}
+
+        {route.view === 'home' && (
+          <>
         {!dataError && loading && (
           <div className="mt-14 text-center" role="status">
             <p className="font-display text-xl">Hledám bohoslužby poblíž…</p>
@@ -172,8 +209,10 @@ export default function App() {
                 </button>
               </p>
             </div>
-            <ServiceList rows={rows} />
+            <ServiceList rows={rows} onOpen={(id) => navigate(`/kostel/${id}/`)} />
           </section>
+        )}
+          </>
         )}
       </main>
 
@@ -191,7 +230,7 @@ export default function App() {
   )
 }
 
-function ServiceList({ rows }: { rows: Upcoming[] }) {
+function ServiceList({ rows, onOpen }: { rows: Upcoming[]; onOpen: (id: string) => void }) {
   const now = new Date()
   let lastDay = ''
   return (
@@ -203,12 +242,19 @@ function ServiceList({ rows }: { rows: Upcoming[] }) {
         return (
           <li key={`${r.church.id}-${r.start.getTime()}`}>
             {showDay && <p className="rubric mt-6 mb-1">{day}</p>}
-            <div className="flex items-baseline gap-4 border-t border-hairline py-3">
+            <a
+              href={`/kostel/${r.church.id}/`}
+              onClick={(e) => {
+                e.preventDefault()
+                onOpen(r.church.id)
+              }}
+              className="group flex items-baseline gap-4 border-t border-hairline py-3"
+            >
               <p className="font-display w-14 shrink-0 text-2xl font-semibold tabular-nums">
                 {fmtTime(r.start)}
               </p>
               <div className="min-w-0 flex-1">
-                <p className="font-display text-[1.05rem] leading-snug font-semibold">
+                <p className="font-display text-[1.05rem] leading-snug font-semibold underline decoration-hairline underline-offset-3 group-hover:decoration-ink">
                   {r.church.name}
                 </p>
                 <p className="mt-0.5 text-sm text-ink-faded">
@@ -225,7 +271,7 @@ function ServiceList({ rows }: { rows: Upcoming[] }) {
               <p className="shrink-0 text-sm font-semibold whitespace-nowrap">
                 {fmtUntil(now, r.start)}
               </p>
-            </div>
+            </a>
           </li>
         )
       })}
@@ -233,12 +279,22 @@ function ServiceList({ rows }: { rows: Upcoming[] }) {
   )
 }
 
-function Chip({ label }: { label: string }) {
-  return (
-    <span className="rounded-sm border border-hairline px-1.5 py-0.5 text-xs text-ink-faded">
-      {label}
-    </span>
-  )
+function DetailRoute({ id, index, onBack }: { id: string; index: Church[]; onBack: () => void }) {
+  const church = index.find((c) => c.id === id)
+  if (!church) {
+    return (
+      <section className="mt-10">
+        <h2 className="font-display text-xl font-semibold">Kostel nenalezen</h2>
+        <p className="mt-2 text-ink-faded">
+          Tento odkaz nevede na žádný kostel v rejstříku.{' '}
+          <button type="button" className="underline decoration-hairline underline-offset-2" onClick={onBack}>
+            Zpět na seznam
+          </button>
+        </p>
+      </section>
+    )
+  }
+  return <ChurchDetail church={church} onBack={onBack} />
 }
 
 function CityPicker({ index, onPick }: { index: Church[]; onPick: (o: Origin) => void }) {

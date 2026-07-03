@@ -32,7 +32,11 @@ if (typeof globalThis.localStorage === 'undefined') {
   })
 }
 
+// jsdom logs "Not implemented" for scrollTo; the router calls it on navigation.
+window.scrollTo = () => {}
+
 afterEach(() => {
   cleanup()
   localStorage.clear()
+  window.history.replaceState(null, '', '/')
 })

@@ -1,4 +1,4 @@
-import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './format'
+import { fmtDistance, fmtTime, fmtUntil, dayLabel, fmtDateCz, normalizeLang } from './format'
 
 const now = new Date('2026-07-03T08:00:00Z') // Friday 10:00 Prague
 
@@ -28,6 +28,42 @@ describe('fmtDistance', () => {
   })
   it('kilometres with a Czech decimal comma', () => {
     expect(fmtDistance(2.44)).toBe('2,4 km')
+  })
+})
+
+describe('normalizeLang (registry values → consistent Czech lowercase)', () => {
+  it('Czech and empty collapse to "česky"', () => {
+    expect(normalizeLang('česky')).toBe('česky')
+    expect(normalizeLang('čeština')).toBe('česky')
+    expect(normalizeLang('')).toBe('česky')
+  })
+  it('Latin variants', () => {
+    expect(normalizeLang('Latine')).toBe('latinsky')
+    expect(normalizeLang('latina')).toBe('latinsky')
+    expect(normalizeLang('latinsky (trident)')).toBe('latinsky (tridentská)')
+  })
+  it('foreign endonyms become Czech adverbs', () => {
+    expect(normalizeLang('English')).toBe('anglicky')
+    expect(normalizeLang('po polsku')).toBe('polsky')
+    expect(normalizeLang('deutsch')).toBe('německy')
+    expect(normalizeLang('en español')).toBe('španělsky')
+    expect(normalizeLang('en français')).toBe('francouzsky')
+    expect(normalizeLang('italiana')).toBe('italsky')
+    expect(normalizeLang('magyarul')).toBe('maďarsky')
+    expect(normalizeLang('Viet nam')).toBe('vietnamsky')
+    expect(normalizeLang('Filipino')).toBe('filipínsky')
+  })
+  it('unknown values pass through lowercased', () => {
+    expect(normalizeLang('Esperanto')).toBe('esperanto')
+  })
+})
+
+describe('fmtDateCz', () => {
+  it('formats an ISO date as Czech', () => {
+    expect(fmtDateCz('2026-01-30')).toBe('30. 1. 2026')
+  })
+  it('returns empty for garbage', () => {
+    expect(fmtDateCz('')).toBe('')
   })
 })
 
