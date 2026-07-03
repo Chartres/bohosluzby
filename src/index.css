@@ -38,6 +38,11 @@ html {
   outline-offset: 2px;
 }
 
+/* the "kolem" time field: mute the native picker glyph to sit among faded rubric labels */
+input[type='time']::-webkit-calendar-picker-indicator {
+  opacity: 0.45;
+}
+
 /* rubric: small red functional labels, like instructions in a missal */
 .rubric {
   font-family: var(--font-sans);

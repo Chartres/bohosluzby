@@ -17,6 +17,7 @@ import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
+import { BANDS, matchesCas, parseCas, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
@@ -78,6 +79,7 @@ export interface Filters {
 }
 
 const FILTERS_KEY = 'bohosluzby:filters'
+const CAS_KEY = 'bohosluzby:cas'
 const NO_FILTERS: Filters = { lang: null, greek: false, barrierFree: false, massOnly: false }
 
 function loadFilters(): Filters {
@@ -123,18 +125,22 @@ export function dayOptions(now: Date): { key: DayChoice; label: string; lit: Lit
 const isMass = (type: string) => /mše|liturgi/i.test(type)
 
 const serviceMatches =
-  (f: Filters) =>
+  (f: Filters, cas: string | null = null) =>
   (s: Service | ExtraService): boolean =>
-    (!f.lang || s.lang === f.lang) && (!f.greek || s.greek) && (!f.massOnly || isMass(s.type))
+    (!f.lang || s.lang === f.lang) &&
+    (!f.greek || s.greek) &&
+    (!f.massOnly || isMass(s.type)) &&
+    (!cas || matchesCas(cas, s.time))
 
 /** Filter each church's services before ranking, so a church falls back to its
  * next matching service instead of disappearing with its earliest one. */
 export function applyFilters(
   byId: ReadonlyMap<string, ChurchServices>,
   f: Filters,
+  cas: string | null = null,
 ): ReadonlyMap<string, ChurchServices> {
-  if (f === NO_FILTERS || (!f.lang && !f.greek && !f.massOnly)) return byId
-  const pred = serviceMatches(f)
+  if (!f.lang && !f.greek && !f.massOnly && !cas) return byId
+  const pred = serviceMatches(f, cas)
   const out = new Map<string, ChurchServices>()
   for (const [id, svc] of byId) {
     out.set(id, { ...svc, regular: svc.regular.filter(pred), extra: svc.extra.filter(pred) })
@@ -216,13 +222,42 @@ export default function App() {
   const convertedRef = useRef(false)
   const { route, path, search, navigate } = useRoute()
 
-  // the selected day lives in the URL (?den=nedele) — bookmarkable, back-safe
-  const den = new URLSearchParams(search).get('den')
+  // the selected day + time filter live in the URL (?den=nedele&cas=vecer) —
+  // bookmarkable, back-safe, and they compose ("v neděli kolem 9:00")
+  const params = new URLSearchParams(search)
+  const den = params.get('den')
   const day = useMemo(() => dayFromParam(new Date(), den), [den])
-  const setDay = (d: DayChoice) => {
-    const param = dayToParam(new Date(), d)
-    navigate(param ? `${path}?den=${param}` : path, { replace: true })
+  const cas = parseCas(params.get('cas'))
+  const setParam = (key: string, value: string | null) => {
+    const p = new URLSearchParams(search)
+    if (value) p.set(key, value)
+    else p.delete(key)
+    const qs = p.toString().replace(/%3A/gi, ':') // keep ?cas=18:00 readable
+    navigate(qs ? `${path}?${qs}` : path, { replace: true })
   }
+  const setDay = (d: DayChoice) => setParam('den', dayToParam(new Date(), d))
+  const setCas = (c: string | null) => {
+    setParam('cas', c)
+    try {
+      if (c) localStorage.setItem(CAS_KEY, c)
+      else localStorage.removeItem(CAS_KEY)
+    } catch {
+      // private mode
+    }
+    track('key_action', { action: 'filter', cas: c })
+  }
+
+  // sticky like the other filters: a plain visit re-applies the saved cas
+  useEffect(() => {
+    if (parseCas(new URLSearchParams(location.search).get('cas'))) return
+    try {
+      const saved = parseCas(localStorage.getItem(CAS_KEY))
+      if (saved) setParam('cas', saved)
+    } catch {
+      // private mode
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
+  }, [])
 
   useEffect(() => {
     document.documentElement.style.setProperty('--season', SEASON_VAR[season.color])
@@ -338,11 +373,11 @@ export default function App() {
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
     const churches = filters.barrierFree ? data.nearby.filter((c) => c.barrierFree) : data.nearby
-    const byId = applyFilters(data.byId, filters)
+    const byId = applyFilters(data.byId, filters, cas)
     return day === 'now'
       ? rankUpcoming(new Date(), origin, churches, byId)
       : ordoForDay(new Date(), day, origin, churches, byId)
-  }, [data, origin, filters, day])
+  }, [data, origin, filters, day, cas])
 
   /** Languages on offer nearby (unfiltered) — the options for the lang filter. */
   const langs = useMemo(() => {
@@ -355,7 +390,8 @@ export default function App() {
     return [...set].sort((a, b) => (a === 'česky' ? -1 : b === 'česky' ? 1 : a.localeCompare(b, 'cs')))
   }, [data])
 
-  const anyFilter = Boolean(filters.lang) || filters.greek || filters.barrierFree || filters.massOnly
+  const anyFilter =
+    Boolean(filters.lang) || filters.greek || filters.barrierFree || filters.massOnly || Boolean(cas)
 
   const updateFilters = (next: Filters) => {
     setFilters(next)
@@ -499,7 +535,7 @@ export default function App() {
               }}
             />
             <FeastLine day={day} />
-            <FilterBar filters={filters} langs={langs} onChange={updateFilters} />
+            <FilterBar filters={filters} cas={cas} langs={langs} onChange={updateFilters} onCas={setCas} />
             {rows.length > 0 ? (
               <ServiceList
                 rows={rows}
@@ -522,7 +558,10 @@ export default function App() {
                   <button
                     type="button"
                     className="underline decoration-hairline underline-offset-2 hover:text-ink"
-                    onClick={() => updateFilters({ ...NO_FILTERS })}
+                    onClick={() => {
+                      updateFilters({ ...NO_FILTERS })
+                      setCas(null)
+                    }}
                   >
                     Zrušit filtry
                   </button>
@@ -751,16 +790,21 @@ function ServiceList({
   )
 }
 
-// Typographic filter line — set like a rubric annotation under the list header,
+// Typographic filter lines — set like rubric annotations under the list header,
 // not a Material chip bar. Hit areas stay ≥44px via padding + negative margin.
+// Two lines: what (rite, access, language) and when (time-of-day bands, kolem).
 function FilterBar({
   filters,
+  cas,
   langs,
   onChange,
+  onCas,
 }: {
   filters: Filters
+  cas: string | null
   langs: string[]
   onChange: (f: Filters) => void
+  onCas: (c: string | null) => void
 }) {
   const toggleCls = (active: boolean) =>
     `-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
@@ -768,11 +812,13 @@ function FilterBar({
     }`
   const toggleStyle = (active: boolean) =>
     active ? { color: 'var(--season)', textDecorationColor: 'var(--season)' } : undefined
+  const around = cas && !(cas in BANDS) ? cas : null
   return (
+    <div className="mt-3 border-b border-hairline pb-2">
     <div
       role="group"
       aria-label="Filtry"
-      className="mt-3 -ml-1 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-hairline pb-2"
+      className="-ml-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
     >
       <button
         type="button"
@@ -819,6 +865,40 @@ function FilterBar({
           ))}
         </select>
       )}
+    </div>
+      <div
+        role="group"
+        aria-label="Kdy"
+        className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
+      >
+        {(Object.keys(BANDS) as Band[]).map((band) => (
+          <button
+            key={band}
+            type="button"
+            aria-pressed={cas === band}
+            className={toggleCls(cas === band)}
+            style={toggleStyle(cas === band)}
+            onClick={() => onCas(cas === band ? null : band)}
+          >
+            {BANDS[band].label}
+          </button>
+        ))}
+        <label
+          className={`-my-2 flex items-baseline gap-1.5 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
+            around ? '' : 'text-ink-faded'
+          }`}
+          style={around ? { color: 'var(--season)' } : undefined}
+        >
+          kolem
+          <input
+            type="time"
+            aria-label="Kolem času"
+            value={around ? around.padStart(5, '0') : ''}
+            onChange={(e) => onCas(e.target.value || null)}
+            className="w-[4.5rem] cursor-pointer border-0 bg-transparent font-sans text-xs font-semibold"
+          />
+        </label>
+      </div>
     </div>
   )
 }

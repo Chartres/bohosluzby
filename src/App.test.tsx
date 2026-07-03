@@ -1,7 +1,7 @@
 // Persona journey: Marie is in an unfamiliar part of Prague on a Friday
 // afternoon and wants the nearest mass she can still make. One primary
 // journey, all its states (Standard: persona-journey test per journey).
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 import type { IndexRow } from './domain/data'
@@ -392,6 +392,42 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getByText(/neodpovídá žádná bohoslužba/)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Zrušit filtry' }))
     expect(await screen.findByText(/Salvátora/)).toBeInTheDocument()
+  })
+
+  it('kdy filter: bands write ?cas=, fall back to the next matching service, compose with ?den', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    // večer: Salvátor's 18:00 stays
+    await user.click(screen.getByRole('button', { name: 'večer' }))
+    expect(window.location.search).toBe('?cas=vecer')
+    expect(screen.getByText('18:00')).toBeInTheDocument()
+
+    // dopoledne: Salvátor has no 10–13 service and vanishes; Havel falls back
+    // to Sunday 10:00 instead of disappearing with its Friday evening services
+    await user.click(screen.getByRole('button', { name: 'dopoledne' }))
+    expect(window.location.search).toBe('?cas=dopoledne')
+    expect(screen.queryByText(/Salvátora/)).not.toBeInTheDocument()
+    expect(screen.getByText(/sv\. Havla/)).toBeInTheDocument()
+    expect(screen.getAllByText('10:00').length).toBeGreaterThan(0)
+
+    // sticky like the other filters
+    expect(localStorage.getItem('bohosluzby:cas')).toBe('dopoledne')
+
+    // composes with the day: v neděli kolem 9:00 → only Havel's 10:00 (±90 min)
+    await user.click(screen.getByRole('button', { name: /^neděle/ }))
+    fireEvent.change(screen.getByLabelText('Kolem času'), { target: { value: '09:00' } })
+    expect(window.location.search).toBe('?cas=09:00&den=nedele')
+    expect(screen.getAllByText('10:00').length).toBeGreaterThan(0)
+    expect(screen.queryByText('14:00')).not.toBeInTheDocument() // Salvátor Sunday, outside ±90
+
+    // toggle off clears the param and the sticky value
+    await user.click(screen.getByRole('button', { name: 'hned' }))
+    fireEvent.change(screen.getByLabelText('Kolem času'), { target: { value: '' } })
+    expect(window.location.search).toBe('')
+    expect(localStorage.getItem('bohosluzby:cas')).toBeNull()
   })
 
   it('day picker: "neděle" shows the full Sunday ordo without countdowns', async () => {
