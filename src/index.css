@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+/* Design tokens — docs/DESIGN-BRIEF.md. Missal/breviary print, not app-store defaults. */
+@theme {
+  --color-paper: #f6f1e5;
+  --color-ink: #1a1712;
+  --color-ink-faded: #655c4d;
+  --color-rubric: #9a2b1e;
+  --color-hairline: #d8d0bd;
+
+  /* liturgical season palette (js sets --season to one of these) */
+  --color-season-green: #3d6b46;
+  --color-season-violet: #5b3a7e;
+  --color-season-gold: #a8842c;
+  --color-season-red: #8f1d1d;
+
+  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-sans: 'Source Sans 3', system-ui, sans-serif;
+
+  --radius-sm: 2px;
+}
+
+:root {
+  /* current liturgical season accent; overwritten by the app at boot */
+  --season: var(--color-season-green);
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* visible keyboard focus, seasonal */
+:focus-visible {
+  outline: 2px solid var(--season);
+  outline-offset: 2px;
+}
+
+/* rubric: small red functional labels, like instructions in a missal */
+.rubric {
+  font-family: var(--font-sans);
+  color: var(--color-rubric);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

@@ -1,0 +1,39 @@
+{
+  "name": "bohosluzby",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Mše svatá poblíž, právě teď — nejbližší katolické bohoslužby v ČR.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "typecheck": "tsc -b --noEmit",
+    "data": "node data/extract.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.107.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@tailwindcss/vite": "^4.3.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^24.13.1",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.0",
+    "jsdom": "^29.1.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.0",
+    "vite": "^8.0.0",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^4.1.0"
+  }
+}
