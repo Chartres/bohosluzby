@@ -16,6 +16,7 @@ import { ordoForDay, rankUpcoming, type Upcoming } from './domain/ranking'
 import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
+import { findCity } from './domain/cities'
 import { ChurchDetail, Chip } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
@@ -134,11 +135,13 @@ export function applyFilters(
 }
 
 // Minimal history routing (GH Pages serves 404.html = the app for deep links).
-type Route = { view: 'home' } | { view: 'church'; id: string }
+type Route = { view: 'home' } | { view: 'church'; id: string } | { view: 'city'; slug: string }
 
 export function parseRoute(path: string): Route {
   const kostel = /^\/kostel\/([^/]+)\/?$/.exec(path)
   if (kostel) return { view: 'church', id: decodeURIComponent(kostel[1]) }
+  const mesto = /^\/mesto\/([^/]+)\/?$/.exec(path)
+  if (mesto) return { view: 'city', slug: decodeURIComponent(mesto[1]) }
   return { view: 'home' }
 }
 
@@ -185,6 +188,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    // a /mesto/<slug>/ landing sets its own origin — don't prompt for location
+    if (parseRoute(location.pathname).view === 'city') return
     const fallback = () => {
       const last = loadLastOrigin()
       if (last) setOrigin(last)
@@ -215,6 +220,19 @@ export default function App() {
   }, [origin])
 
   const online = useSyncExternalStore(onlineStore.subscribe, onlineStore.snapshot)
+
+  // /mesto/<slug>/ — the city's centroid becomes the origin (SEO landing pages)
+  const citySlug = route.view === 'city' ? route.slug : null
+  useEffect(() => {
+    if (!citySlug || !index) return
+    const city = findCity(index, citySlug)
+    if (city) {
+      setOrigin({ lat: city.lat, lng: city.lng, source: 'city', label: city.name })
+      document.title = `Bohoslužby ${city.name} — mše svatá dnes | Bohoslužby`
+    } else {
+      setGeoDenied(true) // stale link → offer the picker
+    }
+  }, [citySlug, index])
 
   useEffect(() => {
     if (!index || !origin) return
@@ -311,7 +329,7 @@ export default function App() {
           </p>
         )}
 
-        {route.view === 'home' && (
+        {route.view !== 'church' && (
           <>
         {!dataError && loading && (
           <div className="mt-14 text-center" role="status">
@@ -353,6 +371,7 @@ export default function App() {
                   type="button"
                   className="underline decoration-hairline underline-offset-2 hover:text-ink"
                   onClick={() => {
+                    if (route.view === 'city') navigate('/') // the URL shouldn't keep naming the city
                     setOrigin(null)
                     setData(null)
                     setGeoDenied(true) // reopens the picker

@@ -40,6 +40,9 @@ export default defineConfig({
         // Precache the app shell AND the whole dataset (1.3 MB): the app works
         // fully offline (Standard: PWA offline; dataset shards precached).
         globPatterns: ['**/*.{js,css,html,svg,woff2,json,png}'],
+        // SEO-only copies of the shell (prerendered city pages, 404 fallback):
+        // the SPA handles those routes; don't precache 31 duplicates.
+        globIgnores: ['mesto/**', '404.html'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
         runtimeCaching: [

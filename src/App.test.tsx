@@ -331,6 +331,21 @@ describe('Marie finds the nearest mass', () => {
     Object.defineProperty(navigator, 'onLine', { value: true, configurable: true })
   })
 
+  it('city landing (/mesto/praha/): list from the city centroid, no geolocation prompt', async () => {
+    const getCurrentPosition = vi.fn()
+    Object.defineProperty(navigator, 'geolocation', {
+      value: { getCurrentPosition },
+      configurable: true,
+    })
+    window.history.pushState(null, '', '/mesto/praha/')
+    render(<App />)
+    expect(await screen.findByText('kostel Nejsvětějšího Salvátora')).toBeInTheDocument()
+    // list header names the city
+    expect(screen.getByRole('button', { name: 'změnit' }).parentElement).toHaveTextContent(/^Praha ·/)
+    expect(getCurrentPosition).not.toHaveBeenCalled()
+    expect(document.title).toContain('Bohoslužby Praha')
+  })
+
   it('empty area: reports no services within 30 km and keeps the picker', async () => {
     stubGeolocation('granted')
     // middle of nowhere (Šumava)
