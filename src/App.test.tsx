@@ -92,7 +92,8 @@ describe('Marie finds the nearest mass', () => {
     // 18:00 mass (in 1 h) ranks above the 19:30 Latin mass
     const names = screen.getAllByText(/kostel/).map((el) => el.textContent)
     expect(names[0]).toContain('Salvátora')
-    expect(screen.getByText('za 1 h')).toBeInTheDocument()
+    // fake clock ticks with real time → "za 1 h" can slip to "za 59 min" on slow CI
+    expect(screen.getByText(/za (1 h|59 min)/)).toBeInTheDocument()
     expect(screen.getByText(/dnes/)).toBeInTheDocument()
     // language chip only for the non-Czech service
     expect(screen.getByText('Latine')).toBeInTheDocument()
