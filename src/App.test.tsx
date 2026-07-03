@@ -304,6 +304,33 @@ describe('Marie finds the nearest mass', () => {
     expect(await screen.findByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
   })
 
+  it('falls back to the last known position when geolocation fails', async () => {
+    stubGeolocation('denied')
+    localStorage.setItem('bohosluzby:lastOrigin', JSON.stringify({ lat: 50.0875, lng: 14.4213 }))
+    render(<App />)
+    expect(await screen.findByText('kostel Nejsvětějšího Salvátora')).toBeInTheDocument()
+    expect(screen.getByText(/poslední známá poloha/)).toBeInTheDocument()
+    expect(screen.queryByText('Bez přístupu k poloze')).not.toBeInTheDocument()
+  })
+
+  it('remembers a granted position for the next visit', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText('kostel Nejsvětějšího Salvátora')
+    expect(JSON.parse(localStorage.getItem('bohosluzby:lastOrigin')!)).toMatchObject({
+      lat: 50.0875,
+      lng: 14.4213,
+    })
+  })
+
+  it('shows a quiet offline indicator in the footer', async () => {
+    stubGeolocation('granted')
+    Object.defineProperty(navigator, 'onLine', { value: false, configurable: true })
+    render(<App />)
+    expect(await screen.findByText('offline — zobrazuji uložená data')).toBeInTheDocument()
+    Object.defineProperty(navigator, 'onLine', { value: true, configurable: true })
+  })
+
   it('empty area: reports no services within 30 km and keeps the picker', async () => {
     stubGeolocation('granted')
     // middle of nowhere (Šumava)

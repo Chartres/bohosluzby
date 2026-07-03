@@ -1,7 +1,7 @@
 // The one stage-1 journey: geolocate (or pick a city) → "Nejbližší bohoslužby",
 // ranked by which service you can still make (docs/DESIGN-BRIEF.md sets the look:
 // printed ordo — hairline rules, rubric labels, seasonal accent).
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import {
   decodeIndex,
   decodeShard,
@@ -36,7 +36,35 @@ const SEASON_VAR: Record<LiturgicalDay['color'], string> = {
   red: 'var(--color-season-red)',
 }
 
-type Origin = { lat: number; lng: number; source: 'geo' | 'city'; label?: string }
+type Origin = { lat: number; lng: number; source: 'geo' | 'city' | 'last'; label?: string }
+
+// Last known position — the offline/denied fallback (a pilgrim in a tunnel
+// still gets her list). Saved on every successful location fix or city pick.
+const LAST_ORIGIN_KEY = 'bohosluzby:lastOrigin'
+
+function loadLastOrigin(): Origin | null {
+  try {
+    const raw = localStorage.getItem(LAST_ORIGIN_KEY)
+    if (!raw) return null
+    const { lat, lng, label } = JSON.parse(raw)
+    if (typeof lat !== 'number' || typeof lng !== 'number') return null
+    return { lat, lng, label, source: 'last' }
+  } catch {
+    return null
+  }
+}
+
+const onlineStore = {
+  subscribe(cb: () => void) {
+    window.addEventListener('online', cb)
+    window.addEventListener('offline', cb)
+    return () => {
+      window.removeEventListener('online', cb)
+      window.removeEventListener('offline', cb)
+    }
+  },
+  snapshot: () => navigator.onLine,
+}
 
 // ---- Filters (persisted; rubric-styled toggles, not a Material chip bar) ----
 
@@ -156,16 +184,36 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    const fallback = () => {
+      const last = loadLastOrigin()
+      if (last) setOrigin(last)
+      else setGeoDenied(true)
+    }
     if (!navigator.geolocation) {
-      setGeoDenied(true)
+      fallback()
       return
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => setOrigin({ lat: pos.coords.latitude, lng: pos.coords.longitude, source: 'geo' }),
-      () => setGeoDenied(true),
+      fallback,
       { timeout: 12_000, maximumAge: 300_000 },
     )
   }, [])
+
+  // remember the position for the offline / denied fallback
+  useEffect(() => {
+    if (!origin || origin.source === 'last') return
+    try {
+      localStorage.setItem(
+        LAST_ORIGIN_KEY,
+        JSON.stringify({ lat: origin.lat, lng: origin.lng, label: origin.label }),
+      )
+    } catch {
+      // private mode
+    }
+  }, [origin])
+
+  const online = useSyncExternalStore(onlineStore.subscribe, onlineStore.snapshot)
 
   useEffect(() => {
     if (!index || !origin) return
@@ -305,7 +353,7 @@ export default function App() {
             <div className="mt-5 flex items-baseline justify-between gap-3">
               <h2 className="rubric">Nejbližší bohoslužby</h2>
               <p className="text-sm text-ink-faded">
-                {origin.label ? origin.label : 'podle vaší polohy'}
+                {origin.label ?? (origin.source === 'last' ? 'poslední známá poloha' : 'podle vaší polohy')}
                 {' · '}
                 <button
                   type="button"
@@ -357,6 +405,11 @@ export default function App() {
       </main>
 
       <footer className="border-t border-hairline py-4 text-sm text-ink-faded">
+        {!online && (
+          <p className="mb-1" role="status">
+            offline — zobrazuji uložená data
+          </p>
+        )}
         Data: rejstřík{' '}
         <a
           className="underline decoration-hairline underline-offset-2 hover:text-ink"

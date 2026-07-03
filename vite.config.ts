@@ -37,21 +37,12 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Precache the app shell; the dataset (churches index + service shards)
-        // is runtime-cached on first use — it is large and region-specific.
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        // Precache the app shell AND the whole dataset (1.3 MB): the app works
+        // fully offline (Standard: PWA offline; dataset shards precached).
+        globPatterns: ['**/*.{js,css,html,svg,woff2,json,png}'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
         runtimeCaching: [
-          {
-            urlPattern: ({ url }) => url.pathname.startsWith('/data/'),
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'dataset',
-              expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
           {
             urlPattern: ({ url }) => url.origin === 'https://fonts.googleapis.com',
             handler: 'StaleWhileRevalidate',
