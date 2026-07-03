@@ -486,44 +486,46 @@ export default function App() {
 
         {!dataError && !picking && !loading && origin && rows && (rows.length > 0 || anyFilter || day !== 'now') && (
           <section aria-label="Nejbližší bohoslužby">
+            {/* the view toggle changes representation, not selection — it sits
+                on the header line, apart from the day/kdy/what controls */}
             <div className="mt-5 flex items-baseline justify-between gap-3">
               <h2 className="rubric">Nejbližší bohoslužby</h2>
-              <p className="text-sm text-ink-faded">
-                {origin.label ?? (origin.source === 'last' ? 'poslední známá poloha' : 'podle vaší polohy')}
-                {' · '}
-                <button
-                  type="button"
-                  className="underline decoration-hairline underline-offset-2 hover:text-ink"
-                  onClick={() => setPicking(true)} // origin stays — zpět/Escape returns to the list
-                >
-                  změnit
-                </button>
-                {origin.source !== 'geo' && (
-                  <>
-                    {' · '}
-                    <button
-                      type="button"
-                      className="underline decoration-hairline underline-offset-2 hover:text-ink"
-                      onClick={useMyLocation}
-                    >
-                      moje poloha
-                    </button>
-                  </>
-                )}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-              <DayPicker
-                day={day}
-                onChange={(d) => {
-                  setDay(d)
-                  track('key_action', { action: 'day', day: d })
-                }}
-              />
               <ViewToggle view={view} onChange={setView} />
             </div>
-            <FeastLine day={day} />
+            <p className="text-sm text-ink-faded">
+              {origin.label ?? (origin.source === 'last' ? 'poslední známá poloha' : 'podle vaší polohy')}
+              {' · '}
+              <button
+                type="button"
+                className="underline decoration-hairline underline-offset-2 hover:text-ink"
+                onClick={() => setPicking(true)} // origin stays — zpět/Escape returns to the list
+              >
+                změnit
+              </button>
+              {origin.source !== 'geo' && (
+                <>
+                  {' · '}
+                  <button
+                    type="button"
+                    className="underline decoration-hairline underline-offset-2 hover:text-ink"
+                    onClick={useMyLocation}
+                  >
+                    moje poloha
+                  </button>
+                </>
+              )}
+            </p>
+            {/* WHEN block: the day picker and the kdy row read as one unit;
+                the WHAT filters follow inside the FilterBar */}
+            <DayPicker
+              day={day}
+              onChange={(d) => {
+                setDay(d)
+                track('key_action', { action: 'day', day: d })
+              }}
+            />
             <FilterBar filters={filters} cas={cas} day={day} langs={langs} onChange={updateFilters} onCas={setCas} />
+            <FeastLine day={day} />
             {view === 'mapa' ? (
               online ? (
                 <Suspense
@@ -657,7 +659,7 @@ function ViewToggle({
         : 'text-ink-faded hover:text-ink'
     }`
   return (
-    <div role="group" aria-label="Zobrazení" className="mt-3 flex items-baseline gap-x-1">
+    <div role="group" aria-label="Zobrazení" className="flex items-baseline gap-x-1">
       <button
         type="button"
         aria-pressed={view === 'seznam'}
@@ -857,12 +859,61 @@ function FilterBar({
     active ? { color: 'var(--season)', textDecorationColor: 'var(--season)' } : undefined
   const around = cas && !(cas in BANDS) ? cas : null
   return (
-    <div className="mt-3 border-b border-hairline pb-2">
-    <div
-      role="group"
-      aria-label="Filtry"
-      className="-ml-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
-    >
+    <div className="border-b border-hairline pb-2">
+      {/* WHEN: the kdy row sits directly under the day picker — one block */}
+      <div
+        role="group"
+        aria-label="Kdy"
+        className="-ml-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
+      >
+        {(Object.keys(BANDS) as Band[]).map((band) => {
+          // "hned" + a band that's fully over today: visibly muted (still
+          // tappable — picking it jumps to zítra via resolveCasDay)
+          const past = day === 'now' && cas !== band && bandFullyPast(band, new Date())
+          return (
+            <button
+              key={band}
+              type="button"
+              aria-pressed={cas === band}
+              className={`${toggleCls(cas === band)}${past ? ' opacity-40' : ''}`}
+              style={toggleStyle(cas === band)}
+              title={past ? 'dnes už proběhlo — přepne na zítra' : undefined}
+              onClick={() => onCas(cas === band ? null : band)}
+            >
+              {BANDS[band].label}
+            </button>
+          )
+        })}
+        {/* 30-min-step typographic selector — native step=1800 isn't honored cross-browser */}
+        <label
+          className={`-my-2 flex items-baseline gap-1.5 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
+            around ? '' : 'text-ink-faded'
+          }`}
+          style={around ? { color: 'var(--season)' } : undefined}
+        >
+          kolem
+          <select
+            aria-label="Kolem času"
+            value={around ?? ''}
+            onChange={(e) => onCas(e.target.value || null)}
+            className="cursor-pointer border-0 bg-transparent font-sans text-xs font-semibold tabular-nums"
+            style={around ? { color: 'var(--season)' } : undefined}
+          >
+            <option value="">—</option>
+            {HALF_HOURS.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {/* WHAT: rite, access, language */}
+      <div
+        role="group"
+        aria-label="Filtry"
+        className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
+      >
       <button
         type="button"
         aria-pressed={filters.massOnly}
@@ -909,53 +960,6 @@ function FilterBar({
         </select>
       )}
     </div>
-      <div
-        role="group"
-        aria-label="Kdy"
-        className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
-      >
-        {(Object.keys(BANDS) as Band[]).map((band) => {
-          // "hned" + a band that's fully over today: visibly muted (still
-          // tappable — picking it jumps to zítra via resolveCasDay)
-          const past = day === 'now' && cas !== band && bandFullyPast(band, new Date())
-          return (
-            <button
-              key={band}
-              type="button"
-              aria-pressed={cas === band}
-              className={`${toggleCls(cas === band)}${past ? ' opacity-40' : ''}`}
-              style={toggleStyle(cas === band)}
-              title={past ? 'dnes už proběhlo — přepne na zítra' : undefined}
-              onClick={() => onCas(cas === band ? null : band)}
-            >
-              {BANDS[band].label}
-            </button>
-          )
-        })}
-        {/* 30-min-step typographic selector — native step=1800 isn't honored cross-browser */}
-        <label
-          className={`-my-2 flex items-baseline gap-1.5 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
-            around ? '' : 'text-ink-faded'
-          }`}
-          style={around ? { color: 'var(--season)' } : undefined}
-        >
-          kolem
-          <select
-            aria-label="Kolem času"
-            value={around ?? ''}
-            onChange={(e) => onCas(e.target.value || null)}
-            className="cursor-pointer border-0 bg-transparent font-sans text-xs font-semibold tabular-nums"
-            style={around ? { color: 'var(--season)' } : undefined}
-          >
-            <option value="">—</option>
-            {HALF_HOURS.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
     </div>
   )
 }
