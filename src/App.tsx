@@ -326,12 +326,7 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 sm:px-8">
       <header className="border-b-2 pt-6 pb-3" style={{ borderColor: 'var(--season)' }}>
-        <div className="flex items-baseline justify-between gap-4">
-          <h1 className="font-display text-3xl font-bold tracking-tight">Bohoslužby</h1>
-          <p className="text-sm font-semibold" style={{ color: 'var(--season)' }}>
-            {SEASON_LABEL[season.season]}
-          </p>
-        </div>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Bohoslužby</h1>
         <p className="rubric mt-1">mše svatá poblíž, právě teď</p>
       </header>
 
@@ -463,7 +458,10 @@ export default function App() {
         )}
         <FeedbackCard />
         <p className="mt-1">
-          Data: rejstřík{' '}
+          <span className="font-semibold" style={{ color: 'var(--season)' }}>
+            {SEASON_LABEL[season.season]}
+          </span>
+          {' · '}Data: rejstřík{' '}
           <a
             className="underline decoration-hairline underline-offset-2 hover:text-ink"
             href="https://bohosluzby.cirkev.cz"
