@@ -1,7 +1,7 @@
 // "Kdy" windowing: time-of-day bands + "kolem HH:MM" (±90 min, circular —
 // midnight-adjacent times must not fall off the clock edge).
 import { describe, expect, it } from 'vitest'
-import { HALF_HOURS, matchesCas, parseCas } from './timeband'
+import { HALF_HOURS, bandFullyPast, matchesCas, parseCas, resolveCasDay } from './timeband'
 
 describe('parseCas (?cas= validation)', () => {
   it('accepts band names', () => {
@@ -64,6 +64,38 @@ describe('matchesCas — bands', () => {
   it('tolerates registry time suffixes ("18:00 (letní)")', () => {
     expect(matchesCas('vecer', '18:00 (letní)')).toBe(true)
     expect(matchesCas('vecer', 'dle ohlášení')).toBe(false)
+  })
+})
+
+// Prague CEST (+2): 18:00Z = 20:00, 08:30Z = 10:30 wall clock
+const EVENING = new Date('2026-07-06T18:00:00Z')
+const MIDMORNING = new Date('2026-07-06T08:30:00Z')
+
+describe('bandFullyPast / resolveCasDay — impossible den×kdy combos', () => {
+  it('in the evening every band but večer is fully past', () => {
+    expect(bandFullyPast('rano', EVENING)).toBe(true)
+    expect(bandFullyPast('dopoledne', EVENING)).toBe(true)
+    expect(bandFullyPast('odpoledne', EVENING)).toBe(true)
+    expect(bandFullyPast('vecer', EVENING)).toBe(false)
+  })
+  it('a partially-past band is not fully past (10:30 → dopoledne still runs)', () => {
+    expect(bandFullyPast('rano', MIDMORNING)).toBe(true) // do 10:00, it is 10:30
+    expect(bandFullyPast('dopoledne', MIDMORNING)).toBe(false)
+  })
+  it('kolem times and empty cas are never "fully past" (circular window)', () => {
+    expect(bandFullyPast('06:00', EVENING)).toBe(false)
+    expect(bandFullyPast(null, EVENING)).toBe(false)
+  })
+  it('hned + fully-past band jumps to zítra; HNED semantics otherwise preserved', () => {
+    expect(resolveCasDay('now', 'rano', EVENING)).toBe(1) // evening + ráno → zítra ráno
+    expect(resolveCasDay('now', 'vecer', EVENING)).toBe('now')
+    expect(resolveCasDay('now', 'dopoledne', MIDMORNING)).toBe('now') // partial → keep hned
+    expect(resolveCasDay('now', '06:00', EVENING)).toBe('now') // kolem never jumps
+    expect(resolveCasDay('now', null, EVENING)).toBe('now')
+  })
+  it('an explicit day is never overridden', () => {
+    expect(resolveCasDay(0, 'rano', EVENING)).toBe(0) // dnes + ráno stays an honest empty
+    expect(resolveCasDay(3, 'rano', EVENING)).toBe(3)
   })
 })
 

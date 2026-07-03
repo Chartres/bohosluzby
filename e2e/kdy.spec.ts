@@ -53,6 +53,26 @@ test('kolem 09:00: fallback to the next matching service, composes with neděle'
   await shot(page, 'kdy-kolem-nedele')
 })
 
+test('evening + ráno can never match today: muted chip, picking it jumps to zítra ráno', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-07-06T18:00:00Z')) // Monday 20:00 Prague
+  await page.goto('/')
+  await expect(page.getByTestId('seznam')).toBeVisible()
+
+  // every band but večer is over today → visibly muted, still tappable
+  const rano = page.getByRole('button', { name: 'ráno' })
+  await expect(rano).toHaveClass(/opacity-40/)
+  await expect(rano).toHaveAttribute('title', 'dnes už proběhlo — přepne na zítra')
+  await shot(page, 'kdy-impossible-muted')
+
+  // the honest jump: hned + ráno → zítra ráno, day chip and URL follow
+  await rano.click()
+  await expect(page).toHaveURL(/cas=rano/)
+  await expect(page).toHaveURL(/den=zitra/)
+  await expect(page.getByRole('button', { name: 'zítra' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByTestId('seznam').getByText('09:30')).toBeVisible() // katedrála, Tuesday
+  await shot(page, 'kdy-impossible-zitra')
+})
+
 test('bookmark /?den=nedele&cas=9:00 restores both; 375px wraps typographically', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.goto('/?den=nedele&cas=9:00')

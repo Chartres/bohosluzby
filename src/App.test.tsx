@@ -409,13 +409,16 @@ describe('Marie finds the nearest mass', () => {
     expect(window.location.search).toBe('?cas=vecer')
     expect(seznam().getByText('18:00')).toBeInTheDocument()
 
-    // dopoledne: Salvátor has no 10–13 service and vanishes; Havel falls back
-    // to Sunday 10:00 instead of disappearing with its Friday evening services
-    await user.click(screen.getByRole('button', { name: 'dopoledne' }))
-    expect(window.location.search).toBe('?cas=dopoledne')
-    expect(screen.queryByText(/Salvátora/)).not.toBeInTheDocument()
-    expect(screen.getByText(/sv\. Havla/)).toBeInTheDocument()
-    expect(seznam().getAllByText('10:00').length).toBeGreaterThan(0)
+    // dopoledne is over on a Friday 17:00: the chip is muted and picking it
+    // jumps honestly to zítra (URL + day chip follow) — never a lying "hned"
+    const dopoledne = screen.getByRole('button', { name: 'dopoledne' })
+    expect(dopoledne).toHaveClass('opacity-40')
+    expect(dopoledne).toHaveAttribute('title', 'dnes už proběhlo — přepne na zítra')
+    await user.click(dopoledne)
+    expect(window.location.search).toBe('?cas=dopoledne&den=zitra')
+    expect(screen.getByRole('button', { name: 'zítra' })).toHaveAttribute('aria-pressed', 'true')
+    // Saturday has no 10–13 service nearby → an honest, explained empty state
+    expect(screen.getByText(/neodpovídá žádná bohoslužba/)).toBeInTheDocument()
 
     // sticky like the other filters
     expect(localStorage.getItem('bohosluzby:cas')).toBe('dopoledne')

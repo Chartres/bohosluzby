@@ -52,6 +52,12 @@ export function pragueToday(now: Date): { y: number; m: number; d: number } {
   return { y, m, d }
 }
 
+/** Minutes since midnight on the Prague wall clock. */
+export function pragueMinutes(now: Date): number {
+  const { hh, mm } = pragueWall(now)
+  return hh * 60 + mm
+}
+
 const parseTime = (time: string): [number, number] | null => {
   const m = /^(\d{1,2}):(\d{2})/.exec(time.trim())
   return m ? [Number(m[1]), Number(m[2])] : null

@@ -16,7 +16,7 @@ import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
-import { BANDS, HALF_HOURS, parseCas, type Band } from './domain/timeband'
+import { BANDS, HALF_HOURS, bandFullyPast, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
@@ -196,13 +196,16 @@ export default function App() {
   const den = params.get('den')
   const day = useMemo(() => dayFromParam(new Date(), den), [den])
   const cas = parseCas(params.get('cas'))
-  const setParam = (key: string, value: string | null) => {
+  const setParams = (entries: Record<string, string | null>) => {
     const p = new URLSearchParams(search)
-    if (value) p.set(key, value)
-    else p.delete(key)
+    for (const [key, value] of Object.entries(entries)) {
+      if (value) p.set(key, value)
+      else p.delete(key)
+    }
     const qs = p.toString().replace(/%3A/gi, ':') // keep ?cas=18:00 readable
     navigate(qs ? `${path}?${qs}` : path, { replace: true })
   }
+  const setParam = (key: string, value: string | null) => setParams({ [key]: value })
   const setDay = (d: DayChoice) => setParam('den', dayToParam(new Date(), d))
   // seznam · mapa — the hero list's other face, bookmarkable as ?zobrazeni=mapa
   const view: 'seznam' | 'mapa' = params.get('zobrazeni') === 'mapa' ? 'mapa' : 'seznam'
@@ -211,7 +214,10 @@ export default function App() {
     track('key_action', { action: 'view', view: v })
   }
   const setCas = (c: string | null) => {
-    setParam('cas', c)
+    // "hned + ráno" in the evening can never match today — jump honestly to
+    // zítra (day chip + URL follow) instead of a quietly reinterpreted list
+    const resolved = resolveCasDay(day, c, new Date())
+    setParams({ cas: c, ...(resolved !== day ? { den: dayToParam(new Date(), resolved) } : {}) })
     try {
       if (c) localStorage.setItem(CAS_KEY, c)
       else localStorage.removeItem(CAS_KEY)
@@ -517,7 +523,7 @@ export default function App() {
               <ViewToggle view={view} onChange={setView} />
             </div>
             <FeastLine day={day} />
-            <FilterBar filters={filters} cas={cas} langs={langs} onChange={updateFilters} onCas={setCas} />
+            <FilterBar filters={filters} cas={cas} day={day} langs={langs} onChange={updateFilters} onCas={setCas} />
             {view === 'mapa' ? (
               online ? (
                 <Suspense
@@ -831,12 +837,14 @@ function ServiceList({
 function FilterBar({
   filters,
   cas,
+  day,
   langs,
   onChange,
   onCas,
 }: {
   filters: Filters
   cas: string | null
+  day: DayChoice
   langs: string[]
   onChange: (f: Filters) => void
   onCas: (c: string | null) => void
@@ -906,18 +914,24 @@ function FilterBar({
         aria-label="Kdy"
         className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
       >
-        {(Object.keys(BANDS) as Band[]).map((band) => (
-          <button
-            key={band}
-            type="button"
-            aria-pressed={cas === band}
-            className={toggleCls(cas === band)}
-            style={toggleStyle(cas === band)}
-            onClick={() => onCas(cas === band ? null : band)}
-          >
-            {BANDS[band].label}
-          </button>
-        ))}
+        {(Object.keys(BANDS) as Band[]).map((band) => {
+          // "hned" + a band that's fully over today: visibly muted (still
+          // tappable — picking it jumps to zítra via resolveCasDay)
+          const past = day === 'now' && cas !== band && bandFullyPast(band, new Date())
+          return (
+            <button
+              key={band}
+              type="button"
+              aria-pressed={cas === band}
+              className={`${toggleCls(cas === band)}${past ? ' opacity-40' : ''}`}
+              style={toggleStyle(cas === band)}
+              title={past ? 'dnes už proběhlo — přepne na zítra' : undefined}
+              onClick={() => onCas(cas === band ? null : band)}
+            >
+              {BANDS[band].label}
+            </button>
+          )
+        })}
         {/* 30-min-step typographic selector — native step=1800 isn't honored cross-browser */}
         <label
           className={`-my-2 flex items-baseline gap-1.5 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${

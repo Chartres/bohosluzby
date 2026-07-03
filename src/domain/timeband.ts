@@ -3,6 +3,8 @@
 // a chosen "kolem HH:MM" time. Distance is circular, so kolem 23:30 still
 // matches a 00:45 vigil instead of falling off the clock edge.
 
+import { pragueMinutes } from './occurrences'
+
 export const BANDS = {
   rano: { label: 'ráno', from: 0, to: 10 * 60 }, // do 10
   dopoledne: { label: 'dopoledne', from: 10 * 60, to: 13 * 60 },
@@ -39,6 +41,21 @@ export function parseCas(param: string | null): string | null {
   const t = toMinutes(param, true)
   if (t === null) return null
   return fmtMinutes((Math.round(t / 30) * 30) % 1440)
+}
+
+/** Is the whole band already over today (Prague wall clock)? Only bands can be
+ * fully past — "kolem" is circular and a day filter, not a today filter. */
+export function bandFullyPast(cas: string | null, now: Date): boolean {
+  const band = cas ? (BANDS[cas as Band] as { to: number } | undefined) : undefined
+  return Boolean(band) && band!.to <= pragueMinutes(now)
+}
+
+/** Honest den×kdy resolution: picking a band that can't match today anymore
+ * while on "hned" jumps to zítra — the next day the band CAN match — instead
+ * of quietly reinterpreting "hned". A merely partially-past band, any other
+ * day, and "kolem" times keep the day unchanged. */
+export function resolveCasDay(day: 'now' | number, cas: string | null, now: Date): 'now' | number {
+  return day === 'now' && bandFullyPast(cas, now) ? 1 : day
 }
 
 /** Does a service's wall-clock "HH:MM" fall inside the cas window? */
