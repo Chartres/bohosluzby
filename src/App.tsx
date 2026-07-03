@@ -589,7 +589,8 @@ function ServiceList({
                 </p>
                 <p className="mt-0.5 text-sm text-ink-faded">
                   {r.church.city && `${r.church.city} · `}
-                  {fmtDistance(r.distanceKm)} · {r.service.type}
+                  {fmtDistance(r.distanceKm)}
+                  {r.service.type && ` · ${r.service.type}`}
                   {r.church.barrierFree && (
                     <>
                       {' · '}

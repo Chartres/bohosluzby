@@ -26,7 +26,7 @@ const SHARD_50_14 = {
     ],
     s: [
       ['5', '18:00', 'česky', 0, 'mše sv.', ''],
-      ['7', '14:00', 'česky', 0, 'mše sv.', ''],
+      ['7', '14:00', 'česky', 0, '', ''], // registry rows often omit the type
       ['7', '20:00', 'česky', 0, 'mše sv.', 'studentská'],
     ],
     x: [
@@ -359,6 +359,19 @@ describe('Marie finds the nearest mass', () => {
     // back to "hned" — the reachable-now ranking returns
     await user.click(screen.getByRole('button', { name: 'hned' }))
     expect(await screen.findByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
+  })
+
+  it('rows with an empty service type render no dangling separator', async () => {
+    // registry rows often omit the type — "Olomouc · 200 m · " looked broken
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    await user.click(screen.getByRole('button', { name: /^neděle/ })) // 14:00 has no type
+    expect(screen.getByText('14:00')).toBeInTheDocument()
+    const metas = document.querySelectorAll('ol .group p.text-sm')
+    expect(metas.length).toBeGreaterThan(0)
+    for (const m of metas) expect(m.textContent).not.toMatch(/·\s*$/)
   })
 
   it('feasts: Sunday 5 Jul (Cyril a Metoděj) is highlighted in the picker and named in the header', async () => {
