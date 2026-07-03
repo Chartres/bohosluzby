@@ -43,6 +43,14 @@ Language filter offers `ukrajinsky`. Journey works end-to-end. No fix needed.
 July, "kromě letních prázdnin" rows shown in July. Trust-critical. (Pavol #8, fixed — parser +
 exclusion + warning rubric for unparseable conditional notes.)
 
+### 6. Hledač konkrétního kostela ("vím, kam chci jít")
+Before: no direct lookup at all — a known church was reachable only by geolocating near it or
+paging a broken city picker. Now: the unified typeahead (header "změnit" / the no-location hero)
+finds churches by name diacritics-insensitively — "tyn" → farní kostel Matky Boží před Týnem
+(verified against the full dataset), Enter/click lands on `/kostel/<id>/`, whose document title
+("… — pořad bohoslužeb | Bohoslužby") makes the deep link a good bookmark/share target.
+(Fixed together with #4.)
+
 ## Root causes found (Pavol's confirmed issues)
 
 - **#7 past masses after day-switch**: NOT a stale `now` — reproduced with a frozen clock.
@@ -72,10 +80,22 @@ exclusion + warning rubric for unparseable conditional notes.)
    "ověřeno minulý týden". Consider a warning style past some age threshold.
 4. **F4 (logged)** `days:"1234512345"` -style registry quirks (duplicated digit sets) decode
    fine (the weekday set dedupes) but hint the extractor should normalize.
+5. **F5 (logged)** The language `<select>` in the filter bar renders its chevron at the far edge
+   of its `max-w-40` box, visually detached from a short selected value ("LATINSKY   ⌄").
+   Cosmetic; shrink-to-content would fix it.
 
-## Note-parser coverage (fix #8)
+## Note-parser coverage (fix #8, measured on the committed dataset)
 
-Measured over the committed dataset: 7 755 services, 3 604 with a non-empty note, 1 504 unique
-notes. Parser interpretation stats are in the fix commit message and `notes.test.ts`; conditional
-notes it cannot interpret are kept and rendered as a warning-style rubric, never silently trusted
-or hidden.
+7 755 services · 4 151 without a note · **3 604 with a note** (1 504 unique). Of the noted ones:
+
+| class | count | share of noted |
+|---|---|---|
+| date-constrained, fully interpreted | 2 176 | 60.4 % |
+| descriptive, no date condition | 502 | 13.9 % |
+| **interpreted with certainty** | **2 678** | **74.3 %** |
+| conditional but unparseable → kept + warning rubric | 926 | 25.7 % |
+
+Direction of trust: only provable exclusions exclude; the 926 uncertain notes are never hidden —
+they print in rubric red on the row. Largest uncertain families: "1x za 14 dní" without parity
+(45), "1x za 14 dní, jinak" (27), "1x za měsíc" without a week (24), year-qualified school-year
+ranges, "dle ohlášení".
