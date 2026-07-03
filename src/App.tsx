@@ -401,6 +401,7 @@ export default function App() {
             {rows.length > 0 ? (
               <ServiceList
                 rows={rows}
+                byId={data?.byId ?? new Map()} // rows ⇒ data, but TS can't see through the memo
                 showUntil={day === 'now' || day === 0}
                 onOpen={(id) => {
                   // the aha moment: a service was found worth looking at
@@ -525,40 +526,47 @@ function FeastLine({ day }: { day: DayChoice }) {
 
 function ServiceList({
   rows,
+  byId,
   showUntil,
   onOpen,
 }: {
   rows: Upcoming[]
+  byId: Map<string, ChurchServices>
   showUntil: boolean
   onOpen: (id: string) => void
 }) {
   const now = new Date()
   let lastDay = ''
+  const rowLink = 'relative z-10 underline decoration-hairline underline-offset-2 hover:text-ink'
   return (
     <ol className="mt-2">
       {rows.map((r, i) => {
         const day = dayLabel(now, r.start)
         const showDay = day !== lastDay
         lastDay = day
+        const www = byId.get(r.church.id)?.contacts.find(([type]) => type === 'www')?.[1]
         // index suffix: the ordo can hold two rows with the same (church, start) —
         // duplicate keys corrupted reconciliation and left phantom rows on day switch
         return (
           <li key={`${r.church.id}-${r.start.getTime()}-${i}`}>
             {showDay && <p className="rubric mt-6 mb-1">{day}</p>}
-            <a
-              href={`/kostel/${r.church.id}/`}
-              onClick={(e) => {
-                e.preventDefault()
-                onOpen(r.church.id)
-              }}
-              className="group flex items-baseline gap-4 border-t border-hairline py-3"
-            >
+            {/* stretched link: the name anchor covers the row; mapa/web sit above it */}
+            <div className="group relative flex items-baseline gap-4 border-t border-hairline py-3">
               <p className="font-display w-16 shrink-0 text-2xl font-semibold tabular-nums">
                 {fmtTime(r.start)}
               </p>
               <div className="min-w-0 flex-1">
-                <p className="font-display text-[1.05rem] leading-snug font-semibold underline decoration-hairline underline-offset-3 group-hover:decoration-ink">
-                  {r.church.name}
+                <p className="font-display text-[1.05rem] leading-snug font-semibold">
+                  <a
+                    href={`/kostel/${r.church.id}/`}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      onOpen(r.church.id)
+                    }}
+                    className="underline decoration-hairline underline-offset-3 group-hover:decoration-ink after:absolute after:inset-0"
+                  >
+                    {r.church.name}
+                  </a>
                 </p>
                 <p className="mt-0.5 text-sm text-ink-faded">
                   {r.church.city && `${r.church.city} · `}
@@ -571,7 +579,20 @@ function ServiceList({
                   )}
                   <NoteText note={r.service.note} />
                 </p>
-                <p className="mt-0.5 space-x-2 text-sm empty:hidden">
+                <p className="mt-0.5 space-x-3 text-sm text-ink-faded">
+                  <a
+                    className={rowLink}
+                    href={`https://mapy.cz/zakladni?q=${r.church.lat}%2C${r.church.lng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    mapa
+                  </a>
+                  {www && (
+                    <a className={rowLink} href={www} title={www} target="_blank" rel="noreferrer">
+                      web
+                    </a>
+                  )}
                   {r.service.lang && r.service.lang !== 'česky' && <Chip label={r.service.lang} />}
                   {r.service.greek && <Chip label="řeckokatolická" />}
                 </p>
@@ -581,7 +602,7 @@ function ServiceList({
                   {fmtUntil(now, r.start)}
                 </p>
               )}
-            </a>
+            </div>
           </li>
         )
       })}

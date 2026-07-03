@@ -130,6 +130,15 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getAllByRole('img', { name: 'bezbariérový přístup' }).length).toBeGreaterThan(0)
     // Brno (>30 km) is not in the list
     expect(screen.queryByText(/sv\. Tomáše/)).not.toBeInTheDocument()
+
+    // verify-without-detail: every row links to the map, parish web when known
+    const maps = screen.getAllByRole('link', { name: 'mapa' })
+    expect(maps.length).toBeGreaterThan(1)
+    expect(maps[0]).toHaveAttribute('href', expect.stringContaining('mapy.cz'))
+    expect(screen.getByRole('link', { name: 'web' })).toHaveAttribute(
+      'href',
+      'https://www.farnostsalvator.cz',
+    )
   })
 
   it('without permission: explains and offers a manual city fallback', async () => {

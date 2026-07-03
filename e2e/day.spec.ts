@@ -15,7 +15,7 @@ test('Sunday ordo: every service that day, chronological, no countdowns', async 
   await expect(page.getByText('neděle 12. 7.')).toBeVisible()
 
   // chronological Sunday schedule across churches
-  const times = await page.locator('ol li a > p:first-child').allTextContents()
+  const times = await page.locator('ol li .group > p:first-child').allTextContents()
   expect(times).toEqual(['08:30', '09:00', '09:00', '11:30', '12:00', '17:00', '20:00'])
   // planning view drops the countdown column
   await expect(page.getByText(/za \d+ (min|h)/)).toHaveCount(0)
@@ -25,7 +25,7 @@ test('Sunday ordo: every service that day, chronological, no countdowns', async 
   // "hned" restores the reachable-now ranking — no phantom rows from the ordo view
   await page.getByRole('button', { name: 'hned' }).click()
   await expect(page.getByText('za 29 min')).toBeVisible()
-  await expect(page.locator('ol li a > p:first-child').first()).toHaveText('09:30')
+  await expect(page.locator('ol li .group > p:first-child').first()).toHaveText('09:30')
   await shot(page, 'day-back-to-hned', true)
 })
 

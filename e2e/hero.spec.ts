@@ -36,6 +36,13 @@ test('hero list: nearest services, soonest first', async ({ page }) => {
   await expect(page.getByText('řeckokatolická', { exact: true })).toBeVisible()
   await expect(page.getByRole('img', { name: 'bezbariérový přístup' }).first()).toBeVisible()
 
+  // in-row verification links: mapa on every row, farnost web where the registry has one
+  await expect(page.getByRole('link', { name: 'mapa' }).first()).toHaveAttribute('href', /mapy\.cz/)
+  await expect(page.getByRole('link', { name: 'web' }).first()).toHaveAttribute(
+    'href',
+    'https://www.farnostsalvator.cz',
+  )
+
   // note parser: Havel's 10:30 "kromě července a srpna" must not run on 6 July…
   await expect(page.locator('ol').getByText('10:30')).toHaveCount(0)
   // …Ludmila's unverifiable "dle ohlášení" stays, set as a warning rubric
