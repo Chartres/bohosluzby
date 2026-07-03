@@ -107,7 +107,7 @@ describe('Marie finds the nearest mass', () => {
     const names = screen.getAllByText(/kostel/).map((el) => el.textContent)
     expect(names[0]).toContain('Salvátora')
     // fake clock ticks with real time → "za 1 h" can slip to "za 59 min" on slow CI
-    expect(screen.getByText(/za (1 h|59 min)/)).toBeInTheDocument()
+    expect(screen.getByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
     expect(screen.getAllByText(/dnes/).length).toBeGreaterThan(0)
     // language chip only for the non-Czech service, normalized to Czech lowercase
     expect(screen.getByText('latinsky')).toBeInTheDocument()
