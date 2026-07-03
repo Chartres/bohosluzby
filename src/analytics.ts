@@ -12,6 +12,7 @@ const fw = createFlywheelClient({
 })
 
 export const track = fw.track
-/** Aha moment: the nearby-services list rendered from a real location. */
+/** Aha moment: opening a church detail from the hero list — "found a service". */
 export const conversion = fw.conversion
+export const feedback = fw.feedback
 export const logError = fw.logError

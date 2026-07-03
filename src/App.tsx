@@ -17,6 +17,7 @@ import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { ChurchDetail, Chip } from './ChurchDetail'
+import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
 
 const NEARBY_KM = 30
@@ -280,13 +281,6 @@ export default function App() {
     track('key_action', { action: 'filter', ...next })
   }
 
-  useEffect(() => {
-    if (origin?.source === 'geo' && rows && rows.length > 0 && !convertedRef.current) {
-      convertedRef.current = true
-      conversion({ results: rows.length })
-    }
-  }, [origin, rows])
-
   const loading = !dataError && !index ? true : Boolean(origin) && rows === null
 
   return (
@@ -380,7 +374,14 @@ export default function App() {
               <ServiceList
                 rows={rows}
                 showUntil={day === 'now' || day === 0}
-                onOpen={(id) => navigate(`/kostel/${id}/`)}
+                onOpen={(id) => {
+                  // the aha moment: a service was found worth looking at
+                  if (!convertedRef.current) {
+                    convertedRef.current = true
+                    conversion({ church: id })
+                  }
+                  navigate(`/kostel/${id}/`)
+                }}
               />
             ) : (
               <p className="mt-8 text-ink-faded">
@@ -410,14 +411,25 @@ export default function App() {
             offline — zobrazuji uložená data
           </p>
         )}
-        Data: rejstřík{' '}
-        <a
-          className="underline decoration-hairline underline-offset-2 hover:text-ink"
-          href="https://bohosluzby.cirkev.cz"
-        >
-          bohosluzby.cirkev.cz
-        </a>
-        {' · '}zdarma, bez reklam
+        <FeedbackCard />
+        <p className="mt-1">
+          Data: rejstřík{' '}
+          <a
+            className="underline decoration-hairline underline-offset-2 hover:text-ink"
+            href="https://bohosluzby.cirkev.cz"
+          >
+            bohosluzby.cirkev.cz
+          </a>
+          {' · '}zdarma, bez reklam{' · '}
+          <a
+            className="underline decoration-hairline underline-offset-2 hover:text-ink"
+            href="https://github.com/sponsors/Chartres"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Podpořit
+          </a>
+        </p>
       </footer>
     </div>
   )
