@@ -1,23 +1,9 @@
 // Persona-visual e2e: Marie opens a church from the list and reads its full
 // printed-ordo schedule; a friend opens her shared /kostel/<id>/ link directly.
-import { test, expect, type Page } from '@playwright/test'
-import { FIXED_NOW, PRAGUE, INDEX, SHARD_50_14 } from './fixtures'
+import { test, expect } from '@playwright/test'
+import { FIXED_NOW, PRAGUE, mockData, shot } from './fixtures'
 
 test.use({ geolocation: PRAGUE, permissions: ['geolocation'] })
-
-async function mockData(page: Page) {
-  await page.route('**/data/churches.json', (route) => route.fulfill({ json: INDEX }))
-  await page.route('**/data/services/*.json', async (route) => {
-    const cell = route.request().url().match(/services\/(.+)\.json/)?.[1]
-    if (cell === '50-14') await route.fulfill({ json: SHARD_50_14 })
-    else await route.fulfill({ status: 404, body: 'not found' })
-  })
-}
-
-const shot = (page: Page, name: string, fullPage = true) =>
-  page.screenshot({ path: `e2e/shots/${name}.png`, fullPage, animations: 'disabled' })
-
-const fontsReady = (page: Page) => page.evaluate(() => document.fonts.ready.then(() => undefined))
 
 test('detail from the list: weekly ordo, extras, parish, freshness', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
@@ -44,8 +30,7 @@ test('detail from the list: weekly ordo, extras, parish, freshness', async ({ pa
   await expect(page.getByRole('link', { name: 'mapa' })).toHaveAttribute('href', /mapy\.cz/)
   await expect(page.getByRole('link', { name: 'navigace' })).toHaveAttribute('href', /^geo:/)
 
-  await fontsReady(page)
-  await shot(page, 'detail')
+  await shot(page, 'detail', true)
 
   // back to the list
   await page.getByRole('button', { name: '‹ zpět na seznam' }).click()
@@ -60,8 +45,7 @@ test('detail at 375px (mobile)', async ({ page }) => {
   await page.goto('/kostel/1/')
   await expect(page.getByRole('heading', { name: 'kostel Nejsvětějšího Salvátora' })).toBeVisible()
   await expect(page.getByLabel('Farnost')).toContainText('Akademická farnost Praha')
-  await fontsReady(page)
-  await shot(page, 'detail-mobile-375')
+  await shot(page, 'detail-mobile-375', true)
 })
 
 test('unknown id from a stale share link', async ({ page }) => {
@@ -69,6 +53,5 @@ test('unknown id from a stale share link', async ({ page }) => {
   await mockData(page)
   await page.goto('/kostel/999/')
   await expect(page.getByText('Kostel nenalezen')).toBeVisible()
-  await fontsReady(page)
-  await shot(page, 'detail-not-found', false)
+  await shot(page, 'detail-not-found')
 })

@@ -3,35 +3,19 @@
 // (committed — the Standard says persona testing is visual; a human reviews
 // these before stage 2).
 import { test, expect, type Page } from '@playwright/test'
-import { FIXED_NOW, PRAGUE, REMOTE, INDEX, SHARD_50_14 } from './fixtures'
+import { FIXED_NOW, PRAGUE, REMOTE, mockData, shot } from './fixtures'
 
 test.use({ geolocation: PRAGUE, permissions: ['geolocation'] })
-
-async function mockData(page: Page, { delayMs = 0 } = {}) {
-  await page.route('**/data/churches.json', async (route) => {
-    if (delayMs) await new Promise((r) => setTimeout(r, delayMs))
-    await route.fulfill({ json: INDEX })
-  })
-  await page.route('**/data/services/*.json', async (route) => {
-    const cell = route.request().url().match(/services\/(.+)\.json/)?.[1]
-    if (cell === '50-14') await route.fulfill({ json: SHARD_50_14 })
-    else await route.fulfill({ status: 404, body: 'not found' })
-  })
-}
 
 async function fixTime(page: Page) {
   await page.clock.install({ time: FIXED_NOW })
 }
-
-const shot = (page: Page, name: string, fullPage = false) =>
-  page.screenshot({ path: `e2e/shots/${name}.png`, fullPage, animations: 'disabled' })
 
 test('loading state', async ({ page }) => {
   await fixTime(page)
   await mockData(page, { delayMs: 4000 })
   await page.goto('/')
   await expect(page.getByRole('status')).toContainText('Hledám bohoslužby poblíž')
-  await page.evaluate(() => document.fonts.ready.then(() => undefined))
   await shot(page, 'loading')
 })
 
@@ -48,7 +32,7 @@ test('hero list: nearest services, soonest first', async ({ page }) => {
 
   // day grouping rubric, language chip, greek-rite chip, barrier-free chip
   await expect(page.getByText('dnes').first()).toBeVisible()
-  await expect(page.getByText('latinsky', { exact: true })).toBeVisible()
+  await expect(page.locator('ol').getByText('latinsky', { exact: true })).toBeVisible()
   await expect(page.getByText('řeckokatolická', { exact: true })).toBeVisible()
   await expect(page.getByText('bezbariérový přístup').first()).toBeVisible()
 
@@ -58,7 +42,6 @@ test('hero list: nearest services, soonest first', async ({ page }) => {
   )
   expect(accent).toBe('#3d6b46') // green — getComputedStyle resolves the var chain
 
-  await page.evaluate(() => document.fonts.ready.then(() => undefined))
   await shot(page, 'list')
   await shot(page, 'hero-desktop', true)
 })
@@ -69,7 +52,6 @@ test('hero at 375px (mobile)', async ({ page }) => {
   await mockData(page)
   await page.goto('/')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
-  await page.evaluate(() => document.fonts.ready.then(() => undefined))
   await shot(page, 'hero-mobile-375', true)
 })
 
@@ -80,8 +62,7 @@ test.describe('without geolocation permission', () => {
     await mockData(page)
     await page.goto('/')
     await expect(page.getByText('Bez přístupu k poloze')).toBeVisible()
-    await page.evaluate(() => document.fonts.ready.then(() => undefined))
-    await shot(page, 'no-permission')
+      await shot(page, 'no-permission')
 
     // picking a city recovers the journey
     await page.getByLabel('Zvolte obec').fill('Praha 1')
@@ -98,7 +79,6 @@ test.describe('empty area', () => {
     await page.goto('/')
     await expect(page.getByText('V okolí nic nenacházím')).toBeVisible()
     await expect(page.getByLabel('Zvolte obec')).toBeVisible()
-    await page.evaluate(() => document.fonts.ready.then(() => undefined))
-    await shot(page, 'empty-area')
+      await shot(page, 'empty-area')
   })
 })

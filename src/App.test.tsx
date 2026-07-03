@@ -38,7 +38,10 @@ const SHARD_50_14 = {
     p: '',
     pa: '',
     c: [],
-    s: [['5', '19:30', 'Latine', 0, 'mše sv.', 'tridentská']],
+    s: [
+      ['5', '19:00', 'česky', 0, 'růženec', ''],
+      ['5', '19:30', 'Latine', 0, 'mše sv.', 'tridentská'],
+    ],
   },
 }
 const SHARD_49_16 = {
@@ -192,6 +195,57 @@ describe('Marie finds the nearest mass', () => {
     window.history.pushState(null, '', '/kostel/nope/')
     render(<App />)
     expect(await screen.findByText('Kostel nenalezen')).toBeInTheDocument()
+  })
+
+  it('filters: "jen mše svaté" falls back to the church\'s next matching service', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    // Havel's earliest service today is the 19:00 rosary
+    expect(await screen.findByText(/růženec/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'jen mše svaté' }))
+    // …with the mass filter on, Havel shows its 19:30 mass instead of vanishing
+    expect(screen.queryByText(/růženec/)).not.toBeInTheDocument()
+    expect(screen.getByText('19:30')).toBeInTheDocument()
+    expect(screen.getByText(/sv\. Havla/)).toBeInTheDocument()
+  })
+
+  it('filters: language + barrier-free narrow the list; persisted in localStorage', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const { unmount } = render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    await user.selectOptions(screen.getByLabelText('Jazyk bohoslužby'), 'latinsky')
+    expect(screen.queryByText(/Salvátora/)).not.toBeInTheDocument()
+    expect(screen.getByText(/sv\. Havla/)).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('Jazyk bohoslužby'), '')
+    await user.click(screen.getByRole('button', { name: 'bezbariérové' }))
+    expect(screen.getByText(/Salvátora/)).toBeInTheDocument()
+    expect(screen.queryByText(/sv\. Havla/)).not.toBeInTheDocument()
+
+    // persisted: a fresh mount starts with the same filter
+    expect(JSON.parse(localStorage.getItem('bohosluzby:filters')!)).toMatchObject({
+      barrierFree: true,
+    })
+    unmount()
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    expect(screen.queryByText(/sv\. Havla/)).not.toBeInTheDocument()
+  })
+
+  it('filters: an over-narrow filter explains itself and offers a reset', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    await user.click(screen.getByRole('button', { name: 'řeckokatolické' })) // none nearby
+    expect(screen.getByText(/neodpovídá žádná bohoslužba/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Zrušit filtry' }))
+    expect(await screen.findByText(/Salvátora/)).toBeInTheDocument()
   })
 
   it('empty area: reports no services within 30 km and keeps the picker', async () => {

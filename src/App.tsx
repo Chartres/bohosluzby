@@ -2,7 +2,15 @@
 // ranked by which service you can still make (docs/DESIGN-BRIEF.md sets the look:
 // printed ordo — hairline rules, rubric labels, seasonal accent).
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { decodeIndex, decodeShard, type Church, type ChurchServices, type IndexRow } from './domain/data'
+import {
+  decodeIndex,
+  decodeShard,
+  type Church,
+  type ChurchServices,
+  type ExtraService,
+  type IndexRow,
+  type Service,
+} from './domain/data'
 import { haversineKm } from './domain/distance'
 import { rankUpcoming, type Upcoming } from './domain/ranking'
 import { currentLiturgicalDay, type LiturgicalDay } from './domain/liturgical'
@@ -28,6 +36,49 @@ const SEASON_VAR: Record<LiturgicalDay['color'], string> = {
 }
 
 type Origin = { lat: number; lng: number; source: 'geo' | 'city'; label?: string }
+
+// ---- Filters (persisted; rubric-styled toggles, not a Material chip bar) ----
+
+export interface Filters {
+  lang: string | null
+  greek: boolean
+  barrierFree: boolean
+  massOnly: boolean
+}
+
+const FILTERS_KEY = 'bohosluzby:filters'
+const NO_FILTERS: Filters = { lang: null, greek: false, barrierFree: false, massOnly: false }
+
+function loadFilters(): Filters {
+  try {
+    return { ...NO_FILTERS, ...JSON.parse(localStorage.getItem(FILTERS_KEY) ?? '{}') }
+  } catch {
+    return NO_FILTERS
+  }
+}
+
+// ponytail: registry types are free text; "mass" = anything named mše/liturgie.
+const isMass = (type: string) => /mše|liturgi/i.test(type)
+
+const serviceMatches =
+  (f: Filters) =>
+  (s: Service | ExtraService): boolean =>
+    (!f.lang || s.lang === f.lang) && (!f.greek || s.greek) && (!f.massOnly || isMass(s.type))
+
+/** Filter each church's services before ranking, so a church falls back to its
+ * next matching service instead of disappearing with its earliest one. */
+export function applyFilters(
+  byId: ReadonlyMap<string, ChurchServices>,
+  f: Filters,
+): ReadonlyMap<string, ChurchServices> {
+  if (f === NO_FILTERS || (!f.lang && !f.greek && !f.massOnly)) return byId
+  const pred = serviceMatches(f)
+  const out = new Map<string, ChurchServices>()
+  for (const [id, svc] of byId) {
+    out.set(id, { ...svc, regular: svc.regular.filter(pred), extra: svc.extra.filter(pred) })
+  }
+  return out
+}
 
 // Minimal history routing (GH Pages serves 404.html = the app for deep links).
 type Route = { view: 'home' } | { view: 'church'; id: string }
@@ -58,7 +109,8 @@ export default function App() {
   const [dataError, setDataError] = useState(false)
   const [geoDenied, setGeoDenied] = useState(false)
   const [origin, setOrigin] = useState<Origin | null>(null)
-  const [rows, setRows] = useState<Upcoming[] | null>(null)
+  const [data, setData] = useState<{ nearby: Church[]; byId: Map<string, ChurchServices> } | null>(null)
+  const [filters, setFilters] = useState<Filters>(loadFilters)
   const season = useMemo(() => currentLiturgicalDay(), [])
   const convertedRef = useRef(false)
   const { route, navigate } = useRoute()
@@ -93,7 +145,7 @@ export default function App() {
   useEffect(() => {
     if (!index || !origin) return
     let cancelled = false
-    setRows(null)
+    setData(null)
     const nearby = index
       .map((c) => ({ c, d: haversineKm(origin.lat, origin.lng, c.lat, c.lng) }))
       .filter(({ d }) => d <= NEARBY_KM)
@@ -112,12 +164,7 @@ export default function App() {
         if (cancelled) return
         const byId = new Map<string, ChurchServices>()
         for (const shard of shards) for (const [id, s] of decodeShard(shard)) byId.set(id, s)
-        const ranked = rankUpcoming(new Date(), origin, nearby, byId)
-        setRows(ranked)
-        if (origin.source === 'geo' && ranked.length > 0 && !convertedRef.current) {
-          convertedRef.current = true
-          conversion({ results: ranked.length })
-        }
+        setData({ nearby, byId })
       })
       .catch((err) => {
         logError(err, { where: 'load-shards' })
@@ -127,6 +174,42 @@ export default function App() {
       cancelled = true
     }
   }, [index, origin])
+
+  const rows: Upcoming[] | null = useMemo(() => {
+    if (!data || !origin) return null
+    const churches = filters.barrierFree ? data.nearby.filter((c) => c.barrierFree) : data.nearby
+    return rankUpcoming(new Date(), origin, churches, applyFilters(data.byId, filters))
+  }, [data, origin, filters])
+
+  /** Languages on offer nearby (unfiltered) — the options for the lang filter. */
+  const langs = useMemo(() => {
+    if (!data) return []
+    const set = new Set<string>()
+    for (const c of data.nearby) {
+      const svc = data.byId.get(c.id)
+      if (svc) for (const s of [...svc.regular, ...svc.extra]) set.add(s.lang)
+    }
+    return [...set].sort((a, b) => (a === 'česky' ? -1 : b === 'česky' ? 1 : a.localeCompare(b, 'cs')))
+  }, [data])
+
+  const anyFilter = Boolean(filters.lang) || filters.greek || filters.barrierFree || filters.massOnly
+
+  const updateFilters = (next: Filters) => {
+    setFilters(next)
+    try {
+      localStorage.setItem(FILTERS_KEY, JSON.stringify(next))
+    } catch {
+      // private mode — filters just won't persist
+    }
+    track('key_action', { action: 'filter', ...next })
+  }
+
+  useEffect(() => {
+    if (origin?.source === 'geo' && rows && rows.length > 0 && !convertedRef.current) {
+      convertedRef.current = true
+      conversion({ results: rows.length })
+    }
+  }, [origin, rows])
 
   const loading = !dataError && !index ? true : Boolean(origin) && rows === null
 
@@ -178,7 +261,7 @@ export default function App() {
           </section>
         )}
 
-        {!dataError && !loading && origin && rows && rows.length === 0 && index && (
+        {!dataError && !loading && origin && rows && rows.length === 0 && !anyFilter && index && (
           <section className="mt-10">
             <h2 className="font-display text-xl font-semibold">V okolí nic nenacházím</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
@@ -189,7 +272,7 @@ export default function App() {
           </section>
         )}
 
-        {!dataError && !loading && origin && rows && rows.length > 0 && (
+        {!dataError && !loading && origin && rows && (rows.length > 0 || anyFilter) && (
           <section aria-label="Nejbližší bohoslužby">
             <div className="mt-5 flex items-baseline justify-between gap-3">
               <h2 className="rubric">Nejbližší bohoslužby</h2>
@@ -201,7 +284,7 @@ export default function App() {
                   className="underline decoration-hairline underline-offset-2 hover:text-ink"
                   onClick={() => {
                     setOrigin(null)
-                    setRows(null)
+                    setData(null)
                     setGeoDenied(true) // reopens the picker
                   }}
                 >
@@ -209,7 +292,21 @@ export default function App() {
                 </button>
               </p>
             </div>
-            <ServiceList rows={rows} onOpen={(id) => navigate(`/kostel/${id}/`)} />
+            <FilterBar filters={filters} langs={langs} onChange={updateFilters} />
+            {rows.length > 0 ? (
+              <ServiceList rows={rows} onOpen={(id) => navigate(`/kostel/${id}/`)} />
+            ) : (
+              <p className="mt-8 text-ink-faded">
+                Zvoleným filtrům neodpovídá žádná bohoslužba v okolí.{' '}
+                <button
+                  type="button"
+                  className="underline decoration-hairline underline-offset-2 hover:text-ink"
+                  onClick={() => updateFilters({ ...NO_FILTERS })}
+                >
+                  Zrušit filtry
+                </button>
+              </p>
+            )}
           </section>
         )}
           </>
@@ -276,6 +373,78 @@ function ServiceList({ rows, onOpen }: { rows: Upcoming[]; onOpen: (id: string) 
         )
       })}
     </ol>
+  )
+}
+
+// Typographic filter line — set like a rubric annotation under the list header,
+// not a Material chip bar. Hit areas stay ≥44px via padding + negative margin.
+function FilterBar({
+  filters,
+  langs,
+  onChange,
+}: {
+  filters: Filters
+  langs: string[]
+  onChange: (f: Filters) => void
+}) {
+  const toggleCls = (active: boolean) =>
+    `-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
+      active ? 'underline decoration-2 underline-offset-4' : 'text-ink-faded hover:text-ink'
+    }`
+  const toggleStyle = (active: boolean) =>
+    active ? { color: 'var(--season)', textDecorationColor: 'var(--season)' } : undefined
+  return (
+    <div
+      role="group"
+      aria-label="Filtry"
+      className="mt-3 -ml-1 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-hairline pb-2"
+    >
+      <button
+        type="button"
+        aria-pressed={filters.massOnly}
+        className={toggleCls(filters.massOnly)}
+        style={toggleStyle(filters.massOnly)}
+        onClick={() => onChange({ ...filters, massOnly: !filters.massOnly })}
+      >
+        jen mše svaté
+      </button>
+      <button
+        type="button"
+        aria-pressed={filters.barrierFree}
+        className={toggleCls(filters.barrierFree)}
+        style={toggleStyle(filters.barrierFree)}
+        onClick={() => onChange({ ...filters, barrierFree: !filters.barrierFree })}
+      >
+        bezbariérové
+      </button>
+      <button
+        type="button"
+        aria-pressed={filters.greek}
+        className={toggleCls(filters.greek)}
+        style={toggleStyle(filters.greek)}
+        onClick={() => onChange({ ...filters, greek: !filters.greek })}
+      >
+        řeckokatolické
+      </button>
+      {langs.length > 1 && (
+        <select
+          aria-label="Jazyk bohoslužby"
+          value={filters.lang ?? ''}
+          onChange={(e) => onChange({ ...filters, lang: e.target.value || null })}
+          className={`-my-2 max-w-40 cursor-pointer border-0 bg-transparent py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
+            filters.lang ? '' : 'text-ink-faded'
+          }`}
+          style={filters.lang ? { color: 'var(--season)' } : undefined}
+        >
+          <option value="">jazyk: všechny</option>
+          {langs.map((l) => (
+            <option key={l} value={l}>
+              {l}
+            </option>
+          ))}
+        </select>
+      )}
+    </div>
   )
 }
 

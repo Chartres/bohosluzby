@@ -1,6 +1,25 @@
-// Small deterministic dataset for e2e: Prague-centre churches, fixed clock
-// Monday 6 Jul 2026 09:00 Prague (07:00 UTC) → ordinary time, green accent.
+// Small deterministic dataset + shared helpers for e2e: Prague-centre churches,
+// fixed clock Monday 6 Jul 2026 09:00 Prague (07:00 UTC) → ordinary time, green.
+import type { Page } from '@playwright/test'
 import type { IndexRow } from '../src/domain/data'
+
+export async function mockData(page: Page, { delayMs = 0 } = {}) {
+  await page.route('**/data/churches.json', async (route) => {
+    if (delayMs) await new Promise((r) => setTimeout(r, delayMs))
+    await route.fulfill({ json: INDEX })
+  })
+  await page.route('**/data/services/*.json', async (route) => {
+    const cell = route.request().url().match(/services\/(.+)\.json/)?.[1]
+    if (cell === '50-14') await route.fulfill({ json: SHARD_50_14 })
+    else await route.fulfill({ status: 404, body: 'not found' })
+  })
+}
+
+/** Screenshot into the committed shots dir (visual persona review). */
+export const shot = async (page: Page, name: string, fullPage = false) => {
+  await page.evaluate(() => document.fonts.ready.then(() => undefined))
+  await page.screenshot({ path: `e2e/shots/${name}.png`, fullPage, animations: 'disabled' })
+}
 
 export const FIXED_NOW = new Date('2026-07-06T07:00:00Z')
 export const PRAGUE = { latitude: 50.0875, longitude: 14.4213 }
