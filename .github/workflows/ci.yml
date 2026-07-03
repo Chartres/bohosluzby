@@ -39,9 +39,7 @@ jobs:
 
   deploy:
     needs: test
-    # Stage 2 gate: flip to true after Pavol's visual review (then enable
-    # GitHub Pages on the repo + DNS CNAME bohosluzby.dravec.org).
-    if: false
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
