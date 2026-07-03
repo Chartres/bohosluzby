@@ -170,8 +170,11 @@ function transform() {
     const lat = +(fromGrid?.[0] ?? parseFloat(inst.latitude) ?? 0).toFixed(5)
     const lng = +(fromGrid?.[1] ?? parseFloat(inst.longitude) ?? 0).toFixed(5)
     if (!lat || !lng) continue // unplaceable → useless for "near me"
-    const regular = (d.regular ?? []).filter((r) => r.cas)
-    const extra = (d.extra ?? []).filter((r) => r.cas && r.datum)
+    // only rows an occurrence can be computed from ("right now" is the product);
+    // day-less/time-less entries ("viz web farnosti") are dropped
+    const timeOk = (r) => /^\d{1,2}:\d{2}/.test(r.cas ?? '')
+    const regular = (d.regular ?? []).filter((r) => timeOk(r) && /^[1-7]+$/.test(r.periodic_days ?? ''))
+    const extra = (d.extra ?? []).filter((r) => timeOk(r) && /^\d{4}-\d{2}-\d{2}/.test(r.datum ?? ''))
     if (regular.length + extra.length === 0) continue // no services → not shown
     withServices++
     serviceCount += regular.length + extra.length
