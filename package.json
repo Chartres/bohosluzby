@@ -6,7 +6,7 @@
   "description": "Mše svatá poblíž, právě teď — nejbližší katolické bohoslužby v ČR.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/postbuild.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

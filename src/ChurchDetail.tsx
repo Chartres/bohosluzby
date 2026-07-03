@@ -2,10 +2,17 @@
 // day, times aligned), one-off services in their own rubric section, parish +
 // contacts, and an honest data-freshness line. docs/DESIGN-BRIEF.md governs.
 import { useEffect, useState } from 'react'
-import { decodeShard, type Church, type ChurchServices, type Service } from './domain/data'
+import {
+  decodeShard,
+  type Church,
+  type ChurchServices,
+  type ExtraService,
+  type Service,
+} from './domain/data'
 import { pragueToday } from './domain/occurrences'
 import { fmtDateCz } from './domain/format'
-import { logError } from './analytics'
+import { buildICS } from './domain/ics'
+import { logError, track } from './analytics'
 
 // Liturgical week: Sunday first, like a printed ordo.
 const DAY_ORDER = [7, 1, 2, 3, 4, 5, 6] as const
@@ -39,6 +46,44 @@ function contactHref(type: string, value: string): string | null {
 const isoToday = (): string => {
   const { y, m, d } = pragueToday(new Date())
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
+/** "Přidat do kalendáře": download a VEVENT (weekly RRULE for regular services). */
+function downloadICS(church: Church, service: Service | ExtraService) {
+  const ics = buildICS(church, service, new Date())
+  if (!ics) return
+  track('key_action', { action: 'ics', church: church.id })
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `bohosluzby-${church.id}-${service.time.replace(':', '')}.ics`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+/** Share the church's /kostel/<id>/ URL — Web Share API, clipboard fallback. */
+function ShareLink({ church }: { church: Church }) {
+  const [copied, setCopied] = useState(false)
+  const share = async () => {
+    const url = `${location.origin}/kostel/${church.id}/`
+    track('key_action', { action: 'share', church: church.id })
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: church.name, url })
+        return
+      }
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    } catch {
+      // user cancelled the share sheet — nothing to do
+    }
+  }
+  return (
+    <button type="button" onClick={share} className={linkCls} aria-live="polite">
+      {copied ? 'odkaz zkopírován' : 'sdílet'}
+    </button>
+  )
 }
 
 export function ChurchDetail({ church, onBack }: { church: Church; onBack: () => void }) {
@@ -98,6 +143,8 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
         <a className={linkCls} href={`geo:${church.lat},${church.lng}`}>
           navigace
         </a>
+        {' · '}
+        <ShareLink church={church} />
         {church.barrierFree && ' · bezbariérový přístup'}
       </p>
 
@@ -132,7 +179,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                   <ul>
                     {rows.map((s, i) => (
                       <li key={i}>
-                        <ServiceRow s={s} />
+                        <ServiceRow s={s} church={church} />
                       </li>
                     ))}
                   </ul>
@@ -153,10 +200,17 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                     <p className="font-display w-14 shrink-0 text-base font-semibold tabular-nums">
                       {x.time}
                     </p>
-                    <p className="min-w-0 text-sm">
+                    <p className="min-w-0 flex-1 text-sm">
                       {x.type || 'bohoslužba'}
                       {x.note && <span className="text-ink-faded"> — {x.note}</span>}
                     </p>
+                    <button
+                      type="button"
+                      className={`shrink-0 text-xs text-ink-faded ${linkCls}`}
+                      onClick={() => downloadICS(church, x)}
+                    >
+                      do kalendáře
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -196,7 +250,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
   )
 }
 
-function ServiceRow({ s }: { s: Service }) {
+function ServiceRow({ s, church }: { s: Service; church: Church }) {
   return (
     <div className="flex items-baseline gap-4 border-b border-hairline py-2">
       <p className="font-display w-14 shrink-0 text-xl font-semibold tabular-nums">{s.time}</p>
@@ -210,6 +264,13 @@ function ServiceRow({ s }: { s: Service }) {
           {s.greek && <Chip label="řeckokatolická" />}
         </p>
       </div>
+      <button
+        type="button"
+        className={`shrink-0 text-xs text-ink-faded ${linkCls}`}
+        onClick={() => downloadICS(church, s)}
+      >
+        do kalendáře
+      </button>
     </div>
   )
 }

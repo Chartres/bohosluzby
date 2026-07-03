@@ -197,6 +197,37 @@ describe('Marie finds the nearest mass', () => {
     expect(await screen.findByText('Kostel nenalezen')).toBeInTheDocument()
   })
 
+  it('detail: "do kalendáře" downloads a weekly VEVENT; "sdílet" copies the link', async () => {
+    stubGeolocation('denied')
+    window.history.pushState(null, '', '/kostel/1/')
+    // jsdom ships a real navigator.clipboard; spy on it rather than replace it
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })
+    const createObjectURL = vi.fn((_blob: Blob) => 'blob:ics')
+    const revokeObjectURL = vi.fn()
+    Object.assign(URL, { createObjectURL, revokeObjectURL })
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+
+    try {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      render(<App />)
+      const icsButtons = await screen.findAllByRole('button', { name: 'do kalendáře' })
+      await user.click(icsButtons[0])
+      expect(click).toHaveBeenCalled()
+      const blob = createObjectURL.mock.calls[0]![0]
+      const ics = await blob.text()
+      expect(ics).toContain('RRULE:FREQ=WEEKLY')
+      expect(ics).toContain('DTSTART;TZID=Europe/Prague:')
+
+      await user.click(screen.getByRole('button', { name: 'sdílet' }))
+      expect(writeText).toHaveBeenCalledWith('http://localhost/kostel/1/')
+      expect(await screen.findByText('odkaz zkopírován')).toBeInTheDocument()
+    } finally {
+      click.mockRestore()
+      writeText.mockRestore()
+    }
+  })
+
   it('filters: "jen mše svaté" falls back to the church\'s next matching service', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })

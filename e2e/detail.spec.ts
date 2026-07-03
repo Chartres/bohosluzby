@@ -48,6 +48,31 @@ test('detail at 375px (mobile)', async ({ page }) => {
   await shot(page, 'detail-mobile-375', true)
 })
 
+test.describe('ICS + share', () => {
+  test.use({ permissions: ['geolocation', 'clipboard-write', 'clipboard-read'] })
+  test('"do kalendáře" downloads a weekly VEVENT; "sdílet" copies the URL', async ({ page }) => {
+    // force the clipboard fallback even where headless Chromium has navigator.share
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })
+    })
+    await page.clock.install({ time: FIXED_NOW })
+    await mockData(page)
+    await page.goto('/kostel/4/')
+    await expect(page.getByLabel('Pořad bohoslužeb')).toBeVisible()
+
+    const downloadP = page.waitForEvent('download')
+    await page.getByRole('button', { name: 'do kalendáře' }).first().click()
+    const download = await downloadP
+    expect(download.suggestedFilename()).toMatch(/^bohosluzby-4-.*\.ics$/)
+
+    await page.getByRole('button', { name: 'sdílet' }).click()
+    await expect(page.getByText('odkaz zkopírován')).toBeVisible()
+    const copied = await page.evaluate(() => navigator.clipboard.readText())
+    expect(copied).toBe('http://localhost:4173/kostel/4/')
+    await shot(page, 'detail-share-copied')
+  })
+})
+
 test('unknown id from a stale share link', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
