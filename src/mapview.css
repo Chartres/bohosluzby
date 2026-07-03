@@ -1,0 +1,129 @@
+/* Map plate — loaded with the lazy map chunk only. OSM tiles are desaturated
+   into the warm paper palette; markers, clusters, popovers and controls follow
+   docs/DESIGN-BRIEF.md: season accent, 2px corners, hairlines, no shadows. */
+
+.ordo-map {
+  height: min(62dvh, 34rem);
+  border-radius: 2px;
+}
+
+.ordo-map.leaflet-container {
+  background: var(--color-paper);
+  font-family: var(--font-sans);
+}
+
+.ordo-map .leaflet-tile {
+  /* desaturate OSM into the warm paper palette (tuned against real tiles) */
+  filter: grayscale(1) sepia(0.26) brightness(1.05) contrast(0.88);
+}
+
+/* markers: seasonal squares, not the default blue pin */
+.map-marker {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+}
+.map-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--season);
+  border: 1.5px solid var(--color-paper);
+}
+.map-marker:hover .map-dot {
+  outline: 1px solid var(--season);
+  outline-offset: 1px;
+}
+
+.map-cluster {
+  display: grid;
+  place-items: center;
+  background: var(--season);
+  color: var(--color-paper);
+  border: 1.5px solid var(--color-paper);
+  border-radius: 2px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* "you are here": a quiet surveyor's ring in ink */
+.map-origin-wrap {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+}
+.map-origin {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-ink);
+  border-radius: 50%;
+}
+
+/* popover: a small typographic note, not a white card bubble */
+.ordo-map .leaflet-popup-content-wrapper {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border: 1px solid var(--color-hairline);
+  border-radius: 2px;
+  box-shadow: none;
+}
+.ordo-map .leaflet-popup-tip {
+  background: var(--color-paper);
+  border: 1px solid var(--color-hairline);
+  box-shadow: none;
+}
+.ordo-map .leaflet-popup-content {
+  margin: 10px 12px;
+  line-height: 1.35;
+}
+.map-pop-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+}
+.map-pop-line {
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--color-ink-faded);
+}
+.map-pop-open {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 0;
+  color: var(--color-rubric);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-hairline);
+}
+
+/* zoom + attribution restyled to paper */
+.ordo-map .leaflet-bar {
+  border: 1px solid var(--color-hairline);
+  border-radius: 2px;
+  box-shadow: none;
+}
+.ordo-map .leaflet-bar a {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border-bottom-color: var(--color-hairline);
+}
+.ordo-map .leaflet-bar a:hover {
+  background: var(--color-paper);
+  color: var(--color-rubric);
+}
+.ordo-map .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--color-ink-faded);
+}
+.ordo-map .leaflet-control-attribution a {
+  color: var(--color-ink-faded);
+}

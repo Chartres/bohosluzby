@@ -1,29 +1,31 @@
 // The one stage-1 journey: geolocate (or pick a city) → "Nejbližší bohoslužby",
 // ranked by which service you can still make (docs/DESIGN-BRIEF.md sets the look:
 // printed ordo — hairline rules, rubric labels, seasonal accent).
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import {
   decodeIndex,
   decodeShard,
   type Church,
   type ChurchServices,
-  type ExtraService,
   type IndexRow,
-  type Service,
 } from './domain/data'
+import { applyFilters, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { ordoForDay, rankUpcoming, type Upcoming } from './domain/ranking'
 import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
-import { BANDS, matchesCas, parseCas, type Band } from './domain/timeband'
+import { BANDS, parseCas, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
 
 const NEARBY_KM = 30
 const NEARBY_CAP = 120
+
+// Leaflet + tiles code-split behind the "mapa" toggle — the list path pays nothing.
+const MapView = lazy(() => import('./MapView'))
 
 const SEASON_LABEL: Record<LiturgicalDay['season'], string> = {
   ordinary: 'liturgické mezidobí',
@@ -70,17 +72,10 @@ const onlineStore = {
 }
 
 // ---- Filters (persisted; rubric-styled toggles, not a Material chip bar) ----
-
-export interface Filters {
-  lang: string | null
-  greek: boolean
-  barrierFree: boolean
-  massOnly: boolean
-}
+// Predicates live in domain/filters.ts, shared with the lazily-loaded map.
 
 const FILTERS_KEY = 'bohosluzby:filters'
 const CAS_KEY = 'bohosluzby:cas'
-const NO_FILTERS: Filters = { lang: null, greek: false, barrierFree: false, massOnly: false }
 
 function loadFilters(): Filters {
   try {
@@ -117,33 +112,6 @@ export function dayOptions(now: Date): { key: DayChoice; label: string; lit: Lit
   for (let off = 2; off <= 6; off++) {
     const dow = new Date(base + off * 86_400_000).getUTCDay()
     out.push({ key: off, label: dow === 0 ? 'neděle' : WEEKDAY_SHORT[dow], lit: litForChoice(now, off) })
-  }
-  return out
-}
-
-// ponytail: registry types are free text; "mass" = anything named mše/liturgie.
-const isMass = (type: string) => /mše|liturgi/i.test(type)
-
-const serviceMatches =
-  (f: Filters, cas: string | null = null) =>
-  (s: Service | ExtraService): boolean =>
-    (!f.lang || s.lang === f.lang) &&
-    (!f.greek || s.greek) &&
-    (!f.massOnly || isMass(s.type)) &&
-    (!cas || matchesCas(cas, s.time))
-
-/** Filter each church's services before ranking, so a church falls back to its
- * next matching service instead of disappearing with its earliest one. */
-export function applyFilters(
-  byId: ReadonlyMap<string, ChurchServices>,
-  f: Filters,
-  cas: string | null = null,
-): ReadonlyMap<string, ChurchServices> {
-  if (!f.lang && !f.greek && !f.massOnly && !cas) return byId
-  const pred = serviceMatches(f, cas)
-  const out = new Map<string, ChurchServices>()
-  for (const [id, svc] of byId) {
-    out.set(id, { ...svc, regular: svc.regular.filter(pred), extra: svc.extra.filter(pred) })
   }
   return out
 }
@@ -236,6 +204,12 @@ export default function App() {
     navigate(qs ? `${path}?${qs}` : path, { replace: true })
   }
   const setDay = (d: DayChoice) => setParam('den', dayToParam(new Date(), d))
+  // seznam · mapa — the hero list's other face, bookmarkable as ?zobrazeni=mapa
+  const view: 'seznam' | 'mapa' = params.get('zobrazeni') === 'mapa' ? 'mapa' : 'seznam'
+  const setView = (v: 'seznam' | 'mapa') => {
+    setParam('zobrazeni', v === 'mapa' ? 'mapa' : null)
+    track('key_action', { action: 'view', view: v })
+  }
   const setCas = (c: string | null) => {
     setParam('cas', c)
     try {
@@ -432,6 +406,20 @@ export default function App() {
     setPicking(false)
     navigate(`/kostel/${id}/${search}`)
   }
+  // shared by the list rows and the map popovers — the aha moment fires once
+  const openChurch = (id: string) => {
+    if (!convertedRef.current) {
+      convertedRef.current = true
+      conversion({ church: id })
+    }
+    navigate(`/kostel/${id}/${search}`) // keep ?den/?cas — back restores the view
+  }
+
+  /** Map marker universe: the whole index (3 991 kostelů), church-level filter only. */
+  const mapChurches = useMemo(
+    () => (index ? (filters.barrierFree ? index.filter((c) => c.barrierFree) : index) : []),
+    [index, filters.barrierFree],
+  )
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 sm:px-8">
@@ -527,28 +515,45 @@ export default function App() {
                 )}
               </p>
             </div>
-            <DayPicker
-              day={day}
-              onChange={(d) => {
-                setDay(d)
-                track('key_action', { action: 'day', day: d })
-              }}
-            />
-            <FeastLine day={day} />
-            <FilterBar filters={filters} cas={cas} langs={langs} onChange={updateFilters} onCas={setCas} />
-            {rows.length > 0 ? (
-              <ServiceList
-                rows={rows}
-                showUntil={day === 'now' || day === 0}
-                onOpen={(id) => {
-                  // the aha moment: a service was found worth looking at
-                  if (!convertedRef.current) {
-                    convertedRef.current = true
-                    conversion({ church: id })
-                  }
-                  navigate(`/kostel/${id}/${search}`) // keep ?den — back restores the day
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+              <DayPicker
+                day={day}
+                onChange={(d) => {
+                  setDay(d)
+                  track('key_action', { action: 'day', day: d })
                 }}
               />
+              <ViewToggle view={view} onChange={setView} />
+            </div>
+            <FeastLine day={day} />
+            <FilterBar filters={filters} cas={cas} langs={langs} onChange={updateFilters} onCas={setCas} />
+            {view === 'mapa' ? (
+              online ? (
+                <Suspense
+                  fallback={
+                    <p className="mt-8 text-ink-faded" role="status">
+                      Načítám mapu…
+                    </p>
+                  }
+                >
+                  <MapView
+                    key={`${origin.lat},${origin.lng}`} // new origin → fresh map center
+                    origin={origin}
+                    churches={mapChurches}
+                    filters={filters}
+                    cas={cas}
+                    day={day}
+                    onOpen={openChurch}
+                  />
+                </Suspense>
+              ) : (
+                <p className="mt-8 text-ink-faded" role="status">
+                  Mapa potřebuje připojení — dlaždice se do zařízení neukládají. Seznam funguje
+                  i offline.
+                </p>
+              )
+            ) : rows.length > 0 ? (
+              <ServiceList rows={rows} showUntil={day === 'now' || day === 0} onOpen={openChurch} />
             ) : (
               <p className="mt-8 text-ink-faded">
                 {anyFilter
@@ -636,6 +641,45 @@ function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice)
           </button>
         )
       })}
+    </div>
+  )
+}
+
+// seznam · mapa — a typographic view switch set like the day rubrics.
+function ViewToggle({
+  view,
+  onChange,
+}: {
+  view: 'seznam' | 'mapa'
+  onChange: (v: 'seznam' | 'mapa') => void
+}) {
+  const cls = (active: boolean) =>
+    `-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
+      active
+        ? 'text-rubric underline decoration-rubric decoration-2 underline-offset-4'
+        : 'text-ink-faded hover:text-ink'
+    }`
+  return (
+    <div role="group" aria-label="Zobrazení" className="mt-3 flex items-baseline gap-x-1">
+      <button
+        type="button"
+        aria-pressed={view === 'seznam'}
+        className={cls(view === 'seznam')}
+        onClick={() => onChange('seznam')}
+      >
+        seznam
+      </button>
+      <span className="text-ink-faded" aria-hidden="true">
+        ·
+      </span>
+      <button
+        type="button"
+        aria-pressed={view === 'mapa'}
+        className={cls(view === 'mapa')}
+        onClick={() => onChange('mapa')}
+      >
+        mapa
+      </button>
     </div>
   )
 }
