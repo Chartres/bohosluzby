@@ -16,6 +16,7 @@ export function fmtUntil(now: Date, start: Date): string {
 }
 
 export function fmtDistance(km: number): string {
+  if (km < 0.1) return 'do 100 m'
   if (km < 0.95) return `${Math.round((km * 1000) / 100) * 100} m`
   return `${km.toFixed(1).replace('.', ',')} km`
 }

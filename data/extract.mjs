@@ -40,12 +40,21 @@ mkdirSync(`${OUT}/services`, { recursive: true })
 // --- rate limit + retry -----------------------------------------------------
 let lastRequest = 0
 const MIN_GAP_MS = 350 // <3 req/s
-
-async function fetchPolite(url, options = {}) {
-  for (let attempt = 0; attempt < 5; attempt++) {
+let gate = Promise.resolve()
+/** Serialized launch gate: at most one request *start* per MIN_GAP_MS, even with concurrent workers. */
+function throttle() {
+  const p = gate.then(async () => {
     const wait = lastRequest + MIN_GAP_MS - Date.now()
     if (wait > 0) await new Promise((r) => setTimeout(r, wait))
     lastRequest = Date.now()
+  })
+  gate = p.catch(() => {})
+  return p
+}
+
+async function fetchPolite(url, options = {}) {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await throttle()
     try {
       const res = await fetch(url, {
         ...options,
@@ -97,17 +106,22 @@ function collectIds() {
 }
 
 // --- phase 2: per-church detail ----------------------------------------------
+// A few concurrent workers hide server latency; the global MIN_GAP_MS between
+// request *starts* (in fetchPolite) still caps the launch rate at <3 req/s.
 async function details(ids) {
+  const queue = ids.filter((id) => !existsSync(`${CACHE}/detail/${id}.json`))
   let done = 0
-  for (const id of ids) {
-    const file = `${CACHE}/detail/${id}.json`
-    done++
-    if (existsSync(file)) continue
-    const text = await fetchPolite(`${BASE}detail?id=${id}`)
-    JSON.parse(text)
-    writeFileSync(file, text)
-    if (done % 200 === 0) process.stderr.write(`  detail ${done}/${ids.length}\n`)
+  const worker = async () => {
+    for (;;) {
+      const id = queue.shift()
+      if (id === undefined) return
+      const text = await fetchPolite(`${BASE}detail?id=${id}`)
+      JSON.parse(text)
+      writeFileSync(`${CACHE}/detail/${id}.json`, text)
+      if (++done % 200 === 0) process.stderr.write(`  detail ${done}/${queue.length + done}\n`)
+    }
   }
+  await Promise.all(Array.from({ length: 4 }, worker))
   process.stderr.write(`details: ${ids.length} churches cached\n`)
 }
 

@@ -23,6 +23,9 @@ describe('fmtDistance', () => {
   it('metres under a kilometre', () => {
     expect(fmtDistance(0.32)).toBe('300 m')
   })
+  it('floors at "do 100 m" (city-centroid origins)', () => {
+    expect(fmtDistance(0.004)).toBe('do 100 m')
+  })
   it('kilometres with a Czech decimal comma', () => {
     expect(fmtDistance(2.44)).toBe('2,4 km')
   })
