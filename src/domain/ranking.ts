@@ -6,7 +6,11 @@
 import { haversineKm } from './distance'
 import { nextOccurrences, pragueToday } from './occurrences'
 import { parseNote } from './notes'
+import { applyFilters, type Filters } from './filters'
 import type { Church, ChurchServices, Service, ExtraService } from './data'
+
+/** Day-picker choice: 'now' = soonest reachable; 0–6 = today + offset's full ordo. */
+export type DayChoice = 'now' | number
 
 /** Note-aware occurrence check: skip dates the note provably excludes. */
 const runsOn = (service: Service | ExtraService, start: Date): boolean => {
@@ -95,4 +99,28 @@ export function ordoForDay(
   }
   out.sort((a, b) => a.start.getTime() - b.start.getTime() || a.distanceKm - b.distanceKm)
   return out
+}
+
+/**
+ * The one context selector shared by the seznam and the mapa: church-level
+ * barrier-free filter + service-level filters (rite/lang/type/kdy) + the day
+ * choice, in one place — what the list shows is exactly what the map
+ * highlights. The map passes { limit: Infinity } (it styles every visible
+ * church); the list keeps the default cap.
+ */
+export function selectUpcoming(
+  now: Date,
+  origin: { lat: number; lng: number },
+  churches: Church[],
+  byId: ReadonlyMap<string, ChurchServices>,
+  filters: Filters,
+  cas: string | null,
+  day: DayChoice,
+  opts: RankOptions = {},
+): Upcoming[] {
+  const cs = filters.barrierFree ? churches.filter((c) => c.barrierFree) : churches
+  const filtered = applyFilters(byId, filters, cas)
+  return day === 'now'
+    ? rankUpcoming(now, origin, cs, filtered, opts)
+    : ordoForDay(now, day, origin, cs, filtered)
 }

@@ -9,9 +9,9 @@ import {
   type ChurchServices,
   type IndexRow,
 } from './domain/data'
-import { applyFilters, NO_FILTERS, type Filters } from './domain/filters'
+import { NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
-import { ordoForDay, rankUpcoming, type Upcoming } from './domain/ranking'
+import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
@@ -87,7 +87,7 @@ function loadFilters(): Filters {
 
 // ---- Day picker: 'now' = soonest you can make; 0–6 = the day's full ordo ----
 
-export type DayChoice = 'now' | number
+export type { DayChoice }
 
 const WEEKDAY_SHORT = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'] // Date.getUTCDay order
 
@@ -344,13 +344,10 @@ export default function App() {
     }
   }, [index, origin])
 
+  // one shared selector with the map — the seznam and the mapa never disagree
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
-    const churches = filters.barrierFree ? data.nearby.filter((c) => c.barrierFree) : data.nearby
-    const byId = applyFilters(data.byId, filters, cas)
-    return day === 'now'
-      ? rankUpcoming(new Date(), origin, churches, byId)
-      : ordoForDay(new Date(), day, origin, churches, byId)
+    return selectUpcoming(new Date(), origin, data.nearby, data.byId, filters, cas, day)
   }, [data, origin, filters, day, cas])
 
   /** Languages on offer nearby (unfiltered) — the options for the lang filter. */
@@ -414,12 +411,6 @@ export default function App() {
     }
     navigate(`/kostel/${id}/${search}`) // keep ?den/?cas — back restores the view
   }
-
-  /** Map marker universe: the whole index (3 991 kostelů), church-level filter only. */
-  const mapChurches = useMemo(
-    () => (index ? (filters.barrierFree ? index.filter((c) => c.barrierFree) : index) : []),
-    [index, filters.barrierFree],
-  )
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 sm:px-8">
@@ -539,7 +530,7 @@ export default function App() {
                   <MapView
                     key={`${origin.lat},${origin.lng}`} // new origin → fresh map center
                     origin={origin}
-                    churches={mapChurches}
+                    churches={index ?? []}
                     filters={filters}
                     cas={cas}
                     day={day}

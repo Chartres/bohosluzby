@@ -1,6 +1,8 @@
 // Persona journey: a visitor toggles the hero list to "mapa" — muted OSM
-// tiles, seasonal markers, a typographic popover with the next mass time.
-// Tiles are stubbed to a paper-colored pixel so shots are deterministic.
+// tiles, Booking-style markers where the time IS the marker: season-accent
+// time chips for churches matching the current context, tiny faded dots for
+// the rest, and a typographic popover. Tiles are stubbed to a paper-colored
+// pixel so shots are deterministic.
 import { test, expect } from '@playwright/test'
 import { FIXED_NOW, PRAGUE, mockData, shot } from './fixtures'
 
@@ -19,7 +21,7 @@ test.beforeEach(async ({ page }) => {
   )
 })
 
-test('seznam · mapa toggle: markers, popover with next mass, otevřít → detail', async ({ page }) => {
+test('seznam · mapa toggle: time chips as markers, popover with next mass, otevřít → detail', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
 
@@ -28,12 +30,14 @@ test('seznam · mapa toggle: markers, popover with next mass, otevřít → deta
   await expect(page.getByTestId('mapa')).toBeVisible()
   // OSM attribution is non-negotiable
   await expect(page.getByText('OpenStreetMap')).toBeVisible()
-  // markers in the seasonal accent; the tight centre pair clusters
-  await expect(page.locator('.map-dot').first()).toBeVisible()
+  // matching churches carry their next time as the marker; the centre pair clusters
+  await expect(page.locator('.map-chip').first()).toBeVisible()
   await shot(page, 'map-view')
 
-  // the cathedral sits alone west of the centre → a single dot with a popover
-  await page.locator('.map-marker[title="katedrála sv. Víta, Václava a Vojtěcha"]').click()
+  // the cathedral sits alone west of the centre → its chip is today's 09:30 mass
+  const cathedral = page.locator('.map-chip-wrap[title="katedrála sv. Víta, Václava a Vojtěcha"]')
+  await expect(cathedral.locator('.map-chip')).toHaveText('9:30')
+  await cathedral.click()
   await expect(page.locator('.map-pop-name')).toHaveText('katedrála sv. Víta, Václava a Vojtěcha')
   await expect(page.locator('.map-pop-line')).toHaveText(/dnes v 09:30/)
   await shot(page, 'map-popover')
@@ -47,14 +51,19 @@ test('seznam · mapa toggle: markers, popover with next mass, otevřít → deta
   await expect(page.getByTestId('mapa')).toBeVisible()
 })
 
-test('map respects filters: večer drops the cathedral (no evening service ever)', async ({ page }) => {
+test('map matches the seznam: večer fades the cathedral to a dot, keeps the evening chips', async ({ page }) => {
   await page.goto('/?zobrazeni=mapa')
-  await expect(page.locator('.map-marker[title="katedrála sv. Víta, Václava a Vojtěcha"]')).toBeVisible()
+  await expect(
+    page.locator('.map-chip-wrap[title="katedrála sv. Víta, Václava a Vojtěcha"]'),
+  ).toBeVisible()
 
   await page.getByRole('button', { name: 'večer' }).click()
-  await expect(page.locator('.map-marker[title="katedrála sv. Víta, Václava a Vojtěcha"]')).toHaveCount(0)
-  // the daily 17:00 liturgy remains on the map (dot or inside a cluster)
-  await expect(page.locator('.map-dot, .map-cluster')).not.toHaveCount(0)
+  // no evening service ever → not in the seznam → a faded dot, not a chip (still tappable)
+  const cathedral = page.locator('.map-marker[title="katedrála sv. Víta, Václava a Vojtěcha"]')
+  await expect(cathedral.locator('.map-dot--faded')).toBeVisible()
+  // the daily 17:00 liturgy and the 18:00 mass keep their accent chips
+  await expect(page.locator('.map-chip').first()).toBeVisible()
+  await shot(page, 'map-mixed')
 
   // back to the list — the toggle is a round trip, filters intact
   await page.getByRole('button', { name: 'seznam' }).click()
@@ -79,6 +88,14 @@ test('mapa at 375px: one-hand view, bookmarkable', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.goto('/?zobrazeni=mapa')
   await expect(page.getByTestId('mapa')).toBeVisible()
-  await expect(page.locator('.map-dot').first()).toBeVisible()
+  await expect(page.locator('.map-chip').first()).toBeVisible()
   await shot(page, 'map-mobile-375')
+})
+
+test('money shot at 375px: mixed chips and faded dots — matches vs everything else', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto('/?zobrazeni=mapa&cas=vecer')
+  await expect(page.locator('.map-chip').first()).toBeVisible()
+  await expect(page.locator('.map-dot--faded').first()).toBeVisible()
+  await shot(page, 'map-mixed-375')
 })

@@ -17,22 +17,48 @@
   filter: grayscale(1) sepia(0.26) brightness(1.05) contrast(0.88);
 }
 
-/* markers: seasonal squares, not the default blue pin */
+/* markers — the time IS the marker: a typographic chip for a church whose next
+   service matches the current context; a tiny faded dot for everything else
+   (still tappable via the 30px wrapper). */
+.map-chip-wrap {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+}
+.map-chip {
+  padding: 1px 5px 2px;
+  background: var(--season);
+  color: var(--color-paper);
+  border: 1.5px solid var(--color-paper);
+  border-radius: 2px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+.map-chip-wrap:hover .map-chip {
+  outline: 1px solid var(--season);
+  outline-offset: 1px;
+}
+
 .map-marker {
   display: grid;
   place-items: center;
   background: transparent;
   border: 0;
 }
-.map-dot {
-  width: 13px;
-  height: 13px;
+.map-dot--faded {
+  width: 8px;
+  height: 8px;
   border-radius: 2px;
-  background: var(--season);
-  border: 1.5px solid var(--color-paper);
+  background: color-mix(in srgb, var(--color-ink-faded) 45%, var(--color-paper));
+  border: 1px solid var(--color-paper);
 }
-.map-marker:hover .map-dot {
-  outline: 1px solid var(--season);
+.map-marker:hover .map-dot--faded {
+  outline: 1px solid var(--color-ink-faded);
   outline-offset: 1px;
 }
 
@@ -46,6 +72,12 @@
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 600;
+}
+/* every church in the bucket is irrelevant to the selection → paper, not accent */
+.map-cluster--faded {
+  background: var(--color-paper);
+  color: var(--color-ink-faded);
+  border-color: var(--color-hairline);
 }
 
 /* "you are here": a quiet surveyor's ring in ink */
