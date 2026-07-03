@@ -8,11 +8,16 @@ export function normalizeCity(raw: string): string {
   return /^Praha \d+$/.test(city) ? 'Praha' : city
 }
 
-export function slugify(name: string): string {
-  return name
+/** Diacritics-insensitive fold: 'České' → 'ceske' (both sides of every match). */
+export function fold(s: string): string {
+  return s
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
+}
+
+export function slugify(name: string): string {
+  return fold(name)
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
 }
@@ -53,3 +58,41 @@ export function aggregateCities(index: Church[]): City[] {
 
 export const findCity = (index: Church[], slug: string): City | undefined =>
   aggregateCities(index).find((c) => c.slug === slug)
+
+export type SearchResult =
+  | { kind: 'city'; name: string; city: City }
+  | { kind: 'church'; name: string; church: Church }
+
+/**
+ * Unified typeahead over ALL municipalities and churches, diacritics-insensitive.
+ * Cities first (prefix matches, then size), then churches (name or city substring).
+ * Replaces the <datalist> picker — Chromium caps datalist suggestions at 512
+ * entries, which truncated the 3 259-value city list at "Dubí".
+ */
+export function searchPlaces(
+  cities: City[],
+  churches: Church[],
+  query: string,
+  limit = 10,
+): SearchResult[] {
+  const q = fold(query.trim())
+  if (q.length < 2) return []
+  const starts = (name: string) => Number(fold(name).startsWith(q))
+  const cityHits = cities
+    .filter((c) => fold(c.name).includes(q))
+    .sort((a, b) => starts(b.name) - starts(a.name) || b.count - a.count)
+    .slice(0, 4)
+    .map((city): SearchResult => ({ kind: 'city', name: city.name, city }))
+  const inName = (c: Church) => Number(fold(c.name).includes(q))
+  const churchHits = churches
+    .filter((c) => fold(`${c.name} ${c.city}`).includes(q))
+    .sort(
+      (a, b) =>
+        starts(b.name) - starts(a.name) ||
+        inName(b) - inName(a) || // a hit in the church's own name beats a city-only hit
+        a.name.localeCompare(b.name, 'cs'),
+    )
+    .slice(0, limit - cityHits.length)
+    .map((church): SearchResult => ({ kind: 'church', name: church.name, church }))
+  return [...cityHits, ...churchHits]
+}

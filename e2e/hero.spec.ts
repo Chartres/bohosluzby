@@ -76,8 +76,9 @@ test.describe('without geolocation permission', () => {
     await expect(page.getByText('Bez přístupu k poloze')).toBeVisible()
       await shot(page, 'no-permission')
 
-    // picking a city recovers the journey
-    await page.getByLabel('Zvolte obec').fill('Praha 1')
+    // picking a city recovers the journey — diacritics-insensitive typeahead
+    await page.getByLabel('Kostel nebo obec').fill('praha')
+    await page.getByRole('option', { name: /^Praha/ }).click()
     await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
     await shot(page, 'city-fallback-list')
   })
@@ -90,7 +91,7 @@ test.describe('empty area', () => {
     await mockData(page)
     await page.goto('/')
     await expect(page.getByText('V okolí nic nenacházím')).toBeVisible()
-    await expect(page.getByLabel('Zvolte obec')).toBeVisible()
+    await expect(page.getByLabel('Kostel nebo obec')).toBeVisible()
       await shot(page, 'empty-area')
   })
 })

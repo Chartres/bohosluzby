@@ -141,18 +141,52 @@ describe('Marie finds the nearest mass', () => {
     )
   })
 
-  it('without permission: explains and offers a manual city fallback', async () => {
+  it('without permission: explains and offers the unified search fallback', async () => {
     stubGeolocation('denied')
     render(<App />)
     expect(await screen.findByText('Bez přístupu k poloze')).toBeInTheDocument()
 
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    // typing a city that matches the datalist selects it immediately
-    await user.type(screen.getByLabelText('Zvolte obec'), 'Brno')
+    // diacritics-insensitive: "brno" (lowercase, no diacritics) finds Brno
+    await user.type(screen.getByLabelText('Kostel nebo obec'), 'brno')
+    await user.click(await screen.findByRole('option', { name: /^Brno/ }))
 
     expect(await screen.findByText(/sv\. Tomáše/)).toBeInTheDocument()
     // the list header names the chosen city
     expect(screen.getByRole('button', { name: 'změnit' })).toBeInTheDocument()
+  })
+
+  it('unified search: finds a specific church by name and opens its detail (keyboard)', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    // "změnit" opens the search without destroying the origin
+    await user.click(screen.getByRole('button', { name: 'změnit' }))
+    const input = screen.getByLabelText('Kostel nebo obec')
+    await user.type(input, 'havla') // diacritics-insensitive church-name match
+    expect(await screen.findByRole('option', { name: /sv\. Havla/ })).toBeInTheDocument()
+    await user.keyboard('{Enter}') // top result via keyboard
+    expect(window.location.pathname).toBe('/kostel/2/')
+    expect(await screen.findByRole('heading', { name: 'kostel sv. Havla' })).toBeInTheDocument()
+  })
+
+  it('search panel: zpět (and Escape) return to the list with the origin intact', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    await user.click(screen.getByRole('button', { name: 'změnit' }))
+    expect(screen.queryByText(/Salvátora/)).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '‹ zpět na seznam' }))
+    // the list is back instantly — no new geolocation prompt, same origin
+    expect(await screen.findByText(/Salvátora/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'změnit' }))
+    await user.keyboard('{Escape}')
+    expect(await screen.findByText(/Salvátora/)).toBeInTheDocument()
   })
 
   it('opens a church detail: full weekly ordo, extras, parish, freshness', async () => {
@@ -434,6 +468,6 @@ describe('Marie finds the nearest mass', () => {
     })
     render(<App />)
     expect(await screen.findByText('V okolí nic nenacházím')).toBeInTheDocument()
-    expect(screen.getByLabelText('Zvolte obec')).toBeInTheDocument()
+    expect(screen.getByLabelText('Kostel nebo obec')).toBeInTheDocument()
   })
 })

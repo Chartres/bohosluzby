@@ -16,7 +16,7 @@ import { ordoForDay, rankUpcoming, type Upcoming } from './domain/ranking'
 import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
-import { findCity } from './domain/cities'
+import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
@@ -176,6 +176,7 @@ export default function App() {
   const [data, setData] = useState<{ nearby: Church[]; byId: Map<string, ChurchServices> } | null>(null)
   const [filters, setFilters] = useState<Filters>(loadFilters)
   const [day, setDay] = useState<DayChoice>('now')
+  const [picking, setPicking] = useState(false) // "změnit": search panel over the list, origin kept
   const season = useMemo(() => currentLiturgicalDay(), [])
   const convertedRef = useRef(false)
   const { route, navigate } = useRoute()
@@ -309,6 +310,19 @@ export default function App() {
 
   const loading = !dataError && !index ? true : Boolean(origin) && rows === null
 
+  const pickCity = (city: City) => {
+    track('key_action', { action: 'city_selected', city: city.name })
+    if (route.view === 'city') navigate('/') // the URL shouldn't keep naming the old city
+    setOrigin({ lat: city.lat, lng: city.lng, source: 'city', label: city.name })
+    setGeoDenied(false)
+    setPicking(false)
+  }
+  const pickChurch = (id: string) => {
+    track('key_action', { action: 'church_selected', church: id })
+    setPicking(false)
+    navigate(`/kostel/${id}/`)
+  }
+
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 sm:px-8">
       <header className="border-b-2 pt-6 pb-3" style={{ borderColor: 'var(--season)' }}>
@@ -351,24 +365,36 @@ export default function App() {
             <h2 className="font-display text-xl font-semibold">Bez přístupu k poloze</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
               Poloha slouží jen k nalezení nejbližších kostelů — nikam se neodesílá. Povolte ji
-              v prohlížeči, nebo zvolte obec ručně.
+              v prohlížeči, nebo vyhledejte obec či kostel.
             </p>
-            <CityPicker index={index} onPick={(o) => setOrigin(o)} />
+            <SearchPicker index={index} onPickCity={pickCity} onPickChurch={pickChurch} />
           </section>
         )}
 
-        {!dataError && !loading && origin && rows && rows.length === 0 && !anyFilter && index && (
+        {!dataError && picking && index && (
+          <section className="mt-10">
+            <h2 className="font-display text-xl font-semibold">Jiná obec nebo kostel</h2>
+            <SearchPicker
+              index={index}
+              onPickCity={pickCity}
+              onPickChurch={pickChurch}
+              onClose={() => setPicking(false)}
+            />
+          </section>
+        )}
+
+        {!dataError && !picking && !loading && origin && rows && rows.length === 0 && !anyFilter && index && (
           <section className="mt-10">
             <h2 className="font-display text-xl font-semibold">V okolí nic nenacházím</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
               Do {NEARBY_KM} km od {origin.label ? `obce ${origin.label}` : 'vaší polohy'} není
               v rejstříku žádná bohoslužba. Zkuste jinou obec.
             </p>
-            <CityPicker index={index} onPick={(o) => setOrigin(o)} />
+            <SearchPicker index={index} onPickCity={pickCity} onPickChurch={pickChurch} />
           </section>
         )}
 
-        {!dataError && !loading && origin && rows && (rows.length > 0 || anyFilter || day !== 'now') && (
+        {!dataError && !picking && !loading && origin && rows && (rows.length > 0 || anyFilter || day !== 'now') && (
           <section aria-label="Nejbližší bohoslužby">
             <div className="mt-5 flex items-baseline justify-between gap-3">
               <h2 className="rubric">Nejbližší bohoslužby</h2>
@@ -378,12 +404,7 @@ export default function App() {
                 <button
                   type="button"
                   className="underline decoration-hairline underline-offset-2 hover:text-ink"
-                  onClick={() => {
-                    if (route.view === 'city') navigate('/') // the URL shouldn't keep naming the city
-                    setOrigin(null)
-                    setData(null)
-                    setGeoDenied(true) // reopens the picker
-                  }}
+                  onClick={() => setPicking(true)} // origin stays — zpět/Escape returns to the list
                 >
                   změnit
                 </button>
@@ -700,59 +721,108 @@ function DetailRoute({ id, index, onBack }: { id: string; index: Church[]; onBac
   return <ChurchDetail church={church} onBack={onBack} />
 }
 
-function CityPicker({ index, onPick }: { index: Church[]; onPick: (o: Origin) => void }) {
+/** Unified typeahead over every municipality and church, diacritics-insensitive
+ * ("ceske" finds České Budějovice, "tyn" finds Matky Boží před Týnem), keyboard
+ * navigable (↑/↓/Enter, Escape = zpět). Replaces the <datalist> picker, which
+ * Chromium truncates at 512 suggestions — the 3 259-city list ended at "Dubí". */
+function SearchPicker({
+  index,
+  onPickCity,
+  onPickChurch,
+  onClose,
+}: {
+  index: Church[]
+  onPickCity: (city: City) => void
+  onPickChurch: (id: string) => void
+  onClose?: () => void
+}) {
   const [value, setValue] = useState('')
-  const cities = useMemo(
-    () => [...new Set(index.map((c) => c.city).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'cs')),
-    [index],
-  )
+  const [hi, setHi] = useState(0)
+  const cities = useMemo(() => aggregateCities(index), [index])
+  const results = useMemo(() => searchPlaces(cities, index, value), [cities, index, value])
+  const clamp = Math.min(hi, Math.max(results.length - 1, 0))
 
-  const pick = (name: string) => {
-    const churches = index.filter((c) => c.city === name)
-    if (churches.length === 0) return false
-    const lat = churches.reduce((s, c) => s + c.lat, 0) / churches.length
-    const lng = churches.reduce((s, c) => s + c.lng, 0) / churches.length
-    track('key_action', { action: 'city_selected', city: name })
-    onPick({ lat, lng, source: 'city', label: name })
-    return true
+  const pick = (r: (typeof results)[number]) => {
+    if (r.kind === 'city') onPickCity(r.city)
+    else onPickChurch(r.church.id)
   }
 
   return (
-    <form
-      className="mt-6"
-      onSubmit={(e) => {
-        e.preventDefault()
-        pick(value)
-      }}
-    >
+    <div className="mt-6 max-w-md">
+      {onClose && (
+        <p className="mb-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rubric underline decoration-hairline underline-offset-2 hover:text-ink"
+          >
+            ‹ zpět na seznam
+          </button>
+        </p>
+      )}
       <label className="rubric block" htmlFor="city">
-        Zvolte obec
+        Kostel nebo obec
       </label>
-      <div className="mt-2 flex gap-2">
-        <input
-          id="city"
-          list="city-list"
-          value={value}
-          onChange={(e) => {
-            setValue(e.target.value)
-            if (cities.includes(e.target.value)) pick(e.target.value)
-          }}
-          placeholder="např. Brno"
-          autoComplete="off"
-          className="min-h-11 w-full max-w-xs rounded-sm border border-hairline bg-white/60 px-3 text-base"
-        />
-        <button
-          type="submit"
-          className="min-h-11 rounded-sm border border-ink px-4 text-base font-semibold"
-        >
-          Hledat
-        </button>
-      </div>
-      <datalist id="city-list">
-        {cities.map((c) => (
-          <option key={c} value={c} />
+      <input
+        id="city"
+        role="combobox"
+        aria-expanded={results.length > 0}
+        aria-controls="city-options"
+        aria-activedescendant={results.length > 0 ? `city-option-${clamp}` : undefined}
+        aria-autocomplete="list"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value)
+          setHi(0)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            setHi(Math.min(clamp + 1, results.length - 1))
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            setHi(Math.max(clamp - 1, 0))
+          } else if (e.key === 'Enter') {
+            e.preventDefault()
+            if (results[clamp]) pick(results[clamp])
+          } else if (e.key === 'Escape') {
+            e.preventDefault()
+            if (value) setValue('')
+            else onClose?.()
+          }
+        }}
+        placeholder="např. Brno nebo sv. Víta"
+        autoComplete="off"
+        autoFocus={Boolean(onClose)} // opened by an explicit "změnit" tap — jump right in
+        className="mt-2 min-h-11 w-full rounded-sm border border-hairline bg-white/60 px-3 text-base"
+      />
+      <ul id="city-options" role="listbox" aria-label="Výsledky hledání" className="mt-1">
+        {results.map((r, i) => (
+          <li key={r.kind === 'city' ? `c-${r.city.slug}` : `k-${r.church.id}`} role="presentation">
+            <button
+              type="button"
+              id={`city-option-${i}`}
+              role="option"
+              aria-selected={i === clamp}
+              className={`flex w-full items-baseline justify-between gap-3 border-b border-hairline px-1 py-2.5 text-left text-sm ${
+                i === clamp ? 'bg-white/70' : ''
+              }`}
+              onMouseEnter={() => setHi(i)}
+              onClick={() => pick(r)}
+            >
+              <span className="min-w-0 flex-1 truncate font-semibold">{r.name}</span>
+              <span className="shrink-0 text-xs text-ink-faded">
+                {r.kind === 'city'
+                  ? `obec · ${r.city.count} ${r.city.count === 1 ? 'kostel' : r.city.count < 5 ? 'kostely' : 'kostelů'}`
+                  : r.church.city}
+              </span>
+            </button>
+          </li>
         ))}
-      </datalist>
-    </form>
+        {value.trim().length >= 2 && results.length === 0 && (
+          <li className="px-1 py-2.5 text-sm text-ink-faded">Nic nenalezeno.</li>
+        )}
+      </ul>
+    </div>
   )
 }

@@ -1,4 +1,4 @@
-import { aggregateCities, findCity, normalizeCity, slugify } from './cities'
+import { aggregateCities, findCity, fold, normalizeCity, searchPlaces, slugify } from './cities'
 import type { Church } from './data'
 
 const church = (id: string, city: string, lat = 50, lng = 14): Church => ({
@@ -56,5 +56,60 @@ describe('aggregateCities / findCity', () => {
   it('finds a city by slug', () => {
     expect(findCity(index, 'brno')?.name).toBe('Brno')
     expect(findCity(index, 'nowhere')).toBeUndefined()
+  })
+})
+
+describe('searchPlaces — unified church + city typeahead', () => {
+  const tyn: Church = {
+    id: 't1',
+    name: 'kostel Matky Boží před Týnem',
+    city: 'Praha 1',
+    lat: 50.0877,
+    lng: 14.4227,
+    barrierFree: false,
+    cell: '50-14',
+  }
+  const index = [
+    church('1', 'České Budějovice 3, České Budějovice'),
+    church('2', 'Týn nad Vltavou'),
+    church('3', 'Zlín'),
+    church('4', 'Praha 1'),
+    tyn,
+  ]
+  const cities = aggregateCities(index)
+
+  it('fold strips Czech diacritics both sides', () => {
+    expect(fold('České Budějovice')).toBe('ceske budejovice')
+    expect(fold('Týnem')).toBe('tynem')
+  })
+
+  it('finds cities diacritics-insensitively ("ceske" → České Budějovice)', () => {
+    const r = searchPlaces(cities, index, 'ceske')
+    expect(r[0]).toMatchObject({ kind: 'city', name: 'České Budějovice' })
+  })
+
+  it('finds churches by name ("tyn" → Matky Boží před Týnem) after city matches', () => {
+    const r = searchPlaces(cities, index, 'tyn')
+    expect(r.map((x) => [x.kind, x.name])).toEqual([
+      ['city', 'Týn nad Vltavou'],
+      ['church', 'kostel Matky Boží před Týnem'],
+      ['church', 'kostel 2'], // church in Týn nad Vltavou matches via its city
+    ])
+  })
+
+  it('matches churches by their city too ("praha" church match)', () => {
+    const r = searchPlaces(cities, index, 'praha')
+    expect(r[0]).toMatchObject({ kind: 'city', name: 'Praha' })
+    expect(r.some((x) => x.kind === 'church' && x.name === tyn.name)).toBe(true)
+  })
+
+  it('short or empty queries return nothing', () => {
+    expect(searchPlaces(cities, index, 'z')).toEqual([])
+    expect(searchPlaces(cities, index, ' ')).toEqual([])
+  })
+
+  it('caps the result list', () => {
+    const many = Array.from({ length: 30 }, (_, i) => church(`m${i}`, `Novákov ${i + 10}`))
+    expect(searchPlaces(aggregateCities(many), many, 'novakov').length).toBeLessThanOrEqual(10)
   })
 })
