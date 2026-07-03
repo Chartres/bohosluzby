@@ -121,6 +121,11 @@
   font-size: 0.82rem;
   color: var(--color-ink-faded);
 }
+/* "pro váš výběr nic" — a rubric, so a miss never reads like a match */
+.map-pop-miss {
+  color: var(--color-rubric);
+  font-weight: 600;
+}
 .map-pop-open {
   display: inline-block;
   margin-top: 6px;

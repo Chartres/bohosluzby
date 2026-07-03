@@ -65,6 +65,13 @@ test('map matches the seznam: večer fades the cathedral to a dot, keeps the eve
   await expect(page.locator('.map-chip').first()).toBeVisible()
   await shot(page, 'map-mixed')
 
+  // a tapped faded dot is honest: leads with the miss, then the real next mass
+  await cathedral.click()
+  await expect(page.locator('.map-pop-miss')).toHaveText('pro váš výběr nic')
+  await expect(page.locator('.map-pop-line')).toHaveText(/nejbližší: dnes v 09:30 · mše sv\./)
+  await shot(page, 'map-popover-miss')
+  await page.keyboard.press('Escape') // close the popover before leaving the map
+
   // back to the list — the toggle is a round trip, filters intact
   await page.getByRole('button', { name: 'seznam' }).click()
   await expect(page).not.toHaveURL(/zobrazeni/)

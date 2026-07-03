@@ -12,7 +12,7 @@ import './mapview.css'
 import type { Church, ChurchServices } from './domain/data'
 import { decodeShard } from './domain/data'
 import { gridCluster } from './domain/cluster'
-import type { Filters } from './domain/filters'
+import { NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { dayLabel, fmtTime } from './domain/format'
 
@@ -117,9 +117,25 @@ export default function MapView({
       name.textContent = church.name
       const line = document.createElement('p')
       line.className = 'map-pop-line'
-      line.textContent = next
-        ? `${dayLabel(now, next.start)} v ${fmtTime(next.start)}${next.service.type ? ` · ${next.service.type}` : ''}`
-        : 'žádná bohoslužba nevyhovuje výběru'
+      const when = (u: Upcoming) =>
+        `${dayLabel(now, u.start)} v ${fmtTime(u.start)}${u.service.type ? ` · ${u.service.type}` : ''}`
+      if (next) {
+        line.textContent = when(next)
+      } else {
+        // honesty: nothing for the active selection — lead with that, then the
+        // church's real next service (no filters, whenever it is)
+        const fallback = selectUpcoming(now, origin, [church], byId, NO_FILTERS, null, 'now', {
+          limit: 1,
+        })[0]
+        if (fallback) {
+          const miss = document.createElement('span')
+          miss.className = 'map-pop-miss'
+          miss.textContent = 'pro váš výběr nic'
+          line.append(miss, ` — nejbližší: ${when(fallback)}`)
+        } else {
+          line.textContent = 'žádná bohoslužba v nejbližších dnech'
+        }
+      }
       const open = document.createElement('a')
       open.className = 'map-pop-open'
       open.href = `/kostel/${church.id}/`
