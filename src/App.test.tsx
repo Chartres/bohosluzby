@@ -172,12 +172,46 @@ describe('Marie finds the nearest mass', () => {
     })
 
     // …and "moje poloha" is the way back: re-runs geolocation, drops the override
+    expect(window.location.pathname).toBe('/mesto/brno/') // the pick was history-pushed
     await user.click(screen.getByRole('button', { name: 'moje poloha' }))
+    expect(window.location.pathname).toBe('/') // "/" = my location
     expect(await screen.findByText(/Salvátora/)).toBeInTheDocument()
     expect(screen.getByText(/podle vaší polohy/)).toBeInTheDocument()
     // with a live geolocation origin the affordance is gone
     expect(screen.queryByRole('button', { name: 'moje poloha' })).not.toBeInTheDocument()
     expect(JSON.parse(localStorage.getItem('bohosluzby:lastOrigin')!).label).toBeUndefined()
+  })
+
+  it('URL routing: ?den=nedele bookmark restores the Sunday ordo; day picks write the URL', async () => {
+    stubGeolocation('granted')
+    window.history.pushState(null, '', '/?den=nedele')
+    render(<App />)
+    // NOW is Friday 3 Jul → "neděle" is Sunday 5 Jul, restored from the URL
+    expect(await screen.findByText('neděle 5. 7.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^neděle/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByText(/^za \d/)).not.toBeInTheDocument() // planning view, no countdowns
+
+    // switching the day rewrites the query param (replace — no history spam)
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    await user.click(screen.getByRole('button', { name: 'zítra' }))
+    expect(window.location.search).toBe('?den=zitra')
+    await user.click(screen.getByRole('button', { name: 'hned' }))
+    expect(window.location.search).toBe('')
+    expect(await screen.findByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
+  })
+
+  it('URL routing: opening a detail keeps ?den, zpět restores the day view', async () => {
+    stubGeolocation('granted')
+    window.history.pushState(null, '', '/?den=nedele')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText('neděle 5. 7.')
+
+    await user.click(screen.getAllByText('kostel Nejsvětějšího Salvátora')[0]) // two Sunday masses
+    expect(window.location.pathname + window.location.search).toBe('/kostel/1/?den=nedele')
+    await user.click(await screen.findByRole('button', { name: '‹ zpět na seznam' }))
+    expect(window.location.pathname + window.location.search).toBe('/?den=nedele')
+    expect(await screen.findByText('neděle 5. 7.')).toBeInTheDocument()
   })
 
   it('unified search: finds a specific church by name and opens its detail (keyboard)', async () => {

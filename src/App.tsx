@@ -153,19 +153,55 @@ export function parseRoute(path: string): Route {
   return { view: 'home' }
 }
 
-function useRoute(): { route: Route; navigate: (to: string) => void } {
-  const [path, setPath] = useState(() => location.pathname)
+function useRoute() {
+  const [url, setUrl] = useState(() => location.pathname + location.search)
   useEffect(() => {
-    const onPop = () => setPath(location.pathname)
+    const onPop = () => setUrl(location.pathname + location.search)
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
-  const navigate = (to: string) => {
-    history.pushState(null, '', to)
-    setPath(to)
-    window.scrollTo(0, 0)
+  const navigate = (to: string, opts?: { replace?: boolean }) => {
+    if (opts?.replace) {
+      history.replaceState(null, '', to) // e.g. a day switch — not a history entry
+    } else {
+      history.pushState(null, '', to)
+      window.scrollTo(0, 0)
+    }
+    setUrl(to)
   }
-  return { route: parseRoute(path), navigate }
+  const q = url.indexOf('?')
+  const path = q === -1 ? url : url.slice(0, q)
+  const search = q === -1 ? '' : url.slice(q)
+  return { route: parseRoute(path), path, search, navigate }
+}
+
+// ---- ?den= — the selected day as a bookmarkable query param -----------------
+
+const DAY_SLUGS = ['nedele', 'pondeli', 'utery', 'streda', 'ctvrtek', 'patek', 'sobota'] // Date.getUTCDay order
+
+/** ?den= value for a picker choice ('now' = no param, 0/1 = dnes/zítra,
+ * farther days by weekday name so a bookmark means "next neděle", any week). */
+export function dayToParam(now: Date, day: DayChoice): string | null {
+  if (day === 'now') return null
+  if (day === 0) return 'dnes'
+  if (day === 1) return 'zitra'
+  const today = pragueToday(now)
+  const dow = new Date(Date.UTC(today.y, today.m - 1, today.d) + day * 86_400_000).getUTCDay()
+  return DAY_SLUGS[dow]
+}
+
+/** Decode ?den= back to a picker choice; unknown/absent → 'now'. */
+export function dayFromParam(now: Date, param: string | null): DayChoice {
+  if (param === 'dnes') return 0
+  if (param === 'zitra') return 1
+  const dow = DAY_SLUGS.indexOf(param ?? '')
+  if (dow === -1) return 'now'
+  const today = pragueToday(now)
+  const base = Date.UTC(today.y, today.m - 1, today.d)
+  for (let off = 0; off <= 6; off++) {
+    if (new Date(base + off * 86_400_000).getUTCDay() === dow) return off
+  }
+  return 'now' // unreachable — every weekday occurs within 7 days
 }
 
 export default function App() {
@@ -175,11 +211,18 @@ export default function App() {
   const [origin, setOrigin] = useState<Origin | null>(null)
   const [data, setData] = useState<{ nearby: Church[]; byId: Map<string, ChurchServices> } | null>(null)
   const [filters, setFilters] = useState<Filters>(loadFilters)
-  const [day, setDay] = useState<DayChoice>('now')
   const [picking, setPicking] = useState(false) // "změnit": search panel over the list, origin kept
   const season = useMemo(() => currentLiturgicalDay(), [])
   const convertedRef = useRef(false)
-  const { route, navigate } = useRoute()
+  const { route, path, search, navigate } = useRoute()
+
+  // the selected day lives in the URL (?den=nedele) — bookmarkable, back-safe
+  const den = new URLSearchParams(search).get('den')
+  const day = useMemo(() => dayFromParam(new Date(), den), [den])
+  const setDay = (d: DayChoice) => {
+    const param = dayToParam(new Date(), d)
+    navigate(param ? `${path}?den=${param}` : path, { replace: true })
+  }
 
   useEffect(() => {
     document.documentElement.style.setProperty('--season', SEASON_VAR[season.color])
@@ -236,18 +279,28 @@ export default function App() {
 
   const online = useSyncExternalStore(onlineStore.subscribe, onlineStore.snapshot)
 
-  // /mesto/<slug>/ — the city's centroid becomes the origin (SEO landing pages)
+  // /mesto/<slug>/ — the city's centroid becomes the origin (SEO landing pages).
+  // Leaving the city route for home (browser back, "moje poloha", zpět from a
+  // detail) re-runs geolocation: "/" means "my location".
   const citySlug = route.view === 'city' ? route.slug : null
+  const originRef = useRef(origin)
+  originRef.current = origin
   useEffect(() => {
-    if (!citySlug || !index) return
-    const city = findCity(index, citySlug)
-    if (city) {
-      setOrigin({ lat: city.lat, lng: city.lng, source: 'city', label: city.name })
-      document.title = `Bohoslužby ${city.name} — mše svatá dnes | Bohoslužby`
-    } else {
-      setGeoDenied(true) // stale link → offer the picker
+    if (!index) return
+    if (citySlug) {
+      const city = findCity(index, citySlug)
+      if (city) {
+        setOrigin({ lat: city.lat, lng: city.lng, source: 'city', label: city.name })
+        document.title = `Bohoslužby ${city.name} — mše svatá dnes | Bohoslužby`
+      } else {
+        setGeoDenied(true) // stale link → offer the picker
+      }
+    } else if (route.view === 'home' && originRef.current?.source === 'city') {
+      setOrigin(null)
+      locate()
     }
-  }, [citySlug, index])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- locate/originRef are stable per render
+  }, [citySlug, route.view, index])
 
   useEffect(() => {
     if (!index || !origin) return
@@ -327,22 +380,21 @@ export default function App() {
     }
     setPicking(false)
     setGeoDenied(false)
-    if (route.view === 'city') navigate('/')
+    if (route.view === 'city') navigate(`/${search}`) // back to "/" = my location, day kept
     setOrigin(null) // "Hledám…" while the fix comes in
     locate()
   }
 
   const pickCity = (city: City) => {
     track('key_action', { action: 'city_selected', city: city.name })
-    if (route.view === 'city') navigate('/') // the URL shouldn't keep naming the old city
-    setOrigin({ lat: city.lat, lng: city.lng, source: 'city', label: city.name })
     setGeoDenied(false)
     setPicking(false)
+    navigate(`/mesto/${city.slug}/${search}`) // history push — back returns to my location
   }
   const pickChurch = (id: string) => {
     track('key_action', { action: 'church_selected', church: id })
     setPicking(false)
-    navigate(`/kostel/${id}/`)
+    navigate(`/kostel/${id}/${search}`)
   }
 
   return (
@@ -360,7 +412,7 @@ export default function App() {
         )}
 
         {!dataError && route.view === 'church' && index && (
-          <DetailRoute id={route.id} index={index} onBack={() => navigate('/')} />
+          <DetailRoute id={route.id} index={index} onBack={() => navigate(`/${search}`)} />
         )}
         {!dataError && route.view === 'church' && !index && (
           <p className="mt-8 text-ink-faded" role="status">
@@ -458,7 +510,7 @@ export default function App() {
                     convertedRef.current = true
                     conversion({ church: id })
                   }
-                  navigate(`/kostel/${id}/`)
+                  navigate(`/kostel/${id}/${search}`) // keep ?den — back restores the day
                 }}
               />
             ) : (

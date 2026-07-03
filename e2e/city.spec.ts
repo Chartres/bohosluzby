@@ -73,10 +73,32 @@ test('moje poloha: the way back from a picked city to geolocation', async ({ pag
   await page.getByRole('button', { name: 'změnit' }).click()
   await page.getByLabel('Kostel nebo obec').fill('praha')
   await page.getByRole('option', { name: /^Praha/ }).click()
+  await expect(page).toHaveURL('/mesto/praha/') // the pick is history-pushed
   await expect(page.getByText('Praha ·')).toBeVisible()
   await shot(page, 'city-my-location')
 
   await page.getByRole('button', { name: 'moje poloha' }).click()
+  await expect(page).toHaveURL('/')
   await expect(page.getByText('podle vaší polohy')).toBeVisible()
   await expect(page.getByRole('button', { name: 'moje poloha' })).toHaveCount(0)
+})
+
+test('browser back after a city pick returns to my location', async ({ page, context }) => {
+  await context.grantPermissions(['geolocation'])
+  await context.setGeolocation(PRAGUE)
+  await page.clock.install({ time: FIXED_NOW })
+  await mockData(page)
+  await page.goto('/')
+  await expect(page.getByText('podle vaší polohy')).toBeVisible()
+
+  await page.getByRole('button', { name: 'změnit' }).click()
+  await page.getByLabel('Kostel nebo obec').fill('praha')
+  await page.getByRole('option', { name: /^Praha/ }).click()
+  await expect(page).toHaveURL('/mesto/praha/')
+  await expect(page.getByText('Praha ·')).toBeVisible()
+
+  await page.goBack()
+  await expect(page).toHaveURL('/')
+  await expect(page.getByText('podle vaší polohy')).toBeVisible()
+  await shot(page, 'route-back-my-location')
 })

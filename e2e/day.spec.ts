@@ -42,6 +42,23 @@ test('feast day: picker chip tinted, quiet feast line in the header (5 Jul = Cyr
   await shot(page, 'day-feast')
 })
 
+test('bookmarked ?den=nedele restores the Sunday ordo; day picks rewrite the URL', async ({ page }) => {
+  await page.clock.install({ time: FIXED_NOW })
+  await mockData(page)
+  await page.goto('/?den=nedele') // Monday 6 Jul → next Sunday is 12 Jul
+  await expect(page.getByText('neděle 12. 7.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'neděle' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByText(/za \d+ (min|h)/)).toHaveCount(0) // planning view restored
+  await shot(page, 'route-den-nedele')
+
+  // switching the day rewrites the param; "hned" drops it
+  await page.getByRole('button', { name: 'zítra' }).click()
+  await expect(page).toHaveURL('/?den=zitra')
+  await page.getByRole('button', { name: 'hned' }).click()
+  await expect(page).toHaveURL('/')
+  await expect(page.getByText('za 29 min')).toBeVisible()
+})
+
 test('day picker at 375px', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.clock.install({ time: FIXED_NOW })
