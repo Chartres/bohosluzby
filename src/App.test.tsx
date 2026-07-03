@@ -108,7 +108,7 @@ describe('Marie finds the nearest mass', () => {
     expect(names[0]).toContain('Salvátora')
     // fake clock ticks with real time → "za 1 h" can slip to "za 59 min" on slow CI
     expect(screen.getByText(/za (1 h|59 min)/)).toBeInTheDocument()
-    expect(screen.getByText(/dnes/)).toBeInTheDocument()
+    expect(screen.getAllByText(/dnes/).length).toBeGreaterThan(0)
     // language chip only for the non-Czech service, normalized to Czech lowercase
     expect(screen.getByText('latinsky')).toBeInTheDocument()
     expect(screen.queryByText('Latine')).not.toBeInTheDocument()
@@ -246,6 +246,31 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getByText(/neodpovídá žádná bohoslužba/)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Zrušit filtry' }))
     expect(await screen.findByText(/Salvátora/)).toBeInTheDocument()
+  })
+
+  it('day picker: "neděle" shows the full Sunday ordo without countdowns', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    // now = Friday → the picker offers hned · dnes · zítra · neděle · po …
+    await user.click(screen.getByRole('button', { name: 'neděle' }))
+
+    // Salvátor's two Sunday masses, chronological, grouped under one day rubric
+    expect(screen.getByText('neděle 5. 7.')).toBeInTheDocument()
+    expect(screen.getByText('14:00')).toBeInTheDocument()
+    expect(screen.getByText('20:00')).toBeInTheDocument()
+    // the Sunday one-off pobožnost appears in its day
+    expect(screen.getByText(/pobožnost/)).toBeInTheDocument()
+    // Friday's services are not in the Sunday ordo
+    expect(screen.queryByText(/růženec/)).not.toBeInTheDocument()
+    // planning view: no "za X min" countdowns
+    expect(screen.queryByText(/^za \d/)).not.toBeInTheDocument()
+
+    // back to "hned" — the reachable-now ranking returns
+    await user.click(screen.getByRole('button', { name: 'hned' }))
+    expect(await screen.findByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
   })
 
   it('empty area: reports no services within 30 km and keeps the picker', async () => {

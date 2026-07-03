@@ -4,7 +4,7 @@
 // away outranks one tomorrow next door.
 
 import { haversineKm } from './distance'
-import { nextOccurrences } from './occurrences'
+import { nextOccurrences, pragueToday } from './occurrences'
 import type { Church, ChurchServices, Service, ExtraService } from './data'
 
 export interface Upcoming {
@@ -49,4 +49,41 @@ export function rankUpcoming(
   }
   out.sort((a, b) => a.start.getTime() - b.start.getTime() || a.distanceKm - b.distanceKm)
   return out.slice(0, limit)
+}
+
+/**
+ * The full ordo for one Prague calendar day (today + dayOffset): every service
+ * of every church that day, chronological — the planning view ("kdy je
+ * v neděli mše?"). No reachability filter; for today only what's still ahead.
+ */
+export function ordoForDay(
+  now: Date,
+  dayOffset: number,
+  origin: { lat: number; lng: number },
+  churches: Church[],
+  servicesById: ReadonlyMap<string, ChurchServices>,
+): Upcoming[] {
+  const today = pragueToday(now)
+  const target = new Date(Date.UTC(today.y, today.m - 1, today.d) + dayOffset * 86_400_000)
+  const onTarget = (d: Date): boolean => {
+    const w = pragueToday(d)
+    return (
+      w.y === target.getUTCFullYear() && w.m === target.getUTCMonth() + 1 && w.d === target.getUTCDate()
+    )
+  }
+  const out: Upcoming[] = []
+  for (const church of churches) {
+    const svc = servicesById.get(church.id)
+    if (!svc) continue
+    const distanceKm = haversineKm(origin.lat, origin.lng, church.lat, church.lng)
+    const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
+      for (const start of nextOccurrences(spec, now, dayOffset + 1)) {
+        if (onTarget(start)) out.push({ church, distanceKm, start, service })
+      }
+    }
+    for (const s of svc.regular) consider(s, { days: s.days, time: s.time })
+    for (const x of svc.extra) consider(x, { date: x.date, time: x.time })
+  }
+  out.sort((a, b) => a.start.getTime() - b.start.getTime() || a.distanceKm - b.distanceKm)
+  return out
 }

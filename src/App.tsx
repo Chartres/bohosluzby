@@ -12,7 +12,8 @@ import {
   type Service,
 } from './domain/data'
 import { haversineKm } from './domain/distance'
-import { rankUpcoming, type Upcoming } from './domain/ranking'
+import { ordoForDay, rankUpcoming, type Upcoming } from './domain/ranking'
+import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { ChurchDetail, Chip } from './ChurchDetail'
@@ -55,6 +56,29 @@ function loadFilters(): Filters {
   } catch {
     return NO_FILTERS
   }
+}
+
+// ---- Day picker: 'now' = soonest you can make; 0–6 = the day's full ordo ----
+
+export type DayChoice = 'now' | number
+
+const WEEKDAY_SHORT = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'] // Date.getUTCDay order
+
+/** Picker options for the next week: hned · dnes · zítra · short weekday names
+ * (Sunday spelled out — "kdy je v neděli mše?" is the planning question). */
+export function dayOptions(now: Date): { key: DayChoice; label: string }[] {
+  const today = pragueToday(now)
+  const base = Date.UTC(today.y, today.m - 1, today.d)
+  const out: { key: DayChoice; label: string }[] = [
+    { key: 'now', label: 'hned' },
+    { key: 0, label: 'dnes' },
+    { key: 1, label: 'zítra' },
+  ]
+  for (let off = 2; off <= 6; off++) {
+    const dow = new Date(base + off * 86_400_000).getUTCDay()
+    out.push({ key: off, label: dow === 0 ? 'neděle' : WEEKDAY_SHORT[dow] })
+  }
+  return out
 }
 
 // ponytail: registry types are free text; "mass" = anything named mše/liturgie.
@@ -111,6 +135,7 @@ export default function App() {
   const [origin, setOrigin] = useState<Origin | null>(null)
   const [data, setData] = useState<{ nearby: Church[]; byId: Map<string, ChurchServices> } | null>(null)
   const [filters, setFilters] = useState<Filters>(loadFilters)
+  const [day, setDay] = useState<DayChoice>('now')
   const season = useMemo(() => currentLiturgicalDay(), [])
   const convertedRef = useRef(false)
   const { route, navigate } = useRoute()
@@ -178,8 +203,11 @@ export default function App() {
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
     const churches = filters.barrierFree ? data.nearby.filter((c) => c.barrierFree) : data.nearby
-    return rankUpcoming(new Date(), origin, churches, applyFilters(data.byId, filters))
-  }, [data, origin, filters])
+    const byId = applyFilters(data.byId, filters)
+    return day === 'now'
+      ? rankUpcoming(new Date(), origin, churches, byId)
+      : ordoForDay(new Date(), day, origin, churches, byId)
+  }, [data, origin, filters, day])
 
   /** Languages on offer nearby (unfiltered) — the options for the lang filter. */
   const langs = useMemo(() => {
@@ -272,7 +300,7 @@ export default function App() {
           </section>
         )}
 
-        {!dataError && !loading && origin && rows && (rows.length > 0 || anyFilter) && (
+        {!dataError && !loading && origin && rows && (rows.length > 0 || anyFilter || day !== 'now') && (
           <section aria-label="Nejbližší bohoslužby">
             <div className="mt-5 flex items-baseline justify-between gap-3">
               <h2 className="rubric">Nejbližší bohoslužby</h2>
@@ -292,19 +320,34 @@ export default function App() {
                 </button>
               </p>
             </div>
+            <DayPicker
+              day={day}
+              onChange={(d) => {
+                setDay(d)
+                track('key_action', { action: 'day', day: d })
+              }}
+            />
             <FilterBar filters={filters} langs={langs} onChange={updateFilters} />
             {rows.length > 0 ? (
-              <ServiceList rows={rows} onOpen={(id) => navigate(`/kostel/${id}/`)} />
+              <ServiceList
+                rows={rows}
+                showUntil={day === 'now' || day === 0}
+                onOpen={(id) => navigate(`/kostel/${id}/`)}
+              />
             ) : (
               <p className="mt-8 text-ink-faded">
-                Zvoleným filtrům neodpovídá žádná bohoslužba v okolí.{' '}
-                <button
-                  type="button"
-                  className="underline decoration-hairline underline-offset-2 hover:text-ink"
-                  onClick={() => updateFilters({ ...NO_FILTERS })}
-                >
-                  Zrušit filtry
-                </button>
+                {anyFilter
+                  ? 'Zvolenému dni a filtrům neodpovídá žádná bohoslužba v okolí.'
+                  : 'V tento den není v okolí žádná bohoslužba.'}{' '}
+                {anyFilter && (
+                  <button
+                    type="button"
+                    className="underline decoration-hairline underline-offset-2 hover:text-ink"
+                    onClick={() => updateFilters({ ...NO_FILTERS })}
+                  >
+                    Zrušit filtry
+                  </button>
+                )}
               </p>
             )}
           </section>
@@ -327,7 +370,43 @@ export default function App() {
   )
 }
 
-function ServiceList({ rows, onOpen }: { rows: Upcoming[]; onOpen: (id: string) => void }) {
+// The day rubric of the ordo, as a picker: which page are you reading?
+// Active day is set in rubric red — day labels are rubrics in a missal.
+function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice) => void }) {
+  const options = useMemo(() => dayOptions(new Date()), [])
+  return (
+    <div role="group" aria-label="Den" className="mt-3 -ml-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+      {options.map(({ key, label }) => {
+        const active = key === day
+        return (
+          <button
+            key={String(key)}
+            type="button"
+            aria-pressed={active}
+            className={`-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
+              active
+                ? 'text-rubric underline decoration-rubric decoration-2 underline-offset-4'
+                : 'text-ink-faded hover:text-ink'
+            }`}
+            onClick={() => onChange(key)}
+          >
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function ServiceList({
+  rows,
+  showUntil,
+  onOpen,
+}: {
+  rows: Upcoming[]
+  showUntil: boolean
+  onOpen: (id: string) => void
+}) {
   const now = new Date()
   let lastDay = ''
   return (
@@ -347,7 +426,7 @@ function ServiceList({ rows, onOpen }: { rows: Upcoming[]; onOpen: (id: string) 
               }}
               className="group flex items-baseline gap-4 border-t border-hairline py-3"
             >
-              <p className="font-display w-14 shrink-0 text-2xl font-semibold tabular-nums">
+              <p className="font-display w-16 shrink-0 text-2xl font-semibold tabular-nums">
                 {fmtTime(r.start)}
               </p>
               <div className="min-w-0 flex-1">
@@ -365,9 +444,11 @@ function ServiceList({ rows, onOpen }: { rows: Upcoming[]; onOpen: (id: string) 
                   {r.church.barrierFree && <Chip label="bezbariérový přístup" />}
                 </p>
               </div>
-              <p className="shrink-0 text-sm font-semibold whitespace-nowrap">
-                {fmtUntil(now, r.start)}
-              </p>
+              {showUntil && (
+                <p className="shrink-0 text-sm font-semibold whitespace-nowrap">
+                  {fmtUntil(now, r.start)}
+                </p>
+              )}
             </a>
           </li>
         )

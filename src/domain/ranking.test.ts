@@ -1,4 +1,4 @@
-import { rankUpcoming } from './ranking'
+import { ordoForDay, rankUpcoming } from './ranking'
 import type { Church, ChurchServices } from './data'
 
 const church = (id: string, lat: number, lng: number): Church => ({
@@ -77,5 +77,35 @@ describe('rankUpcoming — soonest you can make it', () => {
     const churches = Array.from({ length: 30 }, (_, i) => church(String(i), 50.09 + i * 0.001, 14.43))
     const map = new Map(churches.map((c) => [c.id, services([{ days: '1234567', time: '18:00' }])]))
     expect(rankUpcoming(now, origin, churches, map, { limit: 10 })).toHaveLength(10)
+  })
+})
+
+describe('ordoForDay — the planning view', () => {
+  // now is Friday 3 Jul 2026; Sunday = offset 2
+  const c1 = church('a', 50.088, 14.422)
+  const c2 = church('b', 50.09, 14.43)
+  const map = new Map([
+    [c1.id, services([{ days: '7', time: '09:00' }, { days: '7', time: '11:30' }, { days: '5', time: '18:00' }])],
+    [c2.id, services([{ days: '67', time: '08:00' }], [{ date: '2026-07-05', time: '15:00' }])],
+  ])
+
+  it('lists every service on the chosen day, chronological, all churches', () => {
+    const rows = ordoForDay(now, 2, origin, [c1, c2], map)
+    expect(rows.map((r) => [r.church.id, r.service.time])).toEqual([
+      ['b', '08:00'],
+      ['a', '09:00'],
+      ['a', '11:30'],
+      ['b', '15:00'], // the one-off lands in its day
+    ])
+  })
+
+  it('today (offset 0) shows only what is still ahead — but without a walk buffer', () => {
+    const rows = ordoForDay(now, 0, origin, [c1, c2], map)
+    // Friday: only c1's 18:00 remains (it is 17:00 now)
+    expect(rows.map((r) => [r.church.id, r.service.time])).toEqual([['a', '18:00']])
+  })
+
+  it('empty day yields []', () => {
+    expect(ordoForDay(now, 3, origin, [c1], map)).toEqual([]) // Monday: c1 has nothing
   })
 })
