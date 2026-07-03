@@ -615,8 +615,19 @@ export default function App() {
 // Active day is set in rubric red — day labels are rubrics in a missal.
 function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice) => void }) {
   const options = useMemo(() => dayOptions(new Date()), [])
+  // a bookmarked ?den= must not hide its own chip off-screen
+  const activeRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    activeRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+  }, [day])
+  // one horizontal line at every width: overflow scrolls (thumb-friendly),
+  // never wraps to a second line; py-2 keeps the 44px tap targets unclipped
   return (
-    <div role="group" aria-label="Den" className="mt-3 -ml-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+    <div
+      role="group"
+      aria-label="Den"
+      className="scroll-row -ml-1 mt-1 flex items-baseline gap-x-4 overflow-x-auto py-2 whitespace-nowrap"
+    >
       {options.map(({ key, label, lit }) => {
         const active = key === day
         // feast days get a quiet tint of their liturgical color (a missal marks them too)
@@ -624,6 +635,7 @@ function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice)
         return (
           <button
             key={String(key)}
+            ref={active ? activeRef : undefined}
             type="button"
             aria-pressed={active}
             title={lit.feast}
@@ -833,9 +845,25 @@ function ServiceList({
   )
 }
 
+/** Narrow viewport (one-hand phone)? jsdom has no matchMedia — treat as wide. */
+function useNarrow(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia?.('(max-width: 639px)')
+      mq?.addEventListener('change', cb)
+      return () => mq?.removeEventListener('change', cb)
+    },
+    () => window.matchMedia?.('(max-width: 639px)').matches ?? false,
+  )
+}
+
+const FILTRY_OPEN_KEY = 'bohosluzby:filtryOpen'
+
 // Typographic filter lines — set like rubric annotations under the list header,
 // not a Material chip bar. Hit areas stay ≥44px via padding + negative margin.
-// Two lines: what (rite, access, language) and when (time-of-day bands, kolem).
+// Two lines: when (time-of-day bands, kolem) and what (rite, access, language).
+// On narrow viewports both collapse into a "filtry" disclosure (state
+// persisted) whose collapsed line summarizes the active selection.
 function FilterBar({
   filters,
   cas,
@@ -858,8 +886,33 @@ function FilterBar({
   const toggleStyle = (active: boolean) =>
     active ? { color: 'var(--season)', textDecorationColor: 'var(--season)' } : undefined
   const around = cas && !(cas in BANDS) ? cas : null
-  return (
-    <div className="border-b border-hairline pb-2">
+  const narrow = useNarrow()
+  const [open, setOpen] = useState(() => {
+    try {
+      return localStorage.getItem(FILTRY_OPEN_KEY) === '1'
+    } catch {
+      return false
+    }
+  })
+  const persistOpen = (o: boolean) => {
+    setOpen(o)
+    try {
+      localStorage.setItem(FILTRY_OPEN_KEY, o ? '1' : '0')
+    } catch {
+      // private mode
+    }
+  }
+  // the collapsed line names what's active: "filtry: neděle · ráno · bezbariérové"
+  const summary = [
+    day !== 'now' ? dayOptions(new Date()).find((o) => o.key === day)?.label : null,
+    cas ? (cas in BANDS ? BANDS[cas as Band].label : `kolem ${cas}`) : null,
+    filters.massOnly ? 'jen mše svaté' : null,
+    filters.barrierFree ? 'bezbariérové' : null,
+    filters.greek ? 'řeckokatolické' : null,
+    filters.lang,
+  ].filter(Boolean)
+  const rows = (
+    <>
       {/* WHEN: the kdy row sits directly under the day picker — one block */}
       <div
         role="group"
@@ -960,7 +1013,32 @@ function FilterBar({
         </select>
       )}
     </div>
-    </div>
+    </>
+  )
+  if (!narrow) return <div className="border-b border-hairline pb-2">{rows}</div>
+  return (
+    <details className="border-b border-hairline pb-2" open={open}>
+      {/* fully controlled: the native toggle event is queued async, which made
+          the persisted state lag one tap behind */}
+      <summary
+        onClick={(e) => {
+          e.preventDefault()
+          persistOpen(!open)
+        }}
+        className="-my-2 flex cursor-pointer list-none items-baseline gap-x-1.5 py-3.5 text-xs font-semibold tracking-[0.08em] uppercase [&::-webkit-details-marker]:hidden"
+      >
+        <span aria-hidden="true" className="text-ink-faded">
+          {open ? '▾' : '▸'}
+        </span>
+        <span className="text-ink-faded">filtry</span>
+        {summary.length > 0 && (
+          <span className="min-w-0 truncate" style={{ color: 'var(--season)' }}>
+            {summary.join(' · ')}
+          </span>
+        )}
+      </summary>
+      {rows}
+    </details>
   )
 }
 

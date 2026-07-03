@@ -47,9 +47,29 @@ test('language filter + over-narrow combination explains itself', async ({ page 
   await expect(page.getByText('kostel sv. Ludmily')).toBeVisible()
 })
 
-test('filters at 375px wrap as one typographic line', async ({ page }) => {
+test('375px: controls compact into a filtry disclosure; open state persists', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.goto('/')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
+
+  // collapsed by default: one "filtry" line, the band/what rows are hidden
+  const summary = page.locator('summary')
+  await expect(summary).toContainText('filtry')
+  await expect(page.getByRole('button', { name: 'večer' })).not.toBeVisible()
   await shot(page, 'filters-mobile-375')
+
+  // open → the typographic rows appear; picks summarize on the collapsed line
+  await summary.click()
+  await page.getByRole('button', { name: 'večer' }).click()
+  await page.getByRole('button', { name: 'bezbariérové' }).click()
+  await shot(page, 'filters-mobile-375-open')
+  await summary.click()
+  await expect(summary).toContainText('filtry')
+  await expect(summary).toContainText('večer · bezbariérové')
+  await shot(page, 'filters-mobile-375-summary')
+
+  // the open state is sticky across visits
+  await summary.click()
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'večer' })).toBeVisible()
 })

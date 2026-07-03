@@ -38,6 +38,14 @@ html {
   outline-offset: 2px;
 }
 
+/* horizontal control rows (day picker): scroll instead of wrapping, no visible scrollbar */
+.scroll-row {
+  scrollbar-width: none;
+}
+.scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
 /* rubric: small red functional labels, like instructions in a missal */
 .rubric {
   font-family: var(--font-sans);
