@@ -126,8 +126,8 @@ describe('Marie finds the nearest mass', () => {
     // language chip only for the non-Czech service, normalized to Czech lowercase
     expect(screen.getByText('latinsky')).toBeInTheDocument()
     expect(screen.queryByText('Latine')).not.toBeInTheDocument()
-    // barrier-free chip from the index
-    expect(screen.getByText('bezbariérový přístup')).toBeInTheDocument()
+    // barrier-free icon from the index (aria-labelled, inline — row height unchanged)
+    expect(screen.getAllByRole('img', { name: 'bezbariérový přístup' }).length).toBeGreaterThan(0)
     // Brno (>30 km) is not in the list
     expect(screen.queryByText(/sv\. Tomáše/)).not.toBeInTheDocument()
   })

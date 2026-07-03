@@ -34,7 +34,7 @@ test('hero list: nearest services, soonest first', async ({ page }) => {
   await expect(page.getByText('dnes').first()).toBeVisible()
   await expect(page.locator('ol').getByText('latinsky', { exact: true })).toBeVisible()
   await expect(page.getByText('řeckokatolická', { exact: true })).toBeVisible()
-  await expect(page.getByText('bezbariérový přístup').first()).toBeVisible()
+  await expect(page.getByRole('img', { name: 'bezbariérový přístup' }).first()).toBeVisible()
 
   // note parser: Havel's 10:30 "kromě července a srpna" must not run on 6 July…
   await expect(page.locator('ol').getByText('10:30')).toHaveCount(0)
