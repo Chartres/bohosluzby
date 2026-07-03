@@ -715,12 +715,15 @@ function ServiceList({
                       <WheelchairIcon />
                     </>
                   )}{' '}
-                  <IconLink
-                    href={`https://mapy.cz/zakladni?q=${r.church.lat}%2C${r.church.lng}`}
-                    label="mapa"
-                    title="mapa (mapy.cz)"
-                  />
-                  {r.church.www && <IconLink href={r.church.www} label="web" title={r.church.www} />}
+                  {/* one nowrap unit — the pin and globe never split across wrapped lines */}
+                  <span className="whitespace-nowrap">
+                    <IconLink
+                      href={`https://mapy.cz/zakladni?q=${r.church.lat}%2C${r.church.lng}`}
+                      label="mapa"
+                      title="mapa (mapy.cz)"
+                    />
+                    {r.church.www && <IconLink href={r.church.www} label="web" title={r.church.www} />}
+                  </span>
                   {r.service.lang && r.service.lang !== 'česky' && (
                     <>
                       {' '}
