@@ -10,7 +10,7 @@ import type { IndexRow } from './domain/data'
 const NOW = new Date('2026-07-03T15:00:00Z')
 
 const INDEX: IndexRow[] = [
-  ['1', 'kostel Nejsvětějšího Salvátora', 'Praha 1', 50.086, 14.417, 1, '50-14'],
+  ['1', 'kostel Nejsvětějšího Salvátora', 'Praha 1', 50.086, 14.417, 1, '50-14', 'https://www.farnostsalvator.cz'],
   ['2', 'kostel sv. Havla', 'Praha 1', 50.0855, 14.4229, 0, '50-14'],
   ['3', 'kostel sv. Tomáše', 'Brno', 49.1986, 16.6072, 0, '49-16'],
   ['7', 'kaple sv. Anny', 'Praha 1', 50.088, 14.42, 0, '50-14'],

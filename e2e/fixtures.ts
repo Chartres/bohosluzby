@@ -26,8 +26,8 @@ export const PRAGUE = { latitude: 50.0875, longitude: 14.4213 }
 export const REMOTE = { latitude: 48.75, longitude: 13.55 } // Šumava, nothing near
 
 export const INDEX: IndexRow[] = [
-  ['1', 'kostel Nejsvětějšího Salvátora', 'Praha 1', 50.0862, 14.4165, 0, '50-14'],
-  ['2', 'katedrála sv. Víta, Václava a Vojtěcha', 'Praha 1', 50.0908, 14.3999, 1, '50-14'],
+  ['1', 'kostel Nejsvětějšího Salvátora', 'Praha 1', 50.0862, 14.4165, 0, '50-14', 'https://www.farnostsalvator.cz'],
+  ['2', 'katedrála sv. Víta, Václava a Vojtěcha', 'Praha 1', 50.0908, 14.3999, 1, '50-14', 'https://www.katedralasvatehovita.cz'],
   ['3', 'kostel sv. Havla', 'Praha 1', 50.0855, 14.4229, 0, '50-14'],
   ['4', 'kostel Panny Marie Sněžné', 'Praha 1', 50.0827, 14.4227, 0, '50-14'],
   ['5', 'kostel sv. Klimenta (řeckokatolická katedrála)', 'Praha 1', 50.0868, 14.4159, 0, '50-14'],
@@ -56,7 +56,7 @@ export const SHARD_50_14 = {
     u: '2026-06-20',
     p: 'farnost u katedrály sv. Víta',
     pa: '',
-    c: [],
+    c: [['www', 'https://www.katedralasvatehovita.cz']], // transform mirrors index www here
     s: [svc('12345', '09:30'), svc('6', '07:00'), svc('7', '08:30')],
   },
   '3': {

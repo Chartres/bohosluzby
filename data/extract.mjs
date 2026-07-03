@@ -126,12 +126,25 @@ async function details(ids) {
 }
 
 // --- phase 3: transform -------------------------------------------------------
-// Index row (churches.json): [id, name, city, lat, lng, barrierFree, cell]
+// Index row (churches.json): [id, name, city, lat, lng, barrierFree, cell, www]
 // Shard (services/<cell>.json): { [id]: { u, p, pa, c: [[type,value]...],
 //   s: [[days, "HH:MM", lang, greek, type, note]...],
 //   x: [["YYYY-MM-DD", "HH:MM", lang, greek, type, note]...] } }
 // Compact keys keep the committed dataset small (<30MB budget).
 const cellOf = (lat, lng) => `${Math.floor(lat)}-${Math.floor(lng)}`
+
+// The parish www lives on institution.www (6 564 of 8 099 details); the
+// contacts[] endpoint field carries it for only 15. Repair the registry's
+// typo'd protocols ("http:\\www…", "http:/www…"), keep only the first URL
+// when the field lists several ("http://a, http://b"), and drop anything
+// that still isn't an absolute http(s) URL.
+function normUrl(raw) {
+  const url = (raw ?? '')
+    .trim()
+    .replace(/^(https?):[\\/]+/i, '$1://')
+    .split(/[,;\s]+/)[0]
+  return /^https?:\/\//i.test(url) ? url : ''
+}
 
 function svcRow(r) {
   return [
@@ -181,7 +194,9 @@ function transform() {
     const name = inst.institution_name ?? inst.name ?? ''
     const city = inst.city ?? ''
     const cell = cellOf(lat, lng)
-    index.push([id, name, city, lat, lng, inst.barrier_free === '1' ? 1 : 0, cell])
+    const www =
+      normUrl(inst.www) || normUrl((d.contacts ?? []).find((c) => c.type === 'www')?.contact)
+    index.push([id, name, city, lat, lng, inst.barrier_free === '1' ? 1 : 0, cell, www])
     const entry = {
       u: (inst.updated_at ?? '').slice(0, 10), // source "aktualizace" date
       p: inst.institution_parish_name ?? '',
@@ -190,6 +205,9 @@ function transform() {
       c: (d.contacts ?? []).filter((c) => c.type && c.contact).map((c) => [c.type, c.contact]),
       s: regular.map(svcRow),
     }
+    // the detail page's Farnost section reads the shard contacts — surface the
+    // institution www there too when contacts[] doesn't carry it
+    if (www && !entry.c.some(([type]) => type === 'www')) entry.c.unshift(['www', www])
     if (extra.length) entry.x = extra.map((r) => [r.datum.slice(0, 10), ...svcRow(r).slice(1)])
     ;(shards[cell] ??= {})[id] = entry
   }

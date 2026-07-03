@@ -11,10 +11,12 @@ export interface Church {
   barrierFree: boolean
   /** 1°×1° grid cell = services shard name, e.g. "50-14". */
   cell: string
+  /** Parish/church website (institution.www), when the registry has one. */
+  www?: string
 }
 
-/** churches.json row: [id, name, city, lat, lng, barrierFree, cell] */
-export type IndexRow = [string, string, string, number, number, 0 | 1, string]
+/** churches.json row: [id, name, city, lat, lng, barrierFree, cell, www] */
+export type IndexRow = [string, string, string, number, number, 0 | 1, string, string?]
 
 export interface Service {
   days: string // ISO weekday digits, 1=Mon…7=Sun
@@ -49,7 +51,7 @@ interface ShardEntry {
 }
 
 export const decodeIndex = (rows: IndexRow[]): Church[] =>
-  rows.map(([id, name, city, lat, lng, bf, cell]) => ({
+  rows.map(([id, name, city, lat, lng, bf, cell, www]) => ({
     id,
     name,
     city,
@@ -57,6 +59,7 @@ export const decodeIndex = (rows: IndexRow[]): Church[] =>
     lng,
     barrierFree: bf === 1,
     cell,
+    www: www || undefined,
   }))
 
 export function decodeShard(shard: Record<string, ShardEntry>): Map<string, ChurchServices> {

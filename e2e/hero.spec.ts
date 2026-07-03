@@ -36,11 +36,12 @@ test('hero list: nearest services, soonest first', async ({ page }) => {
   await expect(page.getByText('řeckokatolická', { exact: true })).toBeVisible()
   await expect(page.getByRole('img', { name: 'bezbariérový přístup' }).first()).toBeVisible()
 
-  // in-row verification links: mapa on every row, farnost web where the registry has one
+  // in-row verification links: mapa on every row, farnost web where the index
+  // carries institution.www (the cathedral's 09:30 row is first)
   await expect(page.getByRole('link', { name: 'mapa' }).first()).toHaveAttribute('href', /mapy\.cz/)
   await expect(page.getByRole('link', { name: 'web' }).first()).toHaveAttribute(
     'href',
-    'https://www.farnostsalvator.cz',
+    'https://www.katedralasvatehovita.cz',
   )
 
   // note parser: Havel's 10:30 "kromě července a srpna" must not run on 6 July…

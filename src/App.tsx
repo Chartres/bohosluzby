@@ -451,7 +451,6 @@ export default function App() {
             {rows.length > 0 ? (
               <ServiceList
                 rows={rows}
-                byId={data?.byId ?? new Map()} // rows ⇒ data, but TS can't see through the memo
                 showUntil={day === 'now' || day === 0}
                 onOpen={(id) => {
                   // the aha moment: a service was found worth looking at
@@ -615,12 +614,10 @@ function FeastLine({ day }: { day: DayChoice }) {
 
 function ServiceList({
   rows,
-  byId,
   showUntil,
   onOpen,
 }: {
   rows: Upcoming[]
-  byId: Map<string, ChurchServices>
   showUntil: boolean
   onOpen: (id: string) => void
 }) {
@@ -632,7 +629,6 @@ function ServiceList({
         const day = dayLabel(now, r.start)
         const showDay = day !== lastDay
         lastDay = day
-        const www = byId.get(r.church.id)?.contacts.find(([type]) => type === 'www')?.[1]
         // index suffix: the ordo can hold two rows with the same (church, start) —
         // duplicate keys corrupted reconciliation and left phantom rows on day switch
         return (
@@ -672,7 +668,7 @@ function ServiceList({
                     label="mapa"
                     title="mapa (mapy.cz)"
                   />
-                  {www && <IconLink href={www} label="web" title={www} />}
+                  {r.church.www && <IconLink href={r.church.www} label="web" title={r.church.www} />}
                   {r.service.lang && r.service.lang !== 'česky' && (
                     <>
                       {' '}
