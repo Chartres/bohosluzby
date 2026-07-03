@@ -36,6 +36,11 @@ test('hero list: nearest services, soonest first', async ({ page }) => {
   await expect(page.getByText('řeckokatolická', { exact: true })).toBeVisible()
   await expect(page.getByText('bezbariérový přístup').first()).toBeVisible()
 
+  // note parser: Havel's 10:30 "kromě července a srpna" must not run on 6 July…
+  await expect(page.locator('ol').getByText('10:30')).toHaveCount(0)
+  // …Ludmila's unverifiable "dle ohlášení" stays, set as a warning rubric
+  await expect(page.locator('ol').getByText(/dle ohlášení/)).toHaveClass(/text-rubric/)
+
   // seasonal accent: 6 Jul 2026 is ordinary time → green
   const accent = await page.evaluate(() =>
     getComputedStyle(document.documentElement).getPropertyValue('--season').trim(),

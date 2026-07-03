@@ -5,7 +5,15 @@
 
 import { haversineKm } from './distance'
 import { nextOccurrences, pragueToday } from './occurrences'
+import { parseNote } from './notes'
 import type { Church, ChurchServices, Service, ExtraService } from './data'
+
+/** Note-aware occurrence check: skip dates the note provably excludes. */
+const runsOn = (service: Service | ExtraService, start: Date): boolean => {
+  if (!service.note) return true
+  const w = pragueToday(start)
+  return parseNote(service.note).runsOn(w.y, w.m, w.d)
+}
 
 export interface Upcoming {
   church: Church
@@ -39,8 +47,9 @@ export function rankUpcoming(
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
       for (const start of nextOccurrences(spec, now, horizonDays)) {
         if (start < reachableAt) continue
+        if (!runsOn(service, start)) continue // "kromě července a srpna" — don't lie in July
         if (!best || start < best.start) best = { church, distanceKm, start, service }
-        break // occurrences are sorted; the first reachable one is this service's best
+        break // occurrences are sorted; the first reachable+running one is this service's best
       }
     }
     for (const s of svc.regular) consider(s, { days: s.days, time: s.time })
@@ -78,7 +87,7 @@ export function ordoForDay(
     const distanceKm = haversineKm(origin.lat, origin.lng, church.lat, church.lng)
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
       for (const start of nextOccurrences(spec, now, dayOffset + 1)) {
-        if (onTarget(start)) out.push({ church, distanceKm, start, service })
+        if (onTarget(start) && runsOn(service, start)) out.push({ church, distanceKm, start, service })
       }
     }
     for (const s of svc.regular) consider(s, { days: s.days, time: s.time })

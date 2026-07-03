@@ -64,7 +64,10 @@ export const SHARD_50_14 = {
     p: '',
     pa: '',
     c: [],
-    s: [svc('1', '19:30', 'Latine', 0, 'mše sv.', 'tridentská')],
+    s: [
+      svc('1', '19:30', 'Latine', 0, 'mše sv.', 'tridentská'),
+      svc('1', '10:30', 'česky', 0, 'mše sv.', 'kromě července a srpna'), // provably not on 6 Jul
+    ],
   },
   '4': {
     u: '2026-06-01',
@@ -86,6 +89,10 @@ export const SHARD_50_14 = {
     p: 'farnost sv. Ludmily',
     pa: '',
     c: [],
-    s: [svc('12345', '16:30'), svc('7', '09:00')],
+    s: [
+      svc('12345', '16:30'),
+      svc('7', '09:00'),
+      svc('1', '15:00', 'česky', 0, 'mše sv.', 'dle ohlášení'), // unverifiable → warning rubric
+    ],
   },
 }

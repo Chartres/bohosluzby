@@ -17,7 +17,7 @@ import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { findCity } from './domain/cities'
-import { ChurchDetail, Chip } from './ChurchDetail'
+import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
 
@@ -522,7 +522,7 @@ function ServiceList({
                 <p className="mt-0.5 text-sm text-ink-faded">
                   {r.church.city && `${r.church.city} · `}
                   {fmtDistance(r.distanceKm)} · {r.service.type}
-                  {r.service.note && ` — ${r.service.note}`}
+                  <NoteText note={r.service.note} />
                 </p>
                 <p className="mt-0.5 space-x-2 text-sm empty:hidden">
                   {r.service.lang && r.service.lang !== 'česky' && <Chip label={r.service.lang} />}

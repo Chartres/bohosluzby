@@ -78,6 +78,24 @@ describe('rankUpcoming — soonest you can make it', () => {
     const map = new Map(churches.map((c) => [c.id, services([{ days: '1234567', time: '18:00' }])]))
     expect(rankUpcoming(now, origin, churches, map, { limit: 10 })).toHaveLength(10)
   })
+
+  it('excludes services whose note provably rules out the date (July: "mimo červenec a srpen")', () => {
+    const c = church('x', 50.088, 14.422)
+    const svc = services([{ days: '5', time: '18:00' }, { days: '5', time: '19:00' }])
+    svc.regular[0].note = 'mimo červenec a srpen'
+    svc.regular[1].note = 'období od července do srpna'
+    const ranked = rankUpcoming(now, origin, [c], new Map([[c.id, svc]]))
+    // it is 3 July: the 18:00 does not run; the church's real July mass (19:00) wins
+    expect(ranked).toHaveLength(1)
+    expect(ranked[0].service.time).toBe('19:00')
+  })
+
+  it('keeps services with unparseable conditional notes (never a silent drop)', () => {
+    const c = church('x', 50.088, 14.422)
+    const svc = services([{ days: '5', time: '18:00' }])
+    svc.regular[0].note = 'nepravidelně, dle ohlášení'
+    expect(rankUpcoming(now, origin, [c], new Map([[c.id, svc]]))).toHaveLength(1)
+  })
 })
 
 describe('ordoForDay — the planning view', () => {

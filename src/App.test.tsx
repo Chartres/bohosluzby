@@ -13,6 +13,7 @@ const INDEX: IndexRow[] = [
   ['1', 'kostel Nejsvětějšího Salvátora', 'Praha 1', 50.086, 14.417, 1, '50-14'],
   ['2', 'kostel sv. Havla', 'Praha 1', 50.0855, 14.4229, 0, '50-14'],
   ['3', 'kostel sv. Tomáše', 'Brno', 49.1986, 16.6072, 0, '49-16'],
+  ['7', 'kaple sv. Anny', 'Praha 1', 50.088, 14.42, 0, '50-14'],
 ]
 const SHARD_50_14 = {
   '1': {
@@ -44,6 +45,16 @@ const SHARD_50_14 = {
       // the registry lists the same Sunday slot twice (real pattern: seasonal variants)
       ['7', '10:00', 'česky', 0, 'mše sv.', ''],
       ['7', '10:00', 'česky', 0, 'mše sv.', 'varianta'],
+    ],
+  },
+  '7': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [
+      ['5', '20:00', 'česky', 0, 'mše sv.', 'kromě července a srpna'], // provably not in July
+      ['5', '21:00', 'česky', 0, 'mše sv.', 'nepravidelně, dle ohlášení'], // unverifiable → loud note
     ],
   },
 }
@@ -305,6 +316,23 @@ describe('Marie finds the nearest mass', () => {
     // back to "hned" — the reachable-now ranking returns
     await user.click(screen.getByRole('button', { name: 'hned' }))
     expect(await screen.findByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
+  })
+
+  it('notes: July exceptions exclude the service; unverifiable notes stay and print loud', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    // kaple sv. Anny: 20:00 "kromě července a srpna" must NOT appear on 3 July…
+    expect(screen.queryByText('20:00')).not.toBeInTheDocument()
+    // …its 21:00 with an unparseable conditional note appears, note set as warning rubric
+    expect(screen.getByText('21:00')).toBeInTheDocument()
+    const note = screen.getByText(/nepravidelně, dle ohlášení/)
+    expect(note).toHaveClass('text-rubric')
+    // parsed/descriptive notes stay quiet (Salvátor's Sunday studentská in the ordo)
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    await user.click(screen.getByRole('button', { name: 'neděle' }))
+    expect(screen.getByText(/studentská/)).not.toHaveClass('text-rubric')
   })
 
   it('day picker: switching to a day ordo and back to "hned" leaves no phantom rows', async () => {

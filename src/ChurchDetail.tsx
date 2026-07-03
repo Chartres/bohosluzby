@@ -10,6 +10,7 @@ import {
   type Service,
 } from './domain/data'
 import { pragueToday } from './domain/occurrences'
+import { noteUncertain } from './domain/notes'
 import { fmtDateCz } from './domain/format'
 import { buildICS } from './domain/ics'
 import { logError, track } from './analytics'
@@ -31,6 +32,18 @@ export function Chip({ label }: { label: string }) {
     <span className="rounded-sm border border-hairline px-1.5 py-0.5 text-xs text-ink-faded">
       {label}
     </span>
+  )
+}
+
+/** Service note, set like the rubric it is: conditions the parser can't verify
+ * ("1x za 14 dní", "dle ohlášení") print in rubric red so nobody treats an
+ * unverified time as a promise. Parsed/descriptive notes stay quiet. */
+export function NoteText({ note }: { note: string }) {
+  if (!note) return null
+  return noteUncertain(note) ? (
+    <span className="font-semibold text-rubric"> — {note}</span>
+  ) : (
+    <span className="text-ink-faded"> — {note}</span>
   )
 }
 
@@ -202,7 +215,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                     </p>
                     <p className="min-w-0 flex-1 text-sm">
                       {x.type || 'bohoslužba'}
-                      {x.note && <span className="text-ink-faded"> — {x.note}</span>}
+                      <NoteText note={x.note} />
                     </p>
                     <button
                       type="button"
@@ -257,7 +270,7 @@ function ServiceRow({ s, church }: { s: Service; church: Church }) {
       <div className="min-w-0 flex-1">
         <p className="text-sm">
           {s.type || 'bohoslužba'}
-          {s.note && <span className="text-ink-faded"> — {s.note}</span>}
+          <NoteText note={s.note} />
         </p>
         <p className="mt-0.5 space-x-2 text-sm empty:hidden">
           {s.lang !== 'česky' && <Chip label={s.lang} />}
