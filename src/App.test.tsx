@@ -300,7 +300,7 @@ describe('Marie finds the nearest mass', () => {
     await screen.findByText(/Salvátora/)
 
     // now = Friday → the picker offers hned · dnes · zítra · neděle · po …
-    await user.click(screen.getByRole('button', { name: 'neděle' }))
+    await user.click(screen.getByRole('button', { name: /^neděle/ }))
 
     // Salvátor's two Sunday masses, chronological, grouped under one day rubric
     expect(screen.getByText('neděle 5. 7.')).toBeInTheDocument()
@@ -318,6 +318,23 @@ describe('Marie finds the nearest mass', () => {
     expect(await screen.findByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
   })
 
+  it('feasts: Sunday 5 Jul (Cyril a Metoděj) is highlighted in the picker and named in the header', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    // picker chip carries the feast (tooltip + accessible name + gold tint)
+    const sunday = screen.getByRole('button', { name: /neděle — sv\. Cyrila a Metoděje/ })
+    expect(sunday).toHaveAttribute('title', 'sv. Cyrila a Metoděje')
+    expect(sunday.style.color).toBe('var(--color-season-gold)')
+
+    // no feast line while an ordinary day is selected (today is 3 Jul)
+    expect(screen.queryByText('sv. Cyrila a Metoděje')).not.toBeInTheDocument()
+    await user.click(sunday)
+    expect(screen.getByText('sv. Cyrila a Metoděje')).toBeInTheDocument()
+  })
+
   it('notes: July exceptions exclude the service; unverifiable notes stay and print loud', async () => {
     stubGeolocation('granted')
     render(<App />)
@@ -331,7 +348,7 @@ describe('Marie finds the nearest mass', () => {
     expect(note).toHaveClass('text-rubric')
     // parsed/descriptive notes stay quiet (Salvátor's Sunday studentská in the ordo)
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    await user.click(screen.getByRole('button', { name: 'neděle' }))
+    await user.click(screen.getByRole('button', { name: /^neděle/ }))
     expect(screen.getByText(/studentská/)).not.toHaveClass('text-rubric')
   })
 
@@ -344,7 +361,7 @@ describe('Marie finds the nearest mass', () => {
     render(<App />)
     await screen.findByText(/Salvátora/)
 
-    await user.click(screen.getByRole('button', { name: 'neděle' }))
+    await user.click(screen.getByRole('button', { name: /^neděle/ }))
     expect(screen.getAllByText('10:00')).toHaveLength(2) // both Sunday variants listed
 
     await user.click(screen.getByRole('button', { name: 'hned' }))

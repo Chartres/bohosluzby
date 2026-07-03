@@ -67,3 +67,35 @@ describe('liturgicalDay — seasons 2026 (Roman rite, CZ)', () => {
     expect(day(2026, 12, 8).color).toBe('gold')
   })
 })
+
+describe('liturgicalDay — feast names (day-picker highlight + list header line)', () => {
+  const day = (y: number, m: number, d: number) => liturgicalDay(y, m, d)
+
+  it.each([
+    [2026, 1, 6, 'Zjevení Páně', 'gold'],
+    [2026, 7, 5, 'sv. Cyrila a Metoděje', 'gold'],
+    [2026, 8, 15, 'Nanebevzetí Panny Marie', 'gold'],
+    [2026, 9, 28, 'sv. Václava', 'red'],
+    [2026, 11, 1, 'Všech svatých', 'gold'],
+    [2026, 12, 8, 'Neposkvrněného početí Panny Marie', 'gold'],
+    [2026, 12, 25, 'Narození Páně', 'gold'],
+    [2026, 6, 29, 'sv. Petra a Pavla', 'red'],
+  ] as const)('%i-%i-%i → %s (%s)', (y, m, d, feast, color) => {
+    expect(day(y, m, d)).toMatchObject({ feast, color })
+  })
+
+  it('movable feasts via the computus (Easter 2026 = 5 Apr)', () => {
+    expect(day(2026, 4, 5)).toMatchObject({ feast: 'Zmrtvýchvstání Páně', color: 'gold' })
+    expect(day(2026, 5, 14)).toMatchObject({ feast: 'Nanebevstoupení Páně', color: 'gold' }) // E+39
+    expect(day(2026, 5, 24)).toMatchObject({ feast: 'Seslání Ducha svatého', color: 'red' }) // E+49
+    expect(day(2026, 6, 4)).toMatchObject({ feast: 'Těla a krve Páně', color: 'gold' }) // E+60, Thursday
+    expect(day(2026, 11, 22)).toMatchObject({ feast: 'Ježíše Krista Krále', color: 'gold' }) // Sunday before Advent
+    expect(day(2026, 3, 29)).toMatchObject({ feast: 'Květná neděle', color: 'red' })
+    expect(day(2026, 4, 3)).toMatchObject({ feast: 'Velký pátek', color: 'red' })
+  })
+
+  it('ordinary days carry no feast', () => {
+    expect(day(2026, 7, 3).feast).toBeUndefined()
+    expect(day(2026, 12, 24).feast).toBeUndefined()
+  })
+})

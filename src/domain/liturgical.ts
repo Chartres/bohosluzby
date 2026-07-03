@@ -19,6 +19,8 @@ export type LiturgicalColor = 'green' | 'violet' | 'gold' | 'red'
 export interface LiturgicalDay {
   season: Season
   color: LiturgicalColor
+  /** Solemnity/feast name for the highlighted days (CZ calendar), e.g. "sv. Václava". */
+  feast?: string
 }
 
 /** Gregorian Easter Sunday (anonymous/Meeus computus). */
@@ -46,24 +48,30 @@ const DAY = 86_400_000
 const dow = (t: number) => new Date(t).getUTCDay() // 0 = Sunday
 
 // Fixed-date solemnities/feasts that override the season color (CZ calendar).
-const FIXED: Record<string, LiturgicalColor> = {
-  '6-29': 'red', // sv. Petr a Pavel (martyrs)
-  '7-5': 'gold', // sv. Cyril a Metoděj (CZ solemnity)
-  '8-15': 'gold', // Nanebevzetí Panny Marie
-  '9-28': 'red', // sv. Václav (martyr, CZ solemnity)
-  '11-1': 'gold', // Všech svatých
-  '12-8': 'gold', // Panna Maria počatá bez poskvrny prvotního hříchu
+const FIXED: Record<string, { color: LiturgicalColor; feast: string }> = {
+  '1-6': { color: 'gold', feast: 'Zjevení Páně' },
+  '6-29': { color: 'red', feast: 'sv. Petra a Pavla' }, // martyrs
+  '7-5': { color: 'gold', feast: 'sv. Cyrila a Metoděje' }, // CZ solemnity
+  '8-15': { color: 'gold', feast: 'Nanebevzetí Panny Marie' },
+  '9-28': { color: 'red', feast: 'sv. Václava' }, // martyr, CZ solemnity
+  '11-1': { color: 'gold', feast: 'Všech svatých' },
+  '12-8': { color: 'gold', feast: 'Neposkvrněného početí Panny Marie' },
+  '12-25': { color: 'gold', feast: 'Narození Páně' },
 }
 
 export function liturgicalDay(year: number, month: number, day: number): LiturgicalDay {
   const t = utc(year, month, day)
   const easter = easterSunday(year)
   const easterT = utc(year, easter.month, easter.day)
+  const fixed = FIXED[`${month}-${day}`]
 
-  // Movable red days
-  if (t === easterT - 7 * DAY) return { season: 'lent', color: 'red' } // Palm Sunday
-  if (t === easterT - 2 * DAY) return { season: 'lent', color: 'red' } // Good Friday
-  if (t === easterT + 49 * DAY) return { season: 'easter', color: 'red' } // Pentecost
+  // Movable days from the computus
+  if (t === easterT - 7 * DAY) return { season: 'lent', color: 'red', feast: 'Květná neděle' }
+  if (t === easterT - 2 * DAY) return { season: 'lent', color: 'red', feast: 'Velký pátek' }
+  if (t === easterT) return { season: 'easter', color: 'gold', feast: 'Zmrtvýchvstání Páně' }
+  if (t === easterT + 39 * DAY) return { season: 'easter', color: 'gold', feast: 'Nanebevstoupení Páně' }
+  if (t === easterT + 49 * DAY) return { season: 'easter', color: 'red', feast: 'Seslání Ducha svatého' }
+  if (t === easterT + 60 * DAY) return { season: 'ordinary', color: 'gold', feast: 'Těla a krve Páně' } // Boží Tělo
 
   if (t >= easterT - 46 * DAY && t < easterT) return { season: 'lent', color: 'violet' }
   if (t >= easterT && t <= easterT + 49 * DAY) return { season: 'easter', color: 'gold' }
@@ -71,17 +79,16 @@ export function liturgicalDay(year: number, month: number, day: number): Liturgi
   // Christmas season spills into January: Baptism of the Lord = Sunday after 6 Jan.
   const jan6 = utc(year, 1, 6)
   const baptism = jan6 + ((7 - dow(jan6)) % 7 || 7) * DAY
-  if (t <= baptism) return { season: 'christmas', color: 'gold' }
-
-  const fixed = FIXED[`${month}-${day}`]
+  if (t <= baptism) return { season: 'christmas', color: 'gold', feast: fixed?.feast }
 
   // Advent: 4th Sunday before 25 Dec (the Sunday in the 27 Nov – 3 Dec window).
   const christmas = utc(year, 12, 25)
   const advent1 = christmas - dow(christmas) * DAY - 21 * DAY
-  if (t >= christmas) return { season: 'christmas', color: 'gold' }
-  if (t >= advent1) return { season: 'advent', color: fixed ?? 'violet' }
+  if (t >= christmas) return { season: 'christmas', color: 'gold', feast: fixed?.feast }
+  if (t === advent1 - 7 * DAY) return { season: 'ordinary', color: 'gold', feast: 'Ježíše Krista Krále' }
+  if (t >= advent1) return { season: 'advent', color: fixed?.color ?? 'violet', feast: fixed?.feast }
 
-  return { season: 'ordinary', color: fixed ?? 'green' }
+  return { season: 'ordinary', color: fixed?.color ?? 'green', feast: fixed?.feast }
 }
 
 /** Today's liturgical color in Prague (used for the --season accent). */

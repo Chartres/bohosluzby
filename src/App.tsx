@@ -14,7 +14,7 @@ import {
 import { haversineKm } from './domain/distance'
 import { ordoForDay, rankUpcoming, type Upcoming } from './domain/ranking'
 import { pragueToday } from './domain/occurrences'
-import { currentLiturgicalDay, type LiturgicalDay } from './domain/liturgical'
+import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { findCity } from './domain/cities'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
@@ -94,19 +94,27 @@ export type DayChoice = 'now' | number
 
 const WEEKDAY_SHORT = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'] // Date.getUTCDay order
 
+/** The liturgical day for a day-picker choice ('now' = today). */
+export function litForChoice(now: Date, day: DayChoice): LiturgicalDay {
+  const today = pragueToday(now)
+  const t = new Date(Date.UTC(today.y, today.m - 1, today.d) + (day === 'now' ? 0 : day) * 86_400_000)
+  return liturgicalDay(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate())
+}
+
 /** Picker options for the next week: hned · dnes · zítra · short weekday names
- * (Sunday spelled out — "kdy je v neděli mše?" is the planning question). */
-export function dayOptions(now: Date): { key: DayChoice; label: string }[] {
+ * (Sunday spelled out — "kdy je v neděli mše?" is the planning question).
+ * Feast days carry their name + color for the quiet picker highlight. */
+export function dayOptions(now: Date): { key: DayChoice; label: string; lit: LiturgicalDay }[] {
   const today = pragueToday(now)
   const base = Date.UTC(today.y, today.m - 1, today.d)
-  const out: { key: DayChoice; label: string }[] = [
-    { key: 'now', label: 'hned' },
-    { key: 0, label: 'dnes' },
-    { key: 1, label: 'zítra' },
+  const out: { key: DayChoice; label: string; lit: LiturgicalDay }[] = [
+    { key: 'now', label: 'hned', lit: litForChoice(now, 'now') },
+    { key: 0, label: 'dnes', lit: litForChoice(now, 0) },
+    { key: 1, label: 'zítra', lit: litForChoice(now, 1) },
   ]
   for (let off = 2; off <= 6; off++) {
     const dow = new Date(base + off * 86_400_000).getUTCDay()
-    out.push({ key: off, label: dow === 0 ? 'neděle' : WEEKDAY_SHORT[dow] })
+    out.push({ key: off, label: dow === 0 ? 'neděle' : WEEKDAY_SHORT[dow], lit: litForChoice(now, off) })
   }
   return out
 }
@@ -388,6 +396,7 @@ export default function App() {
                 track('key_action', { action: 'day', day: d })
               }}
             />
+            <FeastLine day={day} />
             <FilterBar filters={filters} langs={langs} onChange={updateFilters} />
             {rows.length > 0 ? (
               <ServiceList
@@ -460,18 +469,23 @@ function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice)
   const options = useMemo(() => dayOptions(new Date()), [])
   return (
     <div role="group" aria-label="Den" className="mt-3 -ml-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-      {options.map(({ key, label }) => {
+      {options.map(({ key, label, lit }) => {
         const active = key === day
+        // feast days get a quiet tint of their liturgical color (a missal marks them too)
+        const feastStyle = !active && lit.feast ? { color: SEASON_VAR[lit.color] } : undefined
         return (
           <button
             key={String(key)}
             type="button"
             aria-pressed={active}
+            title={lit.feast}
+            aria-label={lit.feast ? `${label} — ${lit.feast}` : undefined}
             className={`-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
               active
                 ? 'text-rubric underline decoration-rubric decoration-2 underline-offset-4'
                 : 'text-ink-faded hover:text-ink'
             }`}
+            style={feastStyle}
             onClick={() => onChange(key)}
           >
             {label}
@@ -479,6 +493,17 @@ function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice)
         )
       })}
     </div>
+  )
+}
+
+/** Quiet feast name for the selected day, in the feast's liturgical color. */
+function FeastLine({ day }: { day: DayChoice }) {
+  const lit = useMemo(() => litForChoice(new Date(), day), [day])
+  if (!lit.feast) return null
+  return (
+    <p className="mt-2 text-sm font-semibold" style={{ color: SEASON_VAR[lit.color] }}>
+      {lit.feast}
+    </p>
   )
 }
 

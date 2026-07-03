@@ -29,6 +29,19 @@ test('Sunday ordo: every service that day, chronological, no countdowns', async 
   await shot(page, 'day-back-to-hned', true)
 })
 
+test('feast day: picker chip tinted, quiet feast line in the header (5 Jul = Cyril a Metoděj)', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-07-03T07:00:00Z') }) // Friday 3 Jul
+  await mockData(page)
+  await page.goto('/')
+  await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
+
+  const sunday = page.getByRole('button', { name: 'neděle — sv. Cyrila a Metoděje' })
+  await expect(sunday).toHaveCSS('color', 'rgb(168, 132, 44)') // season gold tint
+  await sunday.click()
+  await expect(page.getByText('sv. Cyrila a Metoděje', { exact: true })).toBeVisible()
+  await shot(page, 'day-feast')
+})
+
 test('day picker at 375px', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.clock.install({ time: FIXED_NOW })
