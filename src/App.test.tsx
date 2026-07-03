@@ -156,6 +156,30 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getByRole('button', { name: 'změnit' })).toBeInTheDocument()
   })
 
+  it('"moje poloha": after a city pick, clears the override and returns to geolocation', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    await user.click(screen.getByRole('button', { name: 'změnit' }))
+    await user.type(screen.getByLabelText('Kostel nebo obec'), 'brno')
+    await user.click(await screen.findByRole('option', { name: /^Brno/ }))
+    expect(await screen.findByText(/sv\. Tomáše/)).toBeInTheDocument()
+    // the pick is saved as the last-position override…
+    expect(JSON.parse(localStorage.getItem('bohosluzby:lastOrigin')!)).toMatchObject({
+      label: 'Brno',
+    })
+
+    // …and "moje poloha" is the way back: re-runs geolocation, drops the override
+    await user.click(screen.getByRole('button', { name: 'moje poloha' }))
+    expect(await screen.findByText(/Salvátora/)).toBeInTheDocument()
+    expect(screen.getByText(/podle vaší polohy/)).toBeInTheDocument()
+    // with a live geolocation origin the affordance is gone
+    expect(screen.queryByRole('button', { name: 'moje poloha' })).not.toBeInTheDocument()
+    expect(JSON.parse(localStorage.getItem('bohosluzby:lastOrigin')!).label).toBeUndefined()
+  })
+
   it('unified search: finds a specific church by name and opens its detail (keyboard)', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })

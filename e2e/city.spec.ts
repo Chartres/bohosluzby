@@ -1,7 +1,7 @@
 // Persona-visual e2e: a searcher lands on /mesto/praha/ from Google ("mše
 // praha dnes") — the city ordo renders without any location prompt.
 import { test, expect } from '@playwright/test'
-import { FIXED_NOW, mockData, shot } from './fixtures'
+import { FIXED_NOW, PRAGUE, mockData, shot } from './fixtures'
 
 test.use({ permissions: [] }) // no geolocation — the landing must not need it
 
@@ -58,4 +58,25 @@ test('změnit opens the search over the list; zpět returns with the origin inta
   await shot(page, 'search-open')
   await page.getByRole('button', { name: '‹ zpět na seznam' }).click()
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
+})
+
+test('moje poloha: the way back from a picked city to geolocation', async ({ page, context }) => {
+  await context.grantPermissions(['geolocation'])
+  await context.setGeolocation(PRAGUE)
+  await page.clock.install({ time: FIXED_NOW })
+  await mockData(page)
+  await page.goto('/')
+  await expect(page.getByText('podle vaší polohy')).toBeVisible()
+  // geolocation origin → no affordance needed
+  await expect(page.getByRole('button', { name: 'moje poloha' })).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'změnit' }).click()
+  await page.getByLabel('Kostel nebo obec').fill('praha')
+  await page.getByRole('option', { name: /^Praha/ }).click()
+  await expect(page.getByText('Praha ·')).toBeVisible()
+  await shot(page, 'city-my-location')
+
+  await page.getByRole('button', { name: 'moje poloha' }).click()
+  await expect(page.getByText('podle vaší polohy')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'moje poloha' })).toHaveCount(0)
 })

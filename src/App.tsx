@@ -196,9 +196,8 @@ export default function App() {
       })
   }, [])
 
-  useEffect(() => {
-    // a /mesto/<slug>/ landing sets its own origin — don't prompt for location
-    if (parseRoute(location.pathname).view === 'city') return
+  // geolocate → last known position → the picker (also re-run by "moje poloha")
+  const locate = () => {
     const fallback = () => {
       const last = loadLastOrigin()
       if (last) setOrigin(last)
@@ -213,6 +212,13 @@ export default function App() {
       fallback,
       { timeout: 12_000, maximumAge: 300_000 },
     )
+  }
+
+  useEffect(() => {
+    // a /mesto/<slug>/ landing sets its own origin — don't prompt for location
+    if (parseRoute(location.pathname).view === 'city') return
+    locate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
   }, [])
 
   // remember the position for the offline / denied fallback
@@ -308,7 +314,23 @@ export default function App() {
     track('key_action', { action: 'filter', ...next })
   }
 
-  const loading = !dataError && !index ? true : Boolean(origin) && rows === null
+  const loading = !dataError && (!index || (!origin && !geoDenied) || (Boolean(origin) && rows === null))
+
+  // "moje poloha": drop the picked city and the saved last-position override,
+  // then re-run geolocation — the way back after any manual city pick.
+  const useMyLocation = () => {
+    track('key_action', { action: 'my_location' })
+    try {
+      localStorage.removeItem(LAST_ORIGIN_KEY)
+    } catch {
+      // private mode
+    }
+    setPicking(false)
+    setGeoDenied(false)
+    if (route.view === 'city') navigate('/')
+    setOrigin(null) // "Hledám…" while the fix comes in
+    locate()
+  }
 
   const pickCity = (city: City) => {
     track('key_action', { action: 'city_selected', city: city.name })
@@ -403,6 +425,18 @@ export default function App() {
                 >
                   změnit
                 </button>
+                {origin.source !== 'geo' && (
+                  <>
+                    {' · '}
+                    <button
+                      type="button"
+                      className="underline decoration-hairline underline-offset-2 hover:text-ink"
+                      onClick={useMyLocation}
+                    >
+                      moje poloha
+                    </button>
+                  </>
+                )}
               </p>
             </div>
             <DayPicker
