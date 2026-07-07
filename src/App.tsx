@@ -16,7 +16,7 @@ import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
-import { BANDS, HALF_HOURS, bandFullyPast, parseCas, resolveCasDay, type Band } from './domain/timeband'
+import { BANDS, bandFullyPast, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
@@ -953,7 +953,8 @@ function FilterBar({
             style={around ? { color: 'var(--season)' } : undefined}
           >
             <option value="">—</option>
-            {HALF_HOURS.map((t) => (
+            {/* rotated to open at "now" — nobody looks for a mass around 00:00 */}
+            {halfHoursFrom(new Date()).map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>

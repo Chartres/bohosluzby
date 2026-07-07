@@ -1,7 +1,14 @@
 // "Kdy" windowing: time-of-day bands + "kolem HH:MM" (±90 min, circular —
 // midnight-adjacent times must not fall off the clock edge).
 import { describe, expect, it } from 'vitest'
-import { HALF_HOURS, bandFullyPast, matchesCas, parseCas, resolveCasDay } from './timeband'
+import {
+  HALF_HOURS,
+  bandFullyPast,
+  halfHoursFrom,
+  matchesCas,
+  parseCas,
+  resolveCasDay,
+} from './timeband'
 
 describe('parseCas (?cas= validation)', () => {
   it('accepts band names', () => {
@@ -26,6 +33,22 @@ describe('parseCas (?cas= validation)', () => {
     expect(HALF_HOURS[0]).toBe('00:00')
     expect(HALF_HOURS[47]).toBe('23:30')
     for (const t of HALF_HOURS) expect(parseCas(t)).toBe(t)
+  })
+  it('halfHoursFrom opens the list at the next half-hour, not midnight', () => {
+    // 2026-07-03T08:00:00Z = 10:00 Prague (CEST) — exactly on a slot: keep it first
+    const opts = halfHoursFrom(new Date('2026-07-03T08:00:00Z'))
+    expect(opts[0]).toBe('10:00')
+    expect(opts).toHaveLength(48)
+    expect(opts[47]).toBe('09:30')
+    expect(new Set(opts).size).toBe(48) // still the whole day, just rotated
+  })
+  it('halfHoursFrom rounds a mid-slot time up', () => {
+    // 10:10 Prague → next slot is 10:30
+    expect(halfHoursFrom(new Date('2026-07-03T08:10:00Z'))[0]).toBe('10:30')
+  })
+  it('halfHoursFrom wraps at the clock edge', () => {
+    // 23:50 Prague → 00:00, not 24:00
+    expect(halfHoursFrom(new Date('2026-07-03T21:50:00Z'))[0]).toBe('00:00')
   })
   it('rejects garbage', () => {
     expect(parseCas(null)).toBeNull()
