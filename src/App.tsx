@@ -16,7 +16,7 @@ import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
-import { BANDS, HALF_HOURS, bandFullyPast, parseCas, resolveCasDay, type Band } from './domain/timeband'
+import { BANDS, bandFullyPast, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
@@ -497,7 +497,8 @@ export default function App() {
               {' · '}
               <button
                 type="button"
-                className="underline decoration-hairline underline-offset-2 hover:text-ink"
+                // -my/py: pad the hit area past the 24px floor without moving the text line
+                className="-mx-1 -my-2 inline-block px-1 py-2 underline decoration-hairline underline-offset-2 hover:text-ink"
                 onClick={() => setPicking(true)} // origin stays — zpět/Escape returns to the list
               >
                 změnit
@@ -507,7 +508,7 @@ export default function App() {
                   {' · '}
                   <button
                     type="button"
-                    className="underline decoration-hairline underline-offset-2 hover:text-ink"
+                    className="-mx-1 -my-2 inline-block px-1 py-2 underline decoration-hairline underline-offset-2 hover:text-ink"
                     onClick={useMyLocation}
                   >
                     moje poloha
@@ -949,11 +950,12 @@ function FilterBar({
             aria-label="Kolem času"
             value={around ?? ''}
             onChange={(e) => onCas(e.target.value || null)}
-            className="cursor-pointer border-0 bg-transparent font-sans text-xs font-semibold tabular-nums"
+            className="-my-2 cursor-pointer border-0 bg-transparent py-2 font-sans text-xs font-semibold tabular-nums"
             style={around ? { color: 'var(--season)' } : undefined}
           >
             <option value="">—</option>
-            {HALF_HOURS.map((t) => (
+            {/* rotated to open at "now" — nobody looks for a mass around 00:00 */}
+            {halfHoursFrom(new Date()).map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>

@@ -28,6 +28,14 @@ const toMinutes = (s: string, strict = false): number | null => {
 /** The 48 half-hours of the day — the "kolem" selector's options ("00:00" … "23:30"). */
 export const HALF_HOURS: string[] = Array.from({ length: 48 }, (_, i) => fmtMinutes(i * 30))
 
+/** The selector's option order: rotated so the list opens at the user's probable
+ * answer — the next half-hour from now (Prague wall clock) — instead of 00:00.
+ * Same 48 values; "kolem" matching is circular, so order carries no semantics. */
+export function halfHoursFrom(now: Date): string[] {
+  const idx = Math.ceil(pragueMinutes(now) / 30) % 48
+  return [...HALF_HOURS.slice(idx), ...HALF_HOURS.slice(0, idx)]
+}
+
 function fmtMinutes(t: number): string {
   return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`
 }
