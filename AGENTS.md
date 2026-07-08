@@ -41,7 +41,8 @@ offline. Language values are normalized to Czech lowercase at decode (`normalize
 1. allow location (or pick a city) → "Nejbližší bohoslužby" — time until, distance, chips,
    seasonal accent (must match the current liturgical season).
 2. day picker (hned/dnes/zítra/neděle) → the day's full ordo, chronological.
-3. filters (jen mše svaté · bezbariérové · řeckokatolické · jazyk) — persisted in localStorage.
+3. filters (jen mše svaté · bezbariérové · řeckokatolické · jazyk) and kdy — sticky in
+   localStorage for 12h, then reset (opening the app later should mean "right now").
 4. row → `/kostel/<id>/` detail — weekly ordo, extras, parish/contacts, mapa/navigace/sdílet,
    "do kalendáře" (ICS with RRULE), freshness line ("naposledy ověřeno …").
 5. `/mesto/praha/` — city landing without a geolocation prompt.

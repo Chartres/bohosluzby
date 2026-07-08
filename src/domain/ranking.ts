@@ -1,7 +1,12 @@
-// "Soonest you can make it": for every church, the earliest upcoming service
-// whose start you can still reach on foot (walk time + a small buffer),
-// sorted by start time. Time beats raw distance — a mass in 20 minutes 1 km
-// away outranks one tomorrow next door.
+// "Soonest you can make it": for every church, its next upcoming service,
+// sorted by start time (ties broken by distance — a mass in 20 minutes 1 km
+// away outranks an equally-timed one next door). No walk-only reachability
+// filter: assuming everyone is on foot (and that straight-line distance is
+// a fair stand-in for an actual walking route) was a stronger assumption
+// than the data supports — a car or transit can close a "too far to walk"
+// gap in a fraction of the time. The list starts at right now; the
+// time-then-distance sort is the reachability heuristic, kept as ranking,
+// not as a hard cutoff.
 
 import { haversineKm } from './distance'
 import { nextOccurrences, pragueToday } from './occurrences'
@@ -9,7 +14,7 @@ import { parseNote } from './notes'
 import { applyFilters, type Filters } from './filters'
 import type { Church, ChurchServices, Service, ExtraService } from './data'
 
-/** Day-picker choice: 'now' = soonest reachable; 0–6 = today + offset's full ordo. */
+/** Day-picker choice: 'now' = soonest, time then distance; 0–6 = today + offset's full ordo. */
 export type DayChoice = 'now' | number
 
 /** Note-aware occurrence check: skip dates the note provably excludes. */
@@ -27,8 +32,6 @@ export interface Upcoming {
 }
 
 export interface RankOptions {
-  walkKmh?: number
-  bufferMin?: number
   horizonDays?: number
   limit?: number
 }
@@ -38,22 +41,20 @@ export function rankUpcoming(
   origin: { lat: number; lng: number },
   churches: Church[],
   servicesById: ReadonlyMap<string, ChurchServices>,
-  { walkKmh = 4.5, bufferMin = 5, horizonDays = 8, limit = 20 }: RankOptions = {},
+  { horizonDays = 8, limit = 20 }: RankOptions = {},
 ): Upcoming[] {
   const out: Upcoming[] = []
   for (const church of churches) {
     const svc = servicesById.get(church.id)
     if (!svc) continue
     const distanceKm = haversineKm(origin.lat, origin.lng, church.lat, church.lng)
-    const reachableAt = new Date(now.getTime() + ((distanceKm / walkKmh) * 60 + bufferMin) * 60_000)
 
     let best: Upcoming | null = null
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
       for (const start of nextOccurrences(spec, now, horizonDays)) {
-        if (start < reachableAt) continue
         if (!runsOn(service, start)) continue // "kromě července a srpna" — don't lie in July
         if (!best || start < best.start) best = { church, distanceKm, start, service }
-        break // occurrences are sorted; the first reachable+running one is this service's best
+        break // occurrences are sorted; the first running one is this service's best
       }
     }
     for (const s of svc.regular) consider(s, { days: s.days, time: s.time })

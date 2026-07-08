@@ -482,7 +482,7 @@ describe('Marie finds the nearest mass', () => {
     // planning view: no "za X min" countdowns
     expect(screen.queryByText(/^za \d/)).not.toBeInTheDocument()
 
-    // back to "hned" — the reachable-now ranking returns
+    // back to "hned" — the soonest-now ranking returns
     await user.click(screen.getByRole('button', { name: 'hned' }))
     expect(await screen.findByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
   })
@@ -549,7 +549,7 @@ describe('Marie finds the nearest mass', () => {
     await user.click(screen.getByRole('button', { name: 'hned' }))
     // "hned" on Friday 17:00: Havel's best is today 19:00 — no Sunday 10:00 row may survive
     expect(seznam().queryByText('10:00')).not.toBeInTheDocument()
-    // and the reachable-now list is intact (one row per church, countdown present)
+    // and the soonest-now list is intact (one row per church, countdown present)
     expect(screen.getByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
   })
 
