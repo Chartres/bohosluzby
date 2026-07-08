@@ -26,7 +26,7 @@ const now = new Date('2026-07-03T15:00:00Z')
 const origin = { lat: 50.0875, lng: 14.4213 }
 
 describe('rankUpcoming — soonest you can make it', () => {
-  it('sorts by the earliest reachable start, not raw distance', () => {
+  it('sorts by the earliest start time, not raw distance', () => {
     const near = church('near', 50.088, 14.422) // ~50 m away, mass tomorrow
     const far = church('far', 50.1, 14.45) // ~2.5 km away, mass in 65 min
     const ranked = rankUpcoming(
@@ -41,9 +41,10 @@ describe('rankUpcoming — soonest you can make it', () => {
     expect(ranked.map((r) => r.church.id)).toEqual(['far', 'near'])
   })
 
-  it('skips services you cannot walk to in time', () => {
-    // 18:00 mass, 5 km away → ~67 min walk but only 60 min remain: unreachable.
-    // Its 19:30 mass is reachable and wins over the near church at 20:00.
+  it('never excludes a service on distance — no walk-only reachability filter', () => {
+    // 18:00 mass, 5 km away: too far to walk in the 60 min remaining, but it
+    // still shows (and wins, being soonest) — a car or transit might get you
+    // there in a fraction of the walking estimate.
     const far = church('far', 50.1325, 14.4213)
     const near = church('near', 50.088, 14.422)
     const ranked = rankUpcoming(
@@ -56,7 +57,22 @@ describe('rankUpcoming — soonest you can make it', () => {
       ]),
     )
     expect(ranked[0].church.id).toBe('far')
-    expect(ranked[0].start.toISOString()).toBe('2026-07-03T17:30:00.000Z')
+    expect(ranked[0].start.toISOString()).toBe('2026-07-03T16:00:00.000Z') // 18:00 Prague (CEST +2)
+  })
+
+  it('ties on start time are broken by distance', () => {
+    const near = church('near', 50.088, 14.422) // ~50 m away
+    const far = church('far', 50.1325, 14.4213) // ~5 km away
+    const ranked = rankUpcoming(
+      now,
+      origin,
+      [far, near], // far listed first — the sort, not input order, must decide
+      new Map([
+        [far.id, services([{ days: '5', time: '18:00' }])],
+        [near.id, services([{ days: '5', time: '18:00' }])],
+      ]),
+    )
+    expect(ranked.map((r) => r.church.id)).toEqual(['near', 'far'])
   })
 
   it('includes one-off (extra) services and carries distance + service through', () => {

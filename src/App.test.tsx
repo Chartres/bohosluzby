@@ -378,12 +378,24 @@ describe('Marie finds the nearest mass', () => {
 
     // persisted: a fresh mount starts with the same filter
     expect(JSON.parse(localStorage.getItem('bohosluzby:filters')!)).toMatchObject({
-      barrierFree: true,
+      value: { barrierFree: true },
     })
     unmount()
     render(<App />)
     await screen.findByText(/Salvátora/)
     expect(screen.queryByText(/sv\. Havla/)).not.toBeInTheDocument()
+  })
+
+  it('filters: a sticky value older than 12h is treated as absent', async () => {
+    localStorage.setItem(
+      'bohosluzby:filters',
+      JSON.stringify({ savedAt: NOW.getTime() - 12 * 60 * 60 * 1000 - 1, value: { barrierFree: true } }),
+    )
+    stubGeolocation('granted')
+    render(<App />)
+    // stale filter ignored → both churches show, not just the barrier-free one
+    expect(await screen.findByText(/Salvátora/)).toBeInTheDocument()
+    expect(screen.getByText(/sv\. Havla/)).toBeInTheDocument()
   })
 
   it('filters: an over-narrow filter explains itself and offers a reset', async () => {
@@ -421,7 +433,7 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getByText(/neodpovídá žádná bohoslužba/)).toBeInTheDocument()
 
     // sticky like the other filters
-    expect(localStorage.getItem('bohosluzby:cas')).toBe('dopoledne')
+    expect(JSON.parse(localStorage.getItem('bohosluzby:cas')!)).toMatchObject({ value: 'dopoledne' })
 
     // composes with the day: v neděli kolem 9:00 → only Havel's 10:00 (±90 min)
     await user.click(screen.getByRole('button', { name: /^neděle/ }))
@@ -435,6 +447,19 @@ describe('Marie finds the nearest mass', () => {
     fireEvent.change(screen.getByLabelText('Kolem času'), { target: { value: '' } })
     expect(window.location.search).toBe('')
     expect(localStorage.getItem('bohosluzby:cas')).toBeNull()
+  })
+
+  it('kdy filter: a sticky cas older than 12h is not re-applied on a fresh visit', async () => {
+    localStorage.setItem(
+      'bohosluzby:cas',
+      JSON.stringify({ savedAt: NOW.getTime() - 12 * 60 * 60 * 1000 - 1, value: 'vecer' }),
+    )
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    // stale "večer" not re-applied → no ?cas= param, "hned" stays the active chip
+    expect(window.location.search).toBe('')
+    expect(screen.getByRole('button', { name: 'hned' })).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('day picker: "neděle" shows the full Sunday ordo without countdowns', async () => {
@@ -457,7 +482,7 @@ describe('Marie finds the nearest mass', () => {
     // planning view: no "za X min" countdowns
     expect(screen.queryByText(/^za \d/)).not.toBeInTheDocument()
 
-    // back to "hned" — the reachable-now ranking returns
+    // back to "hned" — the soonest-now ranking returns
     await user.click(screen.getByRole('button', { name: 'hned' }))
     expect(await screen.findByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
   })
@@ -524,7 +549,7 @@ describe('Marie finds the nearest mass', () => {
     await user.click(screen.getByRole('button', { name: 'hned' }))
     // "hned" on Friday 17:00: Havel's best is today 19:00 — no Sunday 10:00 row may survive
     expect(seznam().queryByText('10:00')).not.toBeInTheDocument()
-    // and the reachable-now list is intact (one row per church, countdown present)
+    // and the soonest-now list is intact (one row per church, countdown present)
     expect(screen.getByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
   })
 

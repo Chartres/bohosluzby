@@ -77,12 +77,33 @@ const onlineStore = {
 const FILTERS_KEY = 'bohosluzby:filters'
 const CAS_KEY = 'bohosluzby:cas'
 
-function loadFilters(): Filters {
+// Sticky filters/kdy expire after a while — you open this app wanting "right
+// now", not last night's "večer" still narrowing the list. 12h comfortably
+// spans a nap but not an overnight-to-next-visit gap.
+const STICKY_TTL_MS = 12 * 60 * 60 * 1000
+
+function loadSticky<T>(key: string): T | null {
   try {
-    return { ...NO_FILTERS, ...JSON.parse(localStorage.getItem(FILTERS_KEY) ?? '{}') }
+    const raw = localStorage.getItem(key)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as { savedAt?: number; value?: T }
+    if (typeof parsed.savedAt !== 'number' || Date.now() - parsed.savedAt > STICKY_TTL_MS) return null
+    return parsed.value ?? null
   } catch {
-    return NO_FILTERS
+    return null // private mode, or a pre-TTL value written by an older build
   }
+}
+
+function saveSticky<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), value }))
+  } catch {
+    // private mode
+  }
+}
+
+function loadFilters(): Filters {
+  return { ...NO_FILTERS, ...loadSticky<Filters>(FILTERS_KEY) }
 }
 
 // ---- Day picker: 'now' = soonest you can make; 0–6 = the day's full ordo ----
@@ -218,24 +239,24 @@ export default function App() {
     // zítra (day chip + URL follow) instead of a quietly reinterpreted list
     const resolved = resolveCasDay(day, c, new Date())
     setParams({ cas: c, ...(resolved !== day ? { den: dayToParam(new Date(), resolved) } : {}) })
-    try {
-      if (c) localStorage.setItem(CAS_KEY, c)
-      else localStorage.removeItem(CAS_KEY)
-    } catch {
-      // private mode
+    if (c) {
+      saveSticky(CAS_KEY, c)
+    } else {
+      try {
+        localStorage.removeItem(CAS_KEY)
+      } catch {
+        // private mode
+      }
     }
     track('key_action', { action: 'filter', cas: c })
   }
 
-  // sticky like the other filters: a plain visit re-applies the saved cas
+  // sticky like the other filters (within STICKY_TTL_MS): a plain visit
+  // re-applies the saved cas
   useEffect(() => {
     if (parseCas(new URLSearchParams(location.search).get('cas'))) return
-    try {
-      const saved = parseCas(localStorage.getItem(CAS_KEY))
-      if (saved) setParam('cas', saved)
-    } catch {
-      // private mode
-    }
+    const saved = parseCas(loadSticky<string>(CAS_KEY))
+    if (saved) setParam('cas', saved)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
   }, [])
 
@@ -372,11 +393,7 @@ export default function App() {
 
   const updateFilters = (next: Filters) => {
     setFilters(next)
-    try {
-      localStorage.setItem(FILTERS_KEY, JSON.stringify(next))
-    } catch {
-      // private mode — filters just won't persist
-    }
+    saveSticky(FILTERS_KEY, next)
     track('key_action', { action: 'filter', ...next })
   }
 
