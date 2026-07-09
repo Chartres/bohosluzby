@@ -1,0 +1,72 @@
+# Scheduled registry refresh — P5/P6/P7 run on data freshness (docs/PERSONAS.md).
+# Monthly by cron; run manually (workflow_dispatch) the week before liturgical
+# peaks — Holy Week and 20–24 Dec — so late-published feast one-offs land in time.
+name: Refresh data
+
+on:
+  schedule:
+    - cron: '17 2 3 * *' # 3rd of each month, 02:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write # dispatch ci.yml after the data push (GITHUB_TOKEN pushes don't trigger it)
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Keep previous index for the sanity gate
+        run: cp public/data/churches.json /tmp/churches-before.json
+
+      - name: Scrape registry (resumable, ≤3 req/s)
+        run: node data/extract.mjs
+
+      # A partial or broken scrape must never replace good data: require at
+      # least 90% of the previous church count before committing anything.
+      - name: Sanity gate
+        run: |
+          node -e '
+            const fs = require("fs")
+            const before = JSON.parse(fs.readFileSync("/tmp/churches-before.json")).length
+            const after = JSON.parse(fs.readFileSync("public/data/churches.json")).length
+            console.log(`churches: ${before} -> ${after}`)
+            if (after < before * 0.9) {
+              console.error("refusing to commit: new index is <90% of the previous one")
+              process.exit(1)
+            }
+          '
+
+      - name: Tests still green on fresh data
+        run: npm run typecheck && npm test
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data
+          if git diff --cached --quiet; then
+            echo "registry unchanged — nothing to commit"
+          else
+            git commit -m "data: registry refresh ($(date -u +%Y-%m-%d))"
+            git push
+            # GITHUB_TOKEN pushes don't fire the push trigger — dispatch CI so
+            # the fresh data actually deploys (ci.yml deploys dispatch runs on main)
+            curl -sS -X POST \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ci.yml/dispatches" \
+              -d '{"ref":"main"}'
+          fi

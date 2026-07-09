@@ -534,6 +534,23 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getByText(/studentská/)).not.toHaveClass('text-rubric')
   })
 
+  it('detail: a provably-paused service row is muted with "nyní se nekoná"', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+
+    await user.click(screen.getByText(/kaple sv\. Anny/))
+    // Friday 20:00 "kromě července a srpna" on 3 July: every occurrence in the
+    // next five weeks is excluded → the row is visibly paused, reason attached
+    const paused = screen.getByText('20:00').closest('div[data-paused]')
+    expect(paused).not.toBeNull()
+    expect(paused).toHaveClass('opacity-50')
+    expect(screen.getByText(/nyní se nekoná/)).toBeInTheDocument()
+    // the unverifiable "dle ohlášení" row prints loud but is NOT muted
+    expect(screen.getByText('21:00').closest('div[data-paused]')).toBeNull()
+  })
+
   it('day picker: switching to a day ordo and back to "hned" leaves no phantom rows', async () => {
     // The ordo can contain two rows with the same (church, start) — sv. Havla's
     // duplicated Sunday 10:00. With non-unique React keys the next render left

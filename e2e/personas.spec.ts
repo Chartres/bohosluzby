@@ -81,8 +81,11 @@ test('P6 Věra: is the 10:30 cancelled for summer? The note answers, the list ag
   await page.getByRole('option', { name: /kostel sv\. Havla/ }).click()
   await expect(page).toHaveURL('/kostel/3/')
 
-  // the reason is visible, not just an absent row
+  // the reason is visible, not just an absent row — and the paused 10:30 is
+  // muted with an explicit "nyní se nekoná"
   await expect(page.getByText(/kromě července a srpna/)).toBeVisible()
+  await expect(page.locator('div[data-paused]').getByText('10:30')).toBeVisible()
+  await expect(page.getByText(/nyní se nekoná/)).toBeVisible()
   await expect(page.getByText(/naposledy ověřeno/)).toBeVisible()
   await shot(page, 'persona-vera-letni-poradek')
 
