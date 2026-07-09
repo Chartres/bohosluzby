@@ -163,4 +163,6 @@ Friday, the Vigil, plus "kdy je půlnoční?".
 
 Seasonal manual passes are due: Holy Week (P7), the week before Christmas (P7), the first
 week of July (P6 live re-check), and any workday slavnost (P5). Log each pass as shots in
-`e2e/shots/` with a `seasonal-` prefix.
+`e2e/shots/` with a `seasonal-` prefix. In the same weeks, dispatch the
+**Refresh data** workflow (`.github/workflows/refresh-data.yml`, monthly cron otherwise)
+so late-published feast one-offs reach the site before the pass.

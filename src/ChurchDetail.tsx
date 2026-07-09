@@ -9,8 +9,8 @@ import {
   type ExtraService,
   type Service,
 } from './domain/data'
-import { pragueToday } from './domain/occurrences'
-import { noteUncertain } from './domain/notes'
+import { nextOccurrences, pragueToday } from './domain/occurrences'
+import { noteUncertain, parseNote } from './domain/notes'
 import { fmtDateCz } from './domain/format'
 import { buildICS } from './domain/ics'
 import { logError, track } from './analytics'
@@ -264,13 +264,36 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
 }
 
 function ServiceRow({ s, church }: { s: Service; church: Church }) {
+  // P6 Věra: a service whose note provably excludes EVERY upcoming occurrence
+  // in the next five weeks ("kromě července a srpna" read in July) mutes —
+  // the absence has a visible reason. Checked against the service's own
+  // occurrence dates, not today: "1. sobota v měsíci" always has a first
+  // Saturday within five weeks, so recurrence-pattern notes never mute.
+  // Uncertain notes never mute either — they already print loud instead.
+  const pausedNow = (() => {
+    if (!s.note) return false
+    const rule = parseNote(s.note)
+    if (rule.uncertain) return false
+    const upcoming = nextOccurrences({ days: s.days, time: s.time }, new Date(), 35)
+    return (
+      upcoming.length > 0 &&
+      upcoming.every((start) => {
+        const w = pragueToday(start)
+        return !rule.runsOn(w.y, w.m, w.d)
+      })
+    )
+  })()
   return (
-    <div className="flex items-baseline gap-4 border-b border-hairline py-2">
+    <div
+      data-paused={pausedNow || undefined}
+      className={`flex items-baseline gap-4 border-b border-hairline py-2 ${pausedNow ? 'opacity-50' : ''}`}
+    >
       <p className="font-display w-14 shrink-0 text-xl font-semibold tabular-nums">{s.time}</p>
       <div className="min-w-0 flex-1">
         <p className="text-sm">
           {s.type || 'bohoslužba'}
           <NoteText note={s.note} />
+          {pausedNow && <span className="font-semibold text-rubric"> · nyní se nekoná</span>}
         </p>
         <p className="mt-0.5 space-x-2 text-sm empty:hidden">
           {s.lang !== 'česky' && <Chip label={s.lang} />}

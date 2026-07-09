@@ -7,15 +7,6 @@ sprint (1–3) → shipped; parked holds `persona:?` asks and explicit no's, eac
 
 ## candidates
 
-- **Mute provably-excluded rows on detail in-season** — P6 Věra · detail step 2 · the
-  "kromě července a srpna" note shows, but the 10:30 row renders like any other in July;
-  visual muting would answer her at a glance. Test: detail spec asserts muted class in
-  July, normal in June.
-- **Seasonal data harvest around liturgical peaks** — P7 Ondřej · ordo step 2 · registry
-  one-offs for Triduum/Christmas are mostly missing until parishes publish late; re-run
-  `data/extract.mjs` on a schedule the week before each peak so published extras land in
-  time. Test: extract run dated in Holy Week picks up new `x` rows.
-
 ## sprint
 
 ## parked
@@ -26,6 +17,11 @@ sprint (1–3) → shipped; parked holds `persona:?` asks and explicit no's, eac
 
 ## shipped
 
+- 2026-07-09 · Paused services are visible: a note that provably excludes every upcoming
+  occurrence (5-week window) mutes the detail row + prints "nyní se nekoná" (P6 Věra).
+- 2026-07-09 · Registry refresh automated: monthly cron + manual dispatch before
+  liturgical peaks (`.github/workflows/refresh-data.yml`, 90% sanity gate, tests must
+  stay green, explicit CI dispatch so fresh data deploys) (P5/P6/P7 freshness).
 - 2026-07-09 · Persona library (docs/PERSONAS.md) + 4 automated journeys (P2/P3/P4/P6),
   English-chaplaincy fixture, PW_CHROMIUM escape hatch.
 - 2026-07-09 · HNED no longer excludes masses beyond walking reach — time-then-distance
