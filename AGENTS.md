@@ -29,6 +29,11 @@ push + PR). Block only on these. Playwright is a local pre-push check — the pe
 write committed screenshots to `e2e/shots/` for visual review (Standard: persona testing is
 visual — LOOK at the shots after any UI change).
 
+Personas + journeys live in `docs/PERSONAS.md` — the scripts behind `e2e/personas.spec.ts`
+plus the seasonal manual passes (Triduum, Christmas, feast workdays, first week of July).
+New features must name the persona journey they serve before they get built.
+Sandboxes with a system Chromium: `PW_CHROMIUM=/path/to/chromium npx playwright test`.
+
 ## Data
 `node data/extract.mjs` — scrapes bohosluzby.cirkev.cz (≤3 req/s, resumable via gitignored
 `data/cache/`) and writes `public/data/churches.json` + `public/data/services/<cell>.json`

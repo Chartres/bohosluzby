@@ -32,6 +32,7 @@ export const INDEX: IndexRow[] = [
   ['4', 'kostel Panny Marie Sněžné', 'Praha 1', 50.0827, 14.4227, 0, '50-14'],
   ['5', 'kostel sv. Klimenta (řeckokatolická katedrála)', 'Praha 1', 50.0868, 14.4159, 0, '50-14'],
   ['6', 'kostel sv. Ludmily', 'Praha 2', 50.0755, 14.4378, 1, '50-14'],
+  ['7', 'kostel sv. Tomáše (augustiniáni)', 'Praha 1', 50.0907, 14.4038, 0, '50-14'],
 ]
 
 type Row = [string, string, string, 0 | 1, string, string]
@@ -94,5 +95,13 @@ export const SHARD_50_14 = {
       svc('7', '09:00'),
       svc('1', '15:00', 'česky', 0, 'mše sv.', 'dle ohlášení'), // unverifiable → warning rubric
     ],
+  },
+  // P2 James (docs/PERSONAS.md): the tourist's English Sunday mass
+  '7': {
+    u: '2026-06-25',
+    p: 'farnost sv. Tomáše',
+    pa: 'Josefská 8, Praha 1',
+    c: [],
+    s: [svc('7', '11:00', 'anglicky')],
   },
 }

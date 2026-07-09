@@ -16,7 +16,7 @@ test('Sunday ordo: every service that day, chronological, no countdowns', async 
 
   // chronological Sunday schedule across churches
   const times = await page.locator('ol li .group > p:first-child').allTextContents()
-  expect(times).toEqual(['08:30', '09:00', '09:00', '11:30', '12:00', '17:00', '20:00'])
+  expect(times).toEqual(['08:30', '09:00', '09:00', '11:00', '11:30', '12:00', '17:00', '20:00'])
   // planning view drops the countdown column
   await expect(page.getByText(/za \d+ (min|h)/)).toHaveCount(0)
 
