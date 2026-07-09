@@ -14,7 +14,19 @@ export default defineConfig({
     // bypassing page.route() mocks mid-test. Not what e2e is testing.
     serviceWorkers: 'block',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        // Sandboxes with a system Chromium and no playwright-managed download:
+        // PW_CHROMIUM=/path/to/chromium npx playwright test
+        ...(process.env.PW_CHROMIUM
+          ? { launchOptions: { executablePath: process.env.PW_CHROMIUM } }
+          : {}),
+      },
+    },
+  ],
   webServer: {
     command: 'npm run build && npm run preview -- --port 4173',
     url: 'http://localhost:4173',
