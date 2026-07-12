@@ -1,4 +1,13 @@
-import { fmtDistance, fmtTime, fmtUntil, dayLabel, fmtDateCz, normalizeLang } from './format'
+import {
+  fmtDistance,
+  fmtTime,
+  fmtUntil,
+  fmtWeekdayShort,
+  dayLabel,
+  fmtDateCz,
+  normalizeLang,
+  samePragueDay,
+} from './format'
 
 const now = new Date('2026-07-03T08:00:00Z') // Friday 10:00 Prague
 
@@ -75,5 +84,17 @@ describe('fmtTime / dayLabel (Europe/Prague)', () => {
     expect(dayLabel(now, new Date('2026-07-03T16:00:00Z'))).toBe('dnes')
     expect(dayLabel(now, new Date('2026-07-04T07:00:00Z'))).toBe('zítra')
     expect(dayLabel(now, new Date('2026-07-06T07:00:00Z'))).toBe('pondělí 6. 7.')
+  })
+})
+
+describe('samePragueDay / fmtWeekdayShort (the map chip day check)', () => {
+  it('Prague midnight, not UTC midnight, is the day boundary', () => {
+    // 22:30 UTC Friday = 00:30 Saturday in Prague (CEST)
+    expect(samePragueDay(now, new Date('2026-07-03T22:30:00Z'))).toBe(false)
+    expect(samePragueDay(now, new Date('2026-07-03T16:00:00Z'))).toBe(true)
+  })
+  it('short Czech weekday, no trailing dot', () => {
+    expect(fmtWeekdayShort(new Date('2026-07-07T10:00:00Z'))).toBe('út')
+    expect(fmtWeekdayShort(new Date('2026-07-05T10:00:00Z'))).toBe('ne')
   })
 })

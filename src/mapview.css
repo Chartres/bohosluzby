@@ -43,6 +43,15 @@
   outline: 1px solid var(--season);
   outline-offset: 1px;
 }
+/* not today (hned looking days ahead): greyed, weekday-prefixed — a bare
+   accent chip would read as "go now" for a Tuesday mass */
+.map-chip--otherday {
+  background: color-mix(in srgb, var(--color-ink-faded) 55%, var(--color-paper));
+  color: var(--color-paper);
+}
+.map-chip-wrap:hover .map-chip--otherday {
+  outline-color: var(--color-ink-faded);
+}
 
 .map-marker {
   display: grid;

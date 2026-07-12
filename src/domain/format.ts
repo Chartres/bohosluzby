@@ -83,3 +83,15 @@ export function dayLabel(now: Date, start: Date): string {
   if (key === dateKeyFmt.format(new Date(now.getTime() + 86_400_000))) return 'zítra'
   return weekdayFmt.format(start)
 }
+
+/** Same Prague calendar day? (The map chip's "is this actually today" check.) */
+export function samePragueDay(a: Date, b: Date): boolean {
+  return dateKeyFmt.format(a) === dateKeyFmt.format(b)
+}
+
+const weekdayShortFmt = new Intl.DateTimeFormat('cs-CZ', { timeZone: TZ, weekday: 'short' })
+
+/** "út", "ne" — the day prefix on a map chip that isn't today. */
+export function fmtWeekdayShort(d: Date): string {
+  return weekdayShortFmt.format(d).replace('.', '')
+}
