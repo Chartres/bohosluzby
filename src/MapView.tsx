@@ -14,17 +14,19 @@ import { decodeShard } from './domain/data'
 import { gridCluster } from './domain/cluster'
 import { NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
-import { dayLabel, fmtTime } from './domain/format'
+import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
 
 const CELL_PX = 64 // cluster grid; ~a finger-width of map
 
 /** "8:30", not "08:30" — chips are read at a glance, the zero is noise. */
 const chipTime = (d: Date) => fmtTime(d).replace(/^0/, '')
 
-const chipIcon = (label: string) =>
+/** A bare time on a pin reads as TODAY — on "hned" a church's next mass can be
+ * days out, so a not-today chip carries its weekday ("út 15:00") and greys. */
+const chipIcon = (label: string, otherDay: boolean) =>
   L.divIcon({
     className: 'map-chip-wrap',
-    html: `<span class="map-chip">${label}</span>`,
+    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}">${label}</span>`,
     iconSize: [30, 30], // tap target; the chip centers itself and may overflow
   })
 // non-matching: a tiny faded dot; the 30px wrapper keeps it tappable
@@ -176,8 +178,17 @@ export default function MapView({
         if (cl.items.length === 1) {
           const church = cl.items[0]
           const next = matched.get(church.id)
+          // ordo days (dnes/neděle/…) put every chip on the chosen day — the
+          // prefix would be noise there; only "hned" can surprise with a
+          // different day, so only "hned" gets the weekday + grey treatment
+          const otherDay = Boolean(next) && day === 'now' && !samePragueDay(next!.start, now)
+          const label = next
+            ? otherDay
+              ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
+              : chipTime(next.start)
+            : ''
           L.marker([church.lat, church.lng], {
-            icon: next ? chipIcon(chipTime(next.start)) : fadedIcon(),
+            icon: next ? chipIcon(label, otherDay) : fadedIcon(),
             title: church.name,
             keyboard: false,
           })

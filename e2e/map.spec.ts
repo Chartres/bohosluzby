@@ -37,6 +37,12 @@ test('seznam · mapa toggle: time chips as markers, popover with next mass, otev
   // the cathedral sits alone west of the centre → its chip is today's 09:30 mass
   const cathedral = page.locator('.map-chip-wrap[title="katedrála sv. Víta, Václava a Vojtěcha"]')
   await expect(cathedral.locator('.map-chip')).toHaveText('9:30')
+  await expect(cathedral.locator('.map-chip')).not.toHaveClass(/otherday/)
+  // sv. Tomáše's next mass is SUNDAY (today is Monday): the chip carries the
+  // weekday and greys — a bare "11:00" reads as "go today" (user report, July 2026)
+  const tomas = page.locator('.map-chip-wrap[title="kostel sv. Tomáše (augustiniáni)"]')
+  await expect(tomas.locator('.map-chip')).toHaveText('ne 11:00')
+  await expect(tomas.locator('.map-chip')).toHaveClass(/map-chip--otherday/)
   await cathedral.click()
   await expect(page.locator('.map-pop-name')).toHaveText('katedrála sv. Víta, Václava a Vojtěcha')
   await expect(page.locator('.map-pop-line')).toHaveText(/dnes v 09:30/)

@@ -17,6 +17,11 @@ sprint (1–3) → shipped; parked holds `persona:?` asks and explicit no's, eac
 
 ## shipped
 
+- 2026-07-10 · Map chips are day-honest: on hned, a pin whose next mass is not
+  today greys out and carries its weekday ("ne 11:00") — a bare time read as
+  "go now" for a Tuesday mass (user report; P1/P4 map face). Filters already
+  applied to the map (shared selector) — the missing dimension was the day.
+
 - 2026-07-09 · Paused services are visible: a note that provably excludes every upcoming
   occurrence (5-week window) mutes the detail row + prints "nyní se nekoná" (P6 Věra).
 - 2026-07-09 · Registry refresh automated: monthly cron + manual dispatch before
