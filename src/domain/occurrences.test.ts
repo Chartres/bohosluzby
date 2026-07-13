@@ -1,4 +1,4 @@
-import { nextOccurrences, pragueInstant, pragueToday } from './occurrences'
+import { nextOccurrences, nextReminderAt, pragueInstant, pragueToday } from './occurrences'
 
 // Europe/Prague is UTC+2 in summer (CEST), UTC+1 in winter (CET).
 
@@ -57,5 +57,26 @@ describe('nextOccurrences — periodic services', () => {
 
   it('ignores unparseable times', () => {
     expect(nextOccurrences({ days: '5', time: '' }, now)).toEqual([])
+  })
+})
+
+describe('nextReminderAt', () => {
+  // 2026-07-05 and 2026-07-12 are Sundays (same weekday axis as the 10-25 case).
+  const sunday10 = { days: '7', time: '10:00' } // weekly Sunday 10:00 Prague
+
+  it('fires leadMinutes before the next occurrence (Sun 10:00 → 09:30 Prague)', () => {
+    const now = new Date('2026-07-02T12:00:00Z') // Thursday
+    // 2026-07-05 10:00 CEST = 08:00Z; minus 30 min = 07:30Z
+    expect(nextReminderAt(sunday10, now, 30)?.toISOString()).toBe('2026-07-05T07:30:00.000Z')
+  })
+
+  it('skips a mass already inside the lead window, reaching the next one', () => {
+    const now = new Date('2026-07-05T07:45:00Z') // 09:45 Prague, 15 min before the 10:00
+    // lead time 07:30Z has passed → next Sunday 2026-07-12
+    expect(nextReminderAt(sunday10, now, 30)?.toISOString()).toBe('2026-07-12T07:30:00.000Z')
+  })
+
+  it('returns null when there is no upcoming occurrence', () => {
+    expect(nextReminderAt({ days: '', time: '10:00' }, new Date('2026-07-02T12:00:00Z'), 30)).toBeNull()
   })
 })

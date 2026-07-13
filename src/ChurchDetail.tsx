@@ -12,8 +12,9 @@ import {
 import { pragueToday } from './domain/occurrences'
 import { noteUncertain } from './domain/notes'
 import { fmtDateCz } from './domain/format'
-import { buildICS } from './domain/ics'
 import { logError, track } from './analytics'
+import { isNative } from './lib/native'
+import { addToCalendar, scheduleMassReminder } from './lib/native-actions'
 
 // Liturgical week: Sunday first, like a printed ordo.
 const DAY_ORDER = [7, 1, 2, 3, 4, 5, 6] as const
@@ -61,17 +62,49 @@ const isoToday = (): string => {
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
-/** "Přidat do kalendáře": download a VEVENT (weekly RRULE for regular services). */
-function downloadICS(church: Church, service: Service | ExtraService) {
-  const ics = buildICS(church, service, new Date())
-  if (!ics) return
-  track('key_action', { action: 'ics', church: church.id })
-  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `bohosluzby-${church.id}-${service.time.replace(':', '')}.ics`
-  a.click()
-  URL.revokeObjectURL(url)
+/** Per-service actions: add to calendar (native share sheet / web download) and,
+ * on native only, schedule a local reminder before the next occurrence. */
+function ServiceActions({ church, service }: { church: Church; service: Service | ExtraService }) {
+  const [msg, setMsg] = useState<string | null>(null)
+  const flash = (m: string) => {
+    setMsg(m)
+    setTimeout(() => setMsg(null), 2500)
+  }
+
+  const onCalendar = () => {
+    track('key_action', { action: 'ics', church: church.id })
+    addToCalendar(church, service).catch((err) => logError(err, { where: 'calendar', id: church.id }))
+  }
+
+  const onRemind = async () => {
+    const r = await scheduleMassReminder(church, service)
+    track('key_action', { action: 'reminder', church: church.id, result: r })
+    flash(
+      r === 'scheduled'
+        ? 'připomeneme ✓'
+        : r === 'denied'
+          ? 'povolte oznámení'
+          : 'žádná nejbližší',
+    )
+  }
+
+  return (
+    <div className="flex shrink-0 items-baseline gap-3">
+      {isNative && (
+        <button
+          type="button"
+          className={`text-xs text-ink-faded ${linkCls}`}
+          onClick={onRemind}
+          aria-live="polite"
+        >
+          {msg ?? 'připomenout'}
+        </button>
+      )}
+      <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onCalendar}>
+        do kalendáře
+      </button>
+    </div>
+  )
 }
 
 /** Share the church's /kostel/<id>/ URL — Web Share API, clipboard fallback. */
@@ -217,13 +250,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                       {x.type || 'bohoslužba'}
                       <NoteText note={x.note} />
                     </p>
-                    <button
-                      type="button"
-                      className={`shrink-0 text-xs text-ink-faded ${linkCls}`}
-                      onClick={() => downloadICS(church, x)}
-                    >
-                      do kalendáře
-                    </button>
+                    <ServiceActions church={church} service={x} />
                   </li>
                 ))}
               </ul>
@@ -277,13 +304,7 @@ function ServiceRow({ s, church }: { s: Service; church: Church }) {
           {s.greek && <Chip label="řeckokatolická" />}
         </p>
       </div>
-      <button
-        type="button"
-        className={`shrink-0 text-xs text-ink-faded ${linkCls}`}
-        onClick={() => downloadICS(church, s)}
-      >
-        do kalendáře
-      </button>
+      <ServiceActions church={church} service={s} />
     </div>
   )
 }
