@@ -95,3 +95,23 @@ export function nextOccurrences(spec: OccurrenceSpec, now: Date, horizonDays = 8
   }
   return out
 }
+
+/**
+ * When a reminder should fire: `leadMinutes` before the next occurrence whose
+ * lead time is *still in the future* (so we skip a mass starting within the
+ * lead window and reach for the one after). Returns null if none in horizon.
+ */
+export function nextReminderAt(
+  spec: OccurrenceSpec,
+  now: Date,
+  leadMinutes: number,
+  horizonDays = 14,
+): Date | null {
+  const leadMs = leadMinutes * 60_000
+  const nowMs = now.getTime()
+  for (const occ of nextOccurrences(spec, now, horizonDays)) {
+    const at = occ.getTime() - leadMs
+    if (at > nowMs) return new Date(at)
+  }
+  return null
+}

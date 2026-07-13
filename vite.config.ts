@@ -15,6 +15,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registration is manual in main.tsx (web only — skipped in the native
+      // shell), so don't auto-inject a second registration.
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'Bohoslužby — mše svatá poblíž',
@@ -45,22 +48,8 @@ export default defineConfig({
         globIgnores: ['mesto/**', '404.html'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
-        runtimeCaching: [
-          {
-            urlPattern: ({ url }) => url.origin === 'https://fonts.googleapis.com',
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'google-fonts-css' },
-          },
-          {
-            urlPattern: ({ url }) => url.origin === 'https://fonts.gstatic.com',
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-webfonts',
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
+        // Fonts are self-hosted (Fontsource) and precached via globPatterns
+        // (woff2) — no Google Fonts runtime caching needed.
       },
     }),
   ],

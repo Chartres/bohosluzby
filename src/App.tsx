@@ -20,6 +20,7 @@ import { BANDS, bandFullyPast, halfHoursFrom, parseCas, resolveCasDay, type Band
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
+import { getCurrentPosition } from './lib/geo'
 
 const NEARBY_KM = 30
 const NEARBY_CAP = 120
@@ -282,15 +283,10 @@ export default function App() {
       if (last) setOrigin(last)
       else setGeoDenied(true)
     }
-    if (!navigator.geolocation) {
-      fallback()
-      return
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setOrigin({ lat: pos.coords.latitude, lng: pos.coords.longitude, source: 'geo' }),
-      fallback,
-      { timeout: 12_000, maximumAge: 300_000 },
-    )
+    getCurrentPosition().then((c) => {
+      if (c) setOrigin({ lat: c.lat, lng: c.lng, source: 'geo' })
+      else fallback()
+    })
   }
 
   useEffect(() => {
