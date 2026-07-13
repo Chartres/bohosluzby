@@ -10,10 +10,12 @@ const RES = 'resources'
 mkdirSync(OUT, { recursive: true })
 mkdirSync(RES, { recursive: true })
 
-// Latin cross centred in a 32x32 box (matches public/favicon.svg).
+// Gothic pointed arch (lancet portal) centred in a 32x32 box (matches
+// public/favicon.svg): outer silhouette minus inner opening (evenodd) = a frame.
 const markSVG = (color) => `
-  <rect x="14" y="4" width="4" height="24" fill="${color}"/>
-  <rect x="7" y="10" width="18" height="4" fill="${color}"/>`
+  <path fill="${color}" fill-rule="evenodd"
+    d="M8 28 L8 13 A13 13 0 0 1 16 3 A13 13 0 0 1 24 13 L24 28 Z
+       M11.5 28 L11.5 13 A7.5 7.5 0 0 1 16 6.5 A7.5 7.5 0 0 1 20.5 13 L20.5 28 Z"/>`
 
 const RUBRIC = '#9a2b1e'
 
