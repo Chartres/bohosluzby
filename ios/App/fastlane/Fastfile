@@ -28,9 +28,11 @@ def asc_key
 end
 
 # Build the web app and copy it into the native shell. Everything gym archives
-# comes from here, so it must run before any build. Repo root is ../.. from ios/App.
+# comes from here, so it must run before any build. Resolve the repo root via git
+# so it's independent of fastlane's working directory.
 def sync_web
-  sh("cd ../.. && npm run build && npx cap sync ios")
+  root = sh("git rev-parse --show-toplevel", log: false).strip
+  sh("cd #{root.shellescape} && npm run build && npx cap sync ios")
 end
 
 platform :ios do
@@ -67,15 +69,28 @@ platform :ios do
 
   desc "Build + sign the App Store .ipa"
   lane :build do
-    asc_key # token for -allowProvisioningUpdates (headless cert/profile creation)
+    key = asc_key
     sync_web
+    # Explicit DISTRIBUTION signing — App Store builds need no devices and no
+    # development profile. cert + sigh create/download them headlessly via the
+    # API key; then force manual distribution signing so the archive never tries
+    # to mint a device-bound development profile (the "no devices" failure).
+    signing_dir = File.expand_path("~/.appstoreconnect/signing")
+    cert(api_key: key, output_path: signing_dir)
+    prof_name = sigh(api_key: key, app_identifier: APP_ID, output_path: signing_dir) # App Store profile
     build_app(
       project: "App.xcodeproj",
       scheme: "App",
       export_method: "app-store",
       output_directory: "build",
       output_name: "Bohosluzby.ipa",
-      xcargs: "-allowProvisioningUpdates",
+      xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=8L39RHYGVY " \
+              "PROVISIONING_PROFILE_SPECIFIER=\"#{prof_name}\" " \
+              "CODE_SIGN_IDENTITY=\"Apple Distribution\"",
+      export_options: {
+        signingStyle: "manual",
+        provisioningProfiles: { APP_ID => prof_name },
+      },
     )
   end
 

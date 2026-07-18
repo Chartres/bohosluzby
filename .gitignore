@@ -20,3 +20,7 @@ ios/App/fastlane/build/
 ios/App/build/
 *.p8
 ios/App/fastlane/README.md
+*.mobileprovision
+*.cer
+*.certSigningRequest
+*.p12
