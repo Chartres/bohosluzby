@@ -1,0 +1,121 @@
+# Bohoslužby — App Store pipeline. Auth is an App Store Connect API key (.p8),
+# not an Apple ID password, so it survives 2FA and runs unattended.
+# Key lives OUTSIDE the repo at ~/.appstoreconnect/private_keys/AuthKey_<KEYID>.p8
+# Key ID / Issuer ID come from fastlane/.env (see .env.example).
+#
+# Lanes:
+#   create_app  — one-time: register the app record on App Store Connect + portal
+#   metadata    — push listing text + screenshots only (no binary, no submit)
+#   build       — build + sign the .ipa (web build + cap sync happen first)
+#   beta        — build → TestFlight
+#   release     — build → upload binary + metadata + screenshots, STOPS before
+#                 final submit (Pavol gates "Submit for Review" — see checklist §8)
+
+opt_out_usage # no fastlane telemetry
+default_platform(:ios)
+
+APP_ID   = "org.dravec.bohosluzby"
+APP_NAME = "Bohoslužby: katolické mše"
+
+def asc_key
+  app_store_connect_api_key(
+    key_id: ENV.fetch("ASC_KEY_ID"),
+    issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+    key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_#{ENV.fetch('ASC_KEY_ID')}.p8"),
+    in_house: false,
+    set_spaceship_token: true, # so produce (create_app) and other spaceship tools pick it up
+  )
+end
+
+# Build the web app and copy it into the native shell. Everything gym archives
+# comes from here, so it must run before any build. Resolve the repo root via git
+# so it's independent of fastlane's working directory.
+def sync_web
+  root = sh("git rev-parse --show-toplevel", log: false).strip
+  sh("cd #{root.shellescape} && npm run build && npx cap sync ios")
+end
+
+platform :ios do
+  # One-time app-record creation. INTERACTIVE ONLY: produce can't use the API key
+  # for this step (it falls back to Apple-ID password + 2FA), so run this from a
+  # real terminal where it can prompt — or just create the record in the ASC UI
+  # (New App: name, Czech, bundle org.dravec.bohosluzby, SKU bohosluzby). The
+  # bundle ID is already registered from Xcode signing, so skip the dev portal.
+  desc "One-time (interactive): create the App Store Connect app record"
+  lane :create_app do
+    produce(
+      username: ENV.fetch("ASC_APPLE_ID"),
+      app_identifier: APP_ID,
+      app_name: APP_NAME,
+      language: "cs",
+      app_version: "1.0",
+      sku: "bohosluzby",
+      skip_devcenter: true,
+    )
+  end
+
+  desc "Push listing metadata + screenshots only (no binary, no submit)"
+  lane :metadata do
+    upload_to_app_store(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      skip_binary_upload: true,
+      submit_for_review: false,
+      overwrite_screenshots: true,
+      precheck_include_in_app_purchases: false,
+      force: true, # skip the interactive HTML-preview confirmation
+    )
+  end
+
+  desc "Build + sign the App Store .ipa"
+  lane :build do
+    key = asc_key
+    sync_web
+    # Monotonic build number (total commit count) so re-uploads never collide.
+    increment_build_number(build_number: number_of_commits, xcodeproj: "App.xcodeproj")
+    # Explicit DISTRIBUTION signing — App Store builds need no devices and no
+    # development profile. cert + sigh create/download them headlessly via the
+    # API key; then force manual distribution signing so the archive never tries
+    # to mint a device-bound development profile (the "no devices" failure).
+    signing_dir = File.expand_path("~/.appstoreconnect/signing")
+    cert(api_key: key, output_path: signing_dir)
+    prof_name = sigh(api_key: key, app_identifier: APP_ID, output_path: signing_dir) # App Store profile
+    build_app(
+      project: "App.xcodeproj",
+      scheme: "App",
+      export_method: "app-store",
+      output_directory: "build",
+      output_name: "Bohosluzby.ipa",
+      xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=8L39RHYGVY " \
+              "PROVISIONING_PROFILE_SPECIFIER=\"#{prof_name}\" " \
+              "CODE_SIGN_IDENTITY=\"Apple Distribution\"",
+      export_options: {
+        signingStyle: "manual",
+        provisioningProfiles: { APP_ID => prof_name },
+      },
+    )
+  end
+
+  desc "Build → TestFlight"
+  lane :beta do
+    build
+    upload_to_testflight(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      skip_waiting_for_build_processing: true,
+    )
+  end
+
+  desc "Build → upload binary + metadata + screenshots (does NOT submit)"
+  lane :release do
+    build
+    upload_to_app_store(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      submit_for_review: false, # Pavol clicks Submit after the airplane-mode self-check
+      overwrite_screenshots: true,
+      precheck_include_in_app_purchases: false,
+      force: true,
+    )
+  end
+end

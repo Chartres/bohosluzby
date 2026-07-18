@@ -66,21 +66,26 @@ mše,bohoslužby,kostel,mše svatá,katolík,nedělní mše,poblíž,offline,kal
 
 ## App Privacy (Data types)
 
-Two data types collected. No others.
+Three data types collected — all sent to the shared Supabase events table, all
+anonymous. No others. (Verified against the analytics client, not assumed.)
 
-**Usage Data → Product Interaction (Analytics)**
-- Linked to identity: **No**
-- Used for tracking: **No**
-- Purpose: Analytics
-- Notes: Anonymous page views and a "mass found" conversion event, stored in a shared Supabase events table. No advertising or third-party tracking SDKs.
+**Usage Data → Product Interaction**
+- Linked to identity: **No** · Used for tracking: **No** · Purpose: Analytics
+- Notes: page_view / key_action / conversion events (taps, mass found). No ad or third-party tracking SDKs.
 
-**Location → Coarse/Precise Location**
-- Linked to identity: **No**
-- Used for tracking: **No**
-- Purpose: App Functionality
-- Notes: Used only on-device to compute the nearest churches. Coordinates are never sent to a server or stored remotely.
+**Diagnostics → Other Diagnostic Data**
+- Linked to identity: **No** · Used for tracking: **No** · Purpose: App Functionality
+- Notes: `error` events — truncated error messages for debugging (e.g. data-load failures).
 
-No other data types: no name, email, contacts, identifiers for advertising, payment info, or user content. No account or login. No in-app purchases.
+**Identifiers → User ID**
+- Linked to identity: **No** · Used for tracking: **No** · Purpose: Analytics
+- Notes: `visitor_id`, an anonymous per-install localStorage UUID. No name/account (the app has no login).
+
+**Location is NOT collected — do not declare it.** The app reads location only
+on-device to sort nearby churches; coordinates are never transmitted or stored, so
+under Apple's definition it is not "collected" (the purpose string in Info.plist is a
+separate requirement). No name, email, contacts, advertising IDs, device ID, payment,
+purchases, or user content. No account/login. No in-app purchases.
 
 ---
 

@@ -1,0 +1,9 @@
+# Defaults for upload_to_app_store (deliver). Categories, age rating, and the
+# App Privacy "nutrition label" are set ONCE in the App Store Connect UI — the
+# category enum tokens are easy to get wrong and would fail the whole run, and
+# privacy data-types aren't reliably settable from files. Everything that
+# actually changes (name, copy, screenshots, URLs) is scripted below via files.
+app_identifier "org.dravec.bohosluzby"
+submit_for_review false
+automatic_release false
+copyright "2026 Pavol Dravecký"
