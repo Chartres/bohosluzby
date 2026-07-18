@@ -1,0 +1,96 @@
+# Bohoslužby — App Store pipeline. Auth is an App Store Connect API key (.p8),
+# not an Apple ID password, so it survives 2FA and runs unattended.
+# Key lives OUTSIDE the repo at ~/.appstoreconnect/private_keys/AuthKey_<KEYID>.p8
+# Key ID / Issuer ID come from fastlane/.env (see .env.example).
+#
+# Lanes:
+#   create_app  — one-time: register the app record on App Store Connect + portal
+#   metadata    — push listing text + screenshots only (no binary, no submit)
+#   build       — build + sign the .ipa (web build + cap sync happen first)
+#   beta        — build → TestFlight
+#   release     — build → upload binary + metadata + screenshots, STOPS before
+#                 final submit (Pavol gates "Submit for Review" — see checklist §8)
+
+opt_out_usage # no fastlane telemetry
+default_platform(:ios)
+
+APP_ID   = "org.dravec.bohosluzby"
+APP_NAME = "Bohoslužby: katolické mše"
+
+def asc_key
+  app_store_connect_api_key(
+    key_id: ENV.fetch("ASC_KEY_ID"),
+    issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+    key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_#{ENV.fetch('ASC_KEY_ID')}.p8"),
+    in_house: false,
+  )
+end
+
+# Build the web app and copy it into the native shell. Everything gym archives
+# comes from here, so it must run before any build. Repo root is ../.. from ios/App.
+def sync_web
+  sh("cd ../.. && npm run build && npx cap sync ios")
+end
+
+platform :ios do
+  desc "One-time: create the App Store Connect + Developer Portal app record"
+  lane :create_app do
+    produce(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      app_name: APP_NAME,
+      language: "Czech",
+      app_version: "1.0",
+      sku: "bohosluzby",
+      enable_services: {}, # no push/iCloud/etc.
+    )
+  end
+
+  desc "Push listing metadata + screenshots only (no binary, no submit)"
+  lane :metadata do
+    upload_to_app_store(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      skip_binary_upload: true,
+      submit_for_review: false,
+      overwrite_screenshots: true,
+      precheck_include_in_app_purchases: false,
+      force: true, # skip the interactive HTML-preview confirmation
+    )
+  end
+
+  desc "Build + sign the App Store .ipa"
+  lane :build do
+    sync_web
+    build_app(
+      project: "App.xcodeproj",
+      scheme: "App",
+      export_method: "app-store",
+      output_directory: "build",
+      output_name: "Bohosluzby.ipa",
+    )
+  end
+
+  desc "Build → TestFlight"
+  lane :beta do
+    build
+    upload_to_testflight(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      skip_waiting_for_build_processing: true,
+    )
+  end
+
+  desc "Build → upload binary + metadata + screenshots (does NOT submit)"
+  lane :release do
+    build
+    upload_to_app_store(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      submit_for_review: false, # Pavol clicks Submit after the airplane-mode self-check
+      overwrite_screenshots: true,
+      precheck_include_in_app_purchases: false,
+      force: true,
+    )
+  end
+end

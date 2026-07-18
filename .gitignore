@@ -11,3 +11,11 @@ test-results/
 .vite/
 data/cache/
 *.tsbuildinfo
+
+# fastlane
+ios/App/fastlane/.env
+ios/App/fastlane/report.xml
+ios/App/fastlane/Preview.html
+ios/App/fastlane/build/
+ios/App/build/
+*.p8

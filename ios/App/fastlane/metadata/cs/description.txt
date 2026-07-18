@@ -1,0 +1,17 @@
+Bohoslužby vám podle vaší polohy ukážou nejbližší katolické mše svaté — a hlavně to, kterou mši dnes ještě stihnete.
+
+Otevřete aplikaci a hned vidíte pořad bohoslužeb v okolí: kde a v kolik začíná nejbližší mše, kolik zbývá času a jak daleko to máte. Bez zdlouhavého hledání na webu farnosti.
+
+Co aplikace umí:
+• Nejbližší mše podle vaší polohy, seřazené od té, kterou ještě stihnete
+• Pořad bohoslužeb pro dnešek, zítřek i neděli
+• Funguje offline — data máte v telefonu i bez signálu
+• Export mše do kalendáře jedním klepnutím
+• Připomínka před začátkem mše, ať nikam nespěcháte
+• Přibližně 3 991 kostelů z oficiálního rejstříku České biskupské konference
+
+Zdarma, bez reklam a bez registrace. Nepotřebujete účet ani přihlášení.
+
+Vaše poloha se používá jen ve vašem telefonu k výpočtu nejbližších kostelů a nikam se neodesílá.
+
+Zdroj dat: oficiální rejstřík bohoslužeb České biskupské konference (bohoslužby.cirkev.cz).

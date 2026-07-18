@@ -1,0 +1,12 @@
+No account or login is required — open the app and it works immediately.
+
+Guideline 4.2 note: the app is fully functional OFFLINE. To verify, enable
+Airplane Mode and open the app — the list of nearby Catholic masses still loads
+(church + service data ships inside the app). The map tiles are the only part
+that needs a network connection.
+
+Location permission is optional: if denied, the app shows all churches; if
+granted, it sorts them by distance. Location is used only on-device and is never
+transmitted.
+
+Data source: the official public mass registry of the Czech Bishops' Conference.

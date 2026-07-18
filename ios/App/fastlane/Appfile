@@ -1,0 +1,3 @@
+app_identifier("org.dravec.bohosluzby")
+apple_id(ENV["ASC_APPLE_ID"])   # your Apple Developer login email — set in fastlane/.env
+team_id("8L39RHYGVY")           # Apple Developer Program team (Individual)
