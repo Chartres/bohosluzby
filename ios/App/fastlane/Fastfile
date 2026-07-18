@@ -45,7 +45,7 @@ platform :ios do
       username: ENV.fetch("ASC_APPLE_ID"),
       app_identifier: APP_ID,
       app_name: APP_NAME,
-      language: "Czech",
+      language: "cs",
       app_version: "1.0",
       sku: "bohosluzby",
       skip_devcenter: true,
