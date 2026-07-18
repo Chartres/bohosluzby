@@ -23,6 +23,7 @@ def asc_key
     issuer_id: ENV.fetch("ASC_ISSUER_ID"),
     key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_#{ENV.fetch('ASC_KEY_ID')}.p8"),
     in_house: false,
+    set_spaceship_token: true, # so produce (create_app) and other spaceship tools pick it up
   )
 end
 
@@ -33,16 +34,21 @@ def sync_web
 end
 
 platform :ios do
-  desc "One-time: create the App Store Connect + Developer Portal app record"
+  # One-time app-record creation. INTERACTIVE ONLY: produce can't use the API key
+  # for this step (it falls back to Apple-ID password + 2FA), so run this from a
+  # real terminal where it can prompt — or just create the record in the ASC UI
+  # (New App: name, Czech, bundle org.dravec.bohosluzby, SKU bohosluzby). The
+  # bundle ID is already registered from Xcode signing, so skip the dev portal.
+  desc "One-time (interactive): create the App Store Connect app record"
   lane :create_app do
     produce(
-      api_key: asc_key,
+      username: ENV.fetch("ASC_APPLE_ID"),
       app_identifier: APP_ID,
       app_name: APP_NAME,
       language: "Czech",
       app_version: "1.0",
       sku: "bohosluzby",
-      enable_services: {}, # no push/iCloud/etc.
+      skip_devcenter: true,
     )
   end
 

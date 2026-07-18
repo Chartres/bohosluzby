@@ -20,7 +20,7 @@ categories, age rating, the App Privacy nutrition label, and the final Submit.
 3. `cp ios/App/fastlane/.env.example ios/App/fastlane/.env` and fill in `ASC_KEY_ID` / `ASC_ISSUER_ID`.
 
 **Run (from `ios/App/`):**
-- `fastlane ios create_app` — registers the app record (once).
+- Create the app record **once** — either in the App Store Connect UI (New App: name `Bohoslužby: katolické mše`, Czech, bundle `org.dravec.bohosluzby`, SKU `bohosluzby`) **or** `fastlane ios create_app` from an interactive terminal (it prompts for your Apple ID password + 2FA — produce can't use the API key for this one step).
 - Then in the ASC UI set the parts fastlane skips: **Primary Lifestyle / Secondary Reference**, **age rating 4+** (all "None"), and the **App Privacy** answers from §3 below.
 - `fastlane ios release` — builds, signs, uploads the binary + all metadata + screenshots. **Stops before Submit** (lane sets `submit_for_review: false`).
 - Do the airplane-mode self-check (§7), then **Submit for Review in the UI after Pavol's sign-off** (§8).
