@@ -71,6 +71,8 @@ platform :ios do
   lane :build do
     key = asc_key
     sync_web
+    # Monotonic build number (total commit count) so re-uploads never collide.
+    increment_build_number(build_number: number_of_commits, xcodeproj: "App.xcodeproj")
     # Explicit DISTRIBUTION signing — App Store builds need no devices and no
     # development profile. cert + sigh create/download them headlessly via the
     # API key; then force manual distribution signing so the archive never tries

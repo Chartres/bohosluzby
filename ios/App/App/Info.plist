@@ -51,5 +51,7 @@
 	<false/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Pro zobrazení nejbližších bohoslužeb podle vaší polohy. Polohu můžete kdykoli zadat i ručně.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Pro zobrazení nejbližších bohoslužeb podle vaší polohy. Polohu můžete kdykoli zadat i ručně.</string>
 </dict>
 </plist>
