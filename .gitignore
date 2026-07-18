@@ -19,3 +19,4 @@ ios/App/fastlane/Preview.html
 ios/App/fastlane/build/
 ios/App/build/
 *.p8
+ios/App/fastlane/README.md

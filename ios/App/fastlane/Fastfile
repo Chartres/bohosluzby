@@ -67,6 +67,7 @@ platform :ios do
 
   desc "Build + sign the App Store .ipa"
   lane :build do
+    asc_key # token for -allowProvisioningUpdates (headless cert/profile creation)
     sync_web
     build_app(
       project: "App.xcodeproj",
@@ -74,6 +75,7 @@ platform :ios do
       export_method: "app-store",
       output_directory: "build",
       output_name: "Bohosluzby.ipa",
+      xcargs: "-allowProvisioningUpdates",
     )
   end
 
