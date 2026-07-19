@@ -58,7 +58,7 @@ export async function addToCalendar(church: Church, service: AnyService): Promis
   URL.revokeObjectURL(url)
 }
 
-export type ReminderResult = 'scheduled' | 'denied' | 'no-upcoming' | 'unsupported'
+export type ReminderResult = 'scheduled' | 'denied' | 'no-upcoming' | 'unsupported' | 'failed'
 
 /**
  * When to fire the reminder: REMINDER_LEAD_MIN before the next occurrence the
@@ -94,17 +94,25 @@ export async function scheduleMassReminder(
 
   await tapFeedback()
   const type = service.type || 'bohoslužba'
-  await LocalNotifications.schedule({
-    notifications: [
-      {
-        id: reminderId(church, service),
-        title: `${type.charAt(0).toUpperCase()}${type.slice(1)} za ${REMINDER_LEAD_MIN} min`,
-        body: `${church.name} — ${service.time}`,
-        schedule: { at },
-      },
-    ],
-  })
-  return 'scheduled'
+  const id = reminderId(church, service)
+  try {
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id,
+          title: `${type.charAt(0).toUpperCase()}${type.slice(1)} za ${REMINDER_LEAD_MIN} min`,
+          body: `${church.name} — ${service.time}`,
+          schedule: { at },
+        },
+      ],
+    })
+    // don't just trust the resolved promise — 'scheduled' is a UI promise to the
+    // user, so confirm the OS actually holds the pending notification
+    const pending = await LocalNotifications.getPending()
+    return pending.notifications.some((n) => n.id === id) ? 'scheduled' : 'failed'
+  } catch {
+    return 'failed'
+  }
 }
 
 /** Light impact on native taps; silent no-op on web. */

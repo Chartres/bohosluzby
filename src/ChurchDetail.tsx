@@ -14,7 +14,8 @@ import { noteUncertain, parseNote } from './domain/notes'
 import { fmtDateCz } from './domain/format'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
-import { addToCalendar, scheduleMassReminder } from './lib/native-actions'
+import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
+import { NavSheet } from './NavSheet'
 
 // Liturgical week: Sunday first, like a printed ordo.
 const DAY_ORDER = [7, 1, 2, 3, 4, 5, 6] as const
@@ -91,38 +92,57 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
     track('key_action', { action: 'reminder', church: church.id, result: r })
     flash(
       r === 'scheduled'
-        ? 'připomeneme ✓'
+        ? `✓ připomeneme ${REMINDER_LEAD_MIN} min předem`
         : r === 'denied'
-          ? 'povolte oznámení'
-          : 'žádná nejbližší',
+          ? 'povolte oznámení v Nastavení'
+          : r === 'failed'
+            ? 'nepodařilo se — zkuste znovu'
+            : 'žádná nejbližší',
     )
   }
 
   return (
     <div className="flex shrink-0 items-baseline gap-3">
-      {isNative && (
-        <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onRemind}>
-          připomenout
-        </button>
-      )}
-      <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onCalendar}>
-        do kalendáře
-      </button>
-      {/* status announced without stealing the button's accessible name */}
-      <span className="sr-only" role="status" aria-live="polite">
+      {/* the flash is VISIBLE (and stays one persistent aria-live region) — a
+          scheduled reminder the user can't see happened reads as a broken
+          button; it briefly replaces the verbs so the row never overflows */}
+      <span
+        className={msg ? 'text-xs font-semibold text-rubric' : 'sr-only'}
+        role="status"
+        aria-live="polite"
+      >
         {msg ?? ''}
       </span>
+      {!msg && (
+        <>
+          {isNative && (
+            <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onRemind}>
+              připomenout
+            </button>
+          )}
+          <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onCalendar}>
+            do kalendáře
+          </button>
+        </>
+      )}
     </div>
   )
 }
 
-/** Share the church's /kostel/<id>/ URL — Web Share API, clipboard fallback. */
+/** Share the church's /kostel/<id>/ URL. Native: the Capacitor Share plugin
+ * (WKWebView has no navigator.share — the old code silently did nothing).
+ * Web: Web Share API, then clipboard with a VISIBLE confirmation. */
 function ShareLink({ church }: { church: Church }) {
   const [copied, setCopied] = useState(false)
   const share = async () => {
     const url = `${location.origin}/kostel/${church.id}/`
     track('key_action', { action: 'share', church: church.id })
     try {
+      if (isNative) {
+        const { Share } = await import('@capacitor/share')
+        await Share.share({ title: church.name, url })
+        return
+      }
       if (navigator.share) {
         await navigator.share({ title: church.name, url })
         return
@@ -139,8 +159,12 @@ function ShareLink({ church }: { church: Church }) {
       <button type="button" onClick={share} className={linkCls}>
         sdílet
       </button>
-      <span className="sr-only" role="status" aria-live="polite">
-        {copied ? 'odkaz zkopírován' : ''}
+      <span
+        className={copied ? 'text-xs font-semibold text-rubric' : 'sr-only'}
+        role="status"
+        aria-live="polite"
+      >
+        {copied ? 'odkaz zkopírován ✓' : ''}
       </span>
     </>
   )
@@ -149,6 +173,7 @@ function ShareLink({ church }: { church: Church }) {
 export function ChurchDetail({ church, onBack }: { church: Church; onBack: () => void }) {
   const [svc, setSvc] = useState<ChurchServices | null>(null)
   const [failed, setFailed] = useState(false)
+  const [navOpen, setNavOpen] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
@@ -216,9 +241,10 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
           mapa
         </a>
         {' · '}
-        <a className={linkCls} href={`geo:${church.lat},${church.lng}`}>
+        {/* geo: is an Android scheme — iOS ignored it; the chooser works everywhere */}
+        <button type="button" className={linkCls} onClick={() => setNavOpen(true)}>
           navigace
-        </a>
+        </button>
         {' · '}
         <ShareLink church={church} />
         {church.barrierFree && ' · bezbariérový přístup'}
@@ -319,6 +345,13 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
             )}
           </p>
         </>
+      )}
+
+      {navOpen && (
+        <NavSheet
+          target={{ name: church.name, lat: church.lat, lng: church.lng }}
+          onClose={() => setNavOpen(false)}
+        />
       )}
     </article>
   )

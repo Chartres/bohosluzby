@@ -26,9 +26,16 @@ test('detail from the list: weekly ordo, extras, parish, freshness', async ({ pa
   await expect(page.getByLabel('Farnost')).toContainText('farnost Panny Marie Sněžné')
   await expect(page.getByText(/údaje z rejstříku ČBK, naposledy ověřeno 1\. 6\. 2026/)).toBeVisible()
 
-  // maps links
+  // maps link + navigace opens the nav-app chooser (geo: was Android-only)
   await expect(page.getByRole('link', { name: 'mapa' })).toHaveAttribute('href', /mapy\.cz/)
-  await expect(page.getByRole('link', { name: 'navigace' })).toHaveAttribute('href', /^geo:/)
+  await page.getByRole('button', { name: 'navigace' }).click()
+  await expect(page.getByRole('link', { name: 'Apple Maps' })).toHaveAttribute(
+    'href',
+    /maps\.apple\.com/,
+  )
+  await expect(page.getByRole('link', { name: 'Google Maps' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Mapy.cz' })).toHaveAttribute('href', /mapy\.cz/)
+  await page.getByRole('button', { name: 'zavřít', exact: true }).click()
 
   await shot(page, 'detail', true)
 

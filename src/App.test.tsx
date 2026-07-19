@@ -172,14 +172,27 @@ describe('Marie finds the nearest mass', () => {
     // Brno (>30 km) is not in the list
     expect(screen.queryByText(/sv\. Tomáše/)).not.toBeInTheDocument()
 
-    // verify-without-detail: every row links to the map, parish web when known
-    const maps = screen.getAllByRole('link', { name: 'mapa' })
-    expect(maps.length).toBeGreaterThan(1)
-    expect(maps[0]).toHaveAttribute('href', expect.stringContaining('mapy.cz'))
-    expect(screen.getByRole('link', { name: 'web' })).toHaveAttribute(
+    // verify-without-detail: every row gets a trasa button (nav chooser),
+    // parish web when known — prominent CTAs under the countdown
+    const trasy = screen.getAllByRole('button', { name: /^trasa:/ })
+    expect(trasy.length).toBeGreaterThan(1)
+    expect(screen.getByRole('link', { name: /^web:/ })).toHaveAttribute(
       'href',
       'https://www.farnostsalvator.cz',
     )
+    // tapping trasa opens the chooser with all three navigation apps
+    const user2 = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    await user2.click(trasy[0])
+    expect(screen.getByRole('link', { name: 'Apple Maps' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('maps.apple.com'),
+    )
+    expect(screen.getByRole('link', { name: 'Google Maps' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Mapy.cz' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('mapy.cz'),
+    )
+    await user2.click(screen.getByRole('button', { name: 'zavřít' }))
   })
 
   it('without permission: explains and offers the unified search fallback', async () => {
@@ -333,6 +346,11 @@ describe('Marie finds the nearest mass', () => {
     )
     expect(screen.getByText(/naposledy ověřeno 1\. 6\. 2026/)).toBeInTheDocument()
 
+    // "navigace" opens the nav-app chooser (geo: was Android-only and dead on iOS)
+    await user.click(screen.getByRole('button', { name: 'navigace' }))
+    expect(screen.getByRole('link', { name: 'Apple Maps' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'zavřít' }))
+
     // back returns to the list
     await user.click(screen.getByRole('button', { name: '‹ zpět na seznam' }))
     expect(await screen.findByText('kostel sv. Havla')).toBeInTheDocument()
@@ -378,11 +396,30 @@ describe('Marie finds the nearest mass', () => {
 
       await user.click(screen.getByRole('button', { name: 'sdílet' }))
       expect(writeText).toHaveBeenCalledWith('http://localhost/kostel/1/')
-      expect(await screen.findByText('odkaz zkopírován')).toBeInTheDocument()
+      expect(await screen.findByText('odkaz zkopírován ✓')).toBeInTheDocument()
     } finally {
       click.mockRestore()
       writeText.mockRestore()
     }
+  })
+
+  it('"✕ zrušit" clears filters, kdy and day in one tap', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    // no reset pill on a clean page
+    expect(screen.queryByRole('button', { name: '✕ zrušit' })).not.toBeInTheDocument()
+
+    openControls()
+    await user.click(screen.getByRole('button', { name: 'jen mše svaté' }))
+    await user.click(screen.getByRole('button', { name: 'zítra' }))
+    expect(screen.getByRole('button', { name: /^den: zítra/ })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '✕ zrušit' }))
+    expect(screen.getByRole('button', { name: /^den: hned/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'co: filtry' })).toBeInTheDocument()
+    expect(window.location.search).not.toContain('den=')
   })
 
   it('filters: "jen mše svaté" falls back to the church\'s next matching service', async () => {
