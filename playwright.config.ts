@@ -9,6 +9,9 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL: 'http://localhost:4173',
+    // Playwright defaults to en-US; most e2e specs assert Czech UI strings.
+    // e2e/english.spec.ts overrides this per-test via test.use({ locale }).
+    locale: 'cs-CZ',
     trace: 'on-first-retry',
     // The PWA service worker would serve /data/* from its own fetch path,
     // bypassing page.route() mocks mid-test. Not what e2e is testing.

@@ -35,6 +35,11 @@ if (typeof globalThis.localStorage === 'undefined') {
 // jsdom logs "Not implemented" for scrollTo; the router calls it on navigation.
 window.scrollTo = () => {}
 
+// jsdom defaults navigator.language to en-US; the existing 212 tests assert
+// Czech UI strings. Pin it to cs-CZ so lang() resolves to 'cs' by default —
+// tests that want English redefine navigator.language for that test only.
+Object.defineProperty(window.navigator, 'language', { value: 'cs-CZ', configurable: true })
+
 afterEach(() => {
   cleanup()
   localStorage.clear()

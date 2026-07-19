@@ -4,14 +4,34 @@
 // matches a 00:45 vigil instead of falling off the clock edge.
 
 import { pragueMinutes } from './occurrences'
+import { lang } from '../i18n'
 
 export const BANDS = {
-  rano: { label: 'ráno', from: 0, to: 10 * 60 }, // do 10
-  dopoledne: { label: 'dopoledne', from: 10 * 60, to: 13 * 60 },
-  odpoledne: { label: 'odpoledne', from: 13 * 60, to: 17 * 60 },
-  vecer: { label: 'večer', from: 17 * 60, to: 24 * 60 }, // od 17
+  rano: { from: 0, to: 10 * 60 }, // do 10
+  dopoledne: { from: 10 * 60, to: 13 * 60 },
+  odpoledne: { from: 13 * 60, to: 17 * 60 },
+  vecer: { from: 17 * 60, to: 24 * 60 }, // od 17
 } as const
 export type Band = keyof typeof BANDS
+
+const BAND_LABEL_CS: Record<Band, string> = {
+  rano: 'ráno',
+  dopoledne: 'dopoledne',
+  odpoledne: 'odpoledne',
+  vecer: 'večer',
+}
+const BAND_LABEL_EN: Record<Band, string> = {
+  rano: 'morning',
+  dopoledne: 'late morning',
+  odpoledne: 'afternoon',
+  vecer: 'evening',
+}
+
+/** Read per call — the label follows the current language, not the one
+ * active when the module first loaded. */
+export function bandLabel(band: Band): string {
+  return (lang() === 'cs' ? BAND_LABEL_CS : BAND_LABEL_EN)[band]
+}
 
 export const AROUND_MIN = 90
 
