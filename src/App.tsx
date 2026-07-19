@@ -14,7 +14,7 @@ import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
-import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
+import { fmtDistance, fmtTime, fmtUntil, dayLabel, isStale } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
@@ -33,6 +33,7 @@ import {
   aroundLabel,
   withinKmLabel,
   nothingNearbyBody,
+  verifiedYear,
 } from './i18n'
 
 const NEARBY_KM = 30
@@ -1036,6 +1037,11 @@ function ServiceList({
                       <Chip label={t('greek_chip')} />
                     </>
                   )}
+                  {/* a real user walked to a mass whose entry was 9 years old —
+                      extreme staleness warns on the ROW, not just in the detail */}
+                  {r.updated && isStale(r.updated) && (
+                    <span className="font-semibold text-rubric"> · {verifiedYear(r.updated)}</span>
+                  )}
                 </p>
               </div>
               {/* the row's verbs, under the countdown: trasa opens the nav-app
@@ -1045,13 +1051,14 @@ function ServiceList({
                 {showUntil && (
                   <p className="text-sm font-semibold whitespace-nowrap">{fmtUntil(now, r.start)}</p>
                 )}
-                {/* stacked, not side-by-side: two bordered buttons in a row ate
-                    half the 375px line and wrapped church names to four lines */}
-                <div className="relative z-10 flex flex-col items-end gap-1.5">
+                {/* ONE segmented group, hairline-divided — two loose bordered
+                    buttons read as clutter (user feedback); the shared border
+                    makes them one control with two verbs */}
+                <div className="relative z-10 flex divide-x divide-hairline overflow-hidden rounded-sm border border-hairline">
                   <button
                     type="button"
                     aria-label={`${t('row_route')}: ${r.church.name}`}
-                    className="flex min-h-9 items-center gap-1 rounded-sm border border-hairline px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:text-ink"
+                    className="flex min-h-9 items-center gap-1 px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:bg-white/60 hover:text-ink"
                     onClick={() =>
                       onNavigate({ name: r.church.name, lat: r.church.lat, lng: r.church.lng })
                     }
@@ -1062,7 +1069,7 @@ function ServiceList({
                   {r.church.www && (
                     <a
                       aria-label={`${t('row_web')}: ${r.church.name}`}
-                      className="flex min-h-9 items-center gap-1 rounded-sm border border-hairline px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:text-ink"
+                      className="flex min-h-9 items-center gap-1 px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:bg-white/60 hover:text-ink"
                       href={r.church.www}
                       target="_blank"
                       rel="noreferrer"

@@ -39,7 +39,7 @@ const SHARD_50_14 = {
     ],
   },
   '2': {
-    u: '2026-06-01',
+    u: '2016-09-06', // decade-stale — drives the verify-before-you-go warnings
     p: '',
     pa: '',
     c: [],
@@ -363,6 +363,20 @@ describe('Marie finds the nearest mass', () => {
     expect(await screen.findByRole('heading', { name: 'kostel sv. Havla' })).toBeInTheDocument()
     expect(await screen.findByText('19:30')).toBeInTheDocument()
     expect(screen.getByText('latinsky')).toBeInTheDocument()
+    // 2016 entry → loud verify-before-you-go warning ABOVE the schedule, not
+    // just the footnote (a real user walked to a mass that wasn't held)
+    expect(
+      screen.getByText(/Rozpis byl naposledy ověřen 6\. 9\. 2016 — před cestou/),
+    ).toBeInTheDocument()
+  })
+
+  it('stale registry rows carry a rubric "ověřeno <year>" marker in the list', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    // sv. Havla (u: 2016-09-06) is stale; fresh rows carry no marker
+    expect(screen.getAllByText(/ověřeno 2016/).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/ověřeno 2026/)).not.toBeInTheDocument()
   })
 
   it('unknown church id explains itself', async () => {

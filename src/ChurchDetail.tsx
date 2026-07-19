@@ -11,12 +11,12 @@ import {
 } from './domain/data'
 import { nextOccurrences, pragueToday } from './domain/occurrences'
 import { noteUncertain, parseNote } from './domain/notes'
-import { fmtDateCz } from './domain/format'
+import { fmtDateCz, isStale } from './domain/format'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { NavSheet } from './NavSheet'
-import { t, langLabel, reminderScheduledMsg, type Key } from './i18n'
+import { t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
 
 // Liturgical week: Sunday first, like a printed ordo.
 const DAY_ORDER = [7, 1, 2, 3, 4, 5, 6] as const
@@ -62,16 +62,6 @@ function contactHref(type: string, value: string): string | null {
 const isoToday = (): string => {
   const { y, m, d } = pragueToday(new Date())
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-}
-
-/** Older than 18 months → "naposledy ověřeno" reads as a verify-before-you-go
- * warning rather than a quiet footnote. */
-const isStale = (iso: string): boolean => {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
-  if (!m) return false
-  const cutoff = new Date()
-  cutoff.setMonth(cutoff.getMonth() - 18)
-  return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) < cutoff
 }
 
 /** Per-service actions: add to calendar (native share sheet / web download) and,
@@ -264,6 +254,14 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
 
       {svc && (
         <>
+          {/* a decade-stale entry buried in a footnote sent a real user to a
+              mass that wasn't held — extreme staleness warns BEFORE the
+              schedule, where the go/no-go decision is made */}
+          {svc.updated && isStale(svc.updated) && (
+            <p className="mt-6 border-l-2 border-rubric pl-3 text-sm font-semibold text-rubric">
+              {staleWarning(fmtDateCz(svc.updated))}
+            </p>
+          )}
           <section aria-label={t('schedule_title')} className="mt-7">
             <h3 className="rubric border-b border-hairline pb-1">{t('schedule_title')}</h3>
             {svc.regular.length === 0 && (

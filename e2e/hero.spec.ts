@@ -47,6 +47,9 @@ test('hero list: nearest services, soonest first', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Mapy.cz' })).toBeVisible()
   await page.getByRole('button', { name: 'zavřít', exact: true }).click()
 
+  // a 2016-verified entry warns on the row itself (rubric red year marker)
+  await expect(page.locator('ol')).toContainText('ověřeno 2016')
+
   // note parser: Havel's 10:30 "kromě července a srpna" must not run on 6 July…
   await expect(page.locator('ol').getByText('10:30')).toHaveCount(0)
   // …Ludmila's unverifiable "dle ohlášení" stays, set as a warning rubric
