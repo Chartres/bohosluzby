@@ -96,7 +96,8 @@ export const cs = {
   close_filters_aria: 'Zavřít filtry',
   filters_word: 'filtry',
   done: 'hotovo',
-  clear_all: '✕ zrušit',
+  clear_all: '✕', // bare glyph — '✕ zrušit' pushed itself off a 375px pill row
+  clear_all_aria: 'zrušit vše',
 
   // ---- routes ----
   church_not_found_title: 'Kostel nenalezen',
@@ -247,7 +248,8 @@ export const en: Record<Key, string> = {
   close_filters_aria: 'close filters',
   filters_word: 'filters',
   done: 'done',
-  clear_all: '✕ clear',
+  clear_all: '✕',
+  clear_all_aria: 'clear all',
 
   church_not_found_title: 'Church not found',
   church_not_found_body: "This link doesn't point to any church in the registry.",
@@ -339,9 +341,10 @@ export function aroundLabel(cas: string): string {
   return `${t('around_word')} ${cas}`
 }
 
-/** "do 5 km" / "within 5 km" — the "okruh" pill/sheet distance options. */
+/** "< 5 km" — the "okruh" pill/sheet distance options (same in both langs;
+ * "do 5 km"/"within 5 km" made the pill row overflow on 375px). */
 export function withinKmLabel(km: number): string {
-  return lang() === 'cs' ? `do ${km} km` : `within ${km} km`
+  return `< ${km} km`
 }
 
 /** "Do 30 km od obce Brno není…" / "No services within 30 km of Brno…" —
@@ -364,6 +367,29 @@ export function reminderScheduledMsg(min: number): string {
 export function verifiedYear(iso: string): string {
   const y = iso.slice(0, 4)
   return lang() === 'cs' ? `ověřeno ${y}` : `verified ${y}`
+}
+
+/** Season-window advisory: one banner over the list (and in the route sheet)
+ * during the windows when parishes actually shuffle schedules. */
+export function verifyBanner(season: 'summer' | 'advent' | 'christmas' | 'lent' | 'easter'): string {
+  if (lang() === 'cs') {
+    const when = {
+      summer: 'O letních prázdninách',
+      advent: 'V adventu',
+      christmas: 'O Vánocích',
+      lent: 'V postní době',
+      easter: 'O Velikonocích',
+    }[season]
+    return `${when} se časy bohoslužeb často mění — ověřte si je prosím na webu farnosti.`
+  }
+  const when = {
+    summer: 'During summer holidays',
+    advent: 'During Advent',
+    christmas: 'Around Christmas',
+    lent: 'During Lent',
+    easter: 'Around Easter',
+  }[season]
+  return `${when}, mass times often change — please verify on the parish website.`
 }
 
 /** The detail's verify-before-you-go warning for a stale registry entry. */

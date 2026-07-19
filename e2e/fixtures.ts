@@ -102,7 +102,7 @@ export const SHARD_50_14 = {
     ],
   },
   // P2 James (docs/PERSONAS.md): the tourist's English Sunday mass.
-  // Decade-stale on purpose — drives the "ověřeno 2016" row marker.
+  // Decade-stale on purpose — drives the detail-view stale warning.
   '7': {
     u: '2016-09-06',
     p: 'farnost sv. Tomáše',

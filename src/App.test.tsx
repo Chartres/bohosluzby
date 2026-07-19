@@ -370,13 +370,15 @@ describe('Marie finds the nearest mass', () => {
     ).toBeInTheDocument()
   })
 
-  it('stale registry rows carry a rubric "ověřeno <year>" marker in the list', async () => {
+  it('season advisory banner shows over the list (NOW is July → summer)', async () => {
     stubGeolocation('granted')
     render(<App />)
     await screen.findByText(/Salvátora/)
-    // sv. Havla (u: 2016-09-06) is stale; fresh rows carry no marker
-    expect(screen.getAllByText(/ověřeno 2016/).length).toBeGreaterThan(0)
-    expect(screen.queryByText(/ověřeno 2026/)).not.toBeInTheDocument()
+    // one actionable banner replaced the per-row "ověřeno <year>" markers
+    expect(
+      screen.getByText(/O letních prázdninách se časy bohoslužeb často mění/),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/ověřeno 2016/)).not.toBeInTheDocument()
   })
 
   it('unknown church id explains itself', async () => {
@@ -417,20 +419,20 @@ describe('Marie finds the nearest mass', () => {
     }
   })
 
-  it('"✕ zrušit" clears filters, kdy and day in one tap', async () => {
+  it('"✕" clears filters, kdy and day in one tap', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<App />)
     await screen.findByText(/Salvátora/)
     // no reset pill on a clean page
-    expect(screen.queryByRole('button', { name: '✕ zrušit' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'zrušit vše' })).not.toBeInTheDocument()
 
     openControls()
     await user.click(screen.getByRole('button', { name: 'jen mše svaté' }))
     await user.click(screen.getByRole('button', { name: 'zítra' }))
     expect(screen.getByRole('button', { name: /^den: zítra/ })).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: '✕ zrušit' }))
+    await user.click(screen.getByRole('button', { name: 'zrušit vše' }))
     expect(screen.getByRole('button', { name: /^den: hned/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'co: filtry' })).toBeInTheDocument()
     expect(window.location.search).not.toContain('den=')

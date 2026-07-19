@@ -59,15 +59,15 @@ test('okruh: distance filter narrows the list to walking range', async ({ page, 
   await expect(page.getByText('kostel sv. Ludmily')).toBeVisible()
 
   await openControls(page)
-  await page.getByRole('button', { name: 'do 2 km' }).click()
+  await page.getByRole('button', { name: '< 2 km' }).click()
   await expect(page.getByText('kostel sv. Ludmily')).not.toBeVisible()
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).not.toBeVisible()
   await expect(page.getByText('kostel sv. Havla')).toBeVisible()
-  await expect(page.getByRole('button', { name: /^okruh: do 2 km/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^okruh: < 2 km/ })).toBeVisible()
   await shot(page, 'filters-okruh')
 
   // vše resets the radius
-  await page.getByRole('button', { name: 'vše' }).click()
+  await page.getByRole('button', { name: 'vše', exact: true }).click()
   await expect(page.getByText('kostel sv. Ludmily')).toBeVisible()
 })
 

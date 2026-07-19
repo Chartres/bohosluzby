@@ -102,3 +102,33 @@ export function currentLiturgicalDay(now: Date = new Date()): LiturgicalDay {
   const get = (type: string) => Number(p.find((x) => x.type === type)?.value)
   return liturgicalDay(get('year'), get('month'), get('day'))
 }
+
+// ---- "verify the times" advisory season -----------------------------------
+// Parishes shuffle schedules in predictable windows: summer holidays, Advent,
+// Christmas, Lent, and the Easter octave. In those windows the app shows one
+// banner ("times often change now — check the parish website") instead of
+// per-row provenance years, which nobody could act on.
+export type VerifySeason = 'summer' | 'advent' | 'christmas' | 'lent' | 'easter' | null
+
+export function verifySeason(now: Date = new Date()): VerifySeason {
+  const p = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Prague',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  }).formatToParts(now)
+  const get = (type: string) => Number(p.find((x) => x.type === type)?.value)
+  const [year, month, day] = [get('year'), get('month'), get('day')]
+  // CZ school summer holidays — the single biggest schedule-shuffle window
+  if (month === 7 || month === 8) return 'summer'
+  const lit = liturgicalDay(year, month, day)
+  if (lit.season === 'advent' || lit.season === 'christmas' || lit.season === 'lent') {
+    return lit.season
+  }
+  // Easter octave only — the full 50-day season mostly runs normal schedules
+  const easter = easterSunday(year)
+  const t = utc(year, month, day)
+  const easterT = utc(year, easter.month, easter.day)
+  if (t >= easterT && t <= easterT + 7 * DAY) return 'easter'
+  return null
+}
