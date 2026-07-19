@@ -71,10 +71,16 @@ platform :ios do
   lane :build do
     key = asc_key
     sync_web
-    # Monotonic build number: highest already on App Store Connect + 1. (Commit
-    # count went BACKWARDS after squash-merges — TestFlight surfaced a stale
-    # higher-numbered build as "latest". Ask the source of truth instead.)
-    latest = app_store_build_number(api_key: key, live: false, initial_build_number: 0)
+    # Monotonic build number: highest EVER uploaded to App Store Connect + 1.
+    # (Commit count went backwards after squash-merges; and
+    # app_store_build_number skips EXPIRED builds, whose numbers Apple still
+    # reserves — build 53 collided that way. Ask the builds API directly.)
+    app = Spaceship::ConnectAPI::App.find(APP_ID)
+    # includes: "app" — the default includes betaBuildMetrics, which the ASC
+    # API no longer accepts as a relationship name
+    latest = Spaceship::ConnectAPI.get_builds(
+      filter: { app: app.id }, sort: "-version", includes: "app", limit: 1
+    ).first&.version.to_i
     increment_build_number(build_number: latest + 1, xcodeproj: "App.xcodeproj")
     # Explicit DISTRIBUTION signing — App Store builds need no devices and no
     # development profile. cert + sigh create/download them headlessly via the
