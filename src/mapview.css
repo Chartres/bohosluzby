@@ -30,6 +30,14 @@
   place-items: center;
   background: transparent;
   border: 0;
+  position: relative;
+}
+/* invisible tap halo: the visible chip is ~30px, a thumb needs ~44px —
+   the halo grows the hit area without touching the visual (audit finding) */
+.map-chip-wrap::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 .map-chip {
   padding: 1px 5px 2px;

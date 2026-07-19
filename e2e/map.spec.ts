@@ -115,3 +115,20 @@ test('money shot at 375px: mixed chips and faded dots — matches vs everything 
   await expect(page.locator('.map-dot--faded').first()).toBeVisible()
   await shot(page, 'map-mixed-375')
 })
+
+test('map mode: filter sheet opens ABOVE the map (leaflet z-index regression)', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto('/?zobrazeni=mapa')
+  await expect(page.locator('.map-chip').first()).toBeVisible()
+  // tapping a pill must surface the bottom sheet over leaflet's panes —
+  // z-50 rendered it UNDER the map (only the backdrop tint showed on device)
+  await page.getByRole('button', { name: /^kdy:/ }).click()
+  const sheet = page.getByRole('dialog', { name: 'Den a filtry' })
+  await expect(sheet).toBeVisible()
+  await expect(sheet.getByRole('button', { name: 'večer' })).toBeVisible()
+  await sheet.getByRole('button', { name: 'večer' }).click() // actually tappable, not occluded
+  await expect(page.getByRole('button', { name: /^kdy: večer/ })).toBeVisible()
+  await shot(page, 'map-sheet-375')
+  await sheet.getByRole('button', { name: 'hotovo' }).click()
+  await expect(sheet).not.toBeVisible()
+})

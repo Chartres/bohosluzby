@@ -420,6 +420,8 @@ const LANG_LABEL_EN: Record<string, string> = {
   'vietnamsky': 'Vietnamese',
   'německy': 'German',
   'ukrajinsky': 'Ukrainian',
+  'církevněslovansky': 'Church Slavonic',
+  'slovensky': 'Slovak',
 }
 
 /** Display name for a normalized Czech language adverb ("latinsky" →
