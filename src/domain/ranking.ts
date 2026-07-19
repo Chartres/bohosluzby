@@ -119,7 +119,11 @@ export function selectUpcoming(
   day: DayChoice,
   opts: RankOptions = {},
 ): Upcoming[] {
-  const cs = filters.barrierFree ? churches.filter((c) => c.barrierFree) : churches
+  let cs = filters.barrierFree ? churches.filter((c) => c.barrierFree) : churches
+  if (filters.maxKm) {
+    const max = filters.maxKm // church-level, like barrierFree — okruh filter
+    cs = cs.filter((c) => haversineKm(origin.lat, origin.lng, c.lat, c.lng) <= max)
+  }
   const filtered = applyFilters(byId, filters, cas)
   return day === 'now'
     ? rankUpcoming(now, origin, cs, filtered, opts)

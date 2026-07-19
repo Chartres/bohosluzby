@@ -11,7 +11,7 @@
   /* liturgical season palette (js sets --season to one of these) */
   --color-season-green: #3d6b46;
   --color-season-violet: #5b3a7e;
-  --color-season-gold: #a8842c;
+  --color-season-gold: #7a5a1e; /* darkened from #a8842c — 12px bold on paper must clear AA */
   --color-season-red: #8f1d1d;
 
   --font-display: 'Fraunces Variable', 'Fraunces', 'Georgia', serif;
@@ -38,9 +38,11 @@ html {
   outline-offset: 2px;
 }
 
-/* horizontal control rows (day picker): scroll instead of wrapping, no visible scrollbar */
+/* horizontal control rows (day picker): scroll instead of wrapping, no visible scrollbar;
+   the right-edge fade hints that more chips sit off-screen */
 .scroll-row {
   scrollbar-width: none;
+  mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
 }
 .scroll-row::-webkit-scrollbar {
   display: none;

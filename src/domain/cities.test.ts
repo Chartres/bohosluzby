@@ -103,6 +103,13 @@ describe('searchPlaces — unified church + city typeahead', () => {
     expect(r.some((x) => x.kind === 'church' && x.name === tyn.name)).toBe(true)
   })
 
+  it('finds a church by its website host ("kcmt" → http://www.kcmt.cz)', () => {
+    const kcmt: Church = { ...church('k1', 'Praha 4'), www: 'http://www.kcmt.cz' }
+    const idx = [kcmt]
+    const r = searchPlaces(aggregateCities(idx), idx, 'kcmt')
+    expect(r.some((x) => x.kind === 'church' && x.church.id === 'k1')).toBe(true)
+  })
+
   it('short or empty queries return nothing', () => {
     expect(searchPlaces(cities, index, 'z')).toEqual([])
     expect(searchPlaces(cities, index, ' ')).toEqual([])

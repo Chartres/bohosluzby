@@ -1,7 +1,7 @@
 // Persona journeys from docs/PERSONAS.md — the concrete scripts, one test per
 // persona. P1 (Marie) lives in hero.spec.ts; P5/P7 are seasonal manual passes.
 import { test, expect } from '@playwright/test'
-import { FIXED_NOW, PRAGUE, mockData, shot } from './fixtures'
+import { FIXED_NOW, PRAGUE, mockData, openControls, shot } from './fixtures'
 
 test.use({ geolocation: PRAGUE, permissions: ['geolocation'] })
 
@@ -15,6 +15,7 @@ test('P2 James: Sunday mass in English → jazyk filter → ICS on his calendar'
   await expect(page.getByText('kostel Nejsvětějšího Salvátora')).toBeVisible()
 
   // Saturday-evening planning: tomorrow's full ordo first, then narrow by language
+  await openControls(page)
   await page.getByRole('button', { name: 'neděle' }).click()
   await expect(page.getByText('neděle 12. 7.')).toBeVisible()
   await page.getByLabel('Jazyk bohoslužby').selectOption('anglicky')
@@ -38,6 +39,7 @@ test('P3 Tomáš: lunch-window mass — kolem 12:00 fits the 11:45–13:00 box',
   await page.goto('/')
   await expect(page.getByText('kostel Nejsvětějšího Salvátora')).toBeVisible()
 
+  await openControls(page)
   await page.getByLabel('Kolem času').selectOption('12:00')
   const seznam = page.getByTestId('seznam')
   // Salvátor's daily 12:00 is the answer; the 09:30 and evening masses fall outside ±90 min
@@ -61,6 +63,7 @@ test('P4 Novákovi: driving home — city origin + dnes večer, no walk-distance
   await page.getByRole('option', { name: /^Praha/ }).click()
   await expect(page).toHaveURL(/\/mesto\/praha\//)
 
+  await openControls(page)
   await page.getByRole('button', { name: 'dnes' }).click()
   await page.getByRole('button', { name: 'večer' }).click()
   const seznam = page.getByTestId('seznam')

@@ -23,6 +23,7 @@ describe('fmtUntil', () => {
     expect(fmtUntil(now, new Date('2026-07-03T11:00:00Z'))).toBe('za 3 h')
   })
   it('days (Czech plurals)', () => {
+    expect(fmtUntil(now, new Date('2026-07-04T08:00:00Z'))).toBe('za 1 den')
     expect(fmtUntil(now, new Date('2026-07-05T08:00:00Z'))).toBe('za 2 dny')
     expect(fmtUntil(now, new Date('2026-07-08T09:00:00Z'))).toBe('za 5 dní')
   })

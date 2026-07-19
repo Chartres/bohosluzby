@@ -213,9 +213,17 @@ describe('uncertain notes: kept, flagged', () => {
   it('descriptive tails do not flag parsed notes', () => {
     expect(noteUncertain('letní čas, mše svatá')).toBe(false)
   })
-  it('a parsed segment still excludes even when a sibling is uncertain', () => {
-    // "školní rok, dle ohlášení" — July is provably out; the rest is uncertain
-    expect(runs('školní rok, dle ohlášení', '2026-07-06')).toBe(false)
+  it('an uncertain sibling degrades a parsed exclusion to kept-uncertain', () => {
+    // "školní rok, dle ohlášení" — July would be provably out, but "dle
+    // ohlášení" is uncertain: don't hide a mass the note half-explains, keep
+    // it and flag it loud (reviewed: a flagged row beats a silent drop).
+    expect(runs('školní rok, dle ohlášení', '2026-07-06')).toBe(true)
     expect(noteUncertain('školní rok, dle ohlášení')).toBe(true)
+  })
+  it('školní-rok / prázdniny split does not hide the summer mass', () => {
+    const note = 've školním roce v 18:00, o prázdninách v 8:00'
+    expect(runs(note, '2026-07-06')).toBe(true) // summer 8:00 mass kept, not hidden
+    expect(runs(note, '2026-11-06')).toBe(true) // school-year exclusion no longer trusted
+    expect(noteUncertain(note)).toBe(true) // flagged loud instead
   })
 })

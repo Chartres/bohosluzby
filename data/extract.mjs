@@ -214,6 +214,12 @@ function transform() {
 
   index.sort((a, b) => Number(a[0]) - Number(b[0]))
   writeFileSync(`${OUT}/churches.json`, JSON.stringify(index))
+  // version manifest — the app checks this to decide whether to pull a refresh,
+  // and shows `generated` as the "aktuální k …" date. (src/lib/dataStore.ts)
+  writeFileSync(
+    `${OUT}/version.json`,
+    JSON.stringify({ generated: new Date().toISOString().slice(0, 10), churches: index.length }),
+  )
   let total = statSync(`${OUT}/churches.json`).size
   for (const [cell, data] of Object.entries(shards)) {
     const p = `${OUT}/services/${cell}.json`

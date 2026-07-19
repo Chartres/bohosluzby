@@ -1,7 +1,8 @@
 import { isNative } from './native'
 import type { Church, ExtraService, Service } from '../domain/data'
 import { buildICS } from '../domain/ics'
-import { nextReminderAt } from '../domain/occurrences'
+import { nextReminderAt, pragueToday } from '../domain/occurrences'
+import { parseNote } from '../domain/notes'
 
 /** How long before a service the reminder fires. */
 export const REMINDER_LEAD_MIN = 30
@@ -60,6 +61,20 @@ export async function addToCalendar(church: Church, service: AnyService): Promis
 export type ReminderResult = 'scheduled' | 'denied' | 'no-upcoming' | 'unsupported'
 
 /**
+ * When to fire the reminder: REMINDER_LEAD_MIN before the next occurrence the
+ * service's note actually allows. A mass noted "kromě července a srpna" skips
+ * July/August and lands on the next running date (up to a year out), never
+ * scheduling a reminder for a mass that provably doesn't happen.
+ */
+export function reminderTimeFor(service: AnyService, now: Date): Date | null {
+  const rule = parseNote(service.note)
+  return nextReminderAt(specOf(service), now, REMINDER_LEAD_MIN, 366, (start) => {
+    const w = pragueToday(start)
+    return rule.runsOn(w.y, w.m, w.d)
+  })
+}
+
+/**
  * Schedule a local notification REMINDER_LEAD_MIN before the next occurrence of
  * this service. Native only (web returns 'unsupported' — the button is hidden
  * there). The occurrence maths is tested in domain/occurrences (nextReminderAt).
@@ -69,7 +84,7 @@ export async function scheduleMassReminder(
   service: AnyService,
 ): Promise<ReminderResult> {
   if (!isNative) return 'unsupported'
-  const at = nextReminderAt(specOf(service), new Date(), REMINDER_LEAD_MIN)
+  const at = reminderTimeFor(service, new Date())
   if (!at) return 'no-upcoming'
 
   const { LocalNotifications } = await import('@capacitor/local-notifications')

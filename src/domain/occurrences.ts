@@ -106,10 +106,12 @@ export function nextReminderAt(
   now: Date,
   leadMinutes: number,
   horizonDays = 14,
+  runsOn: (start: Date) => boolean = () => true,
 ): Date | null {
   const leadMs = leadMinutes * 60_000
   const nowMs = now.getTime()
   for (const occ of nextOccurrences(spec, now, horizonDays)) {
+    if (!runsOn(occ)) continue // skip dates the note provably excludes
     const at = occ.getTime() - leadMs
     if (at > nowMs) return new Date(at)
   }

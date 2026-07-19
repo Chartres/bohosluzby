@@ -57,7 +57,7 @@ export function FeedbackCard({ context = 'footer' }: { context?: string }) {
               type="button"
               aria-pressed={active}
               onClick={() => setEllis(active ? null : key)}
-              className={`-my-1 px-1 py-3 text-xs font-semibold uppercase tracking-[0.08em] ${
+              className={`-my-1 flex min-h-11 items-center px-1 text-xs font-semibold uppercase tracking-[0.08em] ${
                 active
                   ? 'text-ink underline decoration-2 underline-offset-4'
                   : 'text-ink-faded hover:text-ink'
@@ -75,7 +75,7 @@ export function FeedbackCard({ context = 'footer' }: { context?: string }) {
         rows={3}
         placeholder="Napište cokoli (volitelné)…"
         aria-label="Zpětná vazba"
-        className="mt-3 w-full rounded-sm border border-hairline bg-white/40 p-2 text-sm text-ink placeholder:text-ink-faded"
+        className="mt-3 w-full rounded-sm border border-hairline bg-white/40 p-2 text-base text-ink placeholder:text-ink-faded"
       />
       <div className="mt-2 flex justify-end gap-4">
         <button

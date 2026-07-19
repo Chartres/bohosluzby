@@ -11,6 +11,7 @@ import 'leaflet/dist/leaflet.css'
 import './mapview.css'
 import type { Church, ChurchServices } from './domain/data'
 import { decodeShard } from './domain/data'
+import { loadData } from './lib/dataStore'
 import { gridCluster } from './domain/cluster'
 import { NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
@@ -52,6 +53,7 @@ export default function MapView({
   cas,
   day,
   onOpen,
+  fill = false,
 }: {
   origin: { lat: number; lng: number }
   churches: Church[] // the whole index — matching is the selector's job
@@ -59,6 +61,8 @@ export default function MapView({
   cas: string | null
   day: DayChoice
   onOpen: (id: string) => void
+  /** Map mode: fill the parent column instead of the in-flow plate height. */
+  fill?: boolean
 }) {
   const divRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
@@ -68,8 +72,8 @@ export default function MapView({
   const loadShard = (cell: string) => {
     let p = shardCache.current.get(cell)
     if (!p) {
-      p = fetch(`/data/services/${cell}.json`)
-        .then((r) => (r.ok ? r.json() : {}))
+      // via dataStore, not raw fetch — the map must see an OTA-refreshed registry too
+      p = loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`)
         .catch(() => ({}))
         .then(decodeShard)
       shardCache.current.set(cell, p)
@@ -215,5 +219,17 @@ export default function MapView({
     }
   }, [churches, filters, cas, day, origin, onOpen])
 
-  return <div ref={divRef} data-testid="mapa" className="ordo-map mt-4 w-full border border-hairline" />
+  return (
+    <div
+      ref={divRef}
+      data-testid="mapa"
+      role="region"
+      aria-label="Mapa bohoslužeb"
+      className={
+        fill
+          ? 'ordo-map ordo-map--fill w-full border-t border-hairline'
+          : 'ordo-map mt-4 w-full border border-hairline'
+      }
+    />
+  )
 }

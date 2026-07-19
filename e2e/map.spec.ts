@@ -4,7 +4,7 @@
 // the rest, and a typographic popover. Tiles are stubbed to a paper-colored
 // pixel so shots are deterministic.
 import { test, expect } from '@playwright/test'
-import { FIXED_NOW, PRAGUE, mockData, shot } from './fixtures'
+import { FIXED_NOW, PRAGUE, mockData, openControls, shot } from './fixtures'
 
 test.use({ geolocation: PRAGUE, permissions: ['geolocation'] })
 
@@ -63,6 +63,7 @@ test('map matches the seznam: večer fades the cathedral to a dot, keeps the eve
     page.locator('.map-chip-wrap[title="katedrála sv. Víta, Václava a Vojtěcha"]'),
   ).toBeVisible()
 
+  await openControls(page)
   await page.getByRole('button', { name: 'večer' }).click()
   // no evening service ever → not in the seznam → a faded dot, not a chip (still tappable)
   const cathedral = page.locator('.map-marker[title="katedrála sv. Víta, Václava a Vojtěcha"]')

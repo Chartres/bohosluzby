@@ -143,3 +143,27 @@ describe('ordoForDay — the planning view', () => {
     expect(ordoForDay(now, 3, origin, [c1], map)).toEqual([]) // Monday: c1 has nothing
   })
 })
+
+describe('selectUpcoming — okruh (maxKm) filter', () => {
+  const near = church('near', 50.088, 14.422) // ~50 m
+  const far = church('far', 50.2, 14.6) // ~17 km
+  const byId = new Map([
+    [near.id, services([{ days: '5', time: '18:00' }])],
+    [far.id, services([{ days: '5', time: '18:00' }])],
+  ])
+  const f = { lang: null, greek: false, barrierFree: false, massOnly: false, maxKm: null }
+
+  it('maxKm drops churches beyond the radius in both day modes', async () => {
+    const { selectUpcoming } = await import('./ranking')
+    const hned = selectUpcoming(now, origin, [near, far], byId, { ...f, maxKm: 5 }, null, 'now')
+    expect(hned.map((r) => r.church.id)).toEqual(['near'])
+    const ordo = selectUpcoming(now, origin, [near, far], byId, { ...f, maxKm: 5 }, null, 0)
+    expect(ordo.map((r) => r.church.id)).toEqual(['near'])
+  })
+
+  it('maxKm null keeps everything', async () => {
+    const { selectUpcoming } = await import('./ranking')
+    const rows = selectUpcoming(now, origin, [near, far], byId, f, null, 'now')
+    expect(rows.map((r) => r.church.id).sort()).toEqual(['far', 'near'])
+  })
+})

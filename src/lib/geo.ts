@@ -12,6 +12,18 @@ export type Coords = { lat: number; lng: number }
 export async function getCurrentPosition(
   opts: { timeout?: number; maximumAge?: number } = {},
 ): Promise<Coords | null> {
+  // Hard deadline around the WHOLE read: the browser API's own `timeout` only
+  // starts counting once the permission prompt is answered — a dismissed
+  // prompt (or Android with OS location off) never calls back at all, and the
+  // app would hang on "zjišťuji polohu" forever. Null → caller's fallback
+  // (last known position → city picker).
+  const deadline = new Promise<null>((resolve) => setTimeout(() => resolve(null), 10_000))
+  return Promise.race([deadline, read(opts)])
+}
+
+async function read(
+  opts: { timeout?: number; maximumAge?: number } = {},
+): Promise<Coords | null> {
   const { timeout = 12_000, maximumAge = 300_000 } = opts
 
   if (isNative) {

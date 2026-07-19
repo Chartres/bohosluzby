@@ -3,7 +3,7 @@
 // annotations, live in the URL, and a church falls back to its next matching
 // service instead of vanishing.
 import { test, expect } from '@playwright/test'
-import { FIXED_NOW, PRAGUE, mockData, shot } from './fixtures'
+import { FIXED_NOW, PRAGUE, mockData, openControls, shot } from './fixtures'
 
 test.use({ geolocation: PRAGUE, permissions: ['geolocation'] })
 
@@ -16,6 +16,7 @@ test('večer narrows to evening services; ?cas=vecer is bookmarkable', async ({ 
   await page.goto('/')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
 
+  await openControls(page)
   await page.getByRole('button', { name: 'večer' }).click()
   await expect(page).toHaveURL(/\?cas=vecer/)
   // tonight's evening line-up (Mon 6 Jul): liturgie 17:00, PMS 18:00, Havel 19:30
@@ -36,6 +37,7 @@ test('kolem 09:00: fallback to the next matching service, composes with neděle'
 
   // kolem 09:00 (±90 min): the cathedral's 09:30 today stays; Panny Marie
   // Sněžné falls back from tonight's 18:00 to its Sunday 09:00
+  await openControls(page)
   await page.getByLabel('Kolem času').selectOption('09:00')
   await expect(page).toHaveURL(/\?cas=09:00/)
   await expect(page.getByTestId('seznam').getByText('09:30')).toBeVisible()
@@ -58,6 +60,7 @@ test('evening + ráno can never match today: muted chip, picking it jumps to zí
   await page.goto('/')
   await expect(page.getByTestId('seznam')).toBeVisible()
 
+  await openControls(page)
   // every band but večer is over today → visibly muted, still tappable
   const rano = page.getByRole('button', { name: 'ráno' })
   await expect(rano).toHaveClass(/opacity-40/)
@@ -68,7 +71,7 @@ test('evening + ráno can never match today: muted chip, picking it jumps to zí
   await rano.click()
   await expect(page).toHaveURL(/cas=rano/)
   await expect(page).toHaveURL(/den=zitra/)
-  await expect(page.getByRole('button', { name: 'zítra' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'zítra', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByTestId('seznam').getByText('09:30')).toBeVisible() // katedrála, Tuesday
   await shot(page, 'kdy-impossible-zitra')
 })
