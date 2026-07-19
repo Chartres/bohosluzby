@@ -15,12 +15,17 @@ const stubGeo = (impl: (ok: (p: unknown) => void, err: (e: unknown) => void) => 
 
 it('resolves coordinates when the browser answers', async () => {
   stubGeo((ok) => ok({ coords: { latitude: 50.1, longitude: 14.4 } }))
-  await expect(getCurrentPosition()).resolves.toEqual({ lat: 50.1, lng: 14.4 })
+  await expect(getCurrentPosition()).resolves.toEqual({ coords: { lat: 50.1, lng: 14.4 } })
 })
 
-it('resolves null on denial', async () => {
+it('reports denial with its reason', async () => {
   stubGeo((_ok, err) => err({ code: 1 }))
-  await expect(getCurrentPosition()).resolves.toBeNull()
+  await expect(getCurrentPosition()).resolves.toEqual({ coords: null, error: 'denied' })
+})
+
+it('OS location services off → unavailable (its own guidance)', async () => {
+  stubGeo((_ok, err) => err({ code: 2 }))
+  await expect(getCurrentPosition()).resolves.toEqual({ coords: null, error: 'unavailable' })
 })
 
 it('permission-prompt limbo: no callback ever → null at the hard deadline, no hang', async () => {
@@ -29,7 +34,7 @@ it('permission-prompt limbo: no callback ever → null at the hard deadline, no 
   })
   const p = getCurrentPosition()
   await vi.advanceTimersByTimeAsync(10_000)
-  await expect(p).resolves.toBeNull()
+  await expect(p).resolves.toEqual({ coords: null, error: 'deadline' })
 })
 
 const stubPermissions = (state: string) =>
