@@ -16,17 +16,18 @@ import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { NavSheet } from './NavSheet'
+import { t, langLabel, reminderScheduledMsg, type Key } from './i18n'
 
 // Liturgical week: Sunday first, like a printed ordo.
 const DAY_ORDER = [7, 1, 2, 3, 4, 5, 6] as const
-const DAY_NAME: Record<number, string> = {
-  1: 'pondělí',
-  2: 'úterý',
-  3: 'středa',
-  4: 'čtvrtek',
-  5: 'pátek',
-  6: 'sobota',
-  7: 'neděle',
+const DAY_NAME_KEY: Record<number, Key> = {
+  1: 'wd_mon',
+  2: 'wd_tue',
+  3: 'wd_wed',
+  4: 'wd_thu',
+  5: 'wd_fri',
+  6: 'wd_sat',
+  7: 'day_sunday_full',
 }
 
 export function Chip({ label }: { label: string }) {
@@ -92,12 +93,12 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
     track('key_action', { action: 'reminder', church: church.id, result: r })
     flash(
       r === 'scheduled'
-        ? `✓ připomeneme ${REMINDER_LEAD_MIN} min předem`
+        ? reminderScheduledMsg(REMINDER_LEAD_MIN)
         : r === 'denied'
-          ? 'povolte oznámení v Nastavení'
+          ? t('remind_denied')
           : r === 'failed'
-            ? 'nepodařilo se — zkuste znovu'
-            : 'žádná nejbližší',
+            ? t('remind_failed')
+            : t('remind_none'),
     )
   }
 
@@ -117,11 +118,11 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
         <>
           {isNative && (
             <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onRemind}>
-              připomenout
+              {t('remind')}
             </button>
           )}
           <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onCalendar}>
-            do kalendáře
+            {t('add_calendar')}
           </button>
         </>
       )}
@@ -157,14 +158,14 @@ function ShareLink({ church }: { church: Church }) {
   return (
     <>
       <button type="button" onClick={share} className={linkCls}>
-        sdílet
+        {t('share')}
       </button>
       <span
         className={copied ? 'text-xs font-semibold text-rubric' : 'sr-only'}
         role="status"
         aria-live="polite"
       >
-        {copied ? 'odkaz zkopírován ✓' : ''}
+        {copied ? t('link_copied') : ''}
       </span>
     </>
   )
@@ -178,7 +179,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
 
   useEffect(() => {
     const prev = document.title
-    document.title = `${church.name} — pořad bohoslužeb | Bohoslužby`
+    document.title = `${church.name} — ${t('detail_title_suffix')} | Bohoslužby`
     return () => {
       document.title = prev
     }
@@ -220,7 +221,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
           onClick={onBack}
           className={`rubric inline-flex min-h-11 items-center -my-3 ${linkCls}`}
         >
-          ‹ zpět na seznam
+          {t('back_to_list')}
         </button>
       </p>
       <h2
@@ -238,37 +239,35 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
           target="_blank"
           rel="noreferrer"
         >
-          mapa
+          {t('map_link')}
         </a>
         {' · '}
         {/* geo: is an Android scheme — iOS ignored it; the chooser works everywhere */}
         <button type="button" className={linkCls} onClick={() => setNavOpen(true)}>
-          navigace
+          {t('detail_navigate')}
         </button>
         {' · '}
         <ShareLink church={church} />
-        {church.barrierFree && ' · bezbariérový přístup'}
+        {church.barrierFree && ` · ${t('wheelchair_label')}`}
       </p>
 
       {failed && (
         <p className="mt-8 text-ink-faded" role="alert">
-          Rozpis bohoslužeb se nepodařilo načíst. Zkuste to prosím znovu.
+          {t('detail_load_error')}
         </p>
       )}
       {!failed && !svc && (
         <p className="mt-8 text-ink-faded" role="status">
-          Načítám rozpis…
+          {t('detail_loading')}
         </p>
       )}
 
       {svc && (
         <>
-          <section aria-label="Pořad bohoslužeb" className="mt-7">
-            <h3 className="rubric border-b border-hairline pb-1">Pořad bohoslužeb</h3>
+          <section aria-label={t('schedule_title')} className="mt-7">
+            <h3 className="rubric border-b border-hairline pb-1">{t('schedule_title')}</h3>
             {svc.regular.length === 0 && (
-              <p className="mt-3 text-sm text-ink-faded">
-                Rejstřík pro tento kostel neuvádí žádné pravidelné bohoslužby.
-              </p>
+              <p className="mt-3 text-sm text-ink-faded">{t('no_regular_services')}</p>
             )}
             {DAY_ORDER.map((day) => {
               const rows = svc.regular
@@ -277,7 +276,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
               if (rows.length === 0) return null
               return (
                 <div key={day} className="mt-4">
-                  <h4 className="rubric text-[0.7rem]">{DAY_NAME[day]}</h4>
+                  <h4 className="rubric text-[0.7rem]">{t(DAY_NAME_KEY[day])}</h4>
                   <ul>
                     {rows.map((s, i) => (
                       <li key={i}>
@@ -291,8 +290,8 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
           </section>
 
           {extras.length > 0 && (
-            <section aria-label="Mimořádné bohoslužby" className="mt-7">
-              <h3 className="rubric border-b border-hairline pb-1">Mimořádné bohoslužby</h3>
+            <section aria-label={t('extras_title')} className="mt-7">
+              <h3 className="rubric border-b border-hairline pb-1">{t('extras_title')}</h3>
               <ul>
                 {extras.map((x, i) => (
                   <li key={i} className="flex items-baseline gap-4 border-b border-hairline py-2">
@@ -303,7 +302,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                       {x.time}
                     </p>
                     <p className="min-w-0 flex-1 text-sm">
-                      {x.type || 'bohoslužba'}
+                      {x.type || t('service_fallback')}
                       <NoteText note={x.note} />
                     </p>
                     <ServiceActions church={church} service={x} />
@@ -314,8 +313,8 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
           )}
 
           {(svc.parish || svc.parishAddress || svc.contacts.length > 0) && (
-            <section aria-label="Farnost" className="mt-7">
-              <h3 className="rubric border-b border-hairline pb-1">Farnost</h3>
+            <section aria-label={t('parish_title')} className="mt-7">
+              <h3 className="rubric border-b border-hairline pb-1">{t('parish_title')}</h3>
               {svc.parish && <p className="mt-3 text-sm">{svc.parish}</p>}
               {svc.parishAddress && <p className="mt-0.5 text-sm text-ink-faded">{svc.parishAddress}</p>}
               {svc.contacts.length > 0 && (
@@ -337,10 +336,10 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
           )}
 
           <p className="mt-8 text-xs text-ink-faded">
-            údaje z rejstříku ČBK
+            {t('data_source_note')}
             {svc.updated && (
               <span className={isStale(svc.updated) ? 'text-rubric' : undefined}>
-                {`, naposledy ověřeno ${fmtDateCz(svc.updated)}`}
+                {`, ${t('last_verified')} ${fmtDateCz(svc.updated)}`}
               </span>
             )}
           </p>
@@ -385,13 +384,13 @@ function ServiceRow({ s, church }: { s: Service; church: Church }) {
       <p className="font-display w-14 shrink-0 text-xl font-semibold tabular-nums">{s.time}</p>
       <div className="min-w-0 flex-1">
         <p className="text-sm">
-          {s.type || 'bohoslužba'}
+          {s.type || t('service_fallback')}
           <NoteText note={s.note} />
-          {pausedNow && <span className="font-semibold text-rubric"> · nyní se nekoná</span>}
+          {pausedNow && <span className="font-semibold text-rubric"> · {t('now_paused')}</span>}
         </p>
         <p className="mt-0.5 space-x-2 text-sm empty:hidden">
-          {s.lang !== 'česky' && <Chip label={s.lang} />}
-          {s.greek && <Chip label="řeckokatolická" />}
+          {s.lang !== 'česky' && <Chip label={langLabel(s.lang)} />}
+          {s.greek && <Chip label={t('greek_chip')} />}
         </p>
       </div>
       <ServiceActions church={church} service={s} />

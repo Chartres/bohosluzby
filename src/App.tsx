@@ -16,34 +16,61 @@ import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
-import { BANDS, bandFullyPast, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
+import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
 import { loadData, refreshData, activeAsOf } from './lib/dataStore'
+import {
+  lang,
+  locale,
+  t,
+  langLabel,
+  churchCount,
+  filtersLabel,
+  aroundLabel,
+  withinKmLabel,
+  nothingNearbyBody,
+} from './i18n'
 
 const NEARBY_KM = 30
 const NEARBY_CAP = 120
 const LIST_LIMIT = 20
 
-/** "2026-07-03" → "3. 7. 2026" (Czech). */
+/** "2026-07-03" → "3. 7. 2026" (cs) / "3 Jul 2026" (en). */
 const fmtDataDate = (iso: string) => {
   const [y, m, d] = iso.slice(0, 10).split('-')
-  return `${Number(d)}. ${Number(m)}. ${y}`
+  if (lang() === 'cs') return `${Number(d)}. ${Number(m)}. ${y}`
+  return new Date(Date.UTC(Number(y), Number(m) - 1, Number(d))).toLocaleDateString(locale(), {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 // Leaflet + tiles code-split behind the "mapa" toggle — the list path pays nothing.
 const MapView = lazy(() => import('./MapView'))
 
-const SEASON_LABEL: Record<LiturgicalDay['season'], string> = {
+const SEASON_LABEL_CS: Record<LiturgicalDay['season'], string> = {
   ordinary: 'liturgické mezidobí',
   advent: 'doba adventní',
   christmas: 'doba vánoční',
   lent: 'doba postní',
   easter: 'doba velikonoční',
 }
+const SEASON_LABEL_EN: Record<LiturgicalDay['season'], string> = {
+  ordinary: 'ordinary time',
+  advent: 'Advent',
+  christmas: 'Christmas season',
+  lent: 'Lent',
+  easter: 'Easter season',
+}
+// Read per call (not a module-level constant) — a test flipping
+// navigator.language must see the new language on the next render.
+const seasonLabel = (s: LiturgicalDay['season']): string =>
+  (lang() === 'cs' ? SEASON_LABEL_CS : SEASON_LABEL_EN)[s]
 const SEASON_VAR: Record<LiturgicalDay['color'], string> = {
   green: 'var(--color-season-green)',
   violet: 'var(--color-season-violet)',
@@ -120,7 +147,10 @@ function loadFilters(): Filters {
 
 export type { DayChoice }
 
-const WEEKDAY_SHORT = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'] // Date.getUTCDay order
+const WEEKDAY_SHORT_CS = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'] // Date.getUTCDay order
+const WEEKDAY_SHORT_EN = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+/** Read per call — see seasonLabel above for why this isn't a plain constant. */
+const weekdayShort = (dow: number): string => (lang() === 'cs' ? WEEKDAY_SHORT_CS : WEEKDAY_SHORT_EN)[dow]
 
 /** The liturgical day for a day-picker choice ('now' = today). */
 export function litForChoice(now: Date, day: DayChoice): LiturgicalDay {
@@ -136,13 +166,13 @@ export function dayOptions(now: Date): { key: DayChoice; label: string; lit: Lit
   const today = pragueToday(now)
   const base = Date.UTC(today.y, today.m - 1, today.d)
   const out: { key: DayChoice; label: string; lit: LiturgicalDay }[] = [
-    { key: 'now', label: 'hned', lit: litForChoice(now, 'now') },
-    { key: 0, label: 'dnes', lit: litForChoice(now, 0) },
-    { key: 1, label: 'zítra', lit: litForChoice(now, 1) },
+    { key: 'now', label: t('day_now'), lit: litForChoice(now, 'now') },
+    { key: 0, label: t('day_today'), lit: litForChoice(now, 0) },
+    { key: 1, label: t('day_tomorrow'), lit: litForChoice(now, 1) },
   ]
   for (let off = 2; off <= 6; off++) {
     const dow = new Date(base + off * 86_400_000).getUTCDay()
-    out.push({ key: off, label: dow === 0 ? 'neděle' : WEEKDAY_SHORT[dow], lit: litForChoice(now, off) })
+    out.push({ key: off, label: dow === 0 ? t('day_sunday_full') : weekdayShort(dow), lit: litForChoice(now, off) })
   }
   return out
 }
@@ -372,7 +402,7 @@ export default function App() {
       const city = findCity(index, citySlug)
       if (city) {
         setOrigin({ lat: city.lat, lng: city.lng, source: 'city', label: city.name })
-        document.title = `Bohoslužby ${city.name} — mše svatá dnes | Bohoslužby`
+        document.title = `Bohoslužby ${city.name} — ${t('city_title_suffix')} | Bohoslužby`
       } else {
         setGeoDenied(true) // stale link → offer the picker
       }
@@ -534,7 +564,7 @@ export default function App() {
       <main className={mapMode ? 'flex min-h-0 flex-1 flex-col' : 'flex-1 pb-10'}>
         {dataError && (
           <p className="mt-10 text-ink-faded" role="alert">
-            Data se nepodařilo načíst. Zkuste to prosím znovu.
+            {t('data_error')}
           </p>
         )}
 
@@ -543,7 +573,7 @@ export default function App() {
         )}
         {!dataError && route.view === 'church' && !index && (
           <p className="mt-8 text-ink-faded" role="status">
-            Načítám…
+            {t('loading_ellipsis')}
           </p>
         )}
 
@@ -551,11 +581,9 @@ export default function App() {
           <>
         {!dataError && loading && (
           <div className="mt-14 text-center" role="status">
-            <p className="font-display text-xl">Hledám bohoslužby poblíž…</p>
+            <p className="font-display text-xl">{t('loading_title')}</p>
             <p className="mt-2 text-sm text-ink-faded">
-              {geoPrompting
-                ? 'Povolte prosím přístup k poloze v dialogu prohlížeče.'
-                : 'Načítám data a zjišťuji polohu.'}
+              {geoPrompting ? t('loading_prompting') : t('loading_default')}
             </p>
             {/* the manual path is always on offer — never make the user wait out a permission */}
             <button
@@ -563,25 +591,23 @@ export default function App() {
               className="mt-4 px-2 py-3 text-sm underline decoration-hairline underline-offset-2 hover:text-ink"
               onClick={() => setGeoDenied(true)}
             >
-              vybrat obec ručně
+              {t('pick_manually')}
             </button>
           </div>
         )}
 
         {!dataError && !loading && !origin && geoDenied && index && (
           <section className="mt-10">
-            <h2 className="font-display text-xl font-semibold">Bez přístupu k poloze</h2>
-            <p className="mt-2 max-w-prose text-ink-faded">
-              Poloha slouží jen k nalezení nejbližších kostelů — nikam se neodesílá.
-            </p>
+            <h2 className="font-display text-xl font-semibold">{t('no_geo_title')}</h2>
+            <p className="mt-2 max-w-prose text-ink-faded">{t('no_geo_body')}</p>
             <p className="mt-2 max-w-prose text-ink-faded">
               {/* each failure gets ITS OWN way out — "unblock in the browser" is
                   wrong advice when the phone's location services are off */}
               {geoFail === 'unavailable'
-                ? 'Polohové služby telefonu jsou vypnuté. Zapněte je v nastavení telefonu (Poloha) a pak klepněte na '
+                ? t('geo_fail_unavailable')
                 : geoFail === 'deadline'
-                  ? 'Prohlížeč nedostal odpověď na dialog o povolení polohy — možná se nezobrazil. Zkontrolujte, zda smí prohlížeč používat polohu v nastavení telefonu, a klepněte na '
-                  : 'Pokud jste ji dříve zablokovali, klepněte na ikonu zámku vedle adresy stránky → Oprávnění → Poloha → Povolit, a pak na '}
+                  ? t('geo_fail_deadline')
+                  : t('geo_fail_denied')}
               <button
                 type="button"
                 className="-my-2 inline-block px-1 py-2 underline decoration-hairline underline-offset-2 hover:text-ink"
@@ -590,9 +616,9 @@ export default function App() {
                   locate() // re-runs the permission check — no reload needed
                 }}
               >
-                zkusit znovu
+                {t('retry')}
               </button>
-              . Nebo vyhledejte obec či kostel:
+              {t('geo_fail_tail')}
             </p>
             <SearchPicker index={index} onPickCity={pickCity} onPickChurch={pickChurch} />
           </section>
@@ -600,7 +626,7 @@ export default function App() {
 
         {!dataError && picking && index && (
           <section className="mt-10">
-            <h2 className="font-display text-xl font-semibold">Jiná obec nebo kostel</h2>
+            <h2 className="font-display text-xl font-semibold">{t('picking_title')}</h2>
             <SearchPicker
               index={index}
               onPickCity={pickCity}
@@ -612,10 +638,9 @@ export default function App() {
 
         {!dataError && !picking && !loading && origin && rows && rows.length === 0 && !anyFilter && index && (
           <section className="mt-10">
-            <h2 className="font-display text-xl font-semibold">V okolí nic nenacházím</h2>
+            <h2 className="font-display text-xl font-semibold">{t('nothing_nearby_title')}</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
-              Do {NEARBY_KM} km od {origin.label ? `obce ${origin.label}` : 'vaší polohy'} není
-              v rejstříku žádná bohoslužba. Zkuste jinou obec.
+              {nothingNearbyBody(NEARBY_KM, origin.label ?? null)}
             </p>
             <SearchPicker index={index} onPickCity={pickCity} onPickChurch={pickChurch} />
           </section>
@@ -623,7 +648,7 @@ export default function App() {
 
         {!dataError && !picking && !loading && origin && rows && (rows.length > 0 || anyFilter || day !== 'now') && (
           <section
-            aria-label="Nejbližší bohoslužby"
+            aria-label={t('nearest_services')}
             className={mapMode ? 'flex min-h-0 flex-1 flex-col' : undefined}
           >
             <div className={mapMode ? 'mx-auto w-full max-w-2xl px-5 sm:px-8' : undefined}>
@@ -634,12 +659,12 @@ export default function App() {
                   {origin.source === 'last' ? (
                     // stale position drives the list — say so loudly, not in grey
                     <span className="font-semibold text-rubric">
-                      {origin.label ? `${origin.label} — poslední známá` : 'poslední známá poloha'}
+                      {origin.label ? `${origin.label} — ${t('last_known_suffix')}` : t('last_known_solo')}
                     </span>
                   ) : (
-                    (origin.label ?? 'podle vaší polohy')
+                    (origin.label ?? t('from_location'))
                   )}
-                  {locating && origin.source === 'last' && ' · zjišťuji aktuální…'}
+                  {locating && origin.source === 'last' && t('locating_suffix')}
                   {' · '}
                   <button
                     type="button"
@@ -647,7 +672,7 @@ export default function App() {
                     className="-mx-1 -my-3 inline-block px-1 py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
                     onClick={() => setPicking(true)} // origin stays — zpět/Escape returns to the list
                   >
-                    změnit
+                    {t('change')}
                   </button>
                   {origin.source !== 'geo' && (
                     <>
@@ -657,7 +682,7 @@ export default function App() {
                         className="-mx-1 -my-3 inline-block px-1 py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
                         onClick={useMyLocation}
                       >
-                        moje poloha
+                        {t('my_location')}
                       </button>
                     </>
                   )}
@@ -686,7 +711,7 @@ export default function App() {
                   onClick={() => setPicking(true)}
                 >
                   <MagnifierIcon />
-                  Hledat obec nebo kostel…
+                  {t('search_cta')}
                 </button>
               )}
               {!mapMode && <FeastLine day={day} />}
@@ -697,7 +722,7 @@ export default function App() {
                   <Suspense
                     fallback={
                       <p className="mt-8 text-center text-ink-faded" role="status">
-                        Načítám mapu…
+                        {t('map_loading')}
                       </p>
                     }
                   >
@@ -719,8 +744,7 @@ export default function App() {
                   className={`mt-8 text-ink-faded ${mapMode ? 'mx-auto w-full max-w-2xl px-5 sm:px-8' : ''}`}
                   role="status"
                 >
-                  Mapa potřebuje připojení — dlaždice se do zařízení neukládají. Seznam funguje
-                  i offline.
+                  {t('map_offline')}
                 </p>
               )
             ) : rows.length > 0 ? (
@@ -738,22 +762,20 @@ export default function App() {
                     className="rubric mt-4 -ml-1 px-1 py-3 underline decoration-hairline underline-offset-4 hover:text-ink"
                     onClick={() => setListLimit((l) => l + 30)}
                   >
-                    zobrazit další
+                    {t('show_more')}
                   </button>
                 )}
               </>
             ) : (
               <p className="mt-8 text-ink-faded">
-                {anyFilter
-                  ? 'Zvolenému dni a filtrům neodpovídá žádná bohoslužba v okolí.'
-                  : 'V tento den není v okolí žádná bohoslužba.'}{' '}
+                {anyFilter ? t('empty_filtered') : t('empty_plain')}{' '}
                 {anyFilter && (
                   <button
                     type="button"
                     className="underline decoration-hairline underline-offset-2 hover:text-ink"
                     onClick={resetAll}
                   >
-                    Zrušit filtry
+                    {t('clear_filters')}
                   </button>
                 )}
               </p>
@@ -770,15 +792,16 @@ export default function App() {
       <footer className="border-t border-hairline py-4 text-sm text-ink-faded">
         {!online && (
           <p className="mb-1" role="status">
-            offline — zobrazuji uložená data
+            {t('footer_offline')}
           </p>
         )}
         <FeedbackCard />
         <p className="mt-1">
           <span className="font-semibold" style={{ color: 'var(--season)' }}>
-            {SEASON_LABEL[season.season]}
+            {seasonLabel(season.season)}
           </span>
-          {' · '}Data: rejstřík{' '}
+          {' · '}
+          {lang() === 'cs' ? 'Data: rejstřík' : 'Data: registry'}{' '}
           <a
             className="underline decoration-hairline underline-offset-2 hover:text-ink"
             href="https://bohosluzby.cirkev.cz"
@@ -788,17 +811,19 @@ export default function App() {
           {(dataAsOf || dataRefreshing) && (
             <span className="text-ink-faded">
               {' · '}
-              {dataRefreshing ? 'aktualizuji…' : `aktuální k ${fmtDataDate(dataAsOf!)}`}
+              {dataRefreshing ? t('footer_updating') : `${t('footer_asof_prefix')} ${fmtDataDate(dataAsOf!)}`}
             </span>
           )}
-          {' · '}zdarma, bez reklam{' · '}
+          {' · '}
+          {t('footer_free')}
+          {' · '}
           <a
             className="underline decoration-hairline underline-offset-2 hover:text-ink"
             href="https://github.com/sponsors/Chartres"
             target="_blank"
             rel="noreferrer"
           >
-            Podpořit
+            {t('footer_support')}
           </a>
         </p>
       </footer>
@@ -821,7 +846,7 @@ function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice)
   return (
     <div
       role="group"
-      aria-label="Den"
+      aria-label={t('day_group')}
       className="scroll-row -ml-1 mt-1 flex items-baseline gap-x-4 overflow-x-auto py-2 whitespace-nowrap"
     >
       {options.map(({ key, label, lit }) => {
@@ -867,14 +892,14 @@ function ViewToggle({
         : 'text-ink-faded hover:text-ink'
     }`
   return (
-    <div role="group" aria-label="Zobrazení" className="flex items-baseline gap-x-1">
+    <div role="group" aria-label={t('view_group')} className="flex items-baseline gap-x-1">
       <button
         type="button"
         aria-pressed={view === 'seznam'}
         className={cls(view === 'seznam')}
         onClick={() => onChange('seznam')}
       >
-        seznam
+        {t('view_list')}
       </button>
       <span className="text-ink-faded" aria-hidden="true">
         ·
@@ -885,7 +910,7 @@ function ViewToggle({
         className={cls(view === 'mapa')}
         onClick={() => onChange('mapa')}
       >
-        mapa
+        {t('view_map')}
       </button>
     </div>
   )
@@ -907,10 +932,10 @@ function WheelchairIcon() {
     <svg
       viewBox="0 0 24 24"
       role="img"
-      aria-label="bezbariérový přístup"
+      aria-label={t('wheelchair_label')}
       className="inline-block h-3.5 w-3.5 fill-current align-[-2px]"
     >
-      <title>bezbariérový přístup</title>
+      <title>{t('wheelchair_label')}</title>
       <path d="M12 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm7 9v-2c-1.54.02-3.09-.75-4.07-1.83l-1.29-1.43c-.17-.19-.38-.34-.61-.45-.01 0-.01-.01-.02-.01H13c-.35-.2-.75-.3-1.19-.26C10.76 7.11 10 8.04 10 9.09V15c0 1.1.9 2 2 2h5v5h2v-5.5c0-1.1-.9-2-2-2h-3v-3.45c1.29 1.07 3.25 1.94 5 1.95zm-6.17 5c-.41 1.16-1.52 2-2.83 2-1.66 0-3-1.34-3-3 0-1.31.84-2.41 2-2.83V12.1a5 5 0 1 0 5.9 5.9h-2.07z" />
     </svg>
   )
@@ -1002,13 +1027,13 @@ function ServiceList({
                   {r.service.lang && r.service.lang !== 'česky' && (
                     <>
                       {' '}
-                      <Chip label={r.service.lang} />
+                      <Chip label={langLabel(r.service.lang)} />
                     </>
                   )}
                   {r.service.greek && (
                     <>
                       {' '}
-                      <Chip label="řeckokatolická" />
+                      <Chip label={t('greek_chip')} />
                     </>
                   )}
                 </p>
@@ -1025,25 +1050,25 @@ function ServiceList({
                 <div className="relative z-10 flex flex-col items-end gap-1.5">
                   <button
                     type="button"
-                    aria-label={`trasa: ${r.church.name}`}
+                    aria-label={`${t('row_route')}: ${r.church.name}`}
                     className="flex min-h-9 items-center gap-1 rounded-sm border border-hairline px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:text-ink"
                     onClick={() =>
                       onNavigate({ name: r.church.name, lat: r.church.lat, lng: r.church.lng })
                     }
                   >
                     <MapPinIcon />
-                    trasa
+                    {t('row_route')}
                   </button>
                   {r.church.www && (
                     <a
-                      aria-label={`web: ${r.church.name}`}
+                      aria-label={`${t('row_web')}: ${r.church.name}`}
                       className="flex min-h-9 items-center gap-1 rounded-sm border border-hairline px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:text-ink"
                       href={r.church.www}
                       target="_blank"
                       rel="noreferrer"
                     >
                       <GlobeIcon />
-                      web
+                      {t('row_web')}
                     </a>
                   )}
                 </div>
@@ -1108,10 +1133,12 @@ function OrdoControls({
     Boolean,
   ).length
   const dayLbl =
-    day === 'now' ? 'hned' : (dayOptions(new Date()).find((o) => o.key === day)?.label ?? 'den')
-  const kdyLbl = cas ? (cas in BANDS ? BANDS[cas as Band].label : `kolem ${cas}`) : 'kdykoli'
-  const okruhLbl = filters.maxKm ? `do ${filters.maxKm} km` : 'okolí'
-  const filtryLbl = whatCount ? `filtry (${whatCount})` : 'filtry'
+    day === 'now'
+      ? t('day_now')
+      : (dayOptions(new Date()).find((o) => o.key === day)?.label ?? t('day_group'))
+  const kdyLbl = cas ? (cas in BANDS ? bandLabel(cas as Band) : aroundLabel(cas)) : t('anytime')
+  const okruhLbl = filters.maxKm ? withinKmLabel(filters.maxKm) : t('nearby_word')
+  const filtryLbl = filtersLabel(whatCount)
 
   const toggleCls = (active: boolean) =>
     `-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
@@ -1145,19 +1172,19 @@ function OrdoControls({
     <div
       role={narrow ? 'dialog' : undefined}
       aria-modal={narrow || undefined}
-      aria-label="Den a filtry"
+      aria-label={t('day_filters_group')}
       className={
         narrow
           ? 'fixed inset-x-0 bottom-0 z-50 max-h-[80dvh] overflow-y-auto border-t border-hairline bg-paper px-5 pt-2 pb-[max(1.25rem,env(safe-area-inset-bottom))]'
           : 'pb-3'
       }
     >
-      <p className="rubric mt-2 text-ink-faded">den</p>
+      <p className="rubric mt-2 text-ink-faded">{t('day_group').toLowerCase()}</p>
       <DayPicker day={day} onChange={onDay} />
-      <p className="rubric mt-2 text-ink-faded">kdy</p>
+      <p className="rubric mt-2 text-ink-faded">{t('rubric_when')}</p>
       <div
         role="group"
-        aria-label="Kdy"
+        aria-label={t('rubric_when')}
         className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
       >
         {(Object.keys(BANDS) as Band[]).map((band) => {
@@ -1171,10 +1198,10 @@ function OrdoControls({
               aria-pressed={cas === band}
               className={`${toggleCls(cas === band)}${past ? ' opacity-40' : ''}`}
               style={toggleStyle(cas === band)}
-              title={past ? 'dnes už proběhlo — přepne na zítra' : undefined}
+              title={past ? t('band_past_title') : undefined}
               onClick={() => onCas(cas === band ? null : band)}
             >
-              {BANDS[band].label}
+              {bandLabel(band)}
             </button>
           )
         })}
@@ -1186,9 +1213,9 @@ function OrdoControls({
           }`}
           style={around ? { color: 'var(--season)' } : undefined}
         >
-          kolem
+          {t('around_word')}
           <select
-            aria-label="Kolem času"
+            aria-label={t('around_time_aria')}
             value={around ?? ''}
             onChange={(e) => onCas(e.target.value || null)}
             className="-my-2 cursor-pointer border-0 border-b border-hairline bg-transparent py-2 font-sans text-base font-semibold tabular-nums"
@@ -1196,18 +1223,18 @@ function OrdoControls({
           >
             <option value="">—</option>
             {/* rotated to open at "now" — nobody looks for a mass around 00:00 */}
-            {halfHoursFrom(new Date()).map((t) => (
-              <option key={t} value={t}>
-                {t}
+            {halfHoursFrom(new Date()).map((hhmm) => (
+              <option key={hhmm} value={hhmm}>
+                {hhmm}
               </option>
             ))}
           </select>
         </label>
       </div>
-      <p className="rubric mt-2 text-ink-faded">okruh</p>
+      <p className="rubric mt-2 text-ink-faded">{t('rubric_range')}</p>
       <div
         role="group"
-        aria-label="Okruh"
+        aria-label={t('rubric_range')}
         className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
       >
         {MAX_KM_OPTIONS.map((km) => (
@@ -1219,7 +1246,7 @@ function OrdoControls({
             style={toggleStyle(filters.maxKm === km)}
             onClick={() => onChange({ ...filters, maxKm: filters.maxKm === km ? null : km })}
           >
-            do {km} km
+            {withinKmLabel(km)}
           </button>
         ))}
         <button
@@ -1228,13 +1255,13 @@ function OrdoControls({
           className={toggleCls(false)}
           onClick={() => onChange({ ...filters, maxKm: null })}
         >
-          vše
+          {t('any_distance')}
         </button>
       </div>
-      <p className="rubric mt-2 text-ink-faded">co</p>
+      <p className="rubric mt-2 text-ink-faded">{t('rubric_what')}</p>
       <div
         role="group"
-        aria-label="Filtry"
+        aria-label={t('filters_group_aria')}
         className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
       >
         <button
@@ -1244,7 +1271,7 @@ function OrdoControls({
           style={toggleStyle(filters.massOnly)}
           onClick={() => onChange({ ...filters, massOnly: !filters.massOnly })}
         >
-          jen mše svaté
+          {t('filt_mass_only')}
         </button>
         <button
           type="button"
@@ -1253,7 +1280,7 @@ function OrdoControls({
           style={toggleStyle(filters.barrierFree)}
           onClick={() => onChange({ ...filters, barrierFree: !filters.barrierFree })}
         >
-          bezbariérové
+          {t('filt_barrier_free')}
         </button>
         <button
           type="button"
@@ -1262,11 +1289,11 @@ function OrdoControls({
           style={toggleStyle(filters.greek)}
           onClick={() => onChange({ ...filters, greek: !filters.greek })}
         >
-          řeckokatolické
+          {t('filt_greek')}
         </button>
         {langs.length > 1 && (
           <select
-            aria-label="Jazyk bohoslužby"
+            aria-label={t('lang_select_aria')}
             value={filters.lang ?? ''}
             onChange={(e) => onChange({ ...filters, lang: e.target.value || null })}
             className={`-my-2 max-w-44 cursor-pointer border-0 border-b border-hairline bg-transparent py-3.5 font-sans text-base font-semibold ${
@@ -1274,10 +1301,10 @@ function OrdoControls({
             }`}
             style={filters.lang ? { color: 'var(--season)' } : undefined}
           >
-            <option value="">jazyk: všechny</option>
+            <option value="">{t('lang_all')}</option>
             {langs.map((l) => (
               <option key={l} value={l}>
-                {l}
+                {langLabel(l)}
               </option>
             ))}
           </select>
@@ -1289,7 +1316,7 @@ function OrdoControls({
           className="rubric mt-4 w-full border-t border-hairline pt-3 pb-1 text-center"
           onClick={() => setOpen(false)}
         >
-          hotovo
+          {t('done')}
         </button>
       )}
     </div>
@@ -1299,13 +1326,13 @@ function OrdoControls({
     <div className="border-b border-hairline">
       <div
         role="group"
-        aria-label="Den a filtry"
+        aria-label={t('day_filters_group')}
         className="scroll-row -ml-1 flex items-baseline gap-x-4 overflow-x-auto py-2 whitespace-nowrap"
       >
-        {pill('den', dayLbl, day !== 'now')}
-        {pill('kdy', kdyLbl, Boolean(cas))}
-        {pill('okruh', okruhLbl, Boolean(filters.maxKm))}
-        {pill('co', filtryLbl, whatCount > 0)}
+        {pill(t('day_group').toLowerCase(), dayLbl, day !== 'now')}
+        {pill(t('rubric_when'), kdyLbl, Boolean(cas))}
+        {pill(t('rubric_range'), okruhLbl, Boolean(filters.maxKm))}
+        {pill(t('rubric_what'), filtryLbl, whatCount > 0)}
         {/* anything narrowed → one pill back to the clean page */}
         {(day !== 'now' || cas || filters.maxKm || whatCount > 0) && (
           <button
@@ -1313,14 +1340,14 @@ function OrdoControls({
             className="-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] text-rubric hover:text-ink"
             onClick={onReset}
           >
-            ✕ zrušit
+            {t('clear_all')}
           </button>
         )}
       </div>
       {open && narrow && (
         <button
           type="button"
-          aria-label="Zavřít filtry"
+          aria-label={t('close_filters_aria')}
           className="fixed inset-0 z-40 bg-ink/20"
           onClick={() => setOpen(false)}
         />
@@ -1335,11 +1362,11 @@ function DetailRoute({ id, index, onBack }: { id: string; index: Church[]; onBac
   if (!church) {
     return (
       <section className="mt-10">
-        <h2 className="font-display text-xl font-semibold">Kostel nenalezen</h2>
+        <h2 className="font-display text-xl font-semibold">{t('church_not_found_title')}</h2>
         <p className="mt-2 text-ink-faded">
-          Tento odkaz nevede na žádný kostel v rejstříku.{' '}
+          {t('church_not_found_body')}{' '}
           <button type="button" className="underline decoration-hairline underline-offset-2" onClick={onBack}>
-            Zpět na seznam
+            {t('detail_route_back')}
           </button>
         </p>
       </section>
@@ -1383,12 +1410,12 @@ function SearchPicker({
             onClick={onClose}
             className="rubric underline decoration-hairline underline-offset-2 hover:text-ink"
           >
-            ‹ zpět na seznam
+            {t('back_to_list')}
           </button>
         </p>
       )}
       <label className="rubric block" htmlFor="city">
-        Kostel nebo obec
+        {t('search_label')}
       </label>
       <input
         id="city"
@@ -1418,12 +1445,12 @@ function SearchPicker({
             else onClose?.()
           }
         }}
-        placeholder="např. Brno nebo sv. Víta"
+        placeholder={t('search_placeholder')}
         autoComplete="off"
         autoFocus={Boolean(onClose)} // opened by an explicit "změnit" tap — jump right in
         className="mt-2 min-h-11 w-full rounded-sm border border-hairline bg-white/60 px-3 text-base"
       />
-      <ul id="city-options" role="listbox" aria-label="Výsledky hledání" className="mt-1">
+      <ul id="city-options" role="listbox" aria-label={t('search_results_aria')} className="mt-1">
         {results.map((r, i) => (
           <li key={r.kind === 'city' ? `c-${r.city.slug}` : `k-${r.church.id}`} role="presentation">
             <button
@@ -1439,15 +1466,13 @@ function SearchPicker({
             >
               <span className="min-w-0 flex-1 truncate font-semibold">{r.name}</span>
               <span className="shrink-0 text-xs text-ink-faded">
-                {r.kind === 'city'
-                  ? `obec · ${r.city.count} ${r.city.count === 1 ? 'kostel' : r.city.count < 5 ? 'kostely' : 'kostelů'}`
-                  : r.church.city}
+                {r.kind === 'city' ? `${t('kind_town')} · ${churchCount(r.city.count)}` : r.church.city}
               </span>
             </button>
           </li>
         ))}
         {value.trim().length >= 2 && results.length === 0 && (
-          <li className="px-1 py-2.5 text-sm text-ink-faded">Nic nenalezeno.</li>
+          <li className="px-1 py-2.5 text-sm text-ink-faded">{t('search_none')}</li>
         )}
       </ul>
     </div>

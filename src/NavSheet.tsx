@@ -4,6 +4,7 @@
 import { useEffect } from 'react'
 import { navApps } from './lib/nav-apps'
 import { track } from './analytics'
+import { t } from './i18n'
 
 export type NavTarget = { name: string; lat: number; lng: number }
 
@@ -20,17 +21,17 @@ export function NavSheet({ target, onClose }: { target: NavTarget; onClose: () =
     <>
       <button
         type="button"
-        aria-label="Zavřít navigaci"
+        aria-label={t('nav_close_aria')}
         className="fixed inset-0 z-40 bg-ink/20"
         onClick={onClose}
       />
       <div
         role="dialog"
         aria-modal
-        aria-label={`Navigovat: ${target.name}`}
+        aria-label={`${t('nav_rubric')}: ${target.name}`}
         className="fixed inset-x-0 bottom-0 z-50 border-t border-hairline bg-paper px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
       >
-        <p className="rubric">navigovat</p>
+        <p className="rubric">{t('nav_rubric')}</p>
         <p className="font-display mt-1 truncate text-base font-semibold">{target.name}</p>
         <ul className="mt-2">
           {navApps(target.lat, target.lng).map((app) => (
@@ -55,7 +56,7 @@ export function NavSheet({ target, onClose }: { target: NavTarget; onClose: () =
           className="rubric mt-2 w-full border-t border-hairline pt-3 pb-1 text-center"
           onClick={onClose}
         >
-          zavřít
+          {t('close')}
         </button>
       </div>
     </>

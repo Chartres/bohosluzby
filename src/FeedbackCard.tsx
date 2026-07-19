@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { feedback } from './analytics'
+import { t, type Key } from './i18n'
 
 // Flywheel feedback widget (autoskola pattern, missal dress). User-initiated →
 // always sends; collapsed to one quiet line so the footer stays a footer.
 type Ellis = 'very' | 'somewhat' | 'not'
 
-const ELLIS_LABELS: Record<Ellis, string> = {
-  very: 'Hodně by mi chyběla',
-  somewhat: 'Trochu by mi chyběla',
-  not: 'Nechyběla by mi',
+const ELLIS_KEY: Record<Ellis, Key> = {
+  very: 'ellis_very',
+  somewhat: 'ellis_somewhat',
+  not: 'ellis_not',
 }
 
 export function FeedbackCard({ context = 'footer' }: { context?: string }) {
@@ -29,7 +30,7 @@ export function FeedbackCard({ context = 'footer' }: { context?: string }) {
   }
 
   if (sent) {
-    return <p className="py-1 text-sm text-ink-faded">Díky, zpětnou vazbu jsme dostali.</p>
+    return <p className="py-1 text-sm text-ink-faded">{t('feedback_thanks')}</p>
   }
   if (!open) {
     return (
@@ -38,16 +39,14 @@ export function FeedbackCard({ context = 'footer' }: { context?: string }) {
         onClick={() => setOpen(true)}
         className="py-1 text-sm text-ink-faded underline decoration-hairline underline-offset-2 hover:text-ink"
       >
-        Našli jste chybu v rozpisu? Napište nám
+        {t('feedback_cta')}
       </button>
     )
   }
   return (
     <div className="py-1">
-      <p className="text-sm text-ink-faded">
-        Co chybí? Co nesedí? Píšete přímo autorovi.
-      </p>
-      <p className="rubric mt-3">Kdyby tahle aplikace zítra zmizela…</p>
+      <p className="text-sm text-ink-faded">{t('feedback_intro')}</p>
+      <p className="rubric mt-3">{t('feedback_rubric')}</p>
       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
         {(['very', 'somewhat', 'not'] as const).map((key) => {
           const active = ellis === key
@@ -64,7 +63,7 @@ export function FeedbackCard({ context = 'footer' }: { context?: string }) {
               }`}
               style={active ? { textDecorationColor: 'var(--season)' } : undefined}
             >
-              {ELLIS_LABELS[key]}
+              {t(ELLIS_KEY[key])}
             </button>
           )
         })}
@@ -73,8 +72,8 @@ export function FeedbackCard({ context = 'footer' }: { context?: string }) {
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={3}
-        placeholder="Napište cokoli (volitelné)…"
-        aria-label="Zpětná vazba"
+        placeholder={t('feedback_placeholder')}
+        aria-label={t('feedback_aria')}
         className="mt-3 w-full rounded-sm border border-hairline bg-white/40 p-2 text-base text-ink placeholder:text-ink-faded"
       />
       <div className="mt-2 flex justify-end gap-4">
@@ -83,7 +82,7 @@ export function FeedbackCard({ context = 'footer' }: { context?: string }) {
           onClick={() => setOpen(false)}
           className="min-h-11 px-1 text-sm text-ink-faded underline decoration-hairline underline-offset-2 hover:text-ink"
         >
-          Zavřít
+          {t('feedback_close')}
         </button>
         <button
           type="button"
@@ -91,7 +90,7 @@ export function FeedbackCard({ context = 'footer' }: { context?: string }) {
           onClick={submit}
           className="min-h-11 rounded-sm border border-ink px-4 text-sm font-semibold disabled:opacity-40"
         >
-          Odeslat
+          {t('feedback_send')}
         </button>
       </div>
     </div>

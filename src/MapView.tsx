@@ -16,6 +16,7 @@ import { gridCluster } from './domain/cluster'
 import { NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
+import { t, churchCount } from './i18n'
 
 const CELL_PX = 64 // cluster grid; ~a finger-width of map
 
@@ -126,7 +127,7 @@ export default function MapView({
       const line = document.createElement('p')
       line.className = 'map-pop-line'
       const when = (u: Upcoming) =>
-        `${dayLabel(now, u.start)} v ${fmtTime(u.start)}${u.service.type ? ` · ${u.service.type}` : ''}`
+        `${dayLabel(now, u.start)} ${t('map_at')} ${fmtTime(u.start)}${u.service.type ? ` · ${u.service.type}` : ''}`
       if (next) {
         line.textContent = when(next)
       } else {
@@ -138,10 +139,10 @@ export default function MapView({
         if (fallback) {
           const miss = document.createElement('span')
           miss.className = 'map-pop-miss'
-          miss.textContent = 'pro váš výběr nic'
-          line.append(miss, ` — nejbližší: ${when(fallback)}`)
+          miss.textContent = t('map_no_match')
+          line.append(miss, `${t('map_nearest_prefix')}${when(fallback)}`)
         } else {
-          line.textContent = 'žádná bohoslužba v nejbližších dnech'
+          line.textContent = t('map_none_soon')
         }
       }
       // the popover's verbs mirror a list row: detail · trasa · web
@@ -150,7 +151,7 @@ export default function MapView({
       const open = document.createElement('a')
       open.className = 'map-pop-open'
       open.href = `/kostel/${church.id}/`
-      open.textContent = 'otevřít ›'
+      open.textContent = t('map_open')
       open.addEventListener('click', (e) => {
         e.preventDefault()
         onOpen(church.id)
@@ -158,7 +159,7 @@ export default function MapView({
       const nav = document.createElement('button')
       nav.type = 'button'
       nav.className = 'map-pop-open'
-      nav.textContent = 'trasa'
+      nav.textContent = t('row_route')
       nav.addEventListener('click', () => {
         map.closePopup()
         onNavigate({ name: church.name, lat: church.lat, lng: church.lng })
@@ -170,7 +171,7 @@ export default function MapView({
         www.href = church.www
         www.target = '_blank'
         www.rel = 'noreferrer'
-        www.textContent = 'web'
+        www.textContent = t('row_web')
         actions.append(www)
       }
       el.append(name, line, actions)
@@ -225,7 +226,7 @@ export default function MapView({
           const latlng = map.unproject(L.point(cl.x, cl.y), zoom)
           L.marker(latlng, {
             icon: clusterIcon(cl.items.length, cl.items.some((c) => matched.has(c.id))),
-            title: `${cl.items.length} kostelů`,
+            title: churchCount(cl.items.length),
             keyboard: false,
           })
             .on('click', () => map.setView(latlng, Math.min(zoom + 2, 17)))
@@ -247,7 +248,7 @@ export default function MapView({
       ref={divRef}
       data-testid="mapa"
       role="region"
-      aria-label="Mapa bohoslužeb"
+      aria-label={t('map_aria')}
       className={
         fill
           ? 'ordo-map ordo-map--fill w-full border-t border-hairline'

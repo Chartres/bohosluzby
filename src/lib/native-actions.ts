@@ -1,4 +1,5 @@
 import { isNative } from './native'
+import { reminderTitle, t } from '../i18n'
 import type { Church, ExtraService, Service } from '../domain/data'
 import { buildICS } from '../domain/ics'
 import { nextReminderAt, pragueToday } from '../domain/occurrences'
@@ -93,14 +94,14 @@ export async function scheduleMassReminder(
   if (perm.display !== 'granted') return 'denied'
 
   await tapFeedback()
-  const type = service.type || 'bohoslužba'
+  const type = service.type || t('service_fallback')
   const id = reminderId(church, service)
   try {
     await LocalNotifications.schedule({
       notifications: [
         {
           id,
-          title: `${type.charAt(0).toUpperCase()}${type.slice(1)} za ${REMINDER_LEAD_MIN} min`,
+          title: reminderTitle(type, REMINDER_LEAD_MIN),
           body: `${church.name} — ${service.time}`,
           schedule: { at },
         },
