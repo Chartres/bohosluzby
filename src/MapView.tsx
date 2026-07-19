@@ -53,6 +53,7 @@ export default function MapView({
   cas,
   day,
   onOpen,
+  onNavigate,
   fill = false,
 }: {
   origin: { lat: number; lng: number }
@@ -61,6 +62,7 @@ export default function MapView({
   cas: string | null
   day: DayChoice
   onOpen: (id: string) => void
+  onNavigate: (t: { name: string; lat: number; lng: number }) => void
   /** Map mode: fill the parent column instead of the in-flow plate height. */
   fill?: boolean
 }) {
@@ -142,6 +144,9 @@ export default function MapView({
           line.textContent = 'žádná bohoslužba v nejbližších dnech'
         }
       }
+      // the popover's verbs mirror a list row: detail · trasa · web
+      const actions = document.createElement('p')
+      actions.className = 'map-pop-actions'
       const open = document.createElement('a')
       open.className = 'map-pop-open'
       open.href = `/kostel/${church.id}/`
@@ -150,7 +155,25 @@ export default function MapView({
         e.preventDefault()
         onOpen(church.id)
       })
-      el.append(name, line, open)
+      const nav = document.createElement('button')
+      nav.type = 'button'
+      nav.className = 'map-pop-open'
+      nav.textContent = 'trasa'
+      nav.addEventListener('click', () => {
+        map.closePopup()
+        onNavigate({ name: church.name, lat: church.lat, lng: church.lng })
+      })
+      actions.append(open, nav)
+      if (church.www) {
+        const www = document.createElement('a')
+        www.className = 'map-pop-open'
+        www.href = church.www
+        www.target = '_blank'
+        www.rel = 'noreferrer'
+        www.textContent = 'web'
+        actions.append(www)
+      }
+      el.append(name, line, actions)
       L.popup({ maxWidth: 260, closeButton: false })
         .setLatLng([church.lat, church.lng])
         .setContent(el)
@@ -217,7 +240,7 @@ export default function MapView({
       stale = true
       map.off('moveend', render)
     }
-  }, [churches, filters, cas, day, origin, onOpen])
+  }, [churches, filters, cas, day, origin, onOpen, onNavigate])
 
   return (
     <div

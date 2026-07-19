@@ -48,7 +48,9 @@ test('seznam · mapa toggle: time chips as markers, popover with next mass, otev
   await expect(page.locator('.map-pop-line')).toHaveText(/dnes v 09:30/)
   await shot(page, 'map-popover')
 
-  await page.locator('.map-pop-open').click()
+  // the popover's verbs mirror a list row: otevřít · trasa · web
+  await expect(page.locator('.map-pop-open', { hasText: 'trasa' })).toBeVisible()
+  await page.locator('.map-pop-open', { hasText: 'otevřít' }).click()
   await expect(page).toHaveURL(/\/kostel\/2\//)
   await expect(page.getByRole('heading', { name: 'katedrála sv. Víta, Václava a Vojtěcha' })).toBeVisible()
 

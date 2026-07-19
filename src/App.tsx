@@ -18,6 +18,7 @@ import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
 import { BANDS, bandFullyPast, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
+import { NavSheet, type NavTarget } from './NavSheet'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
@@ -222,6 +223,7 @@ export default function App() {
   const [reloadKey, setReloadKey] = useState(0)
   const [filters, setFilters] = useState<Filters>(loadFilters)
   const [picking, setPicking] = useState(false) // "změnit": search panel over the list, origin kept
+  const [navTarget, setNavTarget] = useState<NavTarget | null>(null) // "trasa" chooser sheet
   const season = useMemo(() => currentLiturgicalDay(), [])
   const convertedRef = useRef(false)
   const { route, path, search, navigate } = useRoute()
@@ -440,12 +442,29 @@ export default function App() {
   }, [data])
 
   const anyFilter =
-    Boolean(filters.lang) || filters.greek || filters.barrierFree || filters.massOnly || Boolean(cas)
+    Boolean(filters.lang) ||
+    filters.greek ||
+    filters.barrierFree ||
+    filters.massOnly ||
+    Boolean(filters.maxKm) ||
+    Boolean(cas)
 
   const updateFilters = (next: Filters) => {
     setFilters(next)
     saveSticky(FILTERS_KEY, next)
     track('key_action', { action: 'filter', ...next })
+  }
+
+  // "zrušit vše": one tap back to the clean page — day, kdy, okruh, co
+  const resetAll = () => {
+    updateFilters({ ...NO_FILTERS })
+    setParams({ cas: null, den: null }) // one navigate — setCas+setDay would race on `search`
+    try {
+      localStorage.removeItem(CAS_KEY)
+    } catch {
+      // private mode
+    }
+    track('key_action', { action: 'filters_reset' })
   }
 
   const loading = !dataError && (!index || (!origin && !geoDenied) || (Boolean(origin) && rows === null))
@@ -498,16 +517,18 @@ export default function App() {
           : 'mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 sm:px-8'
       }
     >
+      {/* one header everywhere — the map-mode masthead won: small wordmark on
+          the season-colored rule, sticky so the page identity survives scroll.
+          Negative margins bleed the paper background across the column padding. */}
       <header
         className={
-          mapMode ? 'mx-auto w-full max-w-2xl border-b-2 px-5 pt-3 pb-2 sm:px-8' : 'border-b-2 pt-6 pb-3'
+          mapMode
+            ? 'mx-auto w-full max-w-2xl border-b-2 px-5 pt-3 pb-2 sm:px-8'
+            : 'sticky top-0 z-30 -mx-5 border-b-2 bg-paper px-5 pt-3 pb-2 sm:-mx-8 sm:px-8'
         }
         style={{ borderColor: 'var(--season)' }}
       >
-        <h1 className={`font-display font-bold tracking-tight ${mapMode ? 'text-xl' : 'text-3xl'}`}>
-          Bohoslužby
-        </h1>
-        {!mapMode && <p className="rubric mt-1">mše svatá poblíž, právě teď</p>}
+        <h1 className="font-display text-xl font-bold tracking-tight">Bohoslužby</h1>
       </header>
 
       <main className={mapMode ? 'flex min-h-0 flex-1 flex-col' : 'flex-1 pb-10'}>
@@ -654,6 +675,7 @@ export default function App() {
                 filters={filters}
                 onChange={updateFilters}
                 langs={langs}
+                onReset={resetAll}
               />
               {/* not on a live fix (offline / last-known / picked city): search is the
                   main CTA — a visible input-shaped button, not a buried "změnit" link */}
@@ -687,6 +709,7 @@ export default function App() {
                       cas={cas}
                       day={day}
                       onOpen={openChurch}
+                      onNavigate={setNavTarget}
                       fill={mapMode}
                     />
                   </Suspense>
@@ -702,7 +725,12 @@ export default function App() {
               )
             ) : rows.length > 0 ? (
               <>
-                <ServiceList rows={rows} showUntil={day === 'now' || day === 0} onOpen={openChurch} />
+                <ServiceList
+                  rows={rows}
+                  showUntil={day === 'now' || day === 0}
+                  onOpen={openChurch}
+                  onNavigate={setNavTarget}
+                />
                 {/* the cap is honest: another page of the ordo instead of "evening ends at 18:00" */}
                 {day === 'now' && rows.length >= listLimit && (
                   <button
@@ -723,10 +751,7 @@ export default function App() {
                   <button
                     type="button"
                     className="underline decoration-hairline underline-offset-2 hover:text-ink"
-                    onClick={() => {
-                      updateFilters({ ...NO_FILTERS })
-                      setCas(null)
-                    }}
+                    onClick={resetAll}
                   >
                     Zrušit filtry
                   </button>
@@ -738,6 +763,8 @@ export default function App() {
           </>
         )}
       </main>
+
+      {navTarget && <NavSheet target={navTarget} onClose={() => setNavTarget(null)} />}
 
       {!mapMode && (
       <footer className="border-t border-hairline py-4 text-sm text-ink-faded">
@@ -908,23 +935,6 @@ function GlobeIcon() {
   )
 }
 
-/** Icon link sized for thumbs: the inline padding paints no extra row height
- * but grows the hit area to ~28×40 px, above the stretched row link. */
-function IconLink({ href, label, title }: { href: string; label: 'mapa' | 'web'; title: string }) {
-  return (
-    <a
-      className="relative z-10 -mx-0.5 px-1.5 py-3 text-ink-faded hover:text-ink"
-      href={href}
-      aria-label={label}
-      title={title}
-      target="_blank"
-      rel="noreferrer"
-    >
-      {label === 'mapa' ? <MapPinIcon /> : <GlobeIcon />}
-    </a>
-  )
-}
-
 /** Quiet feast name for the selected day, in the feast's liturgical color. */
 function FeastLine({ day }: { day: DayChoice }) {
   const lit = useMemo(() => litForChoice(new Date(), day), [day])
@@ -940,10 +950,12 @@ function ServiceList({
   rows,
   showUntil,
   onOpen,
+  onNavigate,
 }: {
   rows: Upcoming[]
   showUntil: boolean
   onOpen: (id: string) => void
+  onNavigate: (t: { name: string; lat: number; lng: number }) => void
 }) {
   const now = new Date()
   let lastDay = ''
@@ -986,16 +998,7 @@ function ServiceList({
                       {' · '}
                       <WheelchairIcon />
                     </>
-                  )}{' '}
-                  {/* one nowrap unit — the pin and globe never split across wrapped lines */}
-                  <span className="whitespace-nowrap">
-                    <IconLink
-                      href={`https://mapy.cz/zakladni?q=${r.church.lat}%2C${r.church.lng}`}
-                      label="mapa"
-                      title="mapa (mapy.cz)"
-                    />
-                    {r.church.www && <IconLink href={r.church.www} label="web" title={r.church.www} />}
-                  </span>
+                  )}
                   {r.service.lang && r.service.lang !== 'česky' && (
                     <>
                       {' '}
@@ -1010,11 +1013,41 @@ function ServiceList({
                   )}
                 </p>
               </div>
-              {showUntil && (
-                <p className="shrink-0 text-sm font-semibold whitespace-nowrap">
-                  {fmtUntil(now, r.start)}
-                </p>
-              )}
+              {/* the row's verbs, under the countdown: trasa opens the nav-app
+                  chooser, web the parish site. z-10 lifts them above the
+                  stretched detail link; the row tap stays "open detail". */}
+              <div className="flex shrink-0 flex-col items-end gap-1.5">
+                {showUntil && (
+                  <p className="text-sm font-semibold whitespace-nowrap">{fmtUntil(now, r.start)}</p>
+                )}
+                {/* stacked, not side-by-side: two bordered buttons in a row ate
+                    half the 375px line and wrapped church names to four lines */}
+                <div className="relative z-10 flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    aria-label={`trasa: ${r.church.name}`}
+                    className="flex min-h-9 items-center gap-1 rounded-sm border border-hairline px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:text-ink"
+                    onClick={() =>
+                      onNavigate({ name: r.church.name, lat: r.church.lat, lng: r.church.lng })
+                    }
+                  >
+                    <MapPinIcon />
+                    trasa
+                  </button>
+                  {r.church.www && (
+                    <a
+                      aria-label={`web: ${r.church.name}`}
+                      className="flex min-h-9 items-center gap-1 rounded-sm border border-hairline px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:text-ink"
+                      href={r.church.www}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <GlobeIcon />
+                      web
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
           </li>
         )
@@ -1049,6 +1082,7 @@ function OrdoControls({
   filters,
   onChange,
   langs,
+  onReset,
 }: {
   day: DayChoice
   onDay: (d: DayChoice) => void
@@ -1057,6 +1091,7 @@ function OrdoControls({
   filters: Filters
   onChange: (f: Filters) => void
   langs: string[]
+  onReset: () => void
 }) {
   const [open, setOpen] = useState(false)
   const narrow = useNarrow()
@@ -1271,6 +1306,16 @@ function OrdoControls({
         {pill('kdy', kdyLbl, Boolean(cas))}
         {pill('okruh', okruhLbl, Boolean(filters.maxKm))}
         {pill('co', filtryLbl, whatCount > 0)}
+        {/* anything narrowed → one pill back to the clean page */}
+        {(day !== 'now' || cas || filters.maxKm || whatCount > 0) && (
+          <button
+            type="button"
+            className="-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] text-rubric hover:text-ink"
+            onClick={onReset}
+          >
+            ✕ zrušit
+          </button>
+        )}
       </div>
       {open && narrow && (
         <button

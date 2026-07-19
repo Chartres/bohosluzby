@@ -144,10 +144,19 @@
   color: var(--color-rubric);
   font-weight: 600;
 }
+.map-pop-actions {
+  display: flex;
+  gap: 14px;
+}
+/* also styles the popover's <button> verbs — strip the UA button chrome */
 .map-pop-open {
   display: inline-block;
   margin-top: 6px;
   padding: 2px 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
   color: var(--color-rubric);
   font-size: 0.78rem;
   font-weight: 600;
