@@ -39,7 +39,9 @@ const jobs = [
   { dir: OUT, file: 'maskable-512.png', px: 512, bg: PAPER, scale: 0.6 },
   { dir: OUT, file: 'apple-touch-icon.png', px: 180, bg: PAPER, scale: 0.7 },
   // Native sources for @capacitor/assets (App Store icon must be opaque, no alpha).
-  { dir: RES, file: 'icon.png', px: 1024, bg: PAPER, scale: 0.62 },
+  // 0.70 mark: 1/φ ≈ 0.62 read small at homescreen size — HIG grids run the
+  // key shape nearer 70% of the canvas.
+  { dir: RES, file: 'icon.png', px: 1024, bg: PAPER, scale: 0.7 },
   { dir: RES, file: 'splash.png', px: 2732, bg: PAPER, scale: 0.16 },
   { dir: RES, file: 'splash-dark.png', px: 2732, bg: INK, scale: 0.16, mark: PAPER },
 ]
