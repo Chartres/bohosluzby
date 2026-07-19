@@ -21,9 +21,16 @@ import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
 import { getCurrentPosition } from './lib/geo'
+import { loadData, refreshData, activeAsOf } from './lib/dataStore'
 
 const NEARBY_KM = 30
 const NEARBY_CAP = 120
+
+/** "2026-07-03" → "3. 7. 2026" (Czech). */
+const fmtDataDate = (iso: string) => {
+  const [y, m, d] = iso.slice(0, 10).split('-')
+  return `${Number(d)}. ${Number(m)}. ${y}`
+}
 
 // Leaflet + tiles code-split behind the "mapa" toggle — the list path pays nothing.
 const MapView = lazy(() => import('./MapView'))
@@ -206,6 +213,9 @@ export default function App() {
   const [geoDenied, setGeoDenied] = useState(false)
   const [origin, setOrigin] = useState<Origin | null>(null)
   const [data, setData] = useState<{ nearby: Church[]; byId: Map<string, ChurchServices> } | null>(null)
+  const [dataAsOf, setDataAsOf] = useState<string | null>(activeAsOf)
+  const [dataRefreshing, setDataRefreshing] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
   const [filters, setFilters] = useState<Filters>(loadFilters)
   const [picking, setPicking] = useState(false) // "změnit": search panel over the list, origin kept
   const season = useMemo(() => currentLiturgicalDay(), [])
@@ -267,13 +277,28 @@ export default function App() {
   }, [season])
 
   useEffect(() => {
-    fetch('/data/churches.json')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`churches.json ${r.status}`))))
-      .then((rows: IndexRow[]) => setIndex(decodeIndex(rows)))
+    loadData<IndexRow[]>('churches.json')
+      .then((rows) => setIndex(decodeIndex(rows)))
       .catch((err) => {
         logError(err, { where: 'load-index' })
         setDataError(true)
       })
+  }, [reloadKey]) // reloadKey bumps after a background refresh → re-read from cache
+
+  // Silent registry refresh: check the server's version on launch and, if newer,
+  // download the snapshot in the background (native only). The app stays usable on
+  // the current data throughout; when it lands we bump reloadKey to swap it in.
+  useEffect(() => {
+    let cancelled = false
+    refreshData(() => !cancelled && setDataRefreshing(true)).then((r) => {
+      if (cancelled) return
+      setDataRefreshing(false)
+      setDataAsOf(r.asOf)
+      if (r.updated) setReloadKey((k) => k + 1)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   // geolocate → last known position → the picker (also re-run by "moje poloha")
@@ -347,9 +372,7 @@ export default function App() {
     const cells = [...new Set(nearby.map((c) => c.cell))]
     Promise.all(
       cells.map((cell) =>
-        fetch(`/data/services/${cell}.json`)
-          .then((r) => (r.ok ? r.json() : {}))
-          .catch(() => ({})),
+        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch(() => ({})),
       ),
     )
       .then((shards) => {
@@ -610,6 +633,12 @@ export default function App() {
           >
             bohosluzby.cirkev.cz
           </a>
+          {(dataAsOf || dataRefreshing) && (
+            <span className="text-ink-faded">
+              {' · '}
+              {dataRefreshing ? 'aktualizuji…' : `aktuální k ${fmtDataDate(dataAsOf!)}`}
+            </span>
+          )}
           {' · '}zdarma, bez reklam{' · '}
           <a
             className="underline decoration-hairline underline-offset-2 hover:text-ink"

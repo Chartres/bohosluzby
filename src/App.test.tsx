@@ -73,11 +73,13 @@ function stubFetch() {
       const path = String(url)
       const body = path.endsWith('/data/churches.json')
         ? INDEX
-        : path.endsWith('/data/services/50-14.json')
-          ? SHARD_50_14
-          : path.endsWith('/data/services/49-16.json')
-            ? SHARD_49_16
-            : null
+        : path.endsWith('/data/version.json')
+          ? { generated: '2026-07-03', churches: INDEX.length }
+          : path.endsWith('/data/services/50-14.json')
+            ? SHARD_50_14
+            : path.endsWith('/data/services/49-16.json')
+              ? SHARD_49_16
+              : null
       if (!body) return new Response('not found', { status: 404 })
       return new Response(JSON.stringify(body), { status: 200 })
     }),
@@ -114,6 +116,12 @@ describe('Marie finds the nearest mass', () => {
     stubGeolocation('granted')
     render(<App />)
     expect(screen.getByRole('status')).toHaveTextContent('Hledám bohoslužby poblíž…')
+  })
+
+  it('footer shows how fresh the registry data is', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    expect(await screen.findByText(/aktuální k 3\. 7\. 2026/)).toBeInTheDocument()
   })
 
   it('with location: lists nearby services soonest-first with time-until and distance', async () => {
