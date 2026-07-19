@@ -31,8 +31,10 @@ const DAY_NAME_KEY: Record<number, Key> = {
 }
 
 export function Chip({ label }: { label: string }) {
+  // inline-block + nowrap: a chip is atomic — "Greek Catholic" split across
+  // two lines read as two broken half-boxes on device
   return (
-    <span className="rounded-sm border border-hairline px-1.5 py-0.5 text-xs text-ink-faded">
+    <span className="inline-block rounded-sm border border-hairline px-1.5 py-0.5 text-xs whitespace-nowrap text-ink-faded">
       {label}
     </span>
   )

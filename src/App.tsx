@@ -120,12 +120,15 @@ const CAS_KEY = 'bohosluzby:cas'
 // spans a nap but not an overnight-to-next-visit gap.
 const STICKY_TTL_MS = 12 * 60 * 60 * 1000
 
-function loadSticky<T>(key: string): T | null {
+function loadSticky<T>(key: string, opts: { sameDay?: boolean } = {}): T | null {
   try {
     const raw = localStorage.getItem(key)
     if (!raw) return null
     const parsed = JSON.parse(raw) as { savedAt?: number; value?: T }
     if (typeof parsed.savedAt !== 'number' || Date.now() - parsed.savedAt > STICKY_TTL_MS) return null
+    // time-of-day prefs (kolem 18:00) mean nothing tomorrow morning — the 12h
+    // TTL alone let 23:30's pick survive to 08:00 and open an empty list
+    if (opts.sameDay && parsed.savedAt < new Date().setHours(0, 0, 0, 0)) return null
     return parsed.value ?? null
   } catch {
     return null // private mode, or a pre-TTL value written by an older build
@@ -174,6 +177,11 @@ export function dayOptions(now: Date): { key: DayChoice; label: string; lit: Lit
   for (let off = 2; off <= 6; off++) {
     const dow = new Date(base + off * 86_400_000).getUTCDay()
     out.push({ key: off, label: dow === 0 ? t('day_sunday_full') : weekdayShort(dow), lit: litForChoice(now, off) })
+  }
+  // ON a Sunday the 0..6 window holds no future neděle — but Sunday evening IS
+  // when next week gets planned. Offer next Sunday explicitly (audit finding).
+  if (new Date(base).getUTCDay() === 0) {
+    out.push({ key: 7, label: t('day_sunday_full'), lit: litForChoice(now, 7) })
   }
   return out
 }
@@ -303,7 +311,7 @@ export default function App() {
   // re-applies the saved cas
   useEffect(() => {
     if (parseCas(new URLSearchParams(location.search).get('cas'))) return
-    const saved = parseCas(loadSticky<string>(CAS_KEY))
+    const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
     if (saved) setParam('cas', saved)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
   }, [])
@@ -771,7 +779,7 @@ export default function App() {
                 {day === 'now' && rows.length >= listLimit && (
                   <button
                     type="button"
-                    className="rubric mt-4 -ml-1 px-1 py-3 underline decoration-hairline underline-offset-4 hover:text-ink"
+                    className="rubric mt-4 -ml-1 min-h-11 px-1 py-3 underline decoration-hairline underline-offset-4 hover:text-ink"
                     onClick={() => setListLimit((l) => l + 30)}
                   >
                     {t('show_more')}
@@ -1087,7 +1095,7 @@ function ServiceList({
                   <button
                     type="button"
                     aria-label={`${t('row_route')}: ${r.church.name}`}
-                    className="flex min-h-9 items-center gap-1 px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:bg-white/60 hover:text-ink"
+                    className="flex min-h-11 items-center gap-1 px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:bg-white/60 hover:text-ink"
                     onClick={() =>
                       onNavigate({ name: r.church.name, lat: r.church.lat, lng: r.church.lng })
                     }
@@ -1098,7 +1106,7 @@ function ServiceList({
                   {r.church.www && (
                     <a
                       aria-label={`${t('row_web')}: ${r.church.name}`}
-                      className="flex min-h-9 items-center gap-1 px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:bg-white/60 hover:text-ink"
+                      className="flex min-h-11 items-center gap-1 px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:bg-white/60 hover:text-ink"
                       href={r.church.www}
                       target="_blank"
                       rel="noreferrer"
@@ -1183,6 +1191,12 @@ function OrdoControls({
   const toggleStyle = (active: boolean) =>
     active ? { color: 'var(--season)', textDecorationColor: 'var(--season)' } : undefined
   const around = cas && !(cas in BANDS) ? cas : null
+  const kolemTimes = useMemo(() => {
+    const all = halfHoursFrom(new Date())
+    if (day !== 'now' && day !== 0) return all // future day: all 48 valid
+    const wrap = all.findIndex((v, i) => i > 0 && v < all[i - 1])
+    return wrap === -1 ? all : all.slice(0, wrap)
+  }, [day])
 
   // a pill names its group ("den: dnes") so pill and in-sheet chip never share
   // an accessible name — and a screen reader hears what the value belongs to
@@ -1211,7 +1225,7 @@ function OrdoControls({
       aria-label={t('day_filters_group')}
       className={
         narrow
-          ? 'fixed inset-x-0 bottom-0 z-50 max-h-[80dvh] overflow-y-auto border-t border-hairline bg-paper px-5 pt-2 pb-[max(1.25rem,env(safe-area-inset-bottom))]'
+          ? 'fixed inset-x-0 bottom-0 z-[1200] max-h-[80dvh] overflow-y-auto border-t border-hairline bg-paper px-5 pt-2 pb-[max(1.25rem,env(safe-area-inset-bottom))]'
           : 'pb-3'
       }
     >
@@ -1258,8 +1272,9 @@ function OrdoControls({
             style={around ? { color: 'var(--season)' } : undefined}
           >
             <option value="">—</option>
-            {/* rotated to open at "now" — nobody looks for a mass around 00:00 */}
-            {halfHoursFrom(new Date()).map((hhmm) => (
+            {/* rotated to open at "now"; for today the wrapped-around tail
+                (past times) is dropped — every one guaranteed an empty list */}
+            {kolemTimes.map((hhmm) => (
               <option key={hhmm} value={hhmm}>
                 {hhmm}
               </option>
@@ -1376,7 +1391,9 @@ function OrdoControls({
           <button
             type="button"
             aria-label={t('clear_all_aria')}
-            className="-my-2 px-1.5 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] text-rubric hover:text-ink"
+            // sticky right-0: the reset must NEVER scroll out of reach (320px
+            // with every pill active pushed it off-edge — audit finding)
+            className="sticky right-0 -my-2 ml-auto bg-paper px-2.5 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] text-rubric hover:text-ink"
             onClick={onReset}
           >
             {t('clear_all')}
@@ -1387,7 +1404,7 @@ function OrdoControls({
         <button
           type="button"
           aria-label={t('close_filters_aria')}
-          className="fixed inset-0 z-40 bg-ink/20"
+          className="fixed inset-0 z-[1190] bg-ink/20"
           onClick={() => setOpen(false)}
         />
       )}
