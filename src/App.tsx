@@ -20,7 +20,7 @@ import { BANDS, bandFullyPast, halfHoursFrom, parseCas, resolveCasDay, type Band
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
-import { getCurrentPosition, getPermissionState } from './lib/geo'
+import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
 import { loadData, refreshData, activeAsOf } from './lib/dataStore'
 
 const NEARBY_KM = 30
@@ -213,6 +213,7 @@ export default function App() {
   const [dataError, setDataError] = useState(false)
   const [geoDenied, setGeoDenied] = useState(false)
   const [geoPrompting, setGeoPrompting] = useState(false) // browser permission dialog pending
+  const [geoFail, setGeoFail] = useState<GeoFailure | null>(null) // why — picks the guidance
   const [origin, setOrigin] = useState<Origin | null>(null)
   const [data, setData] = useState<{ nearby: Church[]; byId: Map<string, ChurchServices> } | null>(null)
   const [dataAsOf, setDataAsOf] = useState<string | null>(activeAsOf)
@@ -307,21 +308,23 @@ export default function App() {
   // Permission-aware: a known "denied" skips the wait entirely, and a pending
   // prompt tells the user to look for the browser dialog instead of a spinner.
   const locate = () => {
-    const fallback = () => {
+    const fallback = (reason: GeoFailure) => {
+      setGeoFail(reason)
       const last = loadLastOrigin()
       if (last) setOrigin(last)
       else setGeoDenied(true)
     }
     getPermissionState().then((perm) => {
       if (perm === 'denied') {
-        fallback() // no callback is coming — don't pretend to wait for one
+        fallback('denied') // no callback is coming — don't pretend to wait for one
         return
       }
       setGeoPrompting(perm === 'prompt')
-      getCurrentPosition().then((c) => {
+      // an unanswered permission dialog deserves a longer leash than a slow fix
+      getCurrentPosition({ deadlineMs: perm === 'prompt' ? 30_000 : 10_000 }).then((r) => {
         setGeoPrompting(false)
-        if (c) setOrigin({ lat: c.lat, lng: c.lng, source: 'geo' })
-        else fallback()
+        if (r.coords) setOrigin({ lat: r.coords.lat, lng: r.coords.lng, source: 'geo' })
+        else fallback(r.error ?? 'timeout')
       })
     })
   }
@@ -544,8 +547,13 @@ export default function App() {
               Poloha slouží jen k nalezení nejbližších kostelů — nikam se neodesílá.
             </p>
             <p className="mt-2 max-w-prose text-ink-faded">
-              Pokud jste ji dříve zablokovali, klepněte na ikonu zámku vedle adresy stránky →
-              Oprávnění → Poloha → Povolit, a pak na{' '}
+              {/* each failure gets ITS OWN way out — "unblock in the browser" is
+                  wrong advice when the phone's location services are off */}
+              {geoFail === 'unavailable'
+                ? 'Polohové služby telefonu jsou vypnuté. Zapněte je v nastavení telefonu (Poloha) a pak klepněte na '
+                : geoFail === 'deadline'
+                  ? 'Prohlížeč nedostal odpověď na dialog o povolení polohy — možná se nezobrazil. Zkontrolujte, zda smí prohlížeč používat polohu v nastavení telefonu, a klepněte na '
+                  : 'Pokud jste ji dříve zablokovali, klepněte na ikonu zámku vedle adresy stránky → Oprávnění → Poloha → Povolit, a pak na '}
               <button
                 type="button"
                 className="-my-2 inline-block px-1 py-2 underline decoration-hairline underline-offset-2 hover:text-ink"
