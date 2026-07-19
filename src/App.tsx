@@ -214,6 +214,7 @@ export default function App() {
   const [geoDenied, setGeoDenied] = useState(false)
   const [geoPrompting, setGeoPrompting] = useState(false) // browser permission dialog pending
   const [geoFail, setGeoFail] = useState<GeoFailure | null>(null) // why — picks the guidance
+  const [locating, setLocating] = useState(false) // a fresh fix is being fetched
   const [origin, setOrigin] = useState<Origin | null>(null)
   const [data, setData] = useState<{ nearby: Church[]; byId: Map<string, ChurchServices> } | null>(null)
   const [dataAsOf, setDataAsOf] = useState<string | null>(activeAsOf)
@@ -308,20 +309,26 @@ export default function App() {
   // Permission-aware: a known "denied" skips the wait entirely, and a pending
   // prompt tells the user to look for the browser dialog instead of a spinner.
   const locate = () => {
+    // Never block on a fix we might not get (airplane mode!): the last known
+    // position seeds the list IMMEDIATELY — visibly marked as such — while the
+    // fresh location is fetched in the background and swapped in on arrival.
+    const last = loadLastOrigin()
+    if (last) setOrigin((cur) => cur ?? last)
     const fallback = (reason: GeoFailure) => {
       setGeoFail(reason)
-      const last = loadLastOrigin()
-      if (last) setOrigin(last)
-      else setGeoDenied(true)
+      if (!last) setGeoDenied(true) // with a seeded origin the list already stands
     }
+    setLocating(true)
     getPermissionState().then((perm) => {
       if (perm === 'denied') {
+        setLocating(false)
         fallback('denied') // no callback is coming — don't pretend to wait for one
         return
       }
       setGeoPrompting(perm === 'prompt')
       // an unanswered permission dialog deserves a longer leash than a slow fix
       getCurrentPosition({ deadlineMs: perm === 'prompt' ? 30_000 : 10_000 }).then((r) => {
+        setLocating(false)
         setGeoPrompting(false)
         if (r.coords) setOrigin({ lat: r.coords.lat, lng: r.coords.lng, source: 'geo' })
         else fallback(r.error ?? 'timeout')
@@ -603,7 +610,15 @@ export default function App() {
                   the dropped "Nejbližší bohoslužby" rubric duplicated the masthead */}
               <div className={`flex items-baseline justify-between gap-3 ${mapMode ? 'mt-2' : 'mt-5'}`}>
                 <p className="min-w-0 truncate text-sm text-ink-faded">
-                  {origin.label ?? (origin.source === 'last' ? 'poslední známá poloha' : 'podle vaší polohy')}
+                  {origin.source === 'last' ? (
+                    // stale position drives the list — say so loudly, not in grey
+                    <span className="font-semibold text-rubric">
+                      {origin.label ? `${origin.label} — poslední známá` : 'poslední známá poloha'}
+                    </span>
+                  ) : (
+                    (origin.label ?? 'podle vaší polohy')
+                  )}
+                  {locating && origin.source === 'last' && ' · zjišťuji aktuální…'}
                   {' · '}
                   <button
                     type="button"
@@ -640,6 +655,18 @@ export default function App() {
                 onChange={updateFilters}
                 langs={langs}
               />
+              {/* not on a live fix (offline / last-known / picked city): search is the
+                  main CTA — a visible input-shaped button, not a buried "změnit" link */}
+              {!mapMode && origin.source !== 'geo' && (
+                <button
+                  type="button"
+                  className="mt-3 flex w-full items-center gap-2 rounded-sm border border-hairline px-3 py-2.5 text-left text-base text-ink-faded hover:text-ink"
+                  onClick={() => setPicking(true)}
+                >
+                  <MagnifierIcon />
+                  Hledat obec nebo kostel…
+                </button>
+              )}
               {!mapMode && <FeastLine day={day} />}
             </div>
             {view === 'mapa' ? (
@@ -834,6 +861,15 @@ function ViewToggle({
         mapa
       </button>
     </div>
+  )
+}
+
+/** Magnifier for the search CTA — conservative outline shape, no emoji. */
+function MagnifierIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 shrink-0 fill-current">
+      <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z" />
+    </svg>
   )
 }
 

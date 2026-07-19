@@ -7,7 +7,10 @@ const config: CapacitorConfig = {
   appId: 'org.dravec.bohosluzby',
   appName: 'Bohoslužby',
   webDir: 'dist',
-  ios: { contentInset: 'automatic' },
+  // paper behind the WebView — otherwise the Dynamic Island / safe-area strip
+  // shows the native view's black until content scrolls under it
+  backgroundColor: '#f6f1e5',
+  ios: { contentInset: 'automatic', backgroundColor: '#f6f1e5' },
 }
 
 export default config

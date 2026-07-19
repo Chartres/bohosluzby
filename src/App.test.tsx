@@ -106,6 +106,7 @@ function stubGeolocation(impl: 'granted' | 'denied') {
 const openControls = () => fireEvent.click(screen.getByRole('button', { name: /^den:/ }))
 
 beforeEach(() => {
+  localStorage.clear() // last-known-origin seeding must not leak across tests
   vi.useFakeTimers({ now: NOW, shouldAdvanceTime: true })
   stubFetch()
 })
