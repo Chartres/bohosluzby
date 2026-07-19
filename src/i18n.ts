@@ -360,6 +360,19 @@ export function reminderScheduledMsg(min: number): string {
   return lang() === 'cs' ? `✓ připomeneme ${min} min předem` : `✓ we'll remind you ${min} min before`
 }
 
+/** " · ověřeno 2016" / " · verified 2016" — the list row's stale-data marker. */
+export function verifiedYear(iso: string): string {
+  const y = iso.slice(0, 4)
+  return lang() === 'cs' ? `ověřeno ${y}` : `verified ${y}`
+}
+
+/** The detail's verify-before-you-go warning for a stale registry entry. */
+export function staleWarning(dateStr: string): string {
+  return lang() === 'cs'
+    ? `Rozpis byl naposledy ověřen ${dateStr} — před cestou si ho ověřte u farnosti.`
+    : `This schedule was last verified ${dateStr} — check with the parish before you go.`
+}
+
 /** The local notification's title — "Mše sv. za 30 min" / "Mše sv. in 30 min".
  * The service type stays registry-Czech (it's data); the phrasing localizes. */
 export function reminderTitle(type: string, min: number): string {

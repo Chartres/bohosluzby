@@ -101,9 +101,10 @@ export const SHARD_50_14 = {
       svc('1', '15:00', 'česky', 0, 'mše sv.', 'dle ohlášení'), // unverifiable → warning rubric
     ],
   },
-  // P2 James (docs/PERSONAS.md): the tourist's English Sunday mass
+  // P2 James (docs/PERSONAS.md): the tourist's English Sunday mass.
+  // Decade-stale on purpose — drives the "ověřeno 2016" row marker.
   '7': {
-    u: '2026-06-25',
+    u: '2016-09-06',
     p: 'farnost sv. Tomáše',
     pa: 'Josefská 8, Praha 1',
     c: [],

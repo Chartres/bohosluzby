@@ -29,6 +29,8 @@ export interface Upcoming {
   distanceKm: number
   start: Date
   service: Service | ExtraService
+  /** Registry verification date of the church's schedule ("aktualizace"). */
+  updated: string
 }
 
 export interface RankOptions {
@@ -53,7 +55,8 @@ export function rankUpcoming(
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
       for (const start of nextOccurrences(spec, now, horizonDays)) {
         if (!runsOn(service, start)) continue // "kromě července a srpna" — don't lie in July
-        if (!best || start < best.start) best = { church, distanceKm, start, service }
+        if (!best || start < best.start)
+          best = { church, distanceKm, start, service, updated: svc.updated }
         break // occurrences are sorted; the first running one is this service's best
       }
     }
@@ -92,7 +95,8 @@ export function ordoForDay(
     const distanceKm = haversineKm(origin.lat, origin.lng, church.lat, church.lng)
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
       for (const start of nextOccurrences(spec, now, dayOffset + 1)) {
-        if (onTarget(start) && runsOn(service, start)) out.push({ church, distanceKm, start, service })
+        if (onTarget(start) && runsOn(service, start))
+          out.push({ church, distanceKm, start, service, updated: svc.updated })
       }
     }
     for (const s of svc.regular) consider(s, { days: s.days, time: s.time })

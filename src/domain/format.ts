@@ -31,6 +31,16 @@ export function fmtUntil(now: Date, start: Date): string {
   return `za ${days} ${days === 1 ? 'den' : days >= 5 ? 'dní' : 'dny'}`
 }
 
+/** Registry entry older than 18 months → the schedule is a verify-before-you-go
+ * warning, not a promise (shared by the list rows and the detail). */
+export function isStale(iso: string, now = new Date()): boolean {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
+  if (!m) return false
+  const cutoff = new Date(now)
+  cutoff.setMonth(cutoff.getMonth() - 18)
+  return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) < cutoff
+}
+
 export function fmtDistance(km: number): string {
   if (lang() !== 'cs') {
     if (km < 0.1) return 'within 100 m'
