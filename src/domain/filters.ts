@@ -9,9 +9,20 @@ export interface Filters {
   greek: boolean
   barrierFree: boolean
   massOnly: boolean
+  /** Church-level distance cap in km (null = no cap). */
+  maxKm: number | null
 }
 
-export const NO_FILTERS: Filters = { lang: null, greek: false, barrierFree: false, massOnly: false }
+export const NO_FILTERS: Filters = {
+  lang: null,
+  greek: false,
+  barrierFree: false,
+  massOnly: false,
+  maxKm: null,
+}
+
+/** The okruh choices — walking, cycling, driving radii. */
+export const MAX_KM_OPTIONS = [2, 5, 10] as const
 
 // ponytail: registry types are free text; "mass" = anything named mše/liturgie.
 const isMass = (type: string) => /mše|liturgi/i.test(type)

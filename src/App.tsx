@@ -9,7 +9,7 @@ import {
   type ChurchServices,
   type IndexRow,
 } from './domain/data'
-import { NO_FILTERS, type Filters } from './domain/filters'
+import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueToday } from './domain/occurrences'
@@ -25,6 +25,7 @@ import { loadData, refreshData, activeAsOf } from './lib/dataStore'
 
 const NEARBY_KM = 30
 const NEARBY_CAP = 120
+const LIST_LIMIT = 20
 
 /** "2026-07-03" → "3. 7. 2026" (Czech). */
 const fmtDataDate = (iso: string) => {
@@ -390,11 +391,21 @@ export default function App() {
     }
   }, [index, origin])
 
+  // The list cap with an escape hatch: 20 rows fill with 17:00–18:00 masses in a
+  // city centre and the whole evening seems to end at 18:00 — "zobrazit další"
+  // raises the cap instead of pretending that's all there is.
+  const [listLimit, setListLimit] = useState(LIST_LIMIT)
+  useEffect(() => {
+    setListLimit(LIST_LIMIT) // a new context restarts the cap
+  }, [origin, filters, cas, day])
+
   // one shared selector with the map — the seznam and the mapa never disagree
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
-    return selectUpcoming(new Date(), origin, data.nearby, data.byId, filters, cas, day)
-  }, [data, origin, filters, day, cas])
+    return selectUpcoming(new Date(), origin, data.nearby, data.byId, filters, cas, day, {
+      limit: listLimit,
+    })
+  }, [data, origin, filters, day, cas, listLimit])
 
   /** Languages on offer nearby (unfiltered) — the options for the lang filter. */
   const langs = useMemo(() => {
@@ -454,14 +465,31 @@ export default function App() {
     navigate(`/kostel/${id}/${search}`) // keep ?den/?cas — back restores the view
   }
 
+  // map mode: the map IS the page — a viewport-locked column, slim chrome, no
+  // footer; everything else keeps the scrolling missal-page layout
+  const mapMode = view === 'mapa' && route.view !== 'church' && !picking && !dataError
+
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 sm:px-8">
-      <header className="border-b-2 pt-6 pb-3" style={{ borderColor: 'var(--season)' }}>
-        <h1 className="font-display text-3xl font-bold tracking-tight">Bohoslužby</h1>
-        <p className="rubric mt-1">mše svatá poblíž, právě teď</p>
+    <div
+      className={
+        mapMode
+          ? 'flex h-dvh w-full flex-col overflow-hidden'
+          : 'mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 sm:px-8'
+      }
+    >
+      <header
+        className={
+          mapMode ? 'mx-auto w-full max-w-2xl border-b-2 px-5 pt-3 pb-2 sm:px-8' : 'border-b-2 pt-6 pb-3'
+        }
+        style={{ borderColor: 'var(--season)' }}
+      >
+        <h1 className={`font-display font-bold tracking-tight ${mapMode ? 'text-xl' : 'text-3xl'}`}>
+          Bohoslužby
+        </h1>
+        {!mapMode && <p className="rubric mt-1">mše svatá poblíž, právě teď</p>}
       </header>
 
-      <main className="flex-1 pb-10">
+      <main className={mapMode ? 'flex min-h-0 flex-1 flex-col' : 'flex-1 pb-10'}>
         {dataError && (
           <p className="mt-10 text-ink-faded" role="alert">
             Data se nepodařilo načíst. Zkuste to prosím znovu.
@@ -521,75 +549,99 @@ export default function App() {
         )}
 
         {!dataError && !picking && !loading && origin && rows && (rows.length > 0 || anyFilter || day !== 'now') && (
-          <section aria-label="Nejbližší bohoslužby">
-            {/* the view toggle changes representation, not selection — it sits
-                on the header line, apart from the day/kdy/what controls */}
-            <div className="mt-5 flex items-baseline justify-between gap-3">
-              <h2 className="rubric">Nejbližší bohoslužby</h2>
-              <ViewToggle view={view} onChange={setView} />
-            </div>
-            <p className="text-sm text-ink-faded">
-              {origin.label ?? (origin.source === 'last' ? 'poslední známá poloha' : 'podle vaší polohy')}
-              {' · '}
-              <button
-                type="button"
-                // -my/py: pad the hit area past the 24px floor without moving the text line
-                className="-mx-1 -my-2 inline-block px-1 py-2 underline decoration-hairline underline-offset-2 hover:text-ink"
-                onClick={() => setPicking(true)} // origin stays — zpět/Escape returns to the list
-              >
-                změnit
-              </button>
-              {origin.source !== 'geo' && (
-                <>
+          <section
+            aria-label="Nejbližší bohoslužby"
+            className={mapMode ? 'flex min-h-0 flex-1 flex-col' : undefined}
+          >
+            <div className={mapMode ? 'mx-auto w-full max-w-2xl px-5 sm:px-8' : undefined}>
+              {/* one meta line: where (origin + změnit) left, representation right —
+                  the dropped "Nejbližší bohoslužby" rubric duplicated the masthead */}
+              <div className={`flex items-baseline justify-between gap-3 ${mapMode ? 'mt-2' : 'mt-5'}`}>
+                <p className="min-w-0 truncate text-sm text-ink-faded">
+                  {origin.label ?? (origin.source === 'last' ? 'poslední známá poloha' : 'podle vaší polohy')}
                   {' · '}
                   <button
                     type="button"
-                    className="-mx-1 -my-2 inline-block px-1 py-2 underline decoration-hairline underline-offset-2 hover:text-ink"
-                    onClick={useMyLocation}
+                    // -my/py: pad the hit area to ~44px without moving the text line
+                    className="-mx-1 -my-3 inline-block px-1 py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
+                    onClick={() => setPicking(true)} // origin stays — zpět/Escape returns to the list
                   >
-                    moje poloha
+                    změnit
                   </button>
-                </>
-              )}
-            </p>
-            {/* WHEN block: the day picker and the kdy row read as one unit;
-                the WHAT filters follow inside the FilterBar */}
-            <DayPicker
-              day={day}
-              onChange={(d) => {
-                setDay(d)
-                track('key_action', { action: 'day', day: d })
-              }}
-            />
-            <FilterBar filters={filters} cas={cas} day={day} langs={langs} onChange={updateFilters} onCas={setCas} />
-            <FeastLine day={day} />
+                  {origin.source !== 'geo' && (
+                    <>
+                      {' · '}
+                      <button
+                        type="button"
+                        className="-mx-1 -my-3 inline-block px-1 py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
+                        onClick={useMyLocation}
+                      >
+                        moje poloha
+                      </button>
+                    </>
+                  )}
+                </p>
+                <ViewToggle view={view} onChange={setView} />
+              </div>
+              <OrdoControls
+                day={day}
+                onDay={(d) => {
+                  setDay(d)
+                  track('key_action', { action: 'day', day: d })
+                }}
+                cas={cas}
+                onCas={setCas}
+                filters={filters}
+                onChange={updateFilters}
+                langs={langs}
+              />
+              {!mapMode && <FeastLine day={day} />}
+            </div>
             {view === 'mapa' ? (
               online ? (
-                <Suspense
-                  fallback={
-                    <p className="mt-8 text-ink-faded" role="status">
-                      Načítám mapu…
-                    </p>
-                  }
-                >
-                  <MapView
-                    key={`${origin.lat},${origin.lng}`} // new origin → fresh map center
-                    origin={origin}
-                    churches={index ?? []}
-                    filters={filters}
-                    cas={cas}
-                    day={day}
-                    onOpen={openChurch}
-                  />
-                </Suspense>
+                <div className={mapMode ? 'mt-2 min-h-0 flex-1' : undefined}>
+                  <Suspense
+                    fallback={
+                      <p className="mt-8 text-center text-ink-faded" role="status">
+                        Načítám mapu…
+                      </p>
+                    }
+                  >
+                    <MapView
+                      key={`${origin.lat},${origin.lng}`} // new origin → fresh map center
+                      origin={origin}
+                      churches={index ?? []}
+                      filters={filters}
+                      cas={cas}
+                      day={day}
+                      onOpen={openChurch}
+                      fill={mapMode}
+                    />
+                  </Suspense>
+                </div>
               ) : (
-                <p className="mt-8 text-ink-faded" role="status">
+                <p
+                  className={`mt-8 text-ink-faded ${mapMode ? 'mx-auto w-full max-w-2xl px-5 sm:px-8' : ''}`}
+                  role="status"
+                >
                   Mapa potřebuje připojení — dlaždice se do zařízení neukládají. Seznam funguje
                   i offline.
                 </p>
               )
             ) : rows.length > 0 ? (
-              <ServiceList rows={rows} showUntil={day === 'now' || day === 0} onOpen={openChurch} />
+              <>
+                <ServiceList rows={rows} showUntil={day === 'now' || day === 0} onOpen={openChurch} />
+                {/* the cap is honest: another page of the ordo instead of "evening ends at 18:00" */}
+                {day === 'now' && rows.length >= listLimit && (
+                  <button
+                    type="button"
+                    className="rubric mt-4 -ml-1 px-1 py-3 underline decoration-hairline underline-offset-4 hover:text-ink"
+                    onClick={() => setListLimit((l) => l + 30)}
+                  >
+                    zobrazit další
+                  </button>
+                )}
+              </>
             ) : (
               <p className="mt-8 text-ink-faded">
                 {anyFilter
@@ -615,6 +667,7 @@ export default function App() {
         )}
       </main>
 
+      {!mapMode && (
       <footer className="border-t border-hairline py-4 text-sm text-ink-faded">
         {!online && (
           <p className="mb-1" role="status">
@@ -650,6 +703,7 @@ export default function App() {
           </a>
         </p>
       </footer>
+      )}
     </div>
   )
 }
@@ -822,7 +876,7 @@ function ServiceList({
         // duplicate keys corrupted reconciliation and left phantom rows on day switch
         return (
           <li key={`${r.church.id}-${r.start.getTime()}-${i}`}>
-            {showDay && <p className="rubric mt-6 mb-1">{day}</p>}
+            {showDay && <h3 className="rubric mt-6 mb-1">{day}</h3>}
             {/* stretched link: the name anchor covers the row; mapa/web sit above it */}
             <div className="group relative flex items-baseline gap-4 border-t border-hairline py-3">
               <p className="font-display w-16 shrink-0 text-2xl font-semibold tabular-nums">
@@ -900,28 +954,49 @@ function useNarrow(): boolean {
   )
 }
 
-const FILTRY_OPEN_KEY = 'bohosluzby:filtryOpen'
 
-// Typographic filter lines — set like rubric annotations under the list header,
-// not a Material chip bar. Hit areas stay ≥44px via padding + negative margin.
-// Two lines: when (time-of-day bands, kolem) and what (rite, access, language).
-// On narrow viewports both collapse into a "filtry" disclosure (state
-// persisted) whose collapsed line summarizes the active selection.
-function FilterBar({
-  filters,
-  cas,
+// One pill line, set like a missal rubric — den · kdy · okruh · filtry as
+// typographic pills (uppercase, middot rhythm, season accent when active), not
+// a Material chip bar. Any pill opens the ordo sheet with every control grouped
+// under rubric labels; narrow viewports get a bottom sheet, wide a bordered
+// panel. Hit areas stay ≥44px via padding + negative margin.
+function OrdoControls({
   day,
-  langs,
-  onChange,
+  onDay,
+  cas,
   onCas,
+  filters,
+  onChange,
+  langs,
 }: {
-  filters: Filters
-  cas: string | null
   day: DayChoice
-  langs: string[]
-  onChange: (f: Filters) => void
+  onDay: (d: DayChoice) => void
+  cas: string | null
   onCas: (c: string | null) => void
+  filters: Filters
+  onChange: (f: Filters) => void
+  langs: string[]
 }) {
+  const [open, setOpen] = useState(false)
+  const narrow = useNarrow()
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
+  const whatCount = [filters.massOnly, filters.barrierFree, filters.greek, filters.lang].filter(
+    Boolean,
+  ).length
+  const dayLbl =
+    day === 'now' ? 'hned' : (dayOptions(new Date()).find((o) => o.key === day)?.label ?? 'den')
+  const kdyLbl = cas ? (cas in BANDS ? BANDS[cas as Band].label : `kolem ${cas}`) : 'kdykoli'
+  const okruhLbl = filters.maxKm ? `do ${filters.maxKm} km` : 'okolí'
+  const filtryLbl = whatCount ? `filtry (${whatCount})` : 'filtry'
+
   const toggleCls = (active: boolean) =>
     `-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
       active ? 'underline decoration-2 underline-offset-4' : 'text-ink-faded hover:text-ink'
@@ -929,38 +1004,45 @@ function FilterBar({
   const toggleStyle = (active: boolean) =>
     active ? { color: 'var(--season)', textDecorationColor: 'var(--season)' } : undefined
   const around = cas && !(cas in BANDS) ? cas : null
-  const narrow = useNarrow()
-  const [open, setOpen] = useState(() => {
-    try {
-      return localStorage.getItem(FILTRY_OPEN_KEY) === '1'
-    } catch {
-      return false
-    }
-  })
-  const persistOpen = (o: boolean) => {
-    setOpen(o)
-    try {
-      localStorage.setItem(FILTRY_OPEN_KEY, o ? '1' : '0')
-    } catch {
-      // private mode
-    }
-  }
-  // the collapsed line names what's active: "filtry: neděle · ráno · bezbariérové"
-  const summary = [
-    day !== 'now' ? dayOptions(new Date()).find((o) => o.key === day)?.label : null,
-    cas ? (cas in BANDS ? BANDS[cas as Band].label : `kolem ${cas}`) : null,
-    filters.massOnly ? 'jen mše svaté' : null,
-    filters.barrierFree ? 'bezbariérové' : null,
-    filters.greek ? 'řeckokatolické' : null,
-    filters.lang,
-  ].filter(Boolean)
-  const rows = (
-    <>
-      {/* WHEN: the kdy row sits directly under the day picker — one block */}
+
+  // a pill names its group ("den: dnes") so pill and in-sheet chip never share
+  // an accessible name — and a screen reader hears what the value belongs to
+  const pill = (group: string, label: string, active: boolean) => (
+    <button
+      type="button"
+      aria-expanded={open}
+      aria-label={`${group}: ${label}`}
+      className={`-my-2 flex items-baseline gap-1 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] whitespace-nowrap ${
+        active ? 'underline decoration-2 underline-offset-4' : 'text-ink-faded hover:text-ink'
+      }`}
+      style={toggleStyle(active)}
+      onClick={() => setOpen((o) => !o)}
+    >
+      {label}
+      <span aria-hidden="true" className="text-[0.6rem]">
+        ▾
+      </span>
+    </button>
+  )
+
+  const sheet = (
+    <div
+      role={narrow ? 'dialog' : undefined}
+      aria-modal={narrow || undefined}
+      aria-label="Den a filtry"
+      className={
+        narrow
+          ? 'fixed inset-x-0 bottom-0 z-50 max-h-[80dvh] overflow-y-auto border-t border-hairline bg-paper px-5 pt-2 pb-[max(1.25rem,env(safe-area-inset-bottom))]'
+          : 'pb-3'
+      }
+    >
+      <p className="rubric mt-2 text-ink-faded">den</p>
+      <DayPicker day={day} onChange={onDay} />
+      <p className="rubric mt-2 text-ink-faded">kdy</p>
       <div
         role="group"
         aria-label="Kdy"
-        className="-ml-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
+        className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
       >
         {(Object.keys(BANDS) as Band[]).map((band) => {
           // "hned" + a band that's fully over today: visibly muted (still
@@ -980,7 +1062,8 @@ function FilterBar({
             </button>
           )
         })}
-        {/* 30-min-step typographic selector — native step=1800 isn't honored cross-browser */}
+        {/* 30-min-step typographic selector — native step=1800 isn't honored cross-browser.
+            16px font: a smaller select makes iOS zoom the page on focus */}
         <label
           className={`-my-2 flex items-baseline gap-1.5 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
             around ? '' : 'text-ink-faded'
@@ -992,7 +1075,7 @@ function FilterBar({
             aria-label="Kolem času"
             value={around ?? ''}
             onChange={(e) => onCas(e.target.value || null)}
-            className="-my-2 cursor-pointer border-0 bg-transparent py-2 font-sans text-xs font-semibold tabular-nums"
+            className="-my-2 cursor-pointer border-0 border-b border-hairline bg-transparent py-2 font-sans text-base font-semibold tabular-nums"
             style={around ? { color: 'var(--season)' } : undefined}
           >
             <option value="">—</option>
@@ -1005,84 +1088,119 @@ function FilterBar({
           </select>
         </label>
       </div>
-      {/* WHAT: rite, access, language */}
+      <p className="rubric mt-2 text-ink-faded">okruh</p>
+      <div
+        role="group"
+        aria-label="Okruh"
+        className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
+      >
+        {MAX_KM_OPTIONS.map((km) => (
+          <button
+            key={km}
+            type="button"
+            aria-pressed={filters.maxKm === km}
+            className={toggleCls(filters.maxKm === km)}
+            style={toggleStyle(filters.maxKm === km)}
+            onClick={() => onChange({ ...filters, maxKm: filters.maxKm === km ? null : km })}
+          >
+            do {km} km
+          </button>
+        ))}
+        <button
+          type="button"
+          aria-pressed={filters.maxKm === null}
+          className={toggleCls(false)}
+          onClick={() => onChange({ ...filters, maxKm: null })}
+        >
+          vše
+        </button>
+      </div>
+      <p className="rubric mt-2 text-ink-faded">co</p>
       <div
         role="group"
         aria-label="Filtry"
         className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
       >
-      <button
-        type="button"
-        aria-pressed={filters.massOnly}
-        className={toggleCls(filters.massOnly)}
-        style={toggleStyle(filters.massOnly)}
-        onClick={() => onChange({ ...filters, massOnly: !filters.massOnly })}
-      >
-        jen mše svaté
-      </button>
-      <button
-        type="button"
-        aria-pressed={filters.barrierFree}
-        className={toggleCls(filters.barrierFree)}
-        style={toggleStyle(filters.barrierFree)}
-        onClick={() => onChange({ ...filters, barrierFree: !filters.barrierFree })}
-      >
-        bezbariérové
-      </button>
-      <button
-        type="button"
-        aria-pressed={filters.greek}
-        className={toggleCls(filters.greek)}
-        style={toggleStyle(filters.greek)}
-        onClick={() => onChange({ ...filters, greek: !filters.greek })}
-      >
-        řeckokatolické
-      </button>
-      {langs.length > 1 && (
-        <select
-          aria-label="Jazyk bohoslužby"
-          value={filters.lang ?? ''}
-          onChange={(e) => onChange({ ...filters, lang: e.target.value || null })}
-          className={`-my-2 max-w-40 cursor-pointer border-0 bg-transparent py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
-            filters.lang ? '' : 'text-ink-faded'
-          }`}
-          style={filters.lang ? { color: 'var(--season)' } : undefined}
+        <button
+          type="button"
+          aria-pressed={filters.massOnly}
+          className={toggleCls(filters.massOnly)}
+          style={toggleStyle(filters.massOnly)}
+          onClick={() => onChange({ ...filters, massOnly: !filters.massOnly })}
         >
-          <option value="">jazyk: všechny</option>
-          {langs.map((l) => (
-            <option key={l} value={l}>
-              {l}
-            </option>
-          ))}
-        </select>
+          jen mše svaté
+        </button>
+        <button
+          type="button"
+          aria-pressed={filters.barrierFree}
+          className={toggleCls(filters.barrierFree)}
+          style={toggleStyle(filters.barrierFree)}
+          onClick={() => onChange({ ...filters, barrierFree: !filters.barrierFree })}
+        >
+          bezbariérové
+        </button>
+        <button
+          type="button"
+          aria-pressed={filters.greek}
+          className={toggleCls(filters.greek)}
+          style={toggleStyle(filters.greek)}
+          onClick={() => onChange({ ...filters, greek: !filters.greek })}
+        >
+          řeckokatolické
+        </button>
+        {langs.length > 1 && (
+          <select
+            aria-label="Jazyk bohoslužby"
+            value={filters.lang ?? ''}
+            onChange={(e) => onChange({ ...filters, lang: e.target.value || null })}
+            className={`-my-2 max-w-44 cursor-pointer border-0 border-b border-hairline bg-transparent py-3.5 font-sans text-base font-semibold ${
+              filters.lang ? '' : 'text-ink-faded'
+            }`}
+            style={filters.lang ? { color: 'var(--season)' } : undefined}
+          >
+            <option value="">jazyk: všechny</option>
+            {langs.map((l) => (
+              <option key={l} value={l}>
+                {l}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      {narrow && (
+        <button
+          type="button"
+          className="rubric mt-4 w-full border-t border-hairline pt-3 pb-1 text-center"
+          onClick={() => setOpen(false)}
+        >
+          hotovo
+        </button>
       )}
     </div>
-    </>
   )
-  if (!narrow) return <div className="border-b border-hairline pb-2">{rows}</div>
+
   return (
-    <details className="border-b border-hairline pb-2" open={open}>
-      {/* fully controlled: the native toggle event is queued async, which made
-          the persisted state lag one tap behind */}
-      <summary
-        onClick={(e) => {
-          e.preventDefault()
-          persistOpen(!open)
-        }}
-        className="-my-2 flex cursor-pointer list-none items-baseline gap-x-1.5 py-3.5 text-xs font-semibold tracking-[0.08em] uppercase [&::-webkit-details-marker]:hidden"
+    <div className="border-b border-hairline">
+      <div
+        role="group"
+        aria-label="Den a filtry"
+        className="scroll-row -ml-1 flex items-baseline gap-x-4 overflow-x-auto py-2 whitespace-nowrap"
       >
-        <span aria-hidden="true" className="text-ink-faded">
-          {open ? '▾' : '▸'}
-        </span>
-        <span className="text-ink-faded">filtry</span>
-        {summary.length > 0 && (
-          <span className="min-w-0 truncate" style={{ color: 'var(--season)' }}>
-            {summary.join(' · ')}
-          </span>
-        )}
-      </summary>
-      {rows}
-    </details>
+        {pill('den', dayLbl, day !== 'now')}
+        {pill('kdy', kdyLbl, Boolean(cas))}
+        {pill('okruh', okruhLbl, Boolean(filters.maxKm))}
+        {pill('co', filtryLbl, whatCount > 0)}
+      </div>
+      {open && narrow && (
+        <button
+          type="button"
+          aria-label="Zavřít filtry"
+          className="fixed inset-0 z-40 bg-ink/20"
+          onClick={() => setOpen(false)}
+        />
+      )}
+      {open && sheet}
+    </div>
   )
 }
 

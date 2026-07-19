@@ -281,8 +281,13 @@ export function parseNote(note: string): NoteRule {
     if (CONDITIONAL.test(seg)) uncertain = true
   })
 
+  // When a sibling segment is uncertain, don't trust a parsed exclusion either:
+  // "ve školním roce v 18:00, o prázdninách v 8:00" parses segment 1 to a
+  // school-year exclusion but can't read segment 2 — applying the exclusion
+  // would hide the real summer mass. Degrade to kept-uncertain (runs, flagged);
+  // showing a flagged row beats silently dropping a mass the note half-explains.
   const rule: NoteRule =
-    preds.length === 0
+    preds.length === 0 || uncertain
       ? { runsOn: ALWAYS.runsOn, uncertain }
       : { runsOn: (y, m, d) => preds.every((p) => p(y, m, d)), uncertain }
   cache.set(trimmed, rule)

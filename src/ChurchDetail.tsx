@@ -1,7 +1,7 @@
 // Church detail — the full weekly schedule set like a printed ordo (grouped by
 // day, times aligned), one-off services in their own rubric section, parish +
 // contacts, and an honest data-freshness line. docs/DESIGN-BRIEF.md governs.
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   decodeShard,
   type Church,
@@ -62,6 +62,16 @@ const isoToday = (): string => {
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
+/** Older than 18 months → "naposledy ověřeno" reads as a verify-before-you-go
+ * warning rather than a quiet footnote. */
+const isStale = (iso: string): boolean => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
+  if (!m) return false
+  const cutoff = new Date()
+  cutoff.setMonth(cutoff.getMonth() - 18)
+  return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) < cutoff
+}
+
 /** Per-service actions: add to calendar (native share sheet / web download) and,
  * on native only, schedule a local reminder before the next occurrence. */
 function ServiceActions({ church, service }: { church: Church; service: Service | ExtraService }) {
@@ -91,18 +101,17 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
   return (
     <div className="flex shrink-0 items-baseline gap-3">
       {isNative && (
-        <button
-          type="button"
-          className={`text-xs text-ink-faded ${linkCls}`}
-          onClick={onRemind}
-          aria-live="polite"
-        >
-          {msg ?? 'připomenout'}
+        <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onRemind}>
+          připomenout
         </button>
       )}
       <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onCalendar}>
         do kalendáře
       </button>
+      {/* status announced without stealing the button's accessible name */}
+      <span className="sr-only" role="status" aria-live="polite">
+        {msg ?? ''}
+      </span>
     </div>
   )
 }
@@ -126,15 +135,21 @@ function ShareLink({ church }: { church: Church }) {
     }
   }
   return (
-    <button type="button" onClick={share} className={linkCls} aria-live="polite">
-      {copied ? 'odkaz zkopírován' : 'sdílet'}
-    </button>
+    <>
+      <button type="button" onClick={share} className={linkCls}>
+        sdílet
+      </button>
+      <span className="sr-only" role="status" aria-live="polite">
+        {copied ? 'odkaz zkopírován' : ''}
+      </span>
+    </>
   )
 }
 
 export function ChurchDetail({ church, onBack }: { church: Church; onBack: () => void }) {
   const [svc, setSvc] = useState<ChurchServices | null>(null)
   const [failed, setFailed] = useState(false)
+  const headingRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
     const prev = document.title
@@ -142,6 +157,11 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
     return () => {
       document.title = prev
     }
+  }, [church])
+
+  // Land the screen reader in the detail, not back at the page top.
+  useEffect(() => {
+    headingRef.current?.focus({ preventScroll: true })
   }, [church])
 
   useEffect(() => {
@@ -170,11 +190,21 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
   return (
     <article className="mt-5">
       <p>
-        <button type="button" onClick={onBack} className={`rubric ${linkCls}`}>
+        <button
+          type="button"
+          onClick={onBack}
+          className={`rubric inline-flex min-h-11 items-center -my-3 ${linkCls}`}
+        >
           ‹ zpět na seznam
         </button>
       </p>
-      <h2 className="font-display mt-4 text-2xl leading-tight font-bold">{church.name}</h2>
+      <h2
+        ref={headingRef}
+        tabIndex={-1}
+        className="font-display mt-4 text-2xl leading-tight font-bold outline-none"
+      >
+        {church.name}
+      </h2>
       <p className="mt-1 text-sm text-ink-faded">
         {church.city && `${church.city} · `}
         <a
@@ -282,7 +312,11 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
 
           <p className="mt-8 text-xs text-ink-faded">
             údaje z rejstříku ČBK
-            {svc.updated && `, naposledy ověřeno ${fmtDateCz(svc.updated)}`}
+            {svc.updated && (
+              <span className={isStale(svc.updated) ? 'text-rubric' : undefined}>
+                {`, naposledy ověřeno ${fmtDateCz(svc.updated)}`}
+              </span>
+            )}
           </p>
         </>
       )}
@@ -313,7 +347,7 @@ function ServiceRow({ s, church }: { s: Service; church: Church }) {
   return (
     <div
       data-paused={pausedNow || undefined}
-      className={`flex items-baseline gap-4 border-b border-hairline py-2 ${pausedNow ? 'opacity-50' : ''}`}
+      className={`flex items-baseline gap-4 border-b border-hairline py-2 ${pausedNow ? 'opacity-70' : ''}`}
     >
       <p className="font-display w-14 shrink-0 text-xl font-semibold tabular-nums">{s.time}</p>
       <div className="min-w-0 flex-1">

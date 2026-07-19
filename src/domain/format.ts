@@ -12,7 +12,7 @@ export function fmtUntil(now: Date, start: Date): string {
     return m === 0 ? `za ${h} h` : `za ${h} h ${m} min`
   }
   const days = Math.round(min / (24 * 60))
-  return `za ${days} ${days >= 5 ? 'dní' : 'dny'}`
+  return `za ${days} ${days === 1 ? 'den' : days >= 5 ? 'dní' : 'dny'}`
 }
 
 export function fmtDistance(km: number): string {

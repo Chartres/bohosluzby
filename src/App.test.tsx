@@ -102,6 +102,9 @@ function stubGeolocation(impl: 'granted' | 'denied') {
   })
 }
 
+/** Ordo controls live behind the pill row — open the sheet before touching them. */
+const openControls = () => fireEvent.click(screen.getByRole('button', { name: /^den:/ }))
+
 beforeEach(() => {
   vi.useFakeTimers({ now: NOW, shouldAdvanceTime: true })
   stubFetch()
@@ -136,6 +139,7 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
     expect(screen.getAllByText(/dnes/).length).toBeGreaterThan(0)
     // language chip only for the non-Czech service, normalized to Czech lowercase
+    openControls()
     expect(screen.getByText('latinsky')).toBeInTheDocument()
     expect(screen.queryByText('Latine')).not.toBeInTheDocument()
     // barrier-free icon from the index (aria-labelled, inline — row height unchanged)
@@ -200,6 +204,7 @@ describe('Marie finds the nearest mass', () => {
     render(<App />)
     // NOW is Friday 3 Jul → "neděle" is Sunday 5 Jul, restored from the URL
     expect(await screen.findByText('neděle 5. 7.')).toBeInTheDocument()
+    openControls()
     expect(screen.getByRole('button', { name: /^neděle/ })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.queryByText(/^za \d/)).not.toBeInTheDocument() // planning view, no countdowns
 
@@ -362,6 +367,7 @@ describe('Marie finds the nearest mass', () => {
     // Havel's earliest service today is the 19:00 rosary
     expect(await screen.findByText(/růženec/)).toBeInTheDocument()
 
+    openControls()
     await user.click(screen.getByRole('button', { name: 'jen mše svaté' }))
     // …with the mass filter on, Havel shows its 19:30 mass instead of vanishing
     expect(screen.queryByText(/růženec/)).not.toBeInTheDocument()
@@ -375,6 +381,7 @@ describe('Marie finds the nearest mass', () => {
     const { unmount } = render(<App />)
     await screen.findByText(/Salvátora/)
 
+    openControls()
     await user.selectOptions(screen.getByLabelText('Jazyk bohoslužby'), 'latinsky')
     expect(screen.queryByText(/Salvátora/)).not.toBeInTheDocument()
     expect(screen.getByText(/sv\. Havla/)).toBeInTheDocument()
@@ -412,6 +419,7 @@ describe('Marie finds the nearest mass', () => {
     render(<App />)
     await screen.findByText(/Salvátora/)
 
+    openControls()
     await user.click(screen.getByRole('button', { name: 'řeckokatolické' })) // none nearby
     expect(screen.getByText(/neodpovídá žádná bohoslužba/)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Zrušit filtry' }))
@@ -425,6 +433,7 @@ describe('Marie finds the nearest mass', () => {
     await screen.findByText(/Salvátora/)
 
     // večer: Salvátor's 18:00 stays
+    openControls()
     await user.click(screen.getByRole('button', { name: 'večer' }))
     expect(window.location.search).toBe('?cas=vecer')
     expect(seznam().getByText('18:00')).toBeInTheDocument()
@@ -467,6 +476,7 @@ describe('Marie finds the nearest mass', () => {
     await screen.findByText(/Salvátora/)
     // stale "večer" not re-applied → no ?cas= param, "hned" stays the active chip
     expect(window.location.search).toBe('')
+    openControls()
     expect(screen.getByRole('button', { name: 'hned' })).toHaveAttribute('aria-pressed', 'true')
   })
 
@@ -477,6 +487,7 @@ describe('Marie finds the nearest mass', () => {
     await screen.findByText(/Salvátora/)
 
     // now = Friday → the picker offers hned · dnes · zítra · neděle · po …
+    openControls()
     await user.click(screen.getByRole('button', { name: /^neděle/ }))
 
     // Salvátor's two Sunday masses, chronological, grouped under one day rubric
@@ -501,6 +512,7 @@ describe('Marie finds the nearest mass', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<App />)
     await screen.findByText(/Salvátora/)
+    openControls()
     await user.click(screen.getByRole('button', { name: /^neděle/ })) // 14:00 has no type
     expect(seznam().getByText('14:00')).toBeInTheDocument()
     const metas = document.querySelectorAll('ol .group p.text-sm')
@@ -515,6 +527,7 @@ describe('Marie finds the nearest mass', () => {
     await screen.findByText(/Salvátora/)
 
     // picker chip carries the feast (tooltip + accessible name + gold tint)
+    openControls()
     const sunday = screen.getByRole('button', { name: /neděle — sv\. Cyrila a Metoděje/ })
     expect(sunday).toHaveAttribute('title', 'sv. Cyrila a Metoděje')
     expect(sunday.style.color).toBe('var(--color-season-gold)')
@@ -538,6 +551,7 @@ describe('Marie finds the nearest mass', () => {
     expect(note).toHaveClass('text-rubric')
     // parsed/descriptive notes stay quiet (Salvátor's Sunday studentská in the ordo)
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    openControls()
     await user.click(screen.getByRole('button', { name: /^neděle/ }))
     expect(screen.getByText(/studentská/)).not.toHaveClass('text-rubric')
   })
@@ -553,7 +567,7 @@ describe('Marie finds the nearest mass', () => {
     // next five weeks is excluded → the row is visibly paused, reason attached
     const paused = screen.getByText('20:00').closest('div[data-paused]')
     expect(paused).not.toBeNull()
-    expect(paused).toHaveClass('opacity-50')
+    expect(paused).toHaveClass('opacity-70')
     expect(screen.getByText(/nyní se nekoná/)).toBeInTheDocument()
     // the unverifiable "dle ohlášení" row prints loud but is NOT muted
     expect(screen.getByText('21:00').closest('div[data-paused]')).toBeNull()
@@ -568,6 +582,7 @@ describe('Marie finds the nearest mass', () => {
     render(<App />)
     await screen.findByText(/Salvátora/)
 
+    openControls()
     await user.click(screen.getByRole('button', { name: /^neděle/ }))
     expect(seznam().getAllByText('10:00')).toHaveLength(2) // both Sunday variants listed
 

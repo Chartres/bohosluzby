@@ -15,6 +15,11 @@ export async function mockData(page: Page, { delayMs = 0 } = {}) {
   })
 }
 
+/** Ordo controls live behind the pill row — open the sheet before touching them. */
+export const openControls = async (page: Page) => {
+  await page.getByRole('button', { name: /^den:/ }).click()
+}
+
 /** Screenshot into the committed shots dir (visual persona review). */
 export const shot = async (page: Page, name: string, fullPage = false) => {
   await page.evaluate(() => document.fonts.ready.then(() => undefined))

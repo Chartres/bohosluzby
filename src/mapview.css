@@ -6,6 +6,11 @@
   height: min(62dvh, 34rem);
   border-radius: 2px;
 }
+/* map mode: the map IS the page — fills the flex column under the slim chrome */
+.ordo-map--fill {
+  height: 100%;
+  border-radius: 0;
+}
 
 .ordo-map.leaflet-container {
   background: var(--color-paper);
@@ -71,18 +76,22 @@
   outline-offset: 1px;
 }
 
+/* clusters: ink CIRCLES with a count — a different shape AND color from the
+   rectangular season-green time chips, so "6" can never read as a mass time */
 .map-cluster {
   display: grid;
   place-items: center;
-  background: var(--season);
+  width: 26px;
+  height: 26px;
+  background: var(--color-ink);
   color: var(--color-paper);
   border: 1.5px solid var(--color-paper);
-  border-radius: 2px;
+  border-radius: 50%;
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 600;
 }
-/* every church in the bucket is irrelevant to the selection → paper, not accent */
+/* every church in the bucket is irrelevant to the selection → paper, not ink */
 .map-cluster--faded {
   background: var(--color-paper);
   color: var(--color-ink-faded);

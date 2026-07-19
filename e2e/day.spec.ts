@@ -1,7 +1,7 @@
 // Persona-visual e2e: on Monday morning Marie plans ahead — "kdy je v neděli
 // mše?" — and flips the ordo to Sunday.
 import { test, expect } from '@playwright/test'
-import { FIXED_NOW, PRAGUE, mockData, shot } from './fixtures'
+import { FIXED_NOW, PRAGUE, mockData, openControls, shot } from './fixtures'
 
 test.use({ geolocation: PRAGUE, permissions: ['geolocation'] })
 
@@ -11,6 +11,7 @@ test('Sunday ordo: every service that day, chronological, no countdowns', async 
   await page.goto('/')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
 
+  await openControls(page)
   await page.getByRole('button', { name: 'neděle' }).click()
   await expect(page.getByText('neděle 12. 7.')).toBeVisible()
 
@@ -35,8 +36,9 @@ test('feast day: picker chip tinted, quiet feast line in the header (5 Jul = Cyr
   await page.goto('/')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
 
+  await openControls(page)
   const sunday = page.getByRole('button', { name: 'neděle — sv. Cyrila a Metoděje' })
-  await expect(sunday).toHaveCSS('color', 'rgb(168, 132, 44)') // season gold tint
+  await expect(sunday).toHaveCSS('color', 'rgb(122, 90, 30)') // season gold tint
   await sunday.click()
   await expect(page.getByText('sv. Cyrila a Metoděje', { exact: true })).toBeVisible()
   await shot(page, 'day-feast')
@@ -47,7 +49,8 @@ test('bookmarked ?den=nedele restores the Sunday ordo; day picks rewrite the URL
   await mockData(page)
   await page.goto('/?den=nedele') // Monday 6 Jul → next Sunday is 12 Jul
   await expect(page.getByText('neděle 12. 7.')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'neděle' })).toHaveAttribute('aria-pressed', 'true')
+  await openControls(page)
+  await expect(page.getByRole('button', { name: 'neděle', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByText(/za \d+ (min|h)/)).toHaveCount(0) // planning view restored
   await shot(page, 'route-den-nedele')
 
@@ -65,6 +68,7 @@ test('day picker at 375px', async ({ page }) => {
   await mockData(page)
   await page.goto('/')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
+  await openControls(page)
   await page.getByRole('button', { name: 'zítra' }).click()
   await expect(page.getByText('zítra').first()).toBeVisible()
   await shot(page, 'day-mobile-375')

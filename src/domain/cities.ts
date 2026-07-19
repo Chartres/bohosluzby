@@ -85,7 +85,8 @@ export function searchPlaces(
     .map((city): SearchResult => ({ kind: 'city', name: city.name, city }))
   const inName = (c: Church) => Number(fold(c.name).includes(q))
   const churchHits = churches
-    .filter((c) => fold(`${c.name} ${c.city}`).includes(q))
+    // name + city + website host, so "kcmt" finds http://www.kcmt.cz
+    .filter((c) => fold(`${c.name} ${c.city} ${c.www ?? ''}`).includes(q))
     .sort(
       (a, b) =>
         starts(b.name) - starts(a.name) ||
