@@ -4,11 +4,13 @@
 import { useEffect } from 'react'
 import { navApps } from './lib/nav-apps'
 import { track } from './analytics'
-import { t } from './i18n'
+import { t, verifyBanner } from './i18n'
+import { verifySeason } from './domain/liturgical'
 
 export type NavTarget = { name: string; lat: number; lng: number }
 
 export function NavSheet({ target, onClose }: { target: NavTarget; onClose: () => void }) {
+  const season = verifySeason(new Date())
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -33,6 +35,8 @@ export function NavSheet({ target, onClose }: { target: NavTarget; onClose: () =
       >
         <p className="rubric">{t('nav_rubric')}</p>
         <p className="font-display mt-1 truncate text-base font-semibold">{target.name}</p>
+        {/* last look before the person walks — repeat the season advisory */}
+        {season && <p className="mt-1 text-sm text-rubric">{verifyBanner(season)}</p>}
         <ul className="mt-2">
           {navApps(target.lat, target.lng).map((app) => (
             <li key={app.name}>

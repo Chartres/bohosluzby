@@ -1,4 +1,4 @@
-import { easterSunday, liturgicalDay } from './liturgical'
+import { easterSunday, liturgicalDay, verifySeason } from './liturgical'
 
 describe('easterSunday (Gregorian computus)', () => {
   it.each([
@@ -97,5 +97,25 @@ describe('liturgicalDay — feast names (day-picker highlight + list header line
   it('ordinary days carry no feast', () => {
     expect(day(2026, 7, 3).feast).toBeUndefined()
     expect(day(2026, 12, 24).feast).toBeUndefined()
+  })
+})
+
+describe('verifySeason', () => {
+  const at = (iso: string) => verifySeason(new Date(iso))
+  it('summer holidays win July and August', () => {
+    expect(at('2026-07-19T12:00:00Z')).toBe('summer')
+    expect(at('2026-08-31T12:00:00Z')).toBe('summer')
+  })
+  it('liturgical windows: advent, christmas, lent', () => {
+    expect(at('2026-12-01T12:00:00Z')).toBe('advent')
+    expect(at('2026-12-25T12:00:00Z')).toBe('christmas')
+    expect(at('2026-02-20T12:00:00Z')).toBe('lent') // Ash Wednesday 2026 = 18 Feb
+  })
+  it('easter octave only, then quiet ordinary time', () => {
+    expect(at('2026-04-05T12:00:00Z')).toBe('easter') // Easter Sunday 2026
+    expect(at('2026-04-12T12:00:00Z')).toBe('easter') // octave end
+    expect(at('2026-05-20T12:00:00Z')).toBe(null) // deep Easter season → no banner
+    expect(at('2026-06-30T12:00:00Z')).toBe(null) // ordinary time
+    expect(at('2026-10-10T12:00:00Z')).toBe(null)
   })
 })

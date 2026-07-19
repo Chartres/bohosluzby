@@ -45,10 +45,14 @@ test('hero list: nearest services, soonest first', async ({ page }) => {
   await page.getByRole('button', { name: /^trasa:/ }).first().click()
   await expect(page.getByRole('link', { name: 'Apple Maps' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Mapy.cz' })).toBeVisible()
+  // the nav sheet repeats the season advisory — last look before walking
+  await expect(page.getByRole('dialog')).toContainText(/časy bohoslužeb často mění/)
   await page.getByRole('button', { name: 'zavřít', exact: true }).click()
 
-  // a 2016-verified entry warns on the row itself (rubric red year marker)
-  await expect(page.locator('ol')).toContainText('ověřeno 2016')
+  // season advisory over the list (6 Jul = summer window); the per-row
+  // "ověřeno <year>" provenance marker is gone — banner replaced it
+  await expect(page.getByText(/O letních prázdninách se časy bohoslužeb často mění/)).toBeVisible()
+  await expect(page.locator('ol')).not.toContainText('ověřeno 2016')
 
   // note parser: Havel's 10:30 "kromě července a srpna" must not run on 6 July…
   await expect(page.locator('ol').getByText('10:30')).toHaveCount(0)

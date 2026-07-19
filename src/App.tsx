@@ -13,8 +13,8 @@ import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueToday } from './domain/occurrences'
-import { currentLiturgicalDay, liturgicalDay, type LiturgicalDay } from './domain/liturgical'
-import { fmtDistance, fmtTime, fmtUntil, dayLabel, isStale } from './domain/format'
+import { currentLiturgicalDay, liturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
+import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
@@ -33,7 +33,7 @@ import {
   aroundLabel,
   withinKmLabel,
   nothingNearbyBody,
-  verifiedYear,
+  verifyBanner,
 } from './i18n'
 
 const NEARBY_KM = 30
@@ -554,10 +554,16 @@ export default function App() {
       <header
         className={
           mapMode
-            ? 'mx-auto w-full max-w-2xl border-b-2 px-5 pt-3 pb-2 sm:px-8'
-            : 'sticky top-0 z-30 -mx-5 border-b-2 bg-paper px-5 pt-3 pb-2 sm:-mx-8 sm:px-8'
+            ? 'mx-auto w-full max-w-2xl border-b-2 px-5 pb-2 sm:px-8'
+            : 'sticky top-0 z-30 -mx-5 border-b-2 bg-paper px-5 pb-2 sm:-mx-8 sm:px-8'
         }
-        style={{ borderColor: 'var(--season)' }}
+        style={{
+          borderColor: 'var(--season)',
+          // sticky top-0 pins at the VIEWPORT top — on iOS that's under the
+          // status bar/Dynamic Island. Pad by the safe area so the wordmark
+          // never collides with the clock (env() is 0 on desktop web).
+          paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
+        }}
       >
         <h1 className="font-display text-xl font-bold tracking-tight">Bohoslužby</h1>
       </header>
@@ -716,6 +722,11 @@ export default function App() {
                 </button>
               )}
               {!mapMode && <FeastLine day={day} />}
+              {/* season advisory replaces the per-row "ověřeno <year>" marker —
+                  "times often change NOW, verify" is a signal the reader can
+                  act on; a provenance year wasn't. Not in map mode: chrome
+                  budget, the map is a page. */}
+              {!mapMode && <VerifyBanner />}
             </div>
             {view === 'mapa' ? (
               online ? (
@@ -961,6 +972,22 @@ function GlobeIcon() {
   )
 }
 
+/** One-line season advisory ("times often change now — verify"), shown only in
+ * the windows when parishes actually shuffle schedules (summer, Advent,
+ * Christmas, Lent, Easter octave). Missal-quiet: hairline rule, season color. */
+function VerifyBanner() {
+  const season = useMemo(() => verifySeason(new Date()), [])
+  if (!season) return null
+  return (
+    <p
+      className="mt-3 border-l-2 pl-3 text-sm text-ink-faded"
+      style={{ borderColor: 'var(--season)' }}
+    >
+      {verifyBanner(season)}
+    </p>
+  )
+}
+
 /** Quiet feast name for the selected day, in the feast's liturgical color. */
 function FeastLine({ day }: { day: DayChoice }) {
   const lit = useMemo(() => litForChoice(new Date(), day), [day])
@@ -998,9 +1025,18 @@ function ServiceList({
             {showDay && <h3 className="rubric mt-6 mb-1">{day}</h3>}
             {/* stretched link: the name anchor covers the row; mapa/web sit above it */}
             <div className="group relative flex items-baseline gap-4 border-t border-hairline py-3">
-              <p className="font-display w-16 shrink-0 text-2xl font-semibold tabular-nums">
-                {fmtTime(r.start)}
-              </p>
+              <div className="w-16 shrink-0">
+                <p className="font-display text-2xl font-semibold tabular-nums">
+                  {fmtTime(r.start)}
+                </p>
+                {/* countdown under the time — the right edge belongs to the
+                    verb stack, and a narrow column wraps "za 7 h 4 min" fine */}
+                {showUntil && (
+                  <p className="mt-0.5 text-xs font-semibold text-ink-faded">
+                    {fmtUntil(now, r.start)}
+                  </p>
+                )}
+              </div>
               <div className="min-w-0 flex-1">
                 <p className="font-display text-[1.05rem] leading-snug font-semibold">
                   <a
@@ -1037,24 +1073,17 @@ function ServiceList({
                       <Chip label={t('greek_chip')} />
                     </>
                   )}
-                  {/* a real user walked to a mass whose entry was 9 years old —
-                      extreme staleness warns on the ROW, not just in the detail */}
-                  {r.updated && isStale(r.updated) && (
-                    <span className="font-semibold text-rubric"> · {verifiedYear(r.updated)}</span>
-                  )}
                 </p>
               </div>
-              {/* the row's verbs, under the countdown: trasa opens the nav-app
-                  chooser, web the parish site. z-10 lifts them above the
-                  stretched detail link; the row tap stays "open detail". */}
-              <div className="flex shrink-0 flex-col items-end gap-1.5">
-                {showUntil && (
-                  <p className="text-sm font-semibold whitespace-nowrap">{fmtUntil(now, r.start)}</p>
-                )}
+              {/* the row's verbs: trasa opens the nav-app chooser, web the
+                  parish site. Stacked VERTICALLY — side-by-side they squeezed
+                  the church-name column to a sliver (user feedback). z-10
+                  lifts them above the stretched detail link. */}
+              <div className="flex shrink-0 flex-col items-end self-center">
                 {/* ONE segmented group, hairline-divided — two loose bordered
                     buttons read as clutter (user feedback); the shared border
                     makes them one control with two verbs */}
-                <div className="relative z-10 flex divide-x divide-hairline overflow-hidden rounded-sm border border-hairline">
+                <div className="relative z-10 flex flex-col divide-y divide-hairline overflow-hidden rounded-sm border border-hairline">
                   <button
                     type="button"
                     aria-label={`${t('row_route')}: ${r.church.name}`}
@@ -1334,7 +1363,9 @@ function OrdoControls({
       <div
         role="group"
         aria-label={t('day_filters_group')}
-        className="scroll-row -ml-1 flex items-baseline gap-x-4 overflow-x-auto py-2 whitespace-nowrap"
+        // gap-x-3: "kdykoli · okolí · filtry · ✕" must fit 375px without the
+        // clear pill scrolling out of reach (user feedback)
+        className="scroll-row -ml-1 flex items-baseline gap-x-3 overflow-x-auto py-2 whitespace-nowrap"
       >
         {pill(t('day_group').toLowerCase(), dayLbl, day !== 'now')}
         {pill(t('rubric_when'), kdyLbl, Boolean(cas))}
@@ -1344,7 +1375,8 @@ function OrdoControls({
         {(day !== 'now' || cas || filters.maxKm || whatCount > 0) && (
           <button
             type="button"
-            className="-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] text-rubric hover:text-ink"
+            aria-label={t('clear_all_aria')}
+            className="-my-2 px-1.5 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] text-rubric hover:text-ink"
             onClick={onReset}
           >
             {t('clear_all')}
