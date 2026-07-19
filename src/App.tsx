@@ -541,8 +541,22 @@ export default function App() {
           <section className="mt-10">
             <h2 className="font-display text-xl font-semibold">Bez přístupu k poloze</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
-              Poloha slouží jen k nalezení nejbližších kostelů — nikam se neodesílá. Povolte ji
-              v prohlížeči, nebo vyhledejte obec či kostel.
+              Poloha slouží jen k nalezení nejbližších kostelů — nikam se neodesílá.
+            </p>
+            <p className="mt-2 max-w-prose text-ink-faded">
+              Pokud jste ji dříve zablokovali, klepněte na ikonu zámku vedle adresy stránky →
+              Oprávnění → Poloha → Povolit, a pak na{' '}
+              <button
+                type="button"
+                className="-my-2 inline-block px-1 py-2 underline decoration-hairline underline-offset-2 hover:text-ink"
+                onClick={() => {
+                  setGeoDenied(false)
+                  locate() // re-runs the permission check — no reload needed
+                }}
+              >
+                zkusit znovu
+              </button>
+              . Nebo vyhledejte obec či kostel:
             </p>
             <SearchPicker index={index} onPickCity={pickCity} onPickChurch={pickChurch} />
           </section>
