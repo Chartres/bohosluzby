@@ -1,6 +1,27 @@
 import { isNative } from './native'
 
 export type Coords = { lat: number; lng: number }
+export type GeoPermission = 'granted' | 'denied' | 'prompt' | 'unknown'
+
+/** Current permission state WITHOUT prompting — lets the UI say "enable
+ * location" instead of waiting on a callback that will never come. */
+export async function getPermissionState(): Promise<GeoPermission> {
+  if (isNative) {
+    try {
+      const { Geolocation } = await import('@capacitor/geolocation')
+      const p = await Geolocation.checkPermissions()
+      return p.location === 'granted' ? 'granted' : p.location === 'denied' ? 'denied' : 'prompt'
+    } catch {
+      return 'unknown'
+    }
+  }
+  try {
+    const s = await navigator.permissions.query({ name: 'geolocation' })
+    return s.state === 'granted' || s.state === 'denied' ? s.state : 'prompt'
+  } catch {
+    return 'unknown' // Permissions API unavailable — behave as before
+  }
+}
 
 /**
  * One geolocation read. Inside the native shell, WKWebView's

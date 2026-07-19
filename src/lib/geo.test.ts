@@ -31,3 +31,25 @@ it('permission-prompt limbo: no callback ever → null at the hard deadline, no 
   await vi.advanceTimersByTimeAsync(10_000)
   await expect(p).resolves.toBeNull()
 })
+
+const stubPermissions = (state: string) =>
+  Object.defineProperty(navigator, 'permissions', {
+    value: { query: vi.fn(async () => ({ state })) },
+    configurable: true,
+  })
+
+it('getPermissionState reads the Permissions API without prompting', async () => {
+  const { getPermissionState } = await import('./geo')
+  stubPermissions('denied')
+  await expect(getPermissionState()).resolves.toBe('denied')
+  stubPermissions('granted')
+  await expect(getPermissionState()).resolves.toBe('granted')
+  stubPermissions('prompt')
+  await expect(getPermissionState()).resolves.toBe('prompt')
+})
+
+it('getPermissionState degrades to unknown without the API', async () => {
+  const { getPermissionState } = await import('./geo')
+  Object.defineProperty(navigator, 'permissions', { value: undefined, configurable: true })
+  await expect(getPermissionState()).resolves.toBe('unknown')
+})

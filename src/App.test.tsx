@@ -115,10 +115,34 @@ afterEach(() => {
 })
 
 describe('Marie finds the nearest mass', () => {
-  it('shows a loading state first', () => {
-    stubGeolocation('granted')
+  it('shows a loading state first, with a manual escape hatch', async () => {
+    // a geolocation that never answers (permission limbo) — the hatch must not wait for it
+    Object.defineProperty(navigator, 'geolocation', {
+      value: { getCurrentPosition: vi.fn() },
+      configurable: true,
+    })
     render(<App />)
     expect(screen.getByRole('status')).toHaveTextContent('Hledám bohoslužby poblíž…')
+    // the manual path is offered during the wait, not only after a timeout
+    fireEvent.click(screen.getByRole('button', { name: 'vybrat obec ručně' }))
+    expect(await screen.findByText('Bez přístupu k poloze')).toBeInTheDocument()
+  })
+
+  it('blocked permission: goes straight to the picker instead of waiting', async () => {
+    // Permissions API answers "denied" → the geolocation callback is never awaited
+    Object.defineProperty(navigator, 'permissions', {
+      value: { query: vi.fn(async () => ({ state: 'denied' })) },
+      configurable: true,
+    })
+    const getCurrentPosition = vi.fn() // would hang — must never be called
+    Object.defineProperty(navigator, 'geolocation', {
+      value: { getCurrentPosition },
+      configurable: true,
+    })
+    render(<App />)
+    expect(await screen.findByText('Bez přístupu k poloze')).toBeInTheDocument()
+    expect(getCurrentPosition).not.toHaveBeenCalled()
+    Object.defineProperty(navigator, 'permissions', { value: undefined, configurable: true })
   })
 
   it('footer shows how fresh the registry data is', async () => {

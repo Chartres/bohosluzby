@@ -20,7 +20,7 @@ import { BANDS, bandFullyPast, halfHoursFrom, parseCas, resolveCasDay, type Band
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { FeedbackCard } from './FeedbackCard'
 import { track, conversion, logError } from './analytics'
-import { getCurrentPosition } from './lib/geo'
+import { getCurrentPosition, getPermissionState } from './lib/geo'
 import { loadData, refreshData, activeAsOf } from './lib/dataStore'
 
 const NEARBY_KM = 30
@@ -212,6 +212,7 @@ export default function App() {
   const [index, setIndex] = useState<Church[] | null>(null)
   const [dataError, setDataError] = useState(false)
   const [geoDenied, setGeoDenied] = useState(false)
+  const [geoPrompting, setGeoPrompting] = useState(false) // browser permission dialog pending
   const [origin, setOrigin] = useState<Origin | null>(null)
   const [data, setData] = useState<{ nearby: Church[]; byId: Map<string, ChurchServices> } | null>(null)
   const [dataAsOf, setDataAsOf] = useState<string | null>(activeAsOf)
@@ -302,16 +303,26 @@ export default function App() {
     }
   }, [])
 
-  // geolocate → last known position → the picker (also re-run by "moje poloha")
+  // geolocate → last known position → the picker (also re-run by "moje poloha").
+  // Permission-aware: a known "denied" skips the wait entirely, and a pending
+  // prompt tells the user to look for the browser dialog instead of a spinner.
   const locate = () => {
     const fallback = () => {
       const last = loadLastOrigin()
       if (last) setOrigin(last)
       else setGeoDenied(true)
     }
-    getCurrentPosition().then((c) => {
-      if (c) setOrigin({ lat: c.lat, lng: c.lng, source: 'geo' })
-      else fallback()
+    getPermissionState().then((perm) => {
+      if (perm === 'denied') {
+        fallback() // no callback is coming — don't pretend to wait for one
+        return
+      }
+      setGeoPrompting(perm === 'prompt')
+      getCurrentPosition().then((c) => {
+        setGeoPrompting(false)
+        if (c) setOrigin({ lat: c.lat, lng: c.lng, source: 'geo' })
+        else fallback()
+      })
     })
   }
 
@@ -510,7 +521,19 @@ export default function App() {
         {!dataError && loading && (
           <div className="mt-14 text-center" role="status">
             <p className="font-display text-xl">Hledám bohoslužby poblíž…</p>
-            <p className="mt-2 text-sm text-ink-faded">Načítám data a zjišťuji polohu.</p>
+            <p className="mt-2 text-sm text-ink-faded">
+              {geoPrompting
+                ? 'Povolte prosím přístup k poloze v dialogu prohlížeče.'
+                : 'Načítám data a zjišťuji polohu.'}
+            </p>
+            {/* the manual path is always on offer — never make the user wait out a permission */}
+            <button
+              type="button"
+              className="mt-4 px-2 py-3 text-sm underline decoration-hairline underline-offset-2 hover:text-ink"
+              onClick={() => setGeoDenied(true)}
+            >
+              vybrat obec ručně
+            </button>
           </div>
         )}
 
@@ -518,8 +541,22 @@ export default function App() {
           <section className="mt-10">
             <h2 className="font-display text-xl font-semibold">Bez přístupu k poloze</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
-              Poloha slouží jen k nalezení nejbližších kostelů — nikam se neodesílá. Povolte ji
-              v prohlížeči, nebo vyhledejte obec či kostel.
+              Poloha slouží jen k nalezení nejbližších kostelů — nikam se neodesílá.
+            </p>
+            <p className="mt-2 max-w-prose text-ink-faded">
+              Pokud jste ji dříve zablokovali, klepněte na ikonu zámku vedle adresy stránky →
+              Oprávnění → Poloha → Povolit, a pak na{' '}
+              <button
+                type="button"
+                className="-my-2 inline-block px-1 py-2 underline decoration-hairline underline-offset-2 hover:text-ink"
+                onClick={() => {
+                  setGeoDenied(false)
+                  locate() // re-runs the permission check — no reload needed
+                }}
+              >
+                zkusit znovu
+              </button>
+              . Nebo vyhledejte obec či kostel:
             </p>
             <SearchPicker index={index} onPickCity={pickCity} onPickChurch={pickChurch} />
           </section>
