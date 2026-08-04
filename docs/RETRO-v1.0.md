@@ -15,7 +15,7 @@ Kaizen, three derivatives (FLYWHEEL-STANDARD §12c.7):
 - `release` lane gets a post-upload verification step: GET screenshot sets,
   assert per-set count == local shots; fail loud. Dedupe v1.1 screenshots
   then. [x] land in Fastfile before v1.1 (`verify_listing`, `dedupe_screenshots`,
-  and `release`'s skip-if-unchanged guard — landed in this commit).
+  and `release`'s skip-if-unchanged guard — commit 6afe630).
 
 **What would have caught it sooner (2nd derivative)**
 - Standards gap: no "read back the published artifact" rule. Every publish
