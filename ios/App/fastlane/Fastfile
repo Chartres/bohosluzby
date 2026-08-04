@@ -13,9 +13,19 @@
 
 opt_out_usage # no fastlane telemetry
 default_platform(:ios)
+require_relative "screenshot_ops"
 
 APP_ID   = "org.dravec.bohosluzby"
 APP_NAME = "Bohoslužby: katolické mše"
+SCREENSHOTS_DIR = File.expand_path("screenshots", __dir__)
+
+# Loaded env + numeric ASC app id, for the raw-API screenshot_ops helpers
+# (asc_key above is the fastlane-plugin-side auth; this is separate because
+# screenshot_ops deliberately skips spaceship — see its file header).
+def asc_env_and_app_id
+  env = asc_load_env(File.expand_path(".env", __dir__))
+  [env, asc_app_id(env, APP_ID)]
+end
 
 def asc_key
   app_store_connect_api_key(
@@ -65,6 +75,19 @@ platform :ios do
       precheck_include_in_app_purchases: false,
       force: true, # skip the interactive HTML-preview confirmation
     )
+    verify_listing
+  end
+
+  desc "Read back what was just published: assert ASC screenshot-set counts match fastlane/screenshots (FLYWHEEL-STANDARD §11 Rule 15)"
+  lane :verify_listing do
+    env, app_id = asc_env_and_app_id
+    verify_listing!(env, app_id, SCREENSHOTS_DIR)
+  end
+
+  desc "For an EDITABLE (non-live) appStoreVersion: delete duplicate appScreenshots by fileName, keeping the first"
+  lane :dedupe_screenshots do
+    env, app_id = asc_env_and_app_id
+    dedupe_screenshots!(env, app_id)
   end
 
   desc "Build + sign the App Store .ipa"
@@ -118,13 +141,21 @@ platform :ios do
   desc "Build → upload binary + metadata + screenshots (does NOT submit)"
   lane :release do
     build
+    env, app_id = asc_env_and_app_id
+    # Root cause of the v1.0 screenshot dupes: two release runs each
+    # (re-)uploaded and ASC appended instead of replacing. Skip the upload
+    # when ASC already has exactly what's local; only overwrite on a real diff.
+    skip_shots = screenshots_unchanged?(env, app_id, SCREENSHOTS_DIR)
+    UI.message("release: screenshots already match ASC — skipping re-upload") if skip_shots
     upload_to_app_store(
       api_key: asc_key,
       app_identifier: APP_ID,
       submit_for_review: false, # Pavol clicks Submit after the airplane-mode self-check
       overwrite_screenshots: true,
+      skip_screenshots: skip_shots,
       precheck_include_in_app_purchases: false,
       force: true,
     )
+    verify_listing
   end
 end
