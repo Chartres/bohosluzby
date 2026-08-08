@@ -27,6 +27,9 @@ export default defineConfig({
         ...(process.env.PW_CHROMIUM
           ? { launchOptions: { executablePath: process.env.PW_CHROMIUM } }
           : {}),
+        // PW_CHANNEL=chrome runs on system Chrome — the pinned headless-shell
+        // download wedges on slow networks (fleet standard §12c.6b).
+        ...(process.env.PW_CHANNEL ? { channel: process.env.PW_CHANNEL } : {}),
       },
     },
   ],
