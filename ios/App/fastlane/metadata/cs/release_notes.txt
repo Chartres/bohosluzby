@@ -1,1 +1,5 @@
-První verze aplikace Bohoslužby.
+Novinky ve verzi 1.1:
+• Mapa je teď hlavní pohled — bohoslužby v okolí uvidíte na první pohled.
+• Pročistili jsme odkazy na weby farností; mrtvé odkazy jsme odstranili.
+• Když nahlásíte špatný čas, opravu předáme rejstříku farnosti/diecéze.
+• Drobná vylepšení přístupnosti na mapě.
