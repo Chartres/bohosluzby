@@ -4,12 +4,13 @@ Otevřete aplikaci a hned vidíte pořad bohoslužeb v okolí: kde a v kolik za�
 
 Co aplikace umí:
 • Nejbližší mše podle vaší polohy, seřazené od té, kterou ještě stihnete
-• Mapa kostelů v okolí — na jeden pohled vidíte, kam je to nejblíž
+• Mapa s časy mší přímo v mapě — čas nejbližší bohoslužby vidíte hned, bez klepnutí na kostel
 • Pořad bohoslužeb pro dnešek, zítřek i neděli
 • Funguje offline — data máte v telefonu i bez signálu
 • Export mše do kalendáře jedním klepnutím
 • Připomínka před začátkem mše, ať nikam nespěcháte
 • Přibližně 3 991 kostelů z oficiálního rejstříku České biskupské konference
+• Malá a rychlá — aplikace zabere jen pár megabajtů
 
 Zdarma, bez reklam a bez registrace. Nepotřebujete účet ani přihlášení.
 
