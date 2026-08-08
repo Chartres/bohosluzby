@@ -3,9 +3,15 @@
 //   iPhone 6.9"  440×956  @3  → 1320×2868
 //   iPad 13"    1032×1376 @2  → 2064×2752
 // Run locally: npx playwright test e2e/store-shots.spec.ts
-// Output: store-assets/ios/<device>/*.png (committed as submission assets).
+// Output: store-assets/ios/<device>/*.png (committed as submission assets) AND
+// synced into ios/App/fastlane/screenshots/cs/ (deliver's locale dir, the
+// upload source). Both MUST stay in lockstep — a v1.1 upload once shipped stale
+// shots because only store-assets was regenerated (verify_listing caught it).
 import { test } from '@playwright/test'
+import { cpSync, mkdirSync, readdirSync } from 'node:fs'
 import { FIXED_NOW, PRAGUE, mockData } from './fixtures'
+
+const FASTLANE_CS = 'ios/App/fastlane/screenshots/cs'
 
 const DEVICES = [
   { name: 'iphone-6.9', viewport: { width: 440, height: 956 }, dsf: 3 },
@@ -46,6 +52,14 @@ for (const d of DEVICES) {
       await page.getByLabel('Pořad bohoslužeb').waitFor()
       await page.evaluate(() => document.fonts.ready.then(() => undefined))
       await page.screenshot({ path: `${dir}/3-detail.png` })
+
+      // Sync into deliver's upload dir (fastlane/screenshots/cs/) with the
+      // device-prefixed names deliver expects — so store-assets and the upload
+      // source never diverge again.
+      mkdirSync(FASTLANE_CS, { recursive: true })
+      for (const f of readdirSync(dir)) {
+        cpSync(`${dir}/${f}`, `${FASTLANE_CS}/${d.name}-${f}`)
+      }
     })
   })
 }
