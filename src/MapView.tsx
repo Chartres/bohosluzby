@@ -91,8 +91,11 @@ export default function MapView({
   // the map itself: created once, centered on the origin
   useEffect(() => {
     const map = L.map(divRef.current!, { zoomControl: true }).setView([origin.lat, origin.lng], 13)
-    // default prefix carries an emoji flag — design brief: no emoji
-    map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>')
+    // default prefix carries an emoji flag — design brief: no emoji. Append the
+    // build stamp so any screenshot says which TestFlight build it is (this bug
+    // went several rounds partly from build-version confusion).
+    const buildTag = import.meta.env.VITE_BUILD ? ` · b${import.meta.env.VITE_BUILD}` : ''
+    map.attributionControl.setPrefix(`<a href="https://leafletjs.com">Leaflet</a>${buildTag}`)
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
