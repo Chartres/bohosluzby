@@ -47,3 +47,24 @@ describe('gridCluster', () => {
     expect(gridCluster([], 64)).toEqual([])
   })
 })
+
+describe('gridCluster pan-invariance (regression: chips drifted on pan)', () => {
+  // The map bug: clustering ran over the viewport subset, so a cell at the
+  // edge gained/lost members as you panned and its centroid shifted. The fix
+  // feeds ALL churches every render; this pins the property the fix relies on —
+  // a point's bucket and centroid depend ONLY on the points in its own cell,
+  // never on far points elsewhere.
+  it('a distant point never perturbs another cell\'s bucket or centroid', () => {
+    const near = [
+      { x: 10, y: 10, item: 'a' },
+      { x: 20, y: 20, item: 'b' },
+    ]
+    const withFar = [...near, { x: 5000, y: 5000, item: 'far' }]
+    const cellPx = 64
+    const a = gridCluster(near, cellPx).find((c) => c.items.includes('a'))!
+    const b = gridCluster(withFar, cellPx).find((c) => c.items.includes('a'))!
+    expect(b.items.sort()).toEqual(a.items.sort())
+    expect(b.x).toBe(a.x)
+    expect(b.y).toBe(a.y)
+  })
+})

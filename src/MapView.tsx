@@ -202,7 +202,14 @@ export default function MapView({
       for (const u of selectUpcoming(now, origin, visible, byId, filters, cas, day, { limit: Infinity })) {
         if (!matched.has(u.church.id)) matched.set(u.church.id, u) // ordo: keep the day's earliest
       }
-      const pts = visible.map((c) => {
+      // Cluster over ALL churches, not just the viewport subset. Bucket
+      // membership must not depend on the pan: a grid cell straddling the
+      // viewport edge used to gain/lose members every moveend, so its centroid
+      // (and the single-chip-vs-count-circle decision) recomputed and the chips
+      // visibly drifted. Buckets key on absolute world-pixel coords at this
+      // zoom — pan-invariant — so clusters are decided once; we only RENDER the
+      // markers that fall on screen.
+      const pts = churches.map((c) => {
         const p = map.project([c.lat, c.lng], zoom)
         return { x: p.x, y: p.y, item: c }
       })
@@ -210,6 +217,7 @@ export default function MapView({
       for (const cl of gridCluster(pts, CELL_PX)) {
         if (cl.items.length === 1) {
           const church = cl.items[0]
+          if (!bounds.contains([church.lat, church.lng])) continue
           const next = matched.get(church.id)
           // ordo days (dnes/neděle/…) put every chip on the chosen day — the
           // prefix would be noise there; only "hned" can surprise with a
@@ -232,6 +240,7 @@ export default function MapView({
           marker.getElement()?.setAttribute('aria-label', church.name)
         } else {
           const latlng = map.unproject(L.point(cl.x, cl.y), zoom)
+          if (!bounds.contains(latlng)) continue
           L.marker(latlng, {
             icon: clusterIcon(cl.items.length, cl.items.some((c) => matched.has(c.id))),
             title: churchCount(cl.items.length),
