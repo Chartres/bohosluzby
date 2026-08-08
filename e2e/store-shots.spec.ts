@@ -28,24 +28,24 @@ for (const d of DEVICES) {
       await page.clock.install({ time: FIXED_NOW })
       await mockData(page)
 
-      // 1 — nearest masses (the core value)
-      await page.goto('/')
-      await page.getByText('kostel Panny Marie Sněžné').first().waitFor()
-      await page.evaluate(() => document.fonts.ready.then(() => undefined))
-      await page.screenshot({ path: `${dir}/1-home.png` })
-
-      // 2 — a church's full ordo + add-to-calendar
-      await page.getByText('kostel Panny Marie Sněžné').click()
-      await page.getByLabel('Pořad bohoslužeb').waitFor()
-      await page.evaluate(() => document.fonts.ready.then(() => undefined))
-      await page.screenshot({ path: `${dir}/2-detail.png` })
-
-      // 3 — map with next-mass time chips
+      // 1 — MAP with next-mass time chips (the centerpiece — leads the listing)
       await page.goto('/')
       await page.getByRole('button', { name: 'mapa' }).click()
       await page.getByTestId('mapa').waitFor()
-      await page.waitForTimeout(800) // let tiles/chips settle
-      await page.screenshot({ path: `${dir}/3-map.png` })
+      await page.waitForTimeout(1200) // let tiles/chips settle before the hero shot
+      await page.screenshot({ path: `${dir}/1-map.png` })
+
+      // 2 — nearest masses list (the core value)
+      await page.goto('/')
+      await page.getByText('kostel Panny Marie Sněžné').first().waitFor()
+      await page.evaluate(() => document.fonts.ready.then(() => undefined))
+      await page.screenshot({ path: `${dir}/2-home.png` })
+
+      // 3 — a church's full ordo + add-to-calendar
+      await page.getByText('kostel Panny Marie Sněžné').click()
+      await page.getByLabel('Pořad bohoslužeb').waitFor()
+      await page.evaluate(() => document.fonts.ready.then(() => undefined))
+      await page.screenshot({ path: `${dir}/3-detail.png` })
     })
   })
 }
