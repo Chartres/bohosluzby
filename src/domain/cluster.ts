@@ -11,6 +11,9 @@ export interface Point<T> {
 }
 
 export interface Cluster<T> {
+  /** Grid-cell key ("gx:gy") — pan-invariant at a fixed zoom; a stable id for
+   * incremental marker reuse (a bucket keeps its DOM node across pans). */
+  key: string
   x: number
   y: number
   items: T[]
@@ -21,7 +24,7 @@ export function gridCluster<T>(points: Point<T>[], cellPx: number): Cluster<T>[]
   for (const p of points) {
     const key = `${Math.floor(p.x / cellPx)}:${Math.floor(p.y / cellPx)}`
     let b = buckets.get(key)
-    if (!b) buckets.set(key, (b = { x: 0, y: 0, items: [] }))
+    if (!b) buckets.set(key, (b = { key, x: 0, y: 0, items: [] }))
     b.x += p.x
     b.y += p.y
     b.items.push(p.item)

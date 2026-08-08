@@ -70,6 +70,10 @@ export default function MapView({
   const divRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
+  // Persistent marker registry keyed by a stable id ('s:'+churchId / 'c:'+bucket).
+  // Reused across renders so a pan reuses the SAME DOM node (no destroy/rebuild
+  // flash); `sig` is the icon's identity so we only setIcon when the label changed.
+  const markersRef = useRef(new Map<string, { marker: L.Marker; sig: string }>())
   const shardCache = useRef(new Map<string, Promise<Map<string, ChurchServices>>>())
 
   const loadShard = (cell: string) => {
@@ -219,7 +223,20 @@ export default function MapView({
         const p = map.project([c.lat, c.lng], zoom)
         return { x: p.x, y: p.y, item: c }
       })
-      layer.clearLayers()
+      // Build the DESIRED marker set (stable key → spec), then diff it against
+      // what's already on the map. Reuse unchanged markers untouched — Leaflet
+      // keeps them pinned as the pane slides during a pan, so no marker blinks
+      // out and repaints (the "dancing"). Only add newly-visible / remove
+      // scrolled-off / setIcon when the label actually changed.
+      type Spec = {
+        latlng: L.LatLngExpression
+        icon: L.DivIcon
+        sig: string // icon identity — setIcon only fires when this changes
+        title: string
+        aria?: string
+        onClick: () => void
+      }
+      const desired = new Map<string, Spec>()
       for (const cl of gridCluster(pts, CELL_PX)) {
         if (cl.items.length === 1) {
           const church = cl.items[0]
@@ -234,27 +251,52 @@ export default function MapView({
               ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
               : chipTime(next.start)
             : ''
-          const marker = L.marker([church.lat, church.lng], {
+          desired.set(`s:${church.id}`, {
+            latlng: [church.lat, church.lng],
             icon: next ? chipIcon(label, otherDay) : fadedIcon(),
+            sig: next ? `chip:${label}:${otherDay ? 1 : 0}` : 'dot',
             title: church.name,
-            keyboard: false,
+            aria: church.name, // reliable accessible name on the non-interactive div
+            onClick: () => void openPopover(church),
           })
-            .on('click', () => void openPopover(church))
-            .addTo(layer)
-          // title alone isn't a reliable accessible name on a non-interactive
-          // div (keyboard: false, no role) — an explicit aria-label is
-          marker.getElement()?.setAttribute('aria-label', church.name)
         } else {
           const latlng = map.unproject(L.point(cl.x, cl.y), zoom)
           if (!bounds.contains(latlng)) continue
-          L.marker(latlng, {
-            icon: clusterIcon(cl.items.length, cl.items.some((c) => matched.has(c.id))),
+          const hasMatch = cl.items.some((c) => matched.has(c.id))
+          desired.set(`c:${cl.key}`, {
+            latlng,
+            icon: clusterIcon(cl.items.length, hasMatch),
+            sig: `cluster:${cl.items.length}:${hasMatch ? 1 : 0}`,
             title: churchCount(cl.items.length),
-            keyboard: false,
+            onClick: () => map.setView(latlng, Math.min(zoom + 2, 17)),
           })
-            .on('click', () => map.setView(latlng, Math.min(zoom + 2, 17)))
-            .addTo(layer)
         }
+      }
+
+      const reg = markersRef.current
+      for (const [key, entry] of reg) {
+        if (!desired.has(key)) {
+          layer.removeLayer(entry.marker)
+          reg.delete(key)
+        }
+      }
+      for (const [key, spec] of desired) {
+        let entry = reg.get(key)
+        if (!entry) {
+          const marker = L.marker(spec.latlng, { icon: spec.icon, title: spec.title, keyboard: false }).addTo(layer)
+          entry = { marker, sig: spec.sig }
+          reg.set(key, entry)
+          if (spec.aria) marker.getElement()?.setAttribute('aria-label', spec.aria)
+        } else {
+          entry.marker.setLatLng(spec.latlng) // fixed for singles; tracks zoom for cluster centroids
+          if (entry.sig !== spec.sig) {
+            entry.marker.setIcon(spec.icon) // recreates the icon element → re-apply aria
+            if (spec.aria) entry.marker.getElement()?.setAttribute('aria-label', spec.aria)
+            entry.sig = spec.sig
+          }
+        }
+        // rebind the click closure each render so it reads the current context
+        entry.marker.off('click').on('click', spec.onClick)
       }
     }
 
