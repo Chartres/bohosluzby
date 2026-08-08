@@ -17,6 +17,13 @@ sprint (1–3) → shipped; parked holds `persona:?` asks and explicit no's, eac
 
 ## shipped
 
+- 2026-08-08 · v1.1 persona-fix batch: dead parish `www` links dropped from the served
+  data via a batched liveness pass (`scripts/linkcheck-www.mjs`, wired into
+  `refresh-data.yml`) — 138 dropped out of 1,031 checked (`docs/linkcheck-report.md`);
+  feedback copy states schedule corrections are forwarded to the parish/diocese
+  registry; store description/keywords gained the map feature; map popover verbs and
+  pin markers carry a church-scoped aria-label (list rows already did).
+
 - 2026-07-10 · Map chips are day-honest: on hned, a pin whose next mass is not
   today greys out and carries its weekday ("ne 11:00") — a bare time read as
   "go now" for a Tuesday mass (user report; P1/P4 map face). Filters already

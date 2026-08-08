@@ -39,6 +39,7 @@ Otevřete aplikaci a hned vidíte pořad bohoslužeb v okolí: kde a v kolik za�
 
 Co aplikace umí:
 • Nejbližší mše podle vaší polohy, seřazené od té, kterou ještě stihnete
+• Mapa kostelů v okolí — na jeden pohled vidíte, kam je to nejblíž
 • Pořad bohoslužeb pro dnešek, zítřek i neděli
 • Funguje offline — data máte v telefonu i bez signálu
 • Export mše do kalendáře jedním klepnutím
@@ -56,10 +57,10 @@ Zdroj dat: oficiální rejstřík bohoslužeb České biskupské konference (boh
 
 ## Keywords (≤100, comma-separated, no spaces after commas)
 
-Chars: 89
+Chars: 94
 
 ```
-mše,bohoslužby,kostel,mše svatá,katolík,nedělní mše,poblíž,offline,kalendář,farnost,kaple
+mše,bohoslužby,kostel,mše svatá,katolík,nedělní mše,poblíž,offline,kalendář,farnost,kaple,mapa
 ```
 
 ---
