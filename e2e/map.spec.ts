@@ -48,8 +48,24 @@ test('seznam · mapa toggle: time chips as markers, popover with next mass, otev
   await expect(page.locator('.map-pop-line')).toHaveText(/dnes v 09:30/)
   await shot(page, 'map-popover')
 
-  // the popover's verbs mirror a list row: otevřít · trasa · web
+  // the popover's verbs mirror a list row: otevřít · trasa · web — each
+  // carries the church name so screen-reader users hear WHICH church, same
+  // as the list row's aria-label (accessibility audit finding)
   await expect(page.locator('.map-pop-open', { hasText: 'trasa' })).toBeVisible()
+  await expect(page.locator('.map-pop-open', { hasText: 'trasa' })).toHaveAttribute(
+    'aria-label',
+    'trasa: katedrála sv. Víta, Václava a Vojtěcha',
+  )
+  await expect(page.locator('.map-pop-open', { hasText: 'otevřít' })).toHaveAttribute(
+    'aria-label',
+    'otevřít: katedrála sv. Víta, Václava a Vojtěcha',
+  )
+  await expect(page.locator('.map-pop-open', { hasText: 'web' })).toHaveAttribute(
+    'aria-label',
+    'web: katedrála sv. Víta, Václava a Vojtěcha',
+  )
+  // the pin itself is church-scoped too, not just the title tooltip
+  await expect(cathedral).toHaveAttribute('aria-label', 'katedrála sv. Víta, Václava a Vojtěcha')
   await page.locator('.map-pop-open', { hasText: 'otevřít' }).click()
   await expect(page).toHaveURL(/\/kostel\/2\//)
   await expect(page.getByRole('heading', { name: 'katedrála sv. Víta, Václava a Vojtěcha' })).toBeVisible()

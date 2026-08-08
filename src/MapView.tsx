@@ -145,13 +145,16 @@ export default function MapView({
           line.textContent = t('map_none_soon')
         }
       }
-      // the popover's verbs mirror a list row: detail · trasa · web
+      // the popover's verbs mirror a list row: detail · trasa · web — each
+      // carries the church name in aria-label, same as the list row's verbs,
+      // so a screen reader doesn't just hear "otevřít" with no context
       const actions = document.createElement('p')
       actions.className = 'map-pop-actions'
       const open = document.createElement('a')
       open.className = 'map-pop-open'
       open.href = `/kostel/${church.id}/`
       open.textContent = t('map_open')
+      open.setAttribute('aria-label', `${t('map_open').replace(/\s*›\s*$/, '')}: ${church.name}`)
       open.addEventListener('click', (e) => {
         e.preventDefault()
         onOpen(church.id)
@@ -160,6 +163,7 @@ export default function MapView({
       nav.type = 'button'
       nav.className = 'map-pop-open'
       nav.textContent = t('row_route')
+      nav.setAttribute('aria-label', `${t('row_route')}: ${church.name}`)
       nav.addEventListener('click', () => {
         map.closePopup()
         onNavigate({ name: church.name, lat: church.lat, lng: church.lng })
@@ -172,6 +176,7 @@ export default function MapView({
         www.target = '_blank'
         www.rel = 'noreferrer'
         www.textContent = t('row_web')
+        www.setAttribute('aria-label', `${t('row_web')}: ${church.name}`)
         actions.append(www)
       }
       el.append(name, line, actions)
@@ -215,13 +220,16 @@ export default function MapView({
               ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
               : chipTime(next.start)
             : ''
-          L.marker([church.lat, church.lng], {
+          const marker = L.marker([church.lat, church.lng], {
             icon: next ? chipIcon(label, otherDay) : fadedIcon(),
             title: church.name,
             keyboard: false,
           })
             .on('click', () => void openPopover(church))
             .addTo(layer)
+          // title alone isn't a reliable accessible name on a non-interactive
+          // div (keyboard: false, no role) — an explicit aria-label is
+          marker.getElement()?.setAttribute('aria-label', church.name)
         } else {
           const latlng = map.unproject(L.point(cl.x, cl.y), zoom)
           L.marker(latlng, {

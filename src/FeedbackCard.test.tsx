@@ -28,4 +28,17 @@ describe('FeedbackCard', () => {
     })
     expect(screen.getByText(/Díky/)).toBeVisible()
   })
+
+  it('tells the reader schedule corrections are forwarded to the parish/registry', async () => {
+    const user = userEvent.setup()
+    render(<FeedbackCard />)
+
+    await user.click(screen.getByRole('button', { name: /Napište nám/ }))
+    expect(screen.getByText(/farnosti/)).toBeVisible()
+    expect(screen.getByText(/evidenci/)).toBeVisible()
+
+    await user.type(screen.getByRole('textbox'), 'chybí Brno-venkov')
+    await user.click(screen.getByRole('button', { name: 'Odeslat' }))
+    expect(screen.getByText(/farnosti/)).toBeVisible()
+  })
 })
