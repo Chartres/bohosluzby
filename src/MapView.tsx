@@ -113,6 +113,11 @@ export default function MapView({
     const layer = layerRef.current
     if (!map || !layer) return
     let stale = false
+    // Render is async (awaits shard loads) and fires on every moveend. Without
+    // a generation guard, rapid pans start overlapping renders and whichever's
+    // shard-load resolves LAST wins — often a stale viewport, repainting markers
+    // at old positions (the "dancing" chips). Only the newest render may apply.
+    let renderSeq = 0
 
     const openPopover = async (church: Church) => {
       const svc = (await loadShard(church.cell)).get(church.id)
@@ -187,13 +192,14 @@ export default function MapView({
     }
 
     const render = async () => {
+      const seq = ++renderSeq
       const zoom = map.getZoom()
       const bounds = map.getBounds().pad(0.3)
       const visible = churches.filter((c) => bounds.contains([c.lat, c.lng]))
       // the chips need each church's next matching service → shards for the view
       const cells = [...new Set(visible.map((c) => c.cell))]
       const shards = await Promise.all(cells.map(loadShard))
-      if (stale) return
+      if (stale || seq !== renderSeq) return // a newer render superseded this one
       const byId = new Map<string, ChurchServices>()
       for (const shard of shards) for (const [id, s] of shard) byId.set(id, s)
       const now = new Date()
