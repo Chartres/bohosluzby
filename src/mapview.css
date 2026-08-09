@@ -30,7 +30,15 @@
   place-items: center;
   background: transparent;
   border: 0;
-  position: relative;
+  /* MUST stay absolute — this rule loads after leaflet.css and same-specificity
+     overrides .leaflet-marker-icon{position:absolute}. `relative` kept chips in
+     normal flow, so they stacked ~15px each; a chip's screen position then
+     depended on how many OTHER chips preceded it in the marker pane. On every
+     moveend the visible-chip set changes, so a chip shifted vs the tiles by a
+     multiple of ~15px per pan — the single-chip "drift" the owner saw on device.
+     Absolute (Leaflet's own value) takes chips out of flow: no stacking. The
+     ::after tap halo still anchors here (an absolute box is a containing block). */
+  position: absolute;
 }
 /* invisible tap halo: the visible chip is ~30px, a thumb needs ~44px —
    the halo grows the hit area without touching the visual (audit finding) */

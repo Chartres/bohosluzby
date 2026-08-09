@@ -53,6 +53,49 @@ const chipVectorsToOrigin = (page: Page) =>
     return out
   })
 
+// Root-cause guard for the on-device single-chip drift (build ≤61): mapview.css
+// loads after leaflet.css and, at equal specificity, `.map-chip-wrap` overrode
+// `.leaflet-marker-icon{position:absolute}` with `position:relative`. Relative
+// keeps the chip in the marker pane's normal flow, so chips STACK (~15px each);
+// a chip's screen position then depends on how many chips precede it in the DOM.
+// The visible-chip set changes on every moveend, so a chip shifted vs the tiles
+// by ~15px multiples per pan. This pins the exact property that broke: every
+// chip element must compute to position:absolute (out of flow, no stacking).
+test('chip marker elements are position:absolute (no in-flow stacking)', async ({ page }) => {
+  await page.goto('/?zobrazeni=mapa')
+  await expect(page.locator('.map-chip').first()).toBeVisible()
+  const positions = await page.$$eval('.map-chip-wrap', (els) =>
+    els.map((e) => getComputedStyle(e).position),
+  )
+  expect(positions.length).toBeGreaterThanOrEqual(2)
+  expect(positions.every((p) => p === 'absolute')).toBe(true)
+})
+
+// Behavioral proof of the same invariant: a chip's position relative to the
+// stationary tiles must NOT depend on whether OTHER chips are present. Remove a
+// preceding chip (what a pan does when a church leaves the viewport) with the map
+// held still; a glued chip does not move. With the old position:relative this
+// shifted by ~15px. Deterministic — no map interaction, just a DOM removal.
+test('a chip does not move when a preceding chip is removed (map stationary)', async ({ page }) => {
+  await page.goto('/?zobrazeni=mapa')
+  await expect(page.locator('.map-chip').first()).toBeVisible()
+  await page.waitForTimeout(400)
+  const measure = () =>
+    page.evaluate(() => {
+      const chips = document.querySelectorAll('.map-chip-wrap')
+      const last = chips[chips.length - 1].getBoundingClientRect()
+      const tile = (
+        document.querySelector('.leaflet-tile-loaded') || document.querySelector('.leaflet-tile')
+      )!.getBoundingClientRect()
+      return { n: chips.length, x: last.left + last.width / 2 - tile.left, y: last.top + last.height / 2 - tile.top }
+    })
+  const before = await measure()
+  expect(before.n).toBeGreaterThanOrEqual(3)
+  await page.evaluate(() => document.querySelector('.map-chip-wrap')!.remove())
+  const after = await measure()
+  expect(Math.hypot(after.x - before.x, after.y - before.y)).toBeLessThanOrEqual(1)
+})
+
 test('chips stay glued to geography across a pan (vector to origin is pan-invariant)', async ({ page }) => {
   await page.goto('/?zobrazeni=mapa')
   await expect(page.locator('.map-chip').first()).toBeVisible()
