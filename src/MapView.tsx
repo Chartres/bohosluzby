@@ -70,10 +70,16 @@ export default function MapView({
   const divRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
-  // Persistent marker registry keyed by a stable id ('s:'+churchId / 'c:'+bucket).
-  // Reused across renders so a pan reuses the SAME DOM node (no destroy/rebuild
-  // flash); `sig` is the icon's identity so we only setIcon when the label changed.
-  const markersRef = useRef(new Map<string, { marker: L.Marker; sig: string }>())
+  // Callbacks read through refs so the marker effect does NOT depend on their
+  // identity. onOpen (App's openChurch) is a fresh closure every App render; had
+  // it stayed in the effect deps, every unrelated App re-render tore down and
+  // re-ran render() off the moveend cycle — recreating a marker node mid-settle,
+  // which on iOS showed as a single chip "travelling". Refs keep the latest
+  // callback without re-subscribing.
+  const onOpenRef = useRef(onOpen)
+  onOpenRef.current = onOpen
+  const onNavigateRef = useRef(onNavigate)
+  onNavigateRef.current = onNavigate
   const shardCache = useRef(new Map<string, Promise<Map<string, ChurchServices>>>())
 
   const loadShard = (cell: string) => {
@@ -169,7 +175,7 @@ export default function MapView({
       open.setAttribute('aria-label', `${t('map_open').replace(/\s*›\s*$/, '')}: ${church.name}`)
       open.addEventListener('click', (e) => {
         e.preventDefault()
-        onOpen(church.id)
+        onOpenRef.current(church.id)
       })
       const nav = document.createElement('button')
       nav.type = 'button'
@@ -178,7 +184,7 @@ export default function MapView({
       nav.setAttribute('aria-label', `${t('row_route')}: ${church.name}`)
       nav.addEventListener('click', () => {
         map.closePopup()
-        onNavigate({ name: church.name, lat: church.lat, lng: church.lng })
+        onNavigateRef.current({ name: church.name, lat: church.lat, lng: church.lng })
       })
       actions.append(open, nav)
       if (church.www) {
@@ -200,7 +206,7 @@ export default function MapView({
 
     const render = async () => {
       const seq = ++renderSeq
-      const zoom = map.getZoom()
+      const zoom = Math.round(map.getZoom()) // snap any transient fractional zoom so clustering can't jitter
       const bounds = map.getBounds().pad(0.3)
       const visible = churches.filter((c) => bounds.contains([c.lat, c.lng]))
       // the chips need each church's next matching service → shards for the view
@@ -226,20 +232,15 @@ export default function MapView({
         const p = map.project([c.lat, c.lng], zoom)
         return { x: p.x, y: p.y, item: c }
       })
-      // Build the DESIRED marker set (stable key → spec), then diff it against
-      // what's already on the map. Reuse unchanged markers untouched — Leaflet
-      // keeps them pinned as the pane slides during a pan, so no marker blinks
-      // out and repaints (the "dancing"). Only add newly-visible / remove
-      // scrolled-off / setIcon when the label actually changed.
-      type Spec = {
-        latlng: L.LatLngExpression
-        icon: L.DivIcon
-        sig: string // icon identity — setIcon only fires when this changes
-        title: string
-        aria?: string
-        onClick: () => void
-      }
-      const desired = new Map<string, Spec>()
+      // Rebuild the on-screen markers FRESH each render. An earlier "fix" kept
+      // and reused marker DOM nodes across pans to avoid a repaint; that reuse is
+      // what made a single chip travel on iOS — an off-cycle render could setIcon
+      // (recreating one node) mid-settle, and WKWebView committed a reused,
+      // GPU-composited node a frame after the tile pane. Fresh nodes rebuilt
+      // together in one synchronous pass have neither failure mode, and at a few
+      // dozen on-screen markers the cost is nil. (moveend fires once per pan, and
+      // the effect no longer re-runs on every App render — see the callback refs.)
+      layer.clearLayers()
       for (const cl of gridCluster(pts, CELL_PX)) {
         if (cl.items.length === 1) {
           const church = cl.items[0]
@@ -254,52 +255,27 @@ export default function MapView({
               ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
               : chipTime(next.start)
             : ''
-          desired.set(`s:${church.id}`, {
-            latlng: [church.lat, church.lng],
+          const marker = L.marker([church.lat, church.lng], {
             icon: next ? chipIcon(label, otherDay) : fadedIcon(),
-            sig: next ? `chip:${label}:${otherDay ? 1 : 0}` : 'dot',
             title: church.name,
-            aria: church.name, // reliable accessible name on the non-interactive div
-            onClick: () => void openPopover(church),
+            keyboard: false,
           })
+            .on('click', () => void openPopover(church))
+            .addTo(layer)
+          // title alone isn't a reliable accessible name on a non-interactive div
+          marker.getElement()?.setAttribute('aria-label', church.name)
         } else {
           const latlng = map.unproject(L.point(cl.x, cl.y), zoom)
           if (!bounds.contains(latlng)) continue
           const hasMatch = cl.items.some((c) => matched.has(c.id))
-          desired.set(`c:${cl.key}`, {
-            latlng,
+          L.marker(latlng, {
             icon: clusterIcon(cl.items.length, hasMatch),
-            sig: `cluster:${cl.items.length}:${hasMatch ? 1 : 0}`,
             title: churchCount(cl.items.length),
-            onClick: () => map.setView(latlng, Math.min(zoom + 2, 17)),
+            keyboard: false,
           })
+            .on('click', () => map.setView(latlng, Math.min(zoom + 2, 17)))
+            .addTo(layer)
         }
-      }
-
-      const reg = markersRef.current
-      for (const [key, entry] of reg) {
-        if (!desired.has(key)) {
-          layer.removeLayer(entry.marker)
-          reg.delete(key)
-        }
-      }
-      for (const [key, spec] of desired) {
-        let entry = reg.get(key)
-        if (!entry) {
-          const marker = L.marker(spec.latlng, { icon: spec.icon, title: spec.title, keyboard: false }).addTo(layer)
-          entry = { marker, sig: spec.sig }
-          reg.set(key, entry)
-          if (spec.aria) marker.getElement()?.setAttribute('aria-label', spec.aria)
-        } else {
-          entry.marker.setLatLng(spec.latlng) // fixed for singles; tracks zoom for cluster centroids
-          if (entry.sig !== spec.sig) {
-            entry.marker.setIcon(spec.icon) // recreates the icon element → re-apply aria
-            if (spec.aria) entry.marker.getElement()?.setAttribute('aria-label', spec.aria)
-            entry.sig = spec.sig
-          }
-        }
-        // rebind the click closure each render so it reads the current context
-        entry.marker.off('click').on('click', spec.onClick)
       }
     }
 
@@ -309,7 +285,10 @@ export default function MapView({
       stale = true
       map.off('moveend', render)
     }
-  }, [churches, filters, cas, day, origin, onOpen, onNavigate])
+    // onOpen/onNavigate deliberately excluded — read via refs so an unstable
+    // callback identity can't re-run this effect off the moveend cycle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [churches, filters, cas, day, origin])
 
   return (
     <div
