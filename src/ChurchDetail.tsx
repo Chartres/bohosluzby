@@ -1,7 +1,7 @@
 // Church detail — the full weekly schedule set like a printed ordo (grouped by
 // day, times aligned), one-off services in their own rubric section, parish +
 // contacts, and an honest data-freshness line. docs/DESIGN-BRIEF.md governs.
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   decodeShard,
   type Church,
@@ -9,14 +9,21 @@ import {
   type ExtraService,
   type Service,
 } from './domain/data'
-import { nextOccurrences, pragueToday } from './domain/occurrences'
+import { nextOccurrences, pragueToday, recentOccurrence } from './domain/occurrences'
 import { noteUncertain, parseNote } from './domain/notes'
 import { fmtDateCz, isStale } from './domain/format'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
+import { aggregateFor } from './lib/feedbackStore'
+import { recordExpectedAttendance } from './lib/feedbackLedger'
+import { chipLabel, massKey, oneOffKey, slotKey, type Aggregate } from './domain/feedback'
 import { NavSheet } from './NavSheet'
-import { t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
+import { confirmedByPilgrims, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
+
+// A church viewed within this window after a Mass started seeds the after-Mass
+// ledger — the "recent viewers" cohort (docs/PILGRIM-WITNESS-PLAN.md).
+const RECENT_VIEW_MIN = 150
 
 // Liturgical week: Sunday first, like a printed ordo.
 const DAY_ORDER = [7, 1, 2, 3, 4, 5, 6] as const
@@ -49,6 +56,19 @@ export function NoteText({ note }: { note: string }) {
     <span className="font-semibold text-rubric"> — {note}</span>
   ) : (
     <span className="text-ink-faded"> — {note}</span>
+  )
+}
+
+/** Plain ordo line of what pilgrims often mention for this Mass (no stars, no
+ * score). Renders only when the aggregate clears the corroboration threshold. */
+function WitnessLine({ a }: { a?: Aggregate }) {
+  if (!a || a.chips.length === 0) return null
+  return (
+    <p className="mt-0.5 text-sm text-ink-faded">
+      {t('fb_often')}: {a.chips.map((c) => chipLabel(c.id)).join(' · ')}
+      {' · '}
+      {confirmedByPilgrims(a.witnesses)}
+    </p>
   )
 }
 
@@ -203,6 +223,28 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
     }
   }, [church])
 
+  // Witness aggregates for this church (localStorage seam; recomputed per church).
+  const agg = useMemo(() => aggregateFor(church.id), [church.id])
+
+  // "recent viewers": opening a church near a Mass time records an expected
+  // attendance, so the after-Mass card can ask on the next app open.
+  useEffect(() => {
+    if (!svc) return
+    const now = new Date()
+    for (const s of svc.regular) {
+      const start = recentOccurrence({ days: s.days, time: s.time }, now, RECENT_VIEW_MIN)
+      if (!start) continue
+      recordExpectedAttendance({
+        churchId: church.id,
+        massKey: massKey(church.id, s, start),
+        startISO: start.toISOString(),
+        churchName: church.name,
+        time: s.time,
+        type: s.type || t('service_fallback'),
+      })
+    }
+  }, [svc, church])
+
   const extras = svc ? svc.extra.filter((x) => x.date >= isoToday()) : []
 
   return (
@@ -280,7 +322,11 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                   <ul>
                     {rows.map((s, i) => (
                       <li key={i}>
-                        <ServiceRow s={s} church={church} />
+                        <ServiceRow
+                          s={s}
+                          church={church}
+                          witness={agg.get(slotKey(church.id, day, s.time))}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -301,10 +347,13 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                     <p className="font-display w-14 shrink-0 text-base font-semibold tabular-nums">
                       {x.time}
                     </p>
-                    <p className="min-w-0 flex-1 text-sm">
-                      {x.type || t('service_fallback')}
-                      <NoteText note={x.note} />
-                    </p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm">
+                        {x.type || t('service_fallback')}
+                        <NoteText note={x.note} />
+                      </p>
+                      <WitnessLine a={agg.get(oneOffKey(church.id, x.date, x.time))} />
+                    </div>
                     <ServiceActions church={church} service={x} />
                   </li>
                 ))}
@@ -356,7 +405,15 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
   )
 }
 
-function ServiceRow({ s, church }: { s: Service; church: Church }) {
+function ServiceRow({
+  s,
+  church,
+  witness,
+}: {
+  s: Service
+  church: Church
+  witness?: Aggregate
+}) {
   // P6 Věra: a service whose note provably excludes EVERY upcoming occurrence
   // in the next five weeks ("kromě července a srpna" read in July) mutes —
   // the absence has a visible reason. Checked against the service's own
@@ -392,6 +449,7 @@ function ServiceRow({ s, church }: { s: Service; church: Church }) {
           {s.lang !== 'česky' && <Chip label={langLabel(s.lang)} />}
           {s.greek && <Chip label={t('greek_chip')} />}
         </p>
+        <WitnessLine a={witness} />
       </div>
       <ServiceActions church={church} service={s} />
     </div>

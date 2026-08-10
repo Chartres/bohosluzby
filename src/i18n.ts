@@ -167,6 +167,22 @@ export const cs = {
   feedback_aria: 'Zpětná vazba',
   feedback_close: 'Zavřít',
   feedback_send: 'Odeslat',
+
+  // ---- after-Mass witness card (pilgrim witness) ----
+  fb_card_aria: 'Byli jste na této mši?',
+  fb_attended_q: 'Byli jste na této mši?',
+  fb_yes: 'Ano, byl/a jsem',
+  fb_not_now: 'Teď ne',
+  fb_never: 'Neptat se',
+  fb_chips_intro: 'Co jste ocenili? (nepovinné)',
+  fb_lang_label: 'jazyk',
+  fb_lang_other: 'jinak',
+  fb_suggest_link: 'navrhnout štítek',
+  fb_suggest_placeholder: 'Váš štítek',
+  fb_suggest_note: 'Nezveřejní se — pomůže rozšířit nabídku štítků.',
+  fb_save: 'Uložit',
+  fb_saved: 'Díky. Zapsáno pro další poutníky.',
+  fb_often: 'často zmiňují',
 } as const
 
 export type Key = keyof typeof cs
@@ -314,6 +330,21 @@ export const en: Record<Key, string> = {
   feedback_aria: 'Feedback',
   feedback_close: 'Close',
   feedback_send: 'Send',
+
+  fb_card_aria: 'Were you at this Mass?',
+  fb_attended_q: 'Were you at this Mass?',
+  fb_yes: 'Yes, I was',
+  fb_not_now: 'Not now',
+  fb_never: "Don't ask",
+  fb_chips_intro: 'What were you glad of? (optional)',
+  fb_lang_label: 'language',
+  fb_lang_other: 'other',
+  fb_suggest_link: 'suggest a tag',
+  fb_suggest_placeholder: 'Your tag',
+  fb_suggest_note: 'Not published — it helps grow the set of tags.',
+  fb_save: 'Save',
+  fb_saved: 'Thank you. Recorded for other pilgrims.',
+  fb_often: 'often mentioned',
 }
 
 export function t(k: Key): string {
@@ -423,6 +454,23 @@ const LANG_LABEL_EN: Record<string, string> = {
   'ukrajinsky': 'Ukrainian',
   'církevněslovansky': 'Church Slavonic',
   'slovensky': 'Slovak',
+}
+
+/** "potvrdilo N poutníků" / "confirmed by N pilgrims" — the witness count on
+ * the detail page. Czech verb+noun agreement (1 / 2–4 / 5+). */
+export function confirmedByPilgrims(n: number): string {
+  if (lang() === 'cs') {
+    if (n === 1) return 'potvrdil 1 poutník'
+    if (n >= 2 && n <= 4) return `potvrdili ${n} poutníci`
+    return `potvrdilo ${n} poutníků`
+  }
+  return `confirmed by ${n} pilgrim${n === 1 ? '' : 's'}`
+}
+
+/** Label for a factual language option on the witness card. Concrete languages
+ * reuse langLabel (Czech/English name); "jinak" localizes to "other". */
+export function langOptionLabel(value: string): string {
+  return value === 'jinak' ? t('fb_lang_other') : langLabel(value)
 }
 
 /** Display name for a normalized Czech language adverb ("latinsky" →

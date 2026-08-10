@@ -20,6 +20,10 @@ import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
 import { FeedbackCard } from './FeedbackCard'
+import { AfterMassCard, type CardMass } from './AfterMassCard'
+import { slotKey, type MassFeedback } from './domain/feedback'
+import { submitFeedback } from './lib/feedbackStore'
+import { dueCards, markAnswered, neverAsk, type LedgerEntry } from './lib/feedbackLedger'
 import { track, conversion, logError } from './analytics'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
 import { loadData, refreshData, activeAsOf } from './lib/dataStore'
@@ -248,6 +252,25 @@ export function dayFromParam(now: Date, param: string | null): DayChoice {
   return 'now' // unreachable — every weekday occurs within 7 days
 }
 
+/** `?feedback=preview` demo Mass: the first nearby church with a regular
+ * service, keyed to that service's first weekday so the detail page shows the
+ * corroborated line after saving. Lets the owner toy locally with no waiting. */
+function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> }): CardMass | null {
+  for (const c of data.nearby) {
+    const svc = data.byId.get(c.id)?.regular[0]
+    if (!svc) continue
+    const weekday = Number(svc.days[0])
+    return {
+      churchId: c.id,
+      massKey: slotKey(c.id, weekday, svc.time),
+      churchName: c.name,
+      time: svc.time,
+      type: svc.type || t('service_fallback'),
+    }
+  }
+  return null
+}
+
 export default function App() {
   const [index, setIndex] = useState<Church[] | null>(null)
   const [dataError, setDataError] = useState(false)
@@ -265,11 +288,14 @@ export default function App() {
   const [navTarget, setNavTarget] = useState<NavTarget | null>(null) // "trasa" chooser sheet
   const season = useMemo(() => currentLiturgicalDay(), [])
   const convertedRef = useRef(false)
+  const [dueEntry, setDueEntry] = useState<LedgerEntry | null>(null)
+  const dismissedRef = useRef<Set<string>>(new Set())
   const { route, path, search, navigate } = useRoute()
 
   // the selected day + time filter live in the URL (?den=nedele&cas=vecer) —
   // bookmarkable, back-safe, and they compose ("v neděli kolem 9:00")
   const params = new URLSearchParams(search)
+  const feedbackParam = params.get('feedback')
   const den = params.get('den')
   const day = useMemo(() => dayFromParam(new Date(), den), [den])
   const cas = parseCas(params.get('cas'))
@@ -506,6 +532,37 @@ export default function App() {
     track('key_action', { action: 'filters_reset' })
   }
 
+  // ---- after-Mass witness card (pilgrim witness) --------------------------
+  // Real due cards come from the local ledger; ?feedback=preview force-shows a
+  // demo Mass so the owner can toy locally without waiting an hour after a Mass.
+  const isPreview = feedbackParam === 'preview'
+  useEffect(() => {
+    if (isPreview) return
+    const due = dueCards(new Date()).find((e) => !dismissedRef.current.has(e.massKey)) ?? null
+    setDueEntry(due)
+  }, [isPreview, route.view])
+  const previewMass = useMemo(() => (isPreview && data ? demoMass(data) : null), [isPreview, data])
+  const cardMass: CardMass | null = previewMass ?? dueEntry
+  const clearPreview = () => {
+    if (feedbackParam) setParam('feedback', null)
+  }
+  const onCardSubmit = (s: MassFeedback) => {
+    submitFeedback(s)
+    markAnswered(s.massKey)
+  }
+  const onCardDismiss = () => {
+    if (isPreview) clearPreview()
+    else if (dueEntry) {
+      dismissedRef.current.add(dueEntry.massKey)
+      setDueEntry(null)
+    }
+  }
+  const onCardNever = () => {
+    neverAsk()
+    setDueEntry(null)
+    clearPreview()
+  }
+
   const loading = !dataError && (!index || (!origin && !geoDenied) || (Boolean(origin) && rows === null))
 
   // "moje poloha": drop the picked city and the saved last-position override,
@@ -594,6 +651,15 @@ export default function App() {
 
         {route.view !== 'church' && (
           <>
+        {!dataError && cardMass && (
+          <AfterMassCard
+            key={cardMass.massKey}
+            entry={cardMass}
+            onSubmit={onCardSubmit}
+            onDismiss={onCardDismiss}
+            onNeverAsk={onCardNever}
+          />
+        )}
         {!dataError && loading && (
           <div className="mt-14 text-center" role="status">
             <p className="font-display text-xl">{t('loading_title')}</p>
