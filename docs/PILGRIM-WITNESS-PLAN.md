@@ -56,14 +56,16 @@ Occurrence (primary signal): `attended` — "Ano, byl/a jsem." An aggregate **wi
 **Positive witness chips** (all optional, no opposite, no scale; displayed as "*poutníci zde
 ocenili / zde zažili…*"):
 
-- *Modlitba a prožitek:* `hluboký prožitek` **[locked]** · `prostor k modlitbě / ztišení` · `povznášející`
-- *Slovo (homilie):* `povzbudivé kázání` · `kázání k zamyšlení` — positive-only; **never** a homily grade
+- *Modlitba a prožitek:* `hluboký prožitek` **[locked]** · `povznášející`
+- *Slovo (homilie):* `dotklo se mě kázání` · `kázání k zamyšlení` — positive-only, first-person; **never** a homily grade
 - *Hudba:* `krásný zpěv` · `živá hudba`
 - *Přijetí a společenství:* `vřelé přijetí` · `otevřené společenství`
 - *Rodina a děti:* `vstřícné k dětem` **[locked, "kids friendly"]** · `rodinná atmosféra`
 - *Atmosféra:* `důstojná atmosféra` · `ticho a soustředění`
 
-Curate to ~8 for launch (too many chips dilutes the ≥3-corroboration threshold — each chip needs its
+**Launch set (LOCKED, 7 positive + 1 factual):** `hluboký prožitek` · `dotklo se mě kázání` · `krásný zpěv` · `vřelé přijetí` · `vstřícné k dětem` · `rodinná atmosféra` · `důstojná atmosféra`; plus factual `jazyk` (česky/latinsky/anglicky/jinak). Dropped for launch: prostor k modlitbě (unclear), povzbudivé kázání (→ dotklo se mě kázání). Grow the rest from `suggest_tag`.
+
+_Prior note:_ curate to ~8 for launch (too many chips dilutes the ≥3-corroboration threshold — each chip needs its
 own 3 witnesses); grow the set deliberately from real `suggest_tag` demand.
 
 **Slim factual background** (kept minimal — Pavol is less interested):
