@@ -13,6 +13,10 @@ const NOW = new Date('2026-07-03T15:00:00Z')
 // put every "HH:MM" string into the DOM.
 const seznam = () => within(screen.getByTestId('seznam'))
 
+// Assert query params individually — the URL also carries ?zobrazeni=seznam now
+// that the map is the landing view, so exact-string matches on ?den/?cas are brittle.
+const qp = (key: string) => new URLSearchParams(window.location.search).get(key)
+
 const INDEX: IndexRow[] = [
   ['1', 'kostel Nejsvětějšího Salvátora', 'Praha 1', 50.086, 14.417, 1, '50-14', 'https://www.farnostsalvator.cz'],
   ['2', 'kostel sv. Havla', 'Praha 1', 50.0855, 14.4229, 0, '50-14'],
@@ -109,10 +113,14 @@ beforeEach(() => {
   localStorage.clear() // last-known-origin seeding must not leak across tests
   vi.useFakeTimers({ now: NOW, shouldAdvanceTime: true })
   stubFetch()
+  // The map is now the default landing view; these journeys exercise the seznam,
+  // so start there explicitly. (The map-default is covered by its own tests below.)
+  window.history.replaceState(null, '', '/?zobrazeni=seznam')
 })
 afterEach(() => {
   vi.useRealTimers()
   vi.unstubAllGlobals()
+  Object.defineProperty(navigator, 'onLine', { value: true, configurable: true }) // reset offline overrides
 })
 
 describe('Marie finds the nearest mass', () => {
@@ -150,6 +158,26 @@ describe('Marie finds the nearest mass', () => {
     stubGeolocation('granted')
     render(<App />)
     expect(await screen.findByText(/aktuální k 3\. 7\. 2026/)).toBeInTheDocument()
+  })
+
+  it('landing view: the map is the default when online (times ON the map, no tap)', async () => {
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/') // no ?zobrazeni → the default decides
+    render(<App />)
+    // the toggle reflects the active view; map is pressed, and the seznam list
+    // is not rendered (assert the toggle, not leaflet internals)
+    const mapa = await screen.findByRole('button', { name: 'mapa' })
+    expect(mapa).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByTestId('seznam')).not.toBeInTheDocument()
+  })
+
+  it('landing view: falls back to the seznam when offline (the map needs a connection)', async () => {
+    Object.defineProperty(navigator, 'onLine', { value: false, configurable: true })
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/') // no ?zobrazeni → offline default = seznam
+    render(<App />)
+    expect(await screen.findByTestId('seznam')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'seznam' })).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('with location: lists nearby services soonest-first with time-until and distance', async () => {
@@ -238,7 +266,7 @@ describe('Marie finds the nearest mass', () => {
 
   it('URL routing: ?den=nedele bookmark restores the Sunday ordo; day picks write the URL', async () => {
     stubGeolocation('granted')
-    window.history.pushState(null, '', '/?den=nedele')
+    window.history.pushState(null, '', '/?zobrazeni=seznam&den=nedele')
     render(<App />)
     // NOW is Friday 3 Jul → "neděle" is Sunday 5 Jul, restored from the URL
     expect(await screen.findByText('neděle 5. 7.')).toBeInTheDocument()
@@ -246,26 +274,30 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getByRole('button', { name: /^neděle/ })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.queryByText(/^za \d/)).not.toBeInTheDocument() // planning view, no countdowns
 
-    // switching the day rewrites the query param (replace — no history spam)
+    // switching the day rewrites the query param (replace — no history spam).
+    // Assert the den param specifically (the URL also carries ?zobrazeni=seznam).
+    const den = () => new URLSearchParams(window.location.search).get('den')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     await user.click(screen.getByRole('button', { name: 'zítra' }))
-    expect(window.location.search).toBe('?den=zitra')
+    expect(den()).toBe('zitra')
     await user.click(screen.getByRole('button', { name: 'hned' }))
-    expect(window.location.search).toBe('')
+    expect(den()).toBeNull() // "hned" clears the day param
     expect(await screen.findByText(/^za (1 h|59 min)$/)).toBeInTheDocument()
   })
 
   it('URL routing: opening a detail keeps ?den, zpět restores the day view', async () => {
     stubGeolocation('granted')
-    window.history.pushState(null, '', '/?den=nedele')
+    window.history.pushState(null, '', '/?zobrazeni=seznam&den=nedele')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<App />)
     await screen.findByText('neděle 5. 7.')
 
     await user.click(screen.getAllByText('kostel Nejsvětějšího Salvátora')[0]) // two Sunday masses
-    expect(window.location.pathname + window.location.search).toBe('/kostel/1/?den=nedele')
+    expect(window.location.pathname).toBe('/kostel/1/')
+    expect(new URLSearchParams(window.location.search).get('den')).toBe('nedele') // ?den survives the nav
     await user.click(await screen.findByRole('button', { name: '‹ zpět na seznam' }))
-    expect(window.location.pathname + window.location.search).toBe('/?den=nedele')
+    expect(window.location.pathname).toBe('/')
+    expect(new URLSearchParams(window.location.search).get('den')).toBe('nedele')
     expect(await screen.findByText('neděle 5. 7.')).toBeInTheDocument()
   })
 
@@ -513,7 +545,7 @@ describe('Marie finds the nearest mass', () => {
     // večer: Salvátor's 18:00 stays
     openControls()
     await user.click(screen.getByRole('button', { name: 'večer' }))
-    expect(window.location.search).toBe('?cas=vecer')
+    expect(qp('cas')).toBe('vecer')
     expect(seznam().getByText('18:00')).toBeInTheDocument()
 
     // dopoledne is over on a Friday 17:00: the chip is muted and picking it
@@ -522,7 +554,8 @@ describe('Marie finds the nearest mass', () => {
     expect(dopoledne).toHaveClass('opacity-40')
     expect(dopoledne).toHaveAttribute('title', 'dnes už proběhlo — přepne na zítra')
     await user.click(dopoledne)
-    expect(window.location.search).toBe('?cas=dopoledne&den=zitra')
+    expect(qp('cas')).toBe('dopoledne')
+    expect(qp('den')).toBe('zitra')
     expect(screen.getByRole('button', { name: 'zítra' })).toHaveAttribute('aria-pressed', 'true')
     // Saturday has no 10–13 service nearby → an honest, explained empty state
     expect(screen.getByText(/neodpovídá žádná bohoslužba/)).toBeInTheDocument()
@@ -533,14 +566,16 @@ describe('Marie finds the nearest mass', () => {
     // composes with the day: v neděli kolem 9:00 → only Havel's 10:00 (±90 min)
     await user.click(screen.getByRole('button', { name: /^neděle/ }))
     fireEvent.change(screen.getByLabelText('Kolem času'), { target: { value: '09:00' } })
-    expect(window.location.search).toBe('?cas=09:00&den=nedele')
+    expect(qp('cas')).toBe('09:00')
+    expect(qp('den')).toBe('nedele')
     expect(seznam().getAllByText('10:00').length).toBeGreaterThan(0)
     expect(seznam().queryByText('14:00')).not.toBeInTheDocument() // Salvátor Sunday, outside ±90
 
     // toggle off clears the param and the sticky value
     await user.click(screen.getByRole('button', { name: 'hned' }))
     fireEvent.change(screen.getByLabelText('Kolem času'), { target: { value: '' } })
-    expect(window.location.search).toBe('')
+    expect(qp('cas')).toBeNull()
+    expect(qp('den')).toBeNull()
     expect(localStorage.getItem('bohosluzby:cas')).toBeNull()
   })
 
@@ -553,7 +588,7 @@ describe('Marie finds the nearest mass', () => {
     render(<App />)
     await screen.findByText(/Salvátora/)
     // stale "večer" not re-applied → no ?cas= param, "hned" stays the active chip
-    expect(window.location.search).toBe('')
+    expect(qp('cas')).toBeNull()
     openControls()
     expect(screen.getByRole('button', { name: 'hned' })).toHaveAttribute('aria-pressed', 'true')
   })
@@ -704,7 +739,7 @@ describe('Marie finds the nearest mass', () => {
       value: { getCurrentPosition },
       configurable: true,
     })
-    window.history.pushState(null, '', '/mesto/praha/')
+    window.history.pushState(null, '', '/mesto/praha/?zobrazeni=seznam')
     render(<App />)
     expect(await screen.findByText('kostel Nejsvětějšího Salvátora')).toBeInTheDocument()
     // list header names the city

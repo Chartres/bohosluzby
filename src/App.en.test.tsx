@@ -53,6 +53,9 @@ beforeEach(() => {
   vi.useFakeTimers({ now: NOW, shouldAdvanceTime: true })
   stubFetch()
   Object.defineProperty(window.navigator, 'language', { value: 'en-US', configurable: true })
+  // The map is now the default landing view when online; this journey exercises
+  // the seznam, so start there explicitly (mirrors App.test.tsx).
+  window.history.replaceState(null, '', '/?zobrazeni=seznam')
 })
 afterEach(() => {
   vi.useRealTimers()
