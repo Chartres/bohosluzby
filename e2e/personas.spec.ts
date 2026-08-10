@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('P2 James: Sunday mass in English → jazyk filter → ICS on his calendar', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('kostel Nejsvětějšího Salvátora')).toBeVisible()
 
   // Saturday-evening planning: tomorrow's full ordo first, then narrow by language
@@ -36,7 +36,7 @@ test('P2 James: Sunday mass in English → jazyk filter → ICS on his calendar'
 })
 
 test('P3 Tomáš: lunch-window mass — kolem 12:00 fits the 11:45–13:00 box', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('kostel Nejsvětějšího Salvátora')).toBeVisible()
 
   await openControls(page)
@@ -54,7 +54,7 @@ test('P3 Tomáš: lunch-window mass — kolem 12:00 fits the 11:45–13:00 box',
 })
 
 test('P4 Novákovi: driving home — city origin + dnes večer, no walk-distance exclusion', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByTestId('seznam')).toBeVisible()
 
   // decided from the passenger seat: destination city, not "here"
@@ -75,14 +75,14 @@ test('P4 Novákovi: driving home — city origin + dnes večer, no walk-distance
 })
 
 test('P6 Věra: is the 10:30 cancelled for summer? The note answers, the list agrees', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByTestId('seznam')).toBeVisible()
 
   // she goes straight to her church by name
   await page.getByRole('button', { name: 'změnit' }).click()
   await page.getByLabel('Kostel nebo obec').fill('havla')
   await page.getByRole('option', { name: /kostel sv\. Havla/ }).click()
-  await expect(page).toHaveURL('/kostel/3/')
+  await expect(page).toHaveURL('/kostel/3/?zobrazeni=seznam')
 
   // the reason is visible, not just an absent row — and the paused 10:30 is
   // muted with an explicit "nyní se nekoná"

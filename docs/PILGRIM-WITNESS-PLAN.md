@@ -41,27 +41,47 @@ of it"), not a critic. There is **no star, thumb, or 1–5 score anywhere near a
 priest.** The absence of a rating line *is* the product, and it answers "the sacrament is not
 rated" by construction — there is no field in which quality could be entered.
 
-## Schema (v1) — all optional, fixed vocabulary, no free text on the public profile
+## Schema (v1) — positive-only witness chips
 
-Occurrence (the one primary signal):
-- `attended` — "Ano, byl/a jsem." Stored as an aggregate **witness/corroboration count**, never a rating.
+**Design axiom (Pavol, this round):** lead with **positive-only "quality" chips**; the logistical
+facts (language, access) recede to a small background layer. Every chip is something a pilgrim is
+*glad of* — there is **no chip that expresses disappointment, and no scale/number.** Evaluation
+requires a negative or a rating; we provide neither, so the aggregate can only ever say "some
+pilgrims found grace here," never "this Mass is bad." A priest's reputation cannot be harmed by a
+wall with no way to say anything unkind. (Same shape as Google's "great for kids" highlight chips —
+positive tags only — and the reverent version of what Pavol wants.)
 
-Descriptive tags (neutral facts a pilgrim needs to not be surprised):
-- `lang_actual` — česky · latinsky · anglicky · polsky · německy · jinak (confirms/corrects registry)
-- `sung` — zpívaná · čtená
-- `music` — bez hudby · varhany · schola · sbor · rytmická
-- `homily` — **length/language only** (krátké · delší; jazyk) — **never a quality grade**
-- `duration` — do 45 min · ~1 h · přes 1 h (Pavol's "mass duration" — factual)
-- `confession` — před mší · po mší
-- `access` — bezbariérový vstup ano/ne (routed to the parish/registry channel, not crowd-published)
+Occurrence (primary signal): `attended` — "Ano, byl/a jsem." An aggregate **witness count**, never a rating.
 
-Positive-only witness tags (this is where Pavol's "hluboký prožitek" lands — see the fork below):
-- `hluboky_prozitek` — a positive-only testimony with **no negative counterpart** and **no scale**;
-  shown as "N poutníků zde zažilo hluboký prožitek," a corroboration count, not a score.
+**Positive witness chips** (all optional, no opposite, no scale; displayed as "*poutníci zde
+ocenili / zde zažili…*"):
+
+- *Modlitba a prožitek:* `hluboký prožitek` **[locked]** · `prostor k modlitbě / ztišení` · `povznášející`
+- *Slovo (homilie):* `povzbudivé kázání` · `kázání k zamyšlení` — positive-only; **never** a homily grade
+- *Hudba:* `krásný zpěv` · `živá hudba`
+- *Přijetí a společenství:* `vřelé přijetí` · `otevřené společenství`
+- *Rodina a děti:* `vstřícné k dětem` **[locked, "kids friendly"]** · `rodinná atmosféra`
+- *Atmosféra:* `důstojná atmosféra` · `ticho a soustředění`
+
+Curate to ~8 for launch (too many chips dilutes the ≥3-corroboration threshold — each chip needs its
+own 3 witnesses); grow the set deliberately from real `suggest_tag` demand.
+
+**Slim factual background** (kept minimal — Pavol is less interested):
+- `lang_actual` — česky · latinsky · anglicky · jinak (the one fact that genuinely helps a foreign
+  pilgrim choose; confirms/corrects the registry). Access/duration/confession deferred to v2.
 
 Contributor escape hatch (Pavol's ask):
-- `suggest_tag` — "navrhnout štítek" free-text that is **not** published; it is routed privately
-  to Pavol (email/Supabase queue) to grow the controlled vocabulary deliberately.
+- `suggest_tag` — "navrhnout štítek" free text that is **not** published; routed privately to Pavol
+  to grow the vocabulary deliberately.
+
+### The one residual risk: comparison by absence
+
+Positive-only still leaks a faint negative *by comparison* — a Mass showing `povzbudivé kázání ×8`
+beside one showing nothing could read as "the other is worse." Mitigations: (a) the ≥3 threshold +
+cold-start mean most Masses show **nothing**, and nothing looks like nothing (no empty state, no
+shame); (b) **no ranking, no big numbers** — chips display as gentle highlights ("*často zmiňují…*"),
+not a scoreboard; (c) absence is honestly "few witnesses yet," not a verdict. Acceptable, and far
+gentler than any star.
 
 ## Flow (low friction, no GPS)
 

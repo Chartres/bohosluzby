@@ -14,7 +14,7 @@ async function fixTime(page: Page) {
 test('loading state', async ({ page }) => {
   await fixTime(page)
   await mockData(page, { delayMs: 4000 })
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByRole('status')).toContainText('Hledám bohoslužby poblíž')
   await shot(page, 'loading')
 })
@@ -22,7 +22,7 @@ test('loading state', async ({ page }) => {
 test('hero list: nearest services, soonest first', async ({ page }) => {
   await fixTime(page)
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
 
   // Monday 09:00 → the 09:30 cathedral mass is the first row you can make
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
@@ -73,7 +73,7 @@ test('hero at 375px (mobile)', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await fixTime(page)
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
   await shot(page, 'hero-mobile-375', true)
 })
@@ -83,7 +83,7 @@ test.describe('without geolocation permission', () => {
   test('explains and offers the manual city fallback', async ({ page }) => {
     await fixTime(page)
     await mockData(page)
-    await page.goto('/')
+    await page.goto('/?zobrazeni=seznam')
     await expect(page.getByText('Bez přístupu k poloze')).toBeVisible()
       await shot(page, 'no-permission')
 

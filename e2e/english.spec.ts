@@ -10,7 +10,7 @@ test.use({ locale: 'en-US', geolocation: PRAGUE, permissions: ['geolocation'] })
 test('English UI: translated day rubric, pill, and footer', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
 
   // registry data (church name) stays Czech even under English UI
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()

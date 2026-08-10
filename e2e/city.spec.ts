@@ -8,7 +8,7 @@ test.use({ permissions: [] }) // no geolocation — the landing must not need it
 test('city landing renders the Praha list from the centroid', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
-  await page.goto('/mesto/praha/')
+  await page.goto('/mesto/praha/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
   await expect(page.getByText('Praha ·')).toBeVisible()
   await expect(page).toHaveTitle(/Bohoslužby Praha — mše svatá dnes/)
@@ -16,7 +16,7 @@ test('city landing renders the Praha list from the centroid', async ({ page }) =
 
   // a church detail still opens from the landing list
   await page.getByText('kostel sv. Havla').click()
-  await expect(page).toHaveURL('/kostel/3/')
+  await expect(page).toHaveURL('/kostel/3/?zobrazeni=seznam')
   await expect(page.getByLabel('Pořad bohoslužeb')).toBeVisible()
 })
 
@@ -50,7 +50,7 @@ test('změnit opens the search over the list; zpět returns with the origin inta
   await context.setGeolocation({ latitude: 50.0875, longitude: 14.4213 })
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
 
   await page.getByRole('button', { name: 'změnit' }).click()
