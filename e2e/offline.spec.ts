@@ -9,7 +9,7 @@ test.use({ geolocation: PRAGUE, permissions: ['geolocation'] })
 test('going offline shows the quiet footer indicator, list stays', async ({ page, context }) => {
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
   await expect(page.getByText('offline — zobrazuji uložená data')).not.toBeVisible()
 
@@ -30,7 +30,7 @@ test.describe('last known position', () => {
     })
     await page.clock.install({ time: FIXED_NOW })
     await mockData(page)
-    await page.goto('/')
+    await page.goto('/?zobrazeni=seznam')
     await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
     await expect(page.getByText('poslední známá poloha')).toBeVisible()
     await shot(page, 'offline-last-position')

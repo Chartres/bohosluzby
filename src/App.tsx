@@ -284,10 +284,21 @@ export default function App() {
   }
   const setParam = (key: string, value: string | null) => setParams({ [key]: value })
   const setDay = (d: DayChoice) => setParam('den', dayToParam(new Date(), d))
-  // seznam · mapa — the hero list's other face, bookmarkable as ?zobrazeni=mapa
-  const view: 'seznam' | 'mapa' = params.get('zobrazeni') === 'mapa' ? 'mapa' : 'seznam'
+  const online = useSyncExternalStore(onlineStore.subscribe, onlineStore.snapshot)
+  // seznam · mapa. The map is the landing view — the app's edge is times shown ON
+  // the map without tapping. But the map needs a connection; offline (no explicit
+  // choice) we land on the seznam, the offline-safe path. An explicit ?zobrazeni
+  // always wins and round-trips.
+  const view: 'seznam' | 'mapa' =
+    params.get('zobrazeni') === 'seznam'
+      ? 'seznam'
+      : params.get('zobrazeni') === 'mapa'
+        ? 'mapa'
+        : online
+          ? 'mapa'
+          : 'seznam'
   const setView = (v: 'seznam' | 'mapa') => {
-    setParam('zobrazeni', v === 'mapa' ? 'mapa' : null)
+    setParam('zobrazeni', v) // record the choice explicitly so it survives a reload
     track('key_action', { action: 'view', view: v })
   }
   const setCas = (c: string | null) => {
@@ -397,7 +408,6 @@ export default function App() {
     }
   }, [origin])
 
-  const online = useSyncExternalStore(onlineStore.subscribe, onlineStore.snapshot)
 
   // /mesto/<slug>/ — the city's centroid becomes the origin (SEO landing pages).
   // Leaving the city route for home (browser back, "moje poloha", zpět from a

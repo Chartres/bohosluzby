@@ -17,10 +17,13 @@ test.use({
 
 test('bohosluzby app preview walkthrough', async ({ page }) => {
   test.skip(!!process.env.CI, 'local preview generation only')
+  // The scripted waits alone total ~14s; real bundled data + video recording
+  // overhead pushes this past Playwright's 30s default on slower runs.
+  test.setTimeout(60_000)
   await page.clock.install({ time: new Date('2026-07-12T05:00:00Z') })
 
   // 0-3s: opens straight to the nearest-mass list (real data, no loading/login)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await page.waitForTimeout(3000)
 
   // 3-9s: MAP — a field of green time chips; a slow pan proves the times sit ON
@@ -35,16 +38,20 @@ test('bohosluzby app preview walkthrough', async ({ page }) => {
   await page.mouse.up()
   await page.waitForTimeout(2000)
 
-  // 9-14s: tap a time chip → popover with church + next mass
+  // 9-14s: tap a time chip → popover with church + next mass. Real (unmocked)
+  // data packs many chips close together — an adjacent chip's invisible tap
+  // halo can occasionally intercept this one, so bound the attempt: an
+  // unbounded click retries against the remaining TEST timeout, and by the
+  // time .catch() swallows it there's no budget left for the rest of the tour.
   const chip = page.locator('.map-chip').first()
-  await chip.click().catch(() => {})
+  await chip.click({ timeout: 5000 }).catch(() => {})
   await page.waitForTimeout(2500)
 
   // 14-20s: back to the list, then a church's full schedule
   await page.getByRole('button', { name: 'seznam' }).click()
   await mockData(page)
   await page.clock.setFixedTime(FIXED_NOW)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await page.getByText('kostel Panny Marie Sněžné').first().waitFor()
   await page.waitForTimeout(1500)
   await page.getByText('kostel Panny Marie Sněžné').click()
