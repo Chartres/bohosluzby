@@ -52,7 +52,7 @@ for (const d of DEVICES) {
       // fixture at FIXED_NOW (map already captured, so tile-fade timing moot)
       await page.clock.setFixedTime(FIXED_NOW)
       await mockData(page)
-      await page.goto('/')
+      await page.goto('/?zobrazeni=seznam')
       await page.getByText('kostel Panny Marie Sněžné').first().waitFor()
       await page.evaluate(() => document.fonts.ready.then(() => undefined))
       await page.screenshot({ path: `${dir}/2-home.png` })

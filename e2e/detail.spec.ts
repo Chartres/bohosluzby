@@ -8,10 +8,10 @@ test.use({ geolocation: PRAGUE, permissions: ['geolocation'] })
 test('detail from the list: weekly ordo, extras, parish, freshness', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
 
   await page.getByText('kostel Panny Marie Sněžné').click()
-  await expect(page).toHaveURL('/kostel/4/')
+  await expect(page).toHaveURL('/kostel/4/?zobrazeni=seznam')
 
   // weekly schedule grouped by day, Sunday first
   const ordo = page.getByLabel('Pořad bohoslužeb')
@@ -41,7 +41,7 @@ test('detail from the list: weekly ordo, extras, parish, freshness', async ({ pa
 
   // back to the list
   await page.getByRole('button', { name: '‹ zpět na seznam' }).click()
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
 })
 

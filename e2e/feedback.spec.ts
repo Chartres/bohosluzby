@@ -8,7 +8,7 @@ test.use({ geolocation: PRAGUE, permissions: ['geolocation'] })
 test('feedback card: collapsed line → Sean Ellis + text → thanks', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
 
   // collapsed by default; Podpořit sits in the same footer line
@@ -32,7 +32,7 @@ test('feedback at 375px', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
   await page.getByRole('button', { name: /Napište nám/ }).click()
   await page.getByRole('button', { name: /Napište nám/ }).waitFor({ state: 'hidden' })

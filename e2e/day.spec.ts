@@ -8,7 +8,7 @@ test.use({ geolocation: PRAGUE, permissions: ['geolocation'] })
 test('Sunday ordo: every service that day, chronological, no countdowns', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
 
   await openControls(page)
@@ -33,7 +33,7 @@ test('Sunday ordo: every service that day, chronological, no countdowns', async 
 test('feast day: picker chip tinted, quiet feast line in the header (5 Jul = Cyril a Metoděj)', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-07-03T07:00:00Z') }) // Friday 3 Jul
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
 
   await openControls(page)
@@ -47,7 +47,7 @@ test('feast day: picker chip tinted, quiet feast line in the header (5 Jul = Cyr
 test('bookmarked ?den=nedele restores the Sunday ordo; day picks rewrite the URL', async ({ page }) => {
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
-  await page.goto('/?den=nedele') // Monday 6 Jul → next Sunday is 12 Jul
+  await page.goto('/?zobrazeni=seznam&den=nedele') // Monday 6 Jul → next Sunday is 12 Jul
   await expect(page.getByText('neděle 12. 7.')).toBeVisible()
   await openControls(page)
   await expect(page.getByRole('button', { name: 'neděle', exact: true })).toHaveAttribute('aria-pressed', 'true')
@@ -56,9 +56,9 @@ test('bookmarked ?den=nedele restores the Sunday ordo; day picks rewrite the URL
 
   // switching the day rewrites the param; "hned" drops it
   await page.getByRole('button', { name: 'zítra' }).click()
-  await expect(page).toHaveURL('/?den=zitra')
+  await expect(page).toHaveURL('/?zobrazeni=seznam&den=zitra')
   await page.getByRole('button', { name: 'hned' }).click()
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/?zobrazeni=seznam')
   await expect(page.getByText('za 29 min')).toBeVisible()
 })
 
@@ -66,7 +66,7 @@ test('day picker at 375px', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.clock.install({ time: FIXED_NOW })
   await mockData(page)
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
   await openControls(page)
   await page.getByRole('button', { name: 'zítra' }).click()

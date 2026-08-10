@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('greek-catholic filter narrows to the liturgy; persists across reload', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
   await shot(page, 'filters-default')
 
@@ -34,7 +34,7 @@ test('greek-catholic filter narrows to the liturgy; persists across reload', asy
 })
 
 test('language filter + over-narrow combination explains itself', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('kostel sv. Havla')).toBeVisible()
 
   await openControls(page)
@@ -55,7 +55,7 @@ test('okruh: distance filter narrows the list to walking range', async ({ page, 
   // stand NE of the centre so 2 km splits the fixture: Havel/Salvátor stay
   // inside, the cathedral (~2.6 km) and Ludmily (~2.5 km) fall out
   await context.setGeolocation({ latitude: 50.098, longitude: 14.435 })
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('kostel sv. Ludmily')).toBeVisible()
 
   await openControls(page)
@@ -75,7 +75,7 @@ test('375px: one pill row; the ordo sheet opens as a bottom sheet and closes wit
   page,
 }) => {
   await page.setViewportSize({ width: 375, height: 812 })
-  await page.goto('/')
+  await page.goto('/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
 
   // closed by default: pills visible, controls hidden
