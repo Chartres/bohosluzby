@@ -252,6 +252,11 @@ export function dayFromParam(now: Date, param: string | null): DayChoice {
   return 'now' // unreachable — every weekday occurs within 7 days
 }
 
+// Prototype flag (TestFlight builds only, never production): force-shows the
+// witness card so it can be tried on device where there's no URL bar for
+// ?feedback=preview. Baked in by the build with VITE_WITNESS_PREVIEW=1.
+const WITNESS_PREVIEW = import.meta.env.VITE_WITNESS_PREVIEW === '1'
+
 /** `?feedback=preview` demo Mass: the first nearby church with a regular
  * service, keyed to that service's first weekday so the detail page shows the
  * corroborated line after saving. Lets the owner toy locally with no waiting. */
@@ -289,6 +294,7 @@ export default function App() {
   const season = useMemo(() => currentLiturgicalDay(), [])
   const convertedRef = useRef(false)
   const [dueEntry, setDueEntry] = useState<LedgerEntry | null>(null)
+  const [previewDismissed, setPreviewDismissed] = useState(false)
   const dismissedRef = useRef<Set<string>>(new Set())
   const { route, path, search, navigate } = useRoute()
 
@@ -545,13 +551,18 @@ export default function App() {
   // ---- after-Mass witness card (pilgrim witness) --------------------------
   // Real due cards come from the local ledger; ?feedback=preview force-shows a
   // demo Mass so the owner can toy locally without waiting an hour after a Mass.
-  const isPreview = feedbackParam === 'preview'
+  // ?feedback=preview OR a build-time flag (VITE_WITNESS_PREVIEW=1, TestFlight
+  // prototype only — there's no URL bar on device) force-shows the demo card.
+  const isPreview = feedbackParam === 'preview' || WITNESS_PREVIEW
   useEffect(() => {
     if (isPreview) return
     const due = dueCards(new Date()).find((e) => !dismissedRef.current.has(e.massKey)) ?? null
     setDueEntry(due)
   }, [isPreview, route.view])
-  const previewMass = useMemo(() => (isPreview && data ? demoMass(data) : null), [isPreview, data])
+  const previewMass = useMemo(
+    () => (isPreview && !previewDismissed && data ? demoMass(data) : null),
+    [isPreview, previewDismissed, data],
+  )
   const cardMass: CardMass | null = previewMass ?? dueEntry
   const clearPreview = () => {
     if (feedbackParam) setParam('feedback', null)
@@ -561,8 +572,10 @@ export default function App() {
     markAnswered(s.massKey)
   }
   const onCardDismiss = () => {
-    if (isPreview) clearPreview()
-    else if (dueEntry) {
+    if (isPreview) {
+      clearPreview()
+      setPreviewDismissed(true)
+    } else if (dueEntry) {
       dismissedRef.current.add(dueEntry.massKey)
       setDueEntry(null)
     }
@@ -571,6 +584,7 @@ export default function App() {
     neverAsk()
     setDueEntry(null)
     clearPreview()
+    setPreviewDismissed(true)
   }
 
   const loading = !dataError && (!index || (!origin && !geoDenied) || (Boolean(origin) && rows === null))
@@ -669,6 +683,16 @@ export default function App() {
             onDismiss={onCardDismiss}
             onNeverAsk={onCardNever}
           />
+        )}
+        {/* prototype only: re-open the demo card after dismissing it on device */}
+        {WITNESS_PREVIEW && !cardMass && (
+          <button
+            type="button"
+            onClick={() => setPreviewDismissed(false)}
+            className="rubric mt-5 min-h-11 px-1 underline decoration-hairline underline-offset-2 hover:text-ink"
+          >
+            Zobrazit náhled zpětné vazby znovu
+          </button>
         )}
         {!dataError && loading && (
           <div className="mt-14 text-center" role="status">
