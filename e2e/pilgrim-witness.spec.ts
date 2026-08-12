@@ -24,7 +24,6 @@ test('preview → Ano → witness chips → saved → detail shows the corrobora
   await card.getByRole('button', { name: 'Ano, byl/a jsem' }).click()
   await card.getByRole('button', { name: 'hluboký prožitek' }).click()
   await card.getByRole('button', { name: 'krásný zpěv' }).click()
-  await card.getByRole('button', { name: 'latinsky' }).click()
   await shot(page, 'witness-chips', true)
 
   await card.getByRole('button', { name: 'Uložit' }).click()

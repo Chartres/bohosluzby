@@ -15,7 +15,7 @@ import { fmtDateCz, isStale } from './domain/format'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
-import { aggregateFor } from './lib/feedbackStore'
+import { aggregateFor, loadAggregates } from './lib/feedbackStore'
 import { recordExpectedAttendance } from './lib/feedbackLedger'
 import { chipLabel, massKey, oneOffKey, slotKey, type Aggregate } from './domain/feedback'
 import { NavSheet } from './NavSheet'
@@ -223,8 +223,21 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
     }
   }, [church])
 
-  // Witness aggregates for this church (localStorage seam; recomputed per church).
-  const agg = useMemo(() => aggregateFor(church.id), [church.id])
+  // Witness aggregates for this church: prefetch from Supabase (localStorage
+  // mirror offline) on mount, then read the synchronous cache. aggTick bumps
+  // when a load resolves so the ordo witness lines paint.
+  const [aggTick, setAggTick] = useState(0)
+  useEffect(() => {
+    let cancelled = false
+    void loadAggregates([church.id]).then(() => {
+      if (!cancelled) setAggTick((n) => n + 1)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [church.id])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const agg = useMemo(() => aggregateFor(church.id), [church.id, aggTick])
 
   // "recent viewers": opening a church near a Mass time records an expected
   // attendance, so the after-Mass card can ask on the next app open.

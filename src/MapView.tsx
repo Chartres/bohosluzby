@@ -16,19 +16,28 @@ import { gridCluster } from './domain/cluster'
 import { NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
-import { t, churchCount } from './i18n'
+import { chipLabel, massKey, type Aggregate } from './domain/feedback'
+import { aggregateFor, loadAggregates } from './lib/feedbackStore'
+import { t, churchCount, confirmedByPilgrims } from './i18n'
 
 const CELL_PX = 64 // cluster grid; ~a finger-width of map
 
 /** "8:30", not "08:30" — chips are read at a glance, the zero is noise. */
 const chipTime = (d: Date) => fmtTime(d).replace(/^0/, '')
 
+/** The corroborated witness aggregate for the Mass a marker/popover shows
+ * (from the in-memory cache; undefined until loadAggregates fills it). */
+const witnessFor = (church: Church, u: Upcoming): Aggregate | undefined =>
+  aggregateFor(church.id).get(massKey(church.id, u.service, u.start))
+
 /** A bare time on a pin reads as TODAY — on "hned" a church's next mass can be
  * days out, so a not-today chip carries its weekday ("út 15:00") and greys. */
-const chipIcon = (label: string, otherDay: boolean) =>
+const chipIcon = (label: string, otherDay: boolean, witnessed: boolean) =>
   L.divIcon({
     className: 'map-chip-wrap',
-    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}">${label}</span>`,
+    // witnessed: a subtle season-accent dot under the chip marks a Mass pilgrims
+    // have corroborated — a cue, not clutter (no count, no stars on the marker).
+    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}${witnessed ? ' map-chip--witnessed' : ''}">${label}</span>`,
     iconSize: [30, 30], // tap target; the chip centers itself and may overflow
   })
 // non-matching: a tiny faded dot; the 30px wrapper keeps it tappable
@@ -163,6 +172,24 @@ export default function MapView({
           line.textContent = t('map_none_soon')
         }
       }
+      // reverent witness line: what pilgrims often mention for the shown Mass,
+      // and how many attested it — only once it clears the corroboration
+      // threshold. Plain ordo type, no stars (docs/PILGRIM-WITNESS-PLAN.md).
+      const a = next ? witnessFor(church, next) : undefined
+      if (a && a.chips.length > 0) {
+        const witness = document.createElement('p')
+        witness.className = 'map-pop-witness'
+        const often = document.createElement('span')
+        often.textContent = `${t('fb_often')}: ${a.chips.map((c) => chipLabel(c.id)).join(' · ')}`
+        const count = document.createElement('span')
+        count.className = 'map-pop-witness-count'
+        count.textContent = confirmedByPilgrims(a.witnesses)
+        witness.append(often, count)
+        el.append(name, line, witness)
+      } else {
+        el.append(name, line)
+      }
+
       // the popover's verbs mirror a list row: detail · trasa · web — each
       // carries the church name in aria-label, same as the list row's verbs,
       // so a screen reader doesn't just hear "otevřít" with no context
@@ -197,7 +224,7 @@ export default function MapView({
         www.setAttribute('aria-label', `${t('row_web')}: ${church.name}`)
         actions.append(www)
       }
-      el.append(name, line, actions)
+      el.append(actions)
       L.popup({ maxWidth: 260, closeButton: false })
         .setLatLng([church.lat, church.lng])
         .setContent(el)
@@ -211,7 +238,12 @@ export default function MapView({
       const visible = churches.filter((c) => bounds.contains([c.lat, c.lng]))
       // the chips need each church's next matching service → shards for the view
       const cells = [...new Set(visible.map((c) => c.cell))]
-      const shards = await Promise.all(cells.map(loadShard))
+      // Prefetch witness aggregates for the visible churches alongside the
+      // shards, so the popover line and the marker cue have data on first paint.
+      const [shards] = await Promise.all([
+        Promise.all(cells.map(loadShard)),
+        loadAggregates(visible.map((c) => c.id)),
+      ])
       if (stale || seq !== renderSeq) return // a newer render superseded this one
       const byId = new Map<string, ChurchServices>()
       for (const shard of shards) for (const [id, s] of shard) byId.set(id, s)
@@ -255,8 +287,9 @@ export default function MapView({
               ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
               : chipTime(next.start)
             : ''
+          const witnessed = Boolean(next) && (witnessFor(church, next!)?.chips.length ?? 0) > 0
           const marker = L.marker([church.lat, church.lng], {
-            icon: next ? chipIcon(label, otherDay) : fadedIcon(),
+            icon: next ? chipIcon(label, otherDay, witnessed) : fadedIcon(),
             title: church.name,
             keyboard: false,
           })

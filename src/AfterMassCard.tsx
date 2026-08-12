@@ -3,9 +3,9 @@
 // shadows, positive-only chips. One tap "Ano" is already the witness; the chips,
 // language, and suggest-a-tag are optional.
 import { useState } from 'react'
-import { WITNESS_CHIPS, LANG_OPTIONS, type LangOption, type MassFeedback } from './domain/feedback'
+import { WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
 import { suggestTag } from './lib/feedbackStore'
-import { t, langOptionLabel } from './i18n'
+import { t } from './i18n'
 
 export interface CardMass {
   churchId: string
@@ -29,15 +29,14 @@ export function AfterMassCard({
 }) {
   const [phase, setPhase] = useState<'ask' | 'chips' | 'done'>('ask')
   const [chips, setChips] = useState<string[]>([])
-  const [lng, setLng] = useState<LangOption | null>(null)
   const [suggestOpen, setSuggestOpen] = useState(false)
   const [suggestText, setSuggestText] = useState('')
 
   const submit = (over: Partial<MassFeedback> = {}) =>
-    onSubmit({ churchId: entry.churchId, massKey: entry.massKey, chips, lang: lng, ...over })
+    onSubmit({ churchId: entry.churchId, massKey: entry.massKey, chips, ...over })
 
   const onYes = () => {
-    submit({ chips: [], lang: null }) // attending is itself the witness
+    submit({ chips: [] }) // attending is itself the witness
     setPhase('chips')
   }
   const onSave = () => {
@@ -48,12 +47,19 @@ export function AfterMassCard({
   const toggleChip = (id: string) =>
     setChips((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]))
 
+  // Calm, legible pills: real padding, rounded, a season-accent selected state,
+  // ≥44px touch. Breathing room comes from the container gap. No shadows.
   const chipCls = (active: boolean) =>
-    `-my-1 flex min-h-11 items-center rounded-sm border px-2 text-sm ${
-      active ? 'border-ink text-ink' : 'border-hairline text-ink-faded hover:text-ink'
+    `inline-flex min-h-11 items-center rounded-full border px-3.5 py-2 text-sm transition-colors ${
+      active ? 'text-ink' : 'border-hairline text-ink-faded hover:border-ink/40 hover:text-ink'
     }`
   const chipStyle = (active: boolean) =>
-    active ? { borderColor: 'var(--season)' } : undefined
+    active
+      ? {
+          borderColor: 'var(--season)',
+          backgroundColor: 'color-mix(in srgb, var(--season) 10%, transparent)',
+        }
+      : undefined
 
   return (
     <section
@@ -113,7 +119,7 @@ export function AfterMassCard({
           ) : (
             <div className="mt-4">
               <p className="rubric">{t('fb_chips_intro')}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2.5">
                 {WITNESS_CHIPS.map((c) => {
                   const active = chips.includes(c.id)
                   return (
@@ -126,25 +132,6 @@ export function AfterMassCard({
                       style={chipStyle(active)}
                     >
                       {c.label}
-                    </button>
-                  )
-                })}
-              </div>
-
-              <p className="rubric mt-4">{t('fb_lang_label')}</p>
-              <div role="group" aria-label={t('fb_lang_label')} className="mt-2 flex flex-wrap gap-2">
-                {LANG_OPTIONS.map((value) => {
-                  const active = lng === value
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => setLng(active ? null : value)}
-                      className={chipCls(active)}
-                      style={chipStyle(active)}
-                    >
-                      {langOptionLabel(value)}
                     </button>
                   )
                 })}

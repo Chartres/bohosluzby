@@ -1,4 +1,4 @@
-import { WITNESS_CHIPS, LANG_OPTIONS, chipLabel, massKey, slotKey, oneOffKey } from './feedback'
+import { WITNESS_CHIPS, chipLabel, massKey, slotKey, oneOffKey } from './feedback'
 
 describe('witness vocabulary', () => {
   it('locks the 7 positive launch chips in display order', () => {
@@ -16,9 +16,6 @@ describe('witness vocabulary', () => {
     const ids = WITNESS_CHIPS.map((c) => c.id)
     expect(new Set(ids).size).toBe(ids.length)
     for (const id of ids) expect(id).toMatch(/^[a-z_]+$/)
-  })
-  it('offers exactly the four factual language values', () => {
-    expect(LANG_OPTIONS).toEqual(['česky', 'latinsky', 'anglicky', 'jinak'])
   })
   it('resolves a chip id back to its Czech label', () => {
     expect(chipLabel('krasny_zpev')).toBe('krásný zpěv')

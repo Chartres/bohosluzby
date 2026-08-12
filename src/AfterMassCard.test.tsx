@@ -35,23 +35,21 @@ describe('AfterMassCard', () => {
   it('"Ano" records the witness immediately, then reveals optional chips', async () => {
     const { onSubmit, user } = setup()
     await user.click(screen.getByRole('button', { name: 'Ano, byl/a jsem' }))
-    expect(onSubmit).toHaveBeenCalledWith({ churchId: 'c1', massKey: 'c1|w7|09:30', chips: [], lang: null })
+    expect(onSubmit).toHaveBeenCalledWith({ churchId: 'c1', massKey: 'c1|w7|09:30', chips: [] })
     expect(screen.getByRole('button', { name: 'hluboký prožitek' })).toBeVisible()
   })
 
-  it('saves chosen chips and language, then thanks the pilgrim', async () => {
+  it('saves chosen chips, then thanks the pilgrim', async () => {
     const { onSubmit, user } = setup()
     await user.click(screen.getByRole('button', { name: 'Ano, byl/a jsem' }))
     await user.click(screen.getByRole('button', { name: 'hluboký prožitek' }))
     await user.click(screen.getByRole('button', { name: 'krásný zpěv' }))
-    await user.click(screen.getByRole('button', { name: 'latinsky' }))
     await user.click(screen.getByRole('button', { name: 'Uložit' }))
 
     expect(onSubmit).toHaveBeenLastCalledWith({
       churchId: 'c1',
       massKey: 'c1|w7|09:30',
       chips: ['hluboky_prozitek', 'krasny_zpev'],
-      lang: 'latinsky',
     })
     expect(screen.getByText('Díky. Zapsáno pro další poutníky.')).toBeVisible()
   })

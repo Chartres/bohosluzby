@@ -175,8 +175,6 @@ export const cs = {
   fb_not_now: 'Teď ne',
   fb_never: 'Neptat se',
   fb_chips_intro: 'Co jste ocenili? (nepovinné)',
-  fb_lang_label: 'jazyk',
-  fb_lang_other: 'jinak',
   fb_suggest_link: 'navrhnout štítek',
   fb_suggest_placeholder: 'Váš štítek',
   fb_suggest_note: 'Nezveřejní se — pomůže rozšířit nabídku štítků.',
@@ -337,8 +335,6 @@ export const en: Record<Key, string> = {
   fb_not_now: 'Not now',
   fb_never: "Don't ask",
   fb_chips_intro: 'What were you glad of? (optional)',
-  fb_lang_label: 'language',
-  fb_lang_other: 'other',
   fb_suggest_link: 'suggest a tag',
   fb_suggest_placeholder: 'Your tag',
   fb_suggest_note: 'Not published — it helps grow the set of tags.',
@@ -465,12 +461,6 @@ export function confirmedByPilgrims(n: number): string {
     return `potvrdilo ${n} poutníků`
   }
   return `confirmed by ${n} pilgrim${n === 1 ? '' : 's'}`
-}
-
-/** Label for a factual language option on the witness card. Concrete languages
- * reuse langLabel (Czech/English name); "jinak" localizes to "other". */
-export function langOptionLabel(value: string): string {
-  return value === 'jinak' ? t('fb_lang_other') : langLabel(value)
 }
 
 /** Display name for a normalized Czech language adverb ("latinsky" →

@@ -1,44 +1,50 @@
-import { CORROBORATION_MIN, aggregateFor, submitFeedback, suggestTag } from './feedbackStore'
+// localStorage path (supabase is null with no VITE_SUPABASE_* env): submit
+// mirrors locally, loadAggregates folds the mirror into the cache, aggregateFor
+// reads it synchronously.
+import { CORROBORATION_MIN, aggregateFor, loadAggregates, submitFeedback, suggestTag } from './feedbackStore'
 
 afterEach(() => localStorage.clear())
 
-const sub = (massKey: string, chips: string[], lang: string | null = null) =>
-  submitFeedback({ churchId: 'c1', massKey, chips, lang: lang as never })
+const sub = (massKey: string, chips: string[]) => submitFeedback({ churchId: 'c1', massKey, chips })
+const aggAfterLoad = async (churchId: string) => {
+  await loadAggregates([churchId])
+  return aggregateFor(churchId)
+}
 
 describe('aggregateFor', () => {
-  it('counts a witness and surfaces its chosen chips', () => {
+  it('counts a witness and surfaces its chosen chips', async () => {
     sub('c1|w7|09:30', ['hluboky_prozitek', 'krasny_zpev'])
-    const agg = aggregateFor('c1').get('c1|w7|09:30')!
+    const agg = (await aggAfterLoad('c1')).get('c1|w7|09:30')!
     expect(agg.witnesses).toBe(1)
     expect(agg.chips.map((c) => c.id)).toEqual(['hluboky_prozitek', 'krasny_zpev'])
   })
 
-  it('returns chips in the locked display order, not selection order', () => {
+  it('returns chips in the locked display order, not selection order', async () => {
     sub('c1|w7|09:30', ['krasny_zpev', 'hluboky_prozitek'])
-    const agg = aggregateFor('c1').get('c1|w7|09:30')!
+    const agg = (await aggAfterLoad('c1')).get('c1|w7|09:30')!
     expect(agg.chips.map((c) => c.id)).toEqual(['hluboky_prozitek', 'krasny_zpev'])
   })
 
-  it('hides chips below the corroboration threshold', () => {
+  it('hides chips below the corroboration threshold', async () => {
     // an unselected chip has count 0 < CORROBORATION_MIN → never shown
     sub('c1|w7|09:30', ['hluboky_prozitek'])
-    const agg = aggregateFor('c1').get('c1|w7|09:30')!
+    const agg = (await aggAfterLoad('c1')).get('c1|w7|09:30')!
     expect(agg.chips.some((c) => c.id === 'krasny_zpev')).toBe(false)
     expect(CORROBORATION_MIN).toBe(1) // local prototype value
   })
 
-  it('keeps masses and churches separate; ignores other churches', () => {
+  it('keeps masses and churches separate; ignores other churches', async () => {
     sub('c1|w7|09:30', ['hluboky_prozitek'])
     sub('c1|w1|18:00', ['krasny_zpev'])
-    submitFeedback({ churchId: 'c2', massKey: 'c2|w7|09:30', chips: ['vrele_prijeti'], lang: null })
-    const agg = aggregateFor('c1')
+    submitFeedback({ churchId: 'c2', massKey: 'c2|w7|09:30', chips: ['vrele_prijeti'] })
+    const agg = await aggAfterLoad('c1')
     expect([...agg.keys()].sort()).toEqual(['c1|w1|18:00', 'c1|w7|09:30'])
   })
 
-  it('upserts one row per device per mass (a re-save does not double-count)', () => {
+  it('upserts one row per device per mass (a re-save does not double-count)', async () => {
     sub('c1|w7|09:30', ['hluboky_prozitek'])
     sub('c1|w7|09:30', ['hluboky_prozitek', 'krasny_zpev']) // same device, revised
-    const agg = aggregateFor('c1').get('c1|w7|09:30')!
+    const agg = (await aggAfterLoad('c1')).get('c1|w7|09:30')!
     expect(agg.witnesses).toBe(1)
     expect(agg.chips.map((c) => c.id)).toEqual(['hluboky_prozitek', 'krasny_zpev'])
   })

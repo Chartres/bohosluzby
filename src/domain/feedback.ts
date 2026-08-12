@@ -23,10 +23,6 @@ export const WITNESS_CHIPS: readonly Chip[] = [
   { id: 'dustojna_atmosfera', label: 'důstojná atmosféra' },
 ] as const
 
-/** The one factual chip (single-select). Values double as stored ids. */
-export const LANG_OPTIONS = ['česky', 'latinsky', 'anglicky', 'jinak'] as const
-export type LangOption = (typeof LANG_OPTIONS)[number]
-
 export const chipLabel = (id: string): string =>
   WITNESS_CHIPS.find((c) => c.id === id)?.label ?? id
 
@@ -36,7 +32,6 @@ export interface MassFeedback {
   massKey: string
   /** Selected witness chip ids (may be empty — attending is itself the witness). */
   chips: string[]
-  lang: LangOption | null
 }
 
 /** Thresholded per-Mass rollup for the detail display. */
