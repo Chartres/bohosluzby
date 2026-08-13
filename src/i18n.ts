@@ -184,6 +184,7 @@ export const cs = {
   fb_often_slot: 'u této mše často zmiňují',
   fb_in_church: 'v tomto kostele',
   fb_filter_group: 'Ohlasy poutníků',
+  fb_filter_hint: 'Ukázat jen mše, kde poutníci zmiňují:',
 } as const
 
 export type Key = keyof typeof cs
@@ -347,6 +348,7 @@ export const en: Record<Key, string> = {
   fb_often_slot: 'at this Mass, pilgrims often mention',
   fb_in_church: 'at this church',
   fb_filter_group: 'Pilgrim witness',
+  fb_filter_hint: 'Show only Masses where pilgrims mention:',
 }
 
 export function t(k: Key): string {

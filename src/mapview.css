@@ -48,6 +48,7 @@
   inset: -8px;
 }
 .map-chip {
+  position: relative; /* containing block for the overlaid witness mark */
   padding: 1px 5px 2px;
   background: var(--season);
   color: var(--color-paper);
@@ -73,16 +74,22 @@
 .map-chip-wrap:hover .map-chip--otherday {
   outline-color: var(--color-ink-faded);
 }
-/* corroborated witness cue: a small rubric-red reference mark (‟) set as a
-   superscript on the time chip — missal-styled "there is testimony here".
-   Presence, not a count; the popover carries the detail. */
+/* corroborated witness cue: a large rubric-red reference mark (‟) OVERLAID on
+   the top-right corner of the time chip — missal-styled "there is testimony
+   here". A paper stroke keeps it legible over the season-green chip. Presence,
+   not a count; the popover carries the detail. */
 .map-chip-mark {
-  margin-left: 1px;
+  position: absolute;
+  top: -0.66em;
+  right: -0.12em;
   font-family: var(--font-display);
-  font-size: 0.9em;
-  line-height: 0;
-  vertical-align: super;
+  font-size: 1.7em;
+  line-height: 1;
+  font-weight: 700;
   color: var(--color-rubric);
+  -webkit-text-stroke: 2px var(--color-paper);
+  paint-order: stroke fill;
+  pointer-events: none;
 }
 
 .map-marker {

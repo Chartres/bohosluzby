@@ -34,7 +34,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run build && npm run preview -- --port 4173',
+    // Build the e2e app with Supabase DISABLED (empty env → the client is null),
+    // so the witness specs run the deterministic localStorage path regardless of a
+    // local .env.local. Otherwise tests would hit the live DB (flaky, seed-dependent).
+    // The real Supabase path is covered by the stubbed unit test + a live smoke.
+    command: 'VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= npm run build && npm run preview -- --port 4173',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

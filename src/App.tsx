@@ -1490,17 +1490,19 @@ function OrdoControls({
           </select>
         )}
       </div>
-      {/* Ohlasy poutníků — collapsed by default (saves sheet space); native
-          <details> is the right platform control for a disclosure. */}
-      <details className="mt-2">
-        <summary className="rubric cursor-pointer text-ink-faded marker:text-ink-faded">
+      {/* Ohlasy poutníků — its own bordered block, collapsed by default (native
+          <details> disclosure). Roomy pills so it doesn't read as cramped. */}
+      <details className="mt-4 border-t border-hairline pt-3">
+        <summary className="rubric cursor-pointer list-none text-ink-faded marker:hidden">
           {t('fb_filter_group')}
           {filters.witnessTags.length > 0 && ` · ${filters.witnessTags.length}`}
+          <span className="ml-1 text-ink-faded">›</span>
         </summary>
+        <p className="mt-2 text-xs text-ink-faded">{t('fb_filter_hint')}</p>
         <div
           role="group"
           aria-label={t('fb_filter_group')}
-          className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
+          className="mt-2 flex flex-wrap gap-2 pb-1"
         >
           {WITNESS_CHIPS.map((c) => {
             const active = filters.witnessTags.includes(c.id)
@@ -1509,8 +1511,10 @@ function OrdoControls({
                 key={c.id}
                 type="button"
                 aria-pressed={active}
-                className={toggleCls(active)}
-                style={toggleStyle(active)}
+                style={active ? { borderColor: 'var(--season)', backgroundColor: 'color-mix(in srgb, var(--season) 10%, transparent)' } : undefined}
+                className={`inline-flex min-h-9 items-center rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                  active ? 'text-ink' : 'border-hairline text-ink-faded hover:text-ink'
+                }`}
                 onClick={() =>
                   onChange({
                     ...filters,

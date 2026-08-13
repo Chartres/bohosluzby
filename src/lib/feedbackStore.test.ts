@@ -1,6 +1,9 @@
 // localStorage path (supabase is null with no VITE_SUPABASE_* env): submit
 // mirrors locally, loadAggregates folds the mirror into the cache, aggregateFor
-// reads it synchronously.
+// reads it synchronously. Force supabase null so a local .env.local can't make
+// these tests hit the live DB (CI has no env, so it was green there only).
+import { vi } from 'vitest'
+vi.mock('./supabase', () => ({ supabase: null }))
 import { CORROBORATION_MIN, aggregateFor, loadAggregates, submitFeedback, suggestTag } from './feedbackStore'
 
 afterEach(() => localStorage.clear())
