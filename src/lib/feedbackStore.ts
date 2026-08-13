@@ -183,6 +183,51 @@ export function aggregateFor(churchId: string): ChurchAggregate {
   return cache.get(churchId) ?? emptyChurchAggregate(churchId)
 }
 
+/** Rank a church's chips by corroboration × distinctiveness and keep the top
+ * `max`. Distinctiveness down-weights a tag that is common across all currently
+ * loaded churches, so "rodinná atmosféra" everywhere counts for less than a tag
+ * that marks this church out: weight = count / (1 + prevalence), where prevalence
+ * is the number of loaded churches whose church-wide tier carries the tag. With
+ * fewer than two churches to compare there is no notion of "common everywhere",
+ * so we fall back to raw count (already frequency-ordered). Pure over its inputs
+ * so the ranking is unit-testable; rankChurchTags() feeds it from the cache. */
+export function rankDistinctive(
+  target: { id: string; count: number }[],
+  corpus: { id: string }[][],
+  max = 3,
+): { id: string; count: number }[] {
+  if (corpus.length < 2) return target.slice(0, max)
+  const prevalence = new Map<string, number>()
+  for (const chips of corpus) for (const c of chips) prevalence.set(c.id, (prevalence.get(c.id) ?? 0) + 1)
+  const order = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
+  const weight = (c: { id: string; count: number }) => c.count / (1 + (prevalence.get(c.id) ?? 0))
+  return [...target]
+    .sort((a, b) => weight(b) - weight(a) || b.count - a.count || order.get(a.id)! - order.get(b.id)!)
+    .slice(0, max)
+}
+
+/** The church-level block's tags: the church-wide tier ranked by distinctiveness
+ * against every loaded church, capped at `max` (default 3, the inflation cap). */
+export function rankChurchTags(churchId: string, max = 3): { id: string; count: number }[] {
+  const target = aggregateFor(churchId).church.chips
+  const corpus = [...cache.values()].map((c) => c.church.chips).filter((chips) => chips.length > 0)
+  return rankDistinctive(target, corpus, max)
+}
+
+/** A specific Mass's tags worth calling out because they diverge from the
+ * church-level block: chips attested at this slot that the church block does not
+ * already surface (its ranked top tags). Captures both "this Mass's top tag
+ * differs" and "a tag strong here but not church-wide". Empty = say nothing. */
+export function divergentChips(
+  slot: Aggregate | undefined,
+  churchTopIds: Iterable<string>,
+  max = 2,
+): { id: string; count: number }[] {
+  if (!slot) return []
+  const top = new Set(churchTopIds)
+  return slot.chips.filter((c) => !top.has(c.id)).slice(0, max)
+}
+
 const hasAll = (a: Aggregate | undefined, tags: string[]): boolean =>
   !!a && tags.every((tg) => a.chips.some((c) => c.id === tg))
 

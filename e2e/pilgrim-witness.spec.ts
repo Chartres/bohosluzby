@@ -29,12 +29,12 @@ test('preview → Ano → witness chips → saved → detail shows the corrobora
   await card.getByRole('button', { name: 'Uložit' }).click()
   await expect(page.getByText('Díky. Zapsáno pro další poutníky.')).toBeVisible()
 
-  // the detail page now shows the direct (slot-tier) ordo witness line for that
-  // Mass — "u této mše často zmiňují … · potvrdil N poutník". The church-wide
-  // ambient tier ("v tomto kostele …") may echo the same chips on sibling Masses,
-  // so scope the chip check to the first match.
+  // the detail page now leads with the church-level witness block — the primary
+  // testimony across every Mass here — as read-only pills + the aggregate count
+  // ("V tomto kostele poutníci často zmiňují … · potvrdil N poutník"). With a
+  // single Mass attested there is nothing divergent, so no per-Mass note.
   await page.goto(`/kostel/${churchId}/`)
-  await expect(page.getByText(/u této mše často zmiňují/)).toBeVisible()
+  await expect(page.getByText(/V tomto kostele poutníci často zmiňují/)).toBeVisible()
   await expect(page.getByText('hluboký prožitek').first()).toBeVisible()
   await expect(page.getByText(/potvrdil/)).toBeVisible()
   // reverent by construction: no stars anywhere near the Mass

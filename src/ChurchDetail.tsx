@@ -15,9 +15,10 @@ import { fmtDateCz, isStale } from './domain/format'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
-import { aggregateFor, loadAggregates } from './lib/feedbackStore'
+import { aggregateFor, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { recordExpectedAttendance } from './lib/feedbackLedger'
-import { chipLabel, massKey, occurrenceOf, oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
+import { massKey, occurrenceOf, oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
+import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
 import { confirmedByPilgrims, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
 
@@ -59,45 +60,33 @@ export function NoteText({ note }: { note: string }) {
   )
 }
 
-/** Graded ordo line of what pilgrims often mention (no stars, no score, no
- * per-chip numbers). Two directness tiers: when THIS Mass's slot clears the
- * floor it speaks directly ("u této mše často zmiňují … · potvrdilo N poutníků");
- * otherwise the church-wide tier gives an ambient, clearly-less-specific note
- * ("v tomto kostele …", no count). The most-mentioned chip reads slightly
- * stronger (frequency order + subtle weight). */
-// TODO: a time-of-day "similar Masses" middle tier (between slot and church).
-function WitnessLine({ slot, church }: { slot?: Aggregate; church?: Aggregate }) {
-  if (slot && slot.chips.length > 0) {
-    return (
-      <p className="mt-0.5 text-sm text-ink-faded">
-        {t('fb_often_slot')}: <WitnessChips chips={slot.chips} />
-        {' · '}
-        {confirmedByPilgrims(slot.witnesses)}
-      </p>
-    )
-  }
-  if (church && church.chips.length > 0) {
-    return (
-      <p className="mt-0.5 text-sm text-ink-faded">
-        {t('fb_in_church')}: <WitnessChips chips={church.chips} />
-      </p>
-    )
-  }
-  return null
+/** The primary testimony for a church: what pilgrims most mention across every
+ * Mass here, as read-only witness pills. Ranked by distinctiveness and capped at
+ * three (docs/PILGRIM-WITNESS-PLAN.md — no stars, no score); the aggregate count
+ * follows. This is the church-level-first block; individual Masses only speak up
+ * when they diverge (MassDiverges). */
+function ChurchWitness({ chips, witnesses }: { chips: { id: string; count: number }[]; witnesses: number }) {
+  if (chips.length === 0) return null
+  return (
+    <section aria-label={t('fb_church_often')} className="mt-6 border-t border-hairline pt-4">
+      <p className="text-sm text-ink-faded">{t('fb_church_often')}:</p>
+      <div className="mt-2">
+        <WitnessPills chips={chips} />
+      </div>
+      <p className="mt-1.5 text-xs text-ink-faded">{confirmedByPilgrims(witnesses)}</p>
+    </section>
+  )
 }
 
-/** Chips in frequency order; the first (most-mentioned) carries a touch more
- * weight so the eye lands on it — no numbers, just typographic emphasis. */
-function WitnessChips({ chips }: { chips: { id: string }[] }) {
+/** A specific Mass's own note — only when it diverges from the church block
+ * (a tag strong here that the church-level pills don't already carry). Keeps the
+ * schedule quiet: no per-Mass repetition of the church's testimony. */
+function MassDiverges({ chips }: { chips: { id: string; count: number }[] }) {
+  if (chips.length === 0) return null
   return (
-    <>
-      {chips.map((c, i) => (
-        <span key={c.id}>
-          {i > 0 && ' · '}
-          <span className={i === 0 ? 'text-ink' : undefined}>{chipLabel(c.id)}</span>
-        </span>
-      ))}
-    </>
+    <p className="mt-1 text-sm text-ink-faded">
+      {t('fb_mass_diverges')}: <WitnessPills chips={chips} />
+    </p>
   )
 }
 
@@ -267,6 +256,12 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
   }, [church.id])
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const agg = useMemo(() => aggregateFor(church.id), [church.id, aggTick])
+  // Church-level-first: the primary block ranks the church-wide tier by
+  // distinctiveness (top 3) against every loaded church; per-Mass rows only
+  // surface tags that diverge from these.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const churchTags = useMemo(() => rankChurchTags(church.id), [church.id, aggTick])
+  const churchTopIds = useMemo(() => churchTags.map((c) => c.id), [churchTags])
 
   // "recent viewers": opening a church near a Mass time records an expected
   // attendance, so the after-Mass card can ask on the next app open.
@@ -327,6 +322,8 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
         {church.barrierFree && ` · ${t('wheelchair_label')}`}
       </p>
 
+      <ChurchWitness chips={churchTags} witnesses={agg.church.witnesses} />
+
       {failed && (
         <p className="mt-8 text-ink-faded" role="alert">
           {t('detail_load_error')}
@@ -368,7 +365,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                           s={s}
                           church={church}
                           slot={agg.slots.get(slotKey(church.id, day, s.time, riteOf(s), s.lang))}
-                          churchAgg={agg.church}
+                          churchTopIds={churchTopIds}
                         />
                       </li>
                     ))}
@@ -395,9 +392,11 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                         {x.type || t('service_fallback')}
                         <NoteText note={x.note} />
                       </p>
-                      <WitnessLine
-                        slot={agg.slots.get(oneOffKey(church.id, x.date, x.time, riteOf(x), x.lang))}
-                        church={agg.church}
+                      <MassDiverges
+                        chips={divergentChips(
+                          agg.slots.get(oneOffKey(church.id, x.date, x.time, riteOf(x), x.lang)),
+                          churchTopIds,
+                        )}
                       />
                     </div>
                     <ServiceActions church={church} service={x} />
@@ -455,12 +454,12 @@ function ServiceRow({
   s,
   church,
   slot,
-  churchAgg,
+  churchTopIds,
 }: {
   s: Service
   church: Church
   slot?: Aggregate
-  churchAgg?: Aggregate
+  churchTopIds: string[]
 }) {
   // P6 Věra: a service whose note provably excludes EVERY upcoming occurrence
   // in the next five weeks ("kromě července a srpna" read in July) mutes —
@@ -497,7 +496,7 @@ function ServiceRow({
           {s.lang !== 'česky' && <Chip label={langLabel(s.lang)} />}
           {s.greek && <Chip label={t('greek_chip')} />}
         </p>
-        <WitnessLine slot={slot} church={churchAgg} />
+        <MassDiverges chips={divergentChips(slot, churchTopIds)} />
       </div>
       <ServiceActions church={church} service={s} />
     </div>

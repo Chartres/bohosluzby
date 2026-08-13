@@ -180,9 +180,15 @@
   font-size: 0.82rem;
   color: var(--color-ink);
 }
+.map-pop-witness-label {
+  color: var(--color-ink-faded);
+}
+.map-pop-witness .witness-pills {
+  margin-top: 3px;
+}
 .map-pop-witness-count {
   display: block;
-  margin-top: 1px;
+  margin-top: 3px;
   color: var(--color-ink-faded);
 }
 /* "pro váš výběr nic" — a rubric, so a miss never reads like a match */

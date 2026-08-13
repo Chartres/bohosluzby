@@ -16,8 +16,9 @@ import { gridCluster } from './domain/cluster'
 import { NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
-import { chipLabel, massKey, type Aggregate } from './domain/feedback'
-import { aggregateFor, churchHasTags, loadAggregates } from './lib/feedbackStore'
+import { massKey, type Aggregate } from './domain/feedback'
+import { aggregateFor, churchHasTags, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
+import { witnessPillsHtml } from './WitnessPills'
 import { t, churchCount, confirmedByPilgrims } from './i18n'
 
 const CELL_PX = 64 // cluster grid; ~a finger-width of map
@@ -177,25 +178,34 @@ export default function MapView({
           line.textContent = t('map_none_soon')
         }
       }
-      // reverent witness line, graded by directness (docs/PILGRIM-WITNESS-PLAN.md,
-      // no stars): the shown Mass's own slot speaks directly with a count; failing
-      // that, the church-wide tier gives an ambient, less-specific note (no count).
-      const tiers = next ? witnessTiers(church, next) : undefined
-      const direct = tiers?.slot && tiers.slot.chips.length > 0 ? tiers.slot : undefined
-      const ambient = !direct && tiers && tiers.church.chips.length > 0 ? tiers.church : undefined
-      if (direct || ambient) {
-        const witness = document.createElement('p')
+      // church-level-first witness (docs/PILGRIM-WITNESS-PLAN.md, no stars): the
+      // church's top-3 distinctive tags as read-only pills + the aggregate count,
+      // then — only when the shown Mass diverges — that Mass's own note.
+      const churchTags = rankChurchTags(church.id)
+      if (churchTags.length > 0) {
+        const { slots, church: churchAgg } = aggregateFor(church.id)
+        const slot = next ? slots.get(massKey(church.id, next.service, next.start)) : undefined
+        const divergent = divergentChips(slot, churchTags.map((c) => c.id))
+        const witness = document.createElement('div')
         witness.className = 'map-pop-witness'
-        const often = document.createElement('span')
-        const agg = direct ?? ambient!
-        const label = direct ? t('fb_often_slot') : t('fb_in_church')
-        often.textContent = `${label}: ${agg.chips.map((c) => chipLabel(c.id)).join(' · ')}`
-        witness.append(often)
-        if (direct) {
-          const count = document.createElement('span')
-          count.className = 'map-pop-witness-count'
-          count.textContent = confirmedByPilgrims(direct.witnesses)
-          witness.append(count)
+        const label = document.createElement('p')
+        label.className = 'map-pop-witness-label'
+        label.textContent = `${t('fb_church_often')}:`
+        const pills = document.createElement('p')
+        pills.className = 'witness-pills'
+        pills.innerHTML = witnessPillsHtml(churchTags)
+        const count = document.createElement('p')
+        count.className = 'map-pop-witness-count'
+        count.textContent = confirmedByPilgrims(churchAgg.witnesses)
+        witness.append(label, pills, count)
+        if (divergent.length > 0) {
+          const dLabel = document.createElement('p')
+          dLabel.className = 'map-pop-witness-label'
+          dLabel.textContent = `${t('fb_mass_diverges')}:`
+          const dPills = document.createElement('p')
+          dPills.className = 'witness-pills'
+          dPills.innerHTML = witnessPillsHtml(divergent)
+          witness.append(dLabel, dPills)
         }
         el.append(name, line, witness)
       } else {

@@ -181,8 +181,8 @@ export const cs = {
   fb_save: 'Uložit',
   fb_saved: 'Díky. Zapsáno pro další poutníky.',
   fb_often: 'často zmiňují',
-  fb_often_slot: 'u této mše často zmiňují',
-  fb_in_church: 'v tomto kostele',
+  fb_church_often: 'V tomto kostele poutníci často zmiňují',
+  fb_mass_diverges: 'u této mše navíc zmiňují',
   fb_filter_group: 'Ohlasy poutníků',
   fb_filter_hint: 'Ukázat jen mše, kde poutníci zmiňují:',
 } as const
@@ -345,8 +345,8 @@ export const en: Record<Key, string> = {
   fb_save: 'Save',
   fb_saved: 'Thank you. Recorded for other pilgrims.',
   fb_often: 'often mentioned',
-  fb_often_slot: 'at this Mass, pilgrims often mention',
-  fb_in_church: 'at this church',
+  fb_church_often: 'Pilgrims here often mention',
+  fb_mass_diverges: 'at this Mass, pilgrims also mention',
   fb_filter_group: 'Pilgrim witness',
   fb_filter_hint: 'Show only Masses where pilgrims mention:',
 }
