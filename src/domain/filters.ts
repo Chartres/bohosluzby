@@ -11,6 +11,9 @@ export interface Filters {
   massOnly: boolean
   /** Church-level distance cap in km (null = no cap). */
   maxKm: number | null
+  /** Witness chip ids to require (ALL of them) at slot- or church-tier. Applied
+   * over the aggregates, not the service data, so it lives outside serviceMatches. */
+  witnessTags: string[]
 }
 
 export const NO_FILTERS: Filters = {
@@ -19,6 +22,7 @@ export const NO_FILTERS: Filters = {
   barrierFree: false,
   massOnly: false,
   maxKm: null,
+  witnessTags: [],
 }
 
 /** The okruh choices — walking, cycling, driving radii. */

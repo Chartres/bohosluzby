@@ -151,7 +151,7 @@ describe('selectUpcoming — okruh (maxKm) filter', () => {
     [near.id, services([{ days: '5', time: '18:00' }])],
     [far.id, services([{ days: '5', time: '18:00' }])],
   ])
-  const f = { lang: null, greek: false, barrierFree: false, massOnly: false, maxKm: null }
+  const f = { lang: null, greek: false, barrierFree: false, massOnly: false, maxKm: null, witnessTags: [] }
 
   it('maxKm drops churches beyond the radius in both day modes', async () => {
     const { selectUpcoming } = await import('./ranking')

@@ -3,15 +3,14 @@
 // shadows, positive-only chips. One tap "Ano" is already the witness; the chips,
 // language, and suggest-a-tag are optional.
 import { useState } from 'react'
-import { WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
+import { WITNESS_CHIPS, type MassFeedback, type Occurrence } from './domain/feedback'
 import { suggestTag } from './lib/feedbackStore'
 import { t } from './i18n'
 
-export interface CardMass {
+export interface CardMass extends Occurrence {
   churchId: string
   massKey: string
   churchName: string
-  time: string
   type: string
 }
 
@@ -33,7 +32,17 @@ export function AfterMassCard({
   const [suggestText, setSuggestText] = useState('')
 
   const submit = (over: Partial<MassFeedback> = {}) =>
-    onSubmit({ churchId: entry.churchId, massKey: entry.massKey, chips, ...over })
+    onSubmit({
+      churchId: entry.churchId,
+      massKey: entry.massKey,
+      chips,
+      weekday: entry.weekday,
+      time: entry.time,
+      rite: entry.rite,
+      lang: entry.lang,
+      massDate: entry.massDate,
+      ...over,
+    })
 
   const onYes = () => {
     submit({ chips: [] }) // attending is itself the witness

@@ -29,10 +29,13 @@ test('preview → Ano → witness chips → saved → detail shows the corrobora
   await card.getByRole('button', { name: 'Uložit' }).click()
   await expect(page.getByText('Díky. Zapsáno pro další poutníky.')).toBeVisible()
 
-  // the detail page now shows the plain ordo witness line for that Mass
+  // the detail page now shows the direct (slot-tier) ordo witness line for that
+  // Mass — "u této mše často zmiňují … · potvrdil N poutník". The church-wide
+  // ambient tier ("v tomto kostele …") may echo the same chips on sibling Masses,
+  // so scope the chip check to the first match.
   await page.goto(`/kostel/${churchId}/`)
-  await expect(page.getByText(/často zmiňují/)).toBeVisible()
-  await expect(page.getByText('hluboký prožitek')).toBeVisible()
+  await expect(page.getByText(/u této mše často zmiňují/)).toBeVisible()
+  await expect(page.getByText('hluboký prožitek').first()).toBeVisible()
   await expect(page.getByText(/potvrdil/)).toBeVisible()
   // reverent by construction: no stars anywhere near the Mass
   await expect(page.getByText('★')).toHaveCount(0)

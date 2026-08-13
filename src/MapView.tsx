@@ -17,7 +17,7 @@ import { NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
 import { chipLabel, massKey, type Aggregate } from './domain/feedback'
-import { aggregateFor, loadAggregates } from './lib/feedbackStore'
+import { aggregateFor, churchHasTags, loadAggregates } from './lib/feedbackStore'
 import { t, churchCount, confirmedByPilgrims } from './i18n'
 
 const CELL_PX = 64 // cluster grid; ~a finger-width of map
@@ -25,19 +25,24 @@ const CELL_PX = 64 // cluster grid; ~a finger-width of map
 /** "8:30", not "08:30" — chips are read at a glance, the zero is noise. */
 const chipTime = (d: Date) => fmtTime(d).replace(/^0/, '')
 
-/** The corroborated witness aggregate for the Mass a marker/popover shows
- * (from the in-memory cache; undefined until loadAggregates fills it). */
-const witnessFor = (church: Church, u: Upcoming): Aggregate | undefined =>
-  aggregateFor(church.id).get(massKey(church.id, u.service, u.start))
+/** Both directness tiers for the Mass a marker/popover shows: the specific slot
+ * aggregate and the church-wide one (from the in-memory cache; empty until
+ * loadAggregates fills it). */
+const witnessTiers = (church: Church, u: Upcoming): { slot?: Aggregate; church: Aggregate } => {
+  const { slots, church: churchAgg } = aggregateFor(church.id)
+  return { slot: slots.get(massKey(church.id, u.service, u.start)), church: churchAgg }
+}
+const hasWitness = (t: { slot?: Aggregate; church: Aggregate }): boolean =>
+  (t.slot?.chips.length ?? 0) > 0 || t.church.chips.length > 0
 
 /** A bare time on a pin reads as TODAY — on "hned" a church's next mass can be
  * days out, so a not-today chip carries its weekday ("út 15:00") and greys. */
 const chipIcon = (label: string, otherDay: boolean, witnessed: boolean) =>
   L.divIcon({
     className: 'map-chip-wrap',
-    // witnessed: a subtle season-accent dot under the chip marks a Mass pilgrims
-    // have corroborated — a cue, not clutter (no count, no stars on the marker).
-    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}${witnessed ? ' map-chip--witnessed' : ''}">${label}</span>`,
+    // witnessed: a small rubric-red reference mark (‟) on the time chip — a
+    // missal cue that there is testimony here. No count, no stars on the marker.
+    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}">${label}${witnessed ? '<sup class="map-chip-mark" aria-hidden="true">‟</sup>' : ''}</span>`,
     iconSize: [30, 30], // tap target; the chip centers itself and may overflow
   })
 // non-matching: a tiny faded dot; the 30px wrapper keeps it tappable
@@ -172,19 +177,26 @@ export default function MapView({
           line.textContent = t('map_none_soon')
         }
       }
-      // reverent witness line: what pilgrims often mention for the shown Mass,
-      // and how many attested it — only once it clears the corroboration
-      // threshold. Plain ordo type, no stars (docs/PILGRIM-WITNESS-PLAN.md).
-      const a = next ? witnessFor(church, next) : undefined
-      if (a && a.chips.length > 0) {
+      // reverent witness line, graded by directness (docs/PILGRIM-WITNESS-PLAN.md,
+      // no stars): the shown Mass's own slot speaks directly with a count; failing
+      // that, the church-wide tier gives an ambient, less-specific note (no count).
+      const tiers = next ? witnessTiers(church, next) : undefined
+      const direct = tiers?.slot && tiers.slot.chips.length > 0 ? tiers.slot : undefined
+      const ambient = !direct && tiers && tiers.church.chips.length > 0 ? tiers.church : undefined
+      if (direct || ambient) {
         const witness = document.createElement('p')
         witness.className = 'map-pop-witness'
         const often = document.createElement('span')
-        often.textContent = `${t('fb_often')}: ${a.chips.map((c) => chipLabel(c.id)).join(' · ')}`
-        const count = document.createElement('span')
-        count.className = 'map-pop-witness-count'
-        count.textContent = confirmedByPilgrims(a.witnesses)
-        witness.append(often, count)
+        const agg = direct ?? ambient!
+        const label = direct ? t('fb_often_slot') : t('fb_in_church')
+        often.textContent = `${label}: ${agg.chips.map((c) => chipLabel(c.id)).join(' · ')}`
+        witness.append(often)
+        if (direct) {
+          const count = document.createElement('span')
+          count.className = 'map-pop-witness-count'
+          count.textContent = confirmedByPilgrims(direct.witnesses)
+          witness.append(count)
+        }
         el.append(name, line, witness)
       } else {
         el.append(name, line)
@@ -253,6 +265,14 @@ export default function MapView({
       for (const u of selectUpcoming(now, origin, visible, byId, filters, cas, day, { limit: Infinity })) {
         if (!matched.has(u.church.id)) matched.set(u.church.id, u) // ordo: keep the day's earliest
       }
+      // Witness filter (Ohlasy poutníků): when tags are selected, the map shows
+      // only churches carrying ALL of them at slot- or church-tier. Aggregates
+      // are loaded for the visible set above, so we cluster over that filtered
+      // subset (the pan-invariant whole-index clustering resumes when off).
+      const wt = filters.witnessTags ?? []
+      const clusterChurches = wt.length
+        ? visible.filter((c) => churchHasTags(c.id, null, wt))
+        : churches
       // Cluster over ALL churches, not just the viewport subset. Bucket
       // membership must not depend on the pan: a grid cell straddling the
       // viewport edge used to gain/lose members every moveend, so its centroid
@@ -260,7 +280,7 @@ export default function MapView({
       // visibly drifted. Buckets key on absolute world-pixel coords at this
       // zoom — pan-invariant — so clusters are decided once; we only RENDER the
       // markers that fall on screen.
-      const pts = churches.map((c) => {
+      const pts = clusterChurches.map((c) => {
         const p = map.project([c.lat, c.lng], zoom)
         return { x: p.x, y: p.y, item: c }
       })
@@ -287,7 +307,7 @@ export default function MapView({
               ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
               : chipTime(next.start)
             : ''
-          const witnessed = Boolean(next) && (witnessFor(church, next!)?.chips.length ?? 0) > 0
+          const witnessed = Boolean(next) && hasWitness(witnessTiers(church, next!))
           const marker = L.marker([church.lat, church.lng], {
             icon: next ? chipIcon(label, otherDay, witnessed) : fadedIcon(),
             title: church.name,

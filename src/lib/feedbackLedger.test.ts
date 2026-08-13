@@ -14,8 +14,12 @@ const entry = (massKey: string, startISO: string) => ({
   massKey,
   startISO,
   churchName: 'kostel sv. Havla',
-  time: '10:30',
   type: 'mše sv.',
+  weekday: 7,
+  time: '10:30',
+  rite: 'ord' as const,
+  lang: 'česky',
+  massDate: '2026-07-05',
 })
 
 afterEach(() => localStorage.clear())

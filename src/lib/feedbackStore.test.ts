@@ -5,10 +5,14 @@ import { CORROBORATION_MIN, aggregateFor, loadAggregates, submitFeedback, sugges
 
 afterEach(() => localStorage.clear())
 
-const sub = (massKey: string, chips: string[]) => submitFeedback({ churchId: 'c1', massKey, chips })
+// occurrence fields are irrelevant to the localStorage aggregation path (it
+// folds churchId/massKey/deviceId/chips) — pass placeholders to satisfy the type
+const OCC = { weekday: 7, time: '09:30', rite: 'ord' as const, lang: 'česky', massDate: '2026-07-05' }
+const sub = (massKey: string, chips: string[]) =>
+  submitFeedback({ churchId: 'c1', massKey, chips, ...OCC })
 const aggAfterLoad = async (churchId: string) => {
   await loadAggregates([churchId])
-  return aggregateFor(churchId)
+  return aggregateFor(churchId).slots
 }
 
 describe('aggregateFor', () => {
@@ -36,7 +40,7 @@ describe('aggregateFor', () => {
   it('keeps masses and churches separate; ignores other churches', async () => {
     sub('c1|w7|09:30', ['hluboky_prozitek'])
     sub('c1|w1|18:00', ['krasny_zpev'])
-    submitFeedback({ churchId: 'c2', massKey: 'c2|w7|09:30', chips: ['vrele_prijeti'] })
+    submitFeedback({ churchId: 'c2', massKey: 'c2|w7|09:30', chips: ['vrele_prijeti'], ...OCC })
     const agg = await aggAfterLoad('c1')
     expect([...agg.keys()].sort()).toEqual(['c1|w1|18:00', 'c1|w7|09:30'])
   })

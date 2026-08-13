@@ -17,7 +17,7 @@ import { isNative } from './lib/native'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { aggregateFor, loadAggregates } from './lib/feedbackStore'
 import { recordExpectedAttendance } from './lib/feedbackLedger'
-import { chipLabel, massKey, oneOffKey, slotKey, type Aggregate } from './domain/feedback'
+import { chipLabel, massKey, occurrenceOf, oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
 import { NavSheet } from './NavSheet'
 import { confirmedByPilgrims, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
 
@@ -59,16 +59,45 @@ export function NoteText({ note }: { note: string }) {
   )
 }
 
-/** Plain ordo line of what pilgrims often mention for this Mass (no stars, no
- * score). Renders only when the aggregate clears the corroboration threshold. */
-function WitnessLine({ a }: { a?: Aggregate }) {
-  if (!a || a.chips.length === 0) return null
+/** Graded ordo line of what pilgrims often mention (no stars, no score, no
+ * per-chip numbers). Two directness tiers: when THIS Mass's slot clears the
+ * floor it speaks directly ("u této mše často zmiňují … · potvrdilo N poutníků");
+ * otherwise the church-wide tier gives an ambient, clearly-less-specific note
+ * ("v tomto kostele …", no count). The most-mentioned chip reads slightly
+ * stronger (frequency order + subtle weight). */
+// TODO: a time-of-day "similar Masses" middle tier (between slot and church).
+function WitnessLine({ slot, church }: { slot?: Aggregate; church?: Aggregate }) {
+  if (slot && slot.chips.length > 0) {
+    return (
+      <p className="mt-0.5 text-sm text-ink-faded">
+        {t('fb_often_slot')}: <WitnessChips chips={slot.chips} />
+        {' · '}
+        {confirmedByPilgrims(slot.witnesses)}
+      </p>
+    )
+  }
+  if (church && church.chips.length > 0) {
+    return (
+      <p className="mt-0.5 text-sm text-ink-faded">
+        {t('fb_in_church')}: <WitnessChips chips={church.chips} />
+      </p>
+    )
+  }
+  return null
+}
+
+/** Chips in frequency order; the first (most-mentioned) carries a touch more
+ * weight so the eye lands on it — no numbers, just typographic emphasis. */
+function WitnessChips({ chips }: { chips: { id: string }[] }) {
   return (
-    <p className="mt-0.5 text-sm text-ink-faded">
-      {t('fb_often')}: {a.chips.map((c) => chipLabel(c.id)).join(' · ')}
-      {' · '}
-      {confirmedByPilgrims(a.witnesses)}
-    </p>
+    <>
+      {chips.map((c, i) => (
+        <span key={c.id}>
+          {i > 0 && ' · '}
+          <span className={i === 0 ? 'text-ink' : undefined}>{chipLabel(c.id)}</span>
+        </span>
+      ))}
+    </>
   )
 }
 
@@ -252,8 +281,8 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
         massKey: massKey(church.id, s, start),
         startISO: start.toISOString(),
         churchName: church.name,
-        time: s.time,
         type: s.type || t('service_fallback'),
+        ...occurrenceOf(s, start),
       })
     }
   }, [svc, church])
@@ -338,7 +367,8 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                         <ServiceRow
                           s={s}
                           church={church}
-                          witness={agg.get(slotKey(church.id, day, s.time))}
+                          slot={agg.slots.get(slotKey(church.id, day, s.time, riteOf(s), s.lang))}
+                          churchAgg={agg.church}
                         />
                       </li>
                     ))}
@@ -365,7 +395,10 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                         {x.type || t('service_fallback')}
                         <NoteText note={x.note} />
                       </p>
-                      <WitnessLine a={agg.get(oneOffKey(church.id, x.date, x.time))} />
+                      <WitnessLine
+                        slot={agg.slots.get(oneOffKey(church.id, x.date, x.time, riteOf(x), x.lang))}
+                        church={agg.church}
+                      />
                     </div>
                     <ServiceActions church={church} service={x} />
                   </li>
@@ -421,11 +454,13 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
 function ServiceRow({
   s,
   church,
-  witness,
+  slot,
+  churchAgg,
 }: {
   s: Service
   church: Church
-  witness?: Aggregate
+  slot?: Aggregate
+  churchAgg?: Aggregate
 }) {
   // P6 Věra: a service whose note provably excludes EVERY upcoming occurrence
   // in the next five weeks ("kromě července a srpna" read in July) mutes —
@@ -462,7 +497,7 @@ function ServiceRow({
           {s.lang !== 'česky' && <Chip label={langLabel(s.lang)} />}
           {s.greek && <Chip label={t('greek_chip')} />}
         </p>
-        <WitnessLine a={witness} />
+        <WitnessLine slot={slot} church={churchAgg} />
       </div>
       <ServiceActions church={church} service={s} />
     </div>

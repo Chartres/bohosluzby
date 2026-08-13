@@ -21,8 +21,8 @@ import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
 import { FeedbackCard } from './FeedbackCard'
 import { AfterMassCard, type CardMass } from './AfterMassCard'
-import { slotKey, type MassFeedback } from './domain/feedback'
-import { submitFeedback } from './lib/feedbackStore'
+import { massKey, riteOf, slotKey, WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
+import { churchHasTags, loadAggregates, submitFeedback } from './lib/feedbackStore'
 import { dueCards, markAnswered, neverAsk, type LedgerEntry } from './lib/feedbackLedger'
 import { track, conversion, logError } from './analytics'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
@@ -265,12 +265,17 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
     const svc = data.byId.get(c.id)?.regular[0]
     if (!svc) continue
     const weekday = Number(svc.days[0])
+    const { y, m, d } = pragueToday(new Date())
     return {
       churchId: c.id,
-      massKey: slotKey(c.id, weekday, svc.time),
+      massKey: slotKey(c.id, weekday, svc.time, riteOf(svc), svc.lang),
       churchName: c.name,
-      time: svc.time,
       type: svc.type || t('service_fallback'),
+      weekday,
+      time: svc.time,
+      rite: riteOf(svc),
+      lang: svc.lang,
+      massDate: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
     }
   }
   return null
@@ -503,13 +508,36 @@ export default function App() {
     setListLimit(LIST_LIMIT) // a new context restarts the cap
   }, [origin, filters, cas, day])
 
-  // one shared selector with the map — the seznam and the mapa never disagree
+  // Witness aggregates for the nearby churches — loaded only when the "Ohlasy
+  // poutníků" filter is active (the hero list doesn't otherwise show witness
+  // lines). aggTick bumps when a load resolves so the row filter re-runs.
+  const [aggTick, setAggTick] = useState(0)
+  const witnessTags = filters.witnessTags
+  useEffect(() => {
+    if (!data || witnessTags.length === 0) return
+    let cancelled = false
+    void loadAggregates(data.nearby.map((c) => c.id)).then(() => {
+      if (!cancelled) setAggTick((n) => n + 1)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [data, witnessTags])
+
+  // one shared selector with the map — the seznam and the mapa never disagree.
+  // The witness filter is applied on top (over the aggregates, not the service
+  // data): keep only Masses carrying ALL selected tags at slot- or church-tier.
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
-    return selectUpcoming(new Date(), origin, data.nearby, data.byId, filters, cas, day, {
-      limit: listLimit,
+    const all = selectUpcoming(new Date(), origin, data.nearby, data.byId, filters, cas, day, {
+      limit: witnessTags.length ? Infinity : listLimit,
     })
-  }, [data, origin, filters, day, cas, listLimit])
+    if (witnessTags.length === 0) return all
+    return all
+      .filter((u) => churchHasTags(u.church.id, massKey(u.church.id, u.service, u.start), witnessTags))
+      .slice(0, listLimit)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
+  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick])
 
   /** Languages on offer nearby (unfiltered) — the options for the lang filter. */
   const langs = useMemo(() => {
@@ -528,6 +556,7 @@ export default function App() {
     filters.barrierFree ||
     filters.massOnly ||
     Boolean(filters.maxKm) ||
+    filters.witnessTags.length > 0 ||
     Boolean(cas)
 
   const updateFilters = (next: Filters) => {
@@ -1273,9 +1302,9 @@ function OrdoControls({
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
-  const whatCount = [filters.massOnly, filters.barrierFree, filters.greek, filters.lang].filter(
-    Boolean,
-  ).length
+  const whatCount =
+    [filters.massOnly, filters.barrierFree, filters.greek, filters.lang].filter(Boolean).length +
+    filters.witnessTags.length
   const dayLbl =
     day === 'now'
       ? t('day_now')
@@ -1461,6 +1490,42 @@ function OrdoControls({
           </select>
         )}
       </div>
+      {/* Ohlasy poutníků — collapsed by default (saves sheet space); native
+          <details> is the right platform control for a disclosure. */}
+      <details className="mt-2">
+        <summary className="rubric cursor-pointer text-ink-faded marker:text-ink-faded">
+          {t('fb_filter_group')}
+          {filters.witnessTags.length > 0 && ` · ${filters.witnessTags.length}`}
+        </summary>
+        <div
+          role="group"
+          aria-label={t('fb_filter_group')}
+          className="-ml-1 mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1"
+        >
+          {WITNESS_CHIPS.map((c) => {
+            const active = filters.witnessTags.includes(c.id)
+            return (
+              <button
+                key={c.id}
+                type="button"
+                aria-pressed={active}
+                className={toggleCls(active)}
+                style={toggleStyle(active)}
+                onClick={() =>
+                  onChange({
+                    ...filters,
+                    witnessTags: active
+                      ? filters.witnessTags.filter((x) => x !== c.id)
+                      : [...filters.witnessTags, c.id],
+                  })
+                }
+              >
+                {c.label}
+              </button>
+            )
+          })}
+        </div>
+      </details>
       {narrow && (
         <button
           type="button"

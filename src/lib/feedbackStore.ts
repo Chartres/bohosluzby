@@ -46,32 +46,59 @@ function write(list: Row[]): void {
   }
 }
 
+/** Two directness tiers for one church: the per-Mass slot aggregates (specific)
+ * and one church-wide aggregate folding every Mass (ambient). */
+export interface ChurchAggregate {
+  slots: Map<string, Aggregate>
+  church: Aggregate
+}
+
 // In-memory rollup cache, filled by loadAggregates(), read synchronously by
 // aggregateFor(). Empty until a load resolves for that church.
-const cache = new Map<string, Map<string, Aggregate>>()
+const cache = new Map<string, ChurchAggregate>()
 
-/** Fold witness rows into per-church, per-Mass aggregates over the threshold. */
-function aggregate(rows: Row[]): Map<string, Map<string, Aggregate>> {
-  // churchId → massKey → { distinct devices, per-chip counts }
-  const acc = new Map<string, Map<string, { devices: Set<string>; counts: Map<string, number> }>>()
+interface Tally {
+  devices: Set<string>
+  counts: Map<string, number>
+}
+const emptyTally = (): Tally => ({ devices: new Set<string>(), counts: new Map<string, number>() })
+const bump = (a: Tally, r: Row) => {
+  a.devices.add(r.deviceId)
+  for (const id of r.chips) a.counts.set(id, (a.counts.get(id) ?? 0) + 1)
+}
+
+/** A Tally → Aggregate: chips over the corroboration floor, ordered by frequency
+ * (most-mentioned first; ties keep the locked display order for stability). */
+function roll(key: string, a: Tally): Aggregate {
+  const order = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
+  const chips = WITNESS_CHIPS.map((c) => c.id)
+    .filter((id) => (a.counts.get(id) ?? 0) >= CORROBORATION_MIN)
+    .map((id) => ({ id, count: a.counts.get(id)! }))
+    .sort((x, y) => y.count - x.count || order.get(x.id)! - order.get(y.id)!)
+  return { massKey: key, witnesses: a.devices.size, chips }
+}
+
+/** Fold witness rows into two tiers per church: slot (group by mass_key) and
+ * church (group by church_id, every Mass together). */
+function aggregate(rows: Row[]): Map<string, ChurchAggregate> {
+  const bySlot = new Map<string, Map<string, Tally>>() // churchId → massKey → tally
+  const byChurch = new Map<string, Tally>() // churchId → tally (all masses)
   for (const r of rows) {
-    const byMass = acc.get(r.churchId) ?? new Map()
-    const a = byMass.get(r.massKey) ?? { devices: new Set<string>(), counts: new Map<string, number>() }
-    a.devices.add(r.deviceId)
-    for (const id of r.chips) a.counts.set(id, (a.counts.get(id) ?? 0) + 1)
-    byMass.set(r.massKey, a)
-    acc.set(r.churchId, byMass)
+    const slots = bySlot.get(r.churchId) ?? new Map<string, Tally>()
+    const slot = slots.get(r.massKey) ?? emptyTally()
+    bump(slot, r)
+    slots.set(r.massKey, slot)
+    bySlot.set(r.churchId, slots)
+
+    const ch = byChurch.get(r.churchId) ?? emptyTally()
+    bump(ch, r)
+    byChurch.set(r.churchId, ch)
   }
-  const out = new Map<string, Map<string, Aggregate>>()
-  for (const [churchId, byMass] of acc) {
+  const out = new Map<string, ChurchAggregate>()
+  for (const [churchId, slots] of bySlot) {
     const m = new Map<string, Aggregate>()
-    for (const [massKey, a] of byMass) {
-      const chips = WITNESS_CHIPS.filter((c) => (a.counts.get(c.id) ?? 0) >= CORROBORATION_MIN).map(
-        (c) => ({ id: c.id, count: a.counts.get(c.id)! }),
-      )
-      m.set(massKey, { massKey, witnesses: a.devices.size, chips })
-    }
-    out.set(churchId, m)
+    for (const [massKey, t] of slots) m.set(massKey, roll(massKey, t))
+    out.set(churchId, { slots: m, church: roll(churchId, byChurch.get(churchId)!) })
   }
   return out
 }
@@ -100,11 +127,18 @@ export async function loadAggregates(churchIds: string[]): Promise<void> {
   }
   const rolled = aggregate(rows)
   // Set every requested church (default empty) so aggregateFor never returns stale data.
-  for (const id of ids) cache.set(id, rolled.get(id) ?? new Map())
+  for (const id of ids) cache.set(id, rolled.get(id) ?? emptyChurchAggregate(id))
 }
 
-/** Persist one Mass submission. One row per device per massKey (upsert).
- * Writes the localStorage mirror always; Supabase too when configured. */
+const emptyChurchAggregate = (churchId: string): ChurchAggregate => ({
+  slots: new Map<string, Aggregate>(),
+  church: { massKey: churchId, witnesses: 0, chips: [] },
+})
+
+/** Persist one Mass submission. One row per device per massKey.
+ * Writes the localStorage mirror always (offline/dedup); when Supabase is
+ * configured the write goes through the submit-feedback Edge Function — the only
+ * anon-writable path (direct table INSERT/UPDATE is revoked). */
 export function submitFeedback(submission: MassFeedback): void {
   const device = deviceId()
   const row: Row = {
@@ -120,19 +154,20 @@ export function submitFeedback(submission: MassFeedback): void {
   write(list)
 
   if (supabase) {
-    supabase
-      .from('mass_feedback')
-      .upsert(
-        {
-          app: 'bohosluzby',
-          church_id: row.churchId,
-          mass_key: row.massKey,
-          device_id: row.deviceId,
-          chips: row.chips,
-          status: 'visible',
+    supabase.functions
+      .invoke('submit-feedback', {
+        body: {
+          church_id: submission.churchId,
+          mass_key: submission.massKey,
+          device_id: device,
+          chips: submission.chips,
+          weekday: submission.weekday,
+          mass_time: submission.time,
+          rite: submission.rite,
+          lang: submission.lang,
+          mass_date: submission.massDate,
         },
-        { onConflict: 'church_id,mass_key,device_id' },
-      )
+      })
       .then(
         () => void loadAggregates([row.churchId]), // refresh the church after a submit
         () => {},
@@ -142,10 +177,25 @@ export function submitFeedback(submission: MassFeedback): void {
   }
 }
 
-/** Per-Mass rollup for one church, read synchronously from the cache
+/** Both directness tiers for one church, read synchronously from the cache
  * (empty until loadAggregates([churchId]) resolves). */
-export function aggregateFor(churchId: string): Map<string, Aggregate> {
-  return cache.get(churchId) ?? new Map()
+export function aggregateFor(churchId: string): ChurchAggregate {
+  return cache.get(churchId) ?? emptyChurchAggregate(churchId)
+}
+
+const hasAll = (a: Aggregate | undefined, tags: string[]): boolean =>
+  !!a && tags.every((tg) => a.chips.some((c) => c.id === tg))
+
+/** Does this church carry ALL the given witness tags — at the given Mass's slot
+ * tier, or church-wide (any Mass) when `massKey` is null? Both tiers are already
+ * thresholded, so a tag present means it cleared the floor. Empty tags = match. */
+export function churchHasTags(churchId: string, massKey: string | null, tags: string[]): boolean {
+  if (tags.length === 0) return true
+  const { slots, church } = aggregateFor(churchId)
+  if (hasAll(church, tags)) return true
+  if (massKey) return hasAll(slots.get(massKey), tags)
+  for (const a of slots.values()) if (hasAll(a, tags)) return true
+  return false
 }
 
 /** A suggested tag — stored privately, never published. */

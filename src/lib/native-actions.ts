@@ -5,7 +5,7 @@ import { buildICS } from '../domain/ics'
 import { nextReminderAt, pragueToday } from '../domain/occurrences'
 import { parseNote } from '../domain/notes'
 import { recordExpectedAttendance } from './feedbackLedger'
-import { massKey } from '../domain/feedback'
+import { massKey, occurrenceOf } from '../domain/feedback'
 
 /** How long before a service the reminder fires. */
 export const REMINDER_LEAD_MIN = 30
@@ -120,8 +120,8 @@ export async function scheduleMassReminder(
       massKey: massKey(church.id, service, start),
       startISO: start.toISOString(),
       churchName: church.name,
-      time: service.time,
       type,
+      ...occurrenceOf(service, start),
     })
     return 'scheduled'
   } catch {

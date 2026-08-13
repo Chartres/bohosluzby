@@ -2,12 +2,14 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AfterMassCard, type CardMass } from './AfterMassCard'
 
+// the write-path occurrence fields the card threads through unchanged
+const OCC = { weekday: 7, time: '09:30', rite: 'ord' as const, lang: 'česky', massDate: '2026-07-05' }
 const MASS: CardMass = {
   churchId: 'c1',
-  massKey: 'c1|w7|09:30',
+  massKey: 'c1|w7|09:30|ord|česky',
   churchName: 'kostel sv. Havla',
-  time: '09:30',
   type: 'mše sv.',
+  ...OCC,
 }
 
 const setup = () => {
@@ -35,7 +37,7 @@ describe('AfterMassCard', () => {
   it('"Ano" records the witness immediately, then reveals optional chips', async () => {
     const { onSubmit, user } = setup()
     await user.click(screen.getByRole('button', { name: 'Ano, byl/a jsem' }))
-    expect(onSubmit).toHaveBeenCalledWith({ churchId: 'c1', massKey: 'c1|w7|09:30', chips: [] })
+    expect(onSubmit).toHaveBeenCalledWith({ churchId: 'c1', massKey: 'c1|w7|09:30|ord|česky', chips: [], ...OCC })
     expect(screen.getByRole('button', { name: 'hluboký prožitek' })).toBeVisible()
   })
 
@@ -48,8 +50,9 @@ describe('AfterMassCard', () => {
 
     expect(onSubmit).toHaveBeenLastCalledWith({
       churchId: 'c1',
-      massKey: 'c1|w7|09:30',
+      massKey: 'c1|w7|09:30|ord|česky',
       chips: ['hluboky_prozitek', 'krasny_zpev'],
+      ...OCC,
     })
     expect(screen.getByText('Díky. Zapsáno pro další poutníky.')).toBeVisible()
   })

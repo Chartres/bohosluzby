@@ -2,16 +2,17 @@
 // or viewed near Mass time). Seeds the after-Mass card. localStorage only —
 // docs/PILGRIM-WITNESS-PLAN.md keeps the cohort on-device, no location check.
 
+import type { Occurrence } from '../domain/feedback'
+
 /** How long after a Mass starts before we ask "were you there?". */
 export const DUE_AFTER_MIN = 60
 
-export interface LedgerEntry {
+export interface LedgerEntry extends Occurrence {
   churchId: string
   massKey: string
   /** ISO start of the specific occurrence. */
   startISO: string
   churchName: string
-  time: string
   type: string
   answered?: boolean
 }
