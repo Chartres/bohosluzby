@@ -185,6 +185,8 @@ export const cs = {
   fb_mass_diverges: 'u této mše navíc zmiňují',
   fb_filter_group: 'Ohlasy poutníků',
   fb_filter_hint: 'Ukázat jen mše, kde poutníci zmiňují:',
+  fb_list_mark_aria: 'svědectví poutníků',
+  detail_parish_web: 'Web farnosti',
 } as const
 
 export type Key = keyof typeof cs
@@ -349,6 +351,8 @@ export const en: Record<Key, string> = {
   fb_mass_diverges: 'at this Mass, pilgrims also mention',
   fb_filter_group: 'Pilgrim witness',
   fb_filter_hint: 'Show only Masses where pilgrims mention:',
+  fb_list_mark_aria: 'pilgrim witness',
+  detail_parish_web: 'Parish website',
 }
 
 export function t(k: Key): string {

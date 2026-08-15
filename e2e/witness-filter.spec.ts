@@ -28,6 +28,8 @@ test('Ohlasy poutníků: default collapsed, a tag narrows the list to matching c
   await expect(list.getByText('kostel sv. Havla')).toBeVisible()
   // more than one church shows before filtering
   await expect(list.getByText('kostel Panny Marie Sněžné')).toBeVisible()
+  // the seeded church's row carries the quiet witness mark
+  await expect(list.getByRole('img', { name: 'svědectví poutníků' }).first()).toBeVisible()
 
   await openControls(page)
   // the witness filter is collapsed by default — the chip is not yet reachable

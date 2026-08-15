@@ -74,7 +74,7 @@ export function AfterMassCard({
     <section
       aria-label={t('fb_card_aria')}
       data-fb-church-id={entry.churchId}
-      className="mt-5 rounded-sm border border-hairline p-4"
+      className="mt-3 rounded-sm border border-hairline p-4"
     >
       {phase === 'done' ? (
         <div className="flex items-baseline justify-between gap-4">

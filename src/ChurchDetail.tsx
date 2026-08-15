@@ -1,7 +1,7 @@
 // Church detail — the full weekly schedule set like a printed ordo (grouped by
 // day, times aligned), one-off services in their own rubric section, parish +
 // contacts, and an honest data-freshness line. docs/DESIGN-BRIEF.md governs.
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type TouchEvent, useEffect, useMemo, useRef, useState } from 'react'
 import {
   decodeShard,
   type Church,
@@ -284,13 +284,48 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
 
   const extras = svc ? svc.extra.filter((x) => x.date >= isoToday()) : []
 
+  // iOS-style edge swipe: a drag that STARTS near the left screen edge and moves
+  // decisively rightward goes back. Guarded so plain vertical scrolling and taps
+  // are untouched — only an edge-anchored, horizontal-dominant drag triggers, and
+  // we never preventDefault, so the browser's own scroll/tap handling is intact.
+  const swipe = useRef<{ x: number; y: number; live: boolean } | null>(null)
+  const onTouchStart = (e: TouchEvent<HTMLElement>) => {
+    const p = e.touches[0]
+    swipe.current = { x: p.clientX, y: p.clientY, live: p.clientX <= 24 }
+  }
+  const onTouchMove = (e: TouchEvent<HTMLElement>) => {
+    const s = swipe.current
+    if (!s || !s.live) return
+    const p = e.touches[0]
+    const dx = p.clientX - s.x
+    const dy = p.clientY - s.y
+    if (dx > 60 && Math.abs(dy) < dx * 0.7) {
+      s.live = false
+      onBack()
+    }
+  }
+  const onTouchEnd = () => {
+    swipe.current = null
+  }
+
   return (
-    <article className="mt-5">
-      <p>
+    <article
+      className="mt-5"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* the back link stays reachable while scrolling a long ordo — sticky just
+          below the app header, paper-backed so scrolled text never shows through.
+          The top offset mirrors the header's height (safe-area pad + wordmark). */}
+      <p
+        className="sticky z-20 -mx-5 bg-paper px-5 py-1 sm:-mx-8 sm:px-8"
+        style={{ top: 'calc(max(0.75rem, env(safe-area-inset-top)) + 2.25rem)' }}
+      >
         <button
           type="button"
           onClick={onBack}
-          className={`rubric inline-flex min-h-11 items-center -my-3 ${linkCls}`}
+          className={`rubric inline-flex min-h-11 items-center ${linkCls}`}
         >
           {t('back_to_list')}
         </button>
@@ -322,6 +357,23 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
         {church.barrierFree && ` · ${t('wheelchair_label')}`}
       </p>
 
+      {/* the parish website is a primary thing a pilgrim checks before going —
+          surface it as a clear tappable affordance near the top, not buried in
+          the small map/navigate/share links or the parish footnote below */}
+      {church.www && (
+        <p className="mt-4">
+          <a
+            href={church.www}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-sm border border-hairline px-3.5 text-sm font-semibold hover:text-ink"
+          >
+            {t('detail_parish_web')}
+            <span aria-hidden="true">→</span>
+          </a>
+        </p>
+      )}
+
       <ChurchWitness chips={churchTags} witnesses={agg.church.witnesses} />
 
       {failed && (
@@ -343,6 +395,19 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
           {svc.updated && isStale(svc.updated) && (
             <p className="mt-6 border-l-2 border-rubric pl-3 text-sm font-semibold text-rubric">
               {staleWarning(fmtDateCz(svc.updated))}
+              {church.www && (
+                <>
+                  {' '}
+                  <a
+                    href={church.www}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline decoration-rubric underline-offset-2"
+                  >
+                    {t('detail_parish_web')} →
+                  </a>
+                </>
+              )}
             </p>
           )}
           <section aria-label={t('schedule_title')} className="mt-7">

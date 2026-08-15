@@ -22,7 +22,7 @@ import { NavSheet, type NavTarget } from './NavSheet'
 import { FeedbackCard } from './FeedbackCard'
 import { AfterMassCard, type CardMass } from './AfterMassCard'
 import { massKey, riteOf, slotKey, WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
-import { churchHasTags, loadAggregates, submitFeedback } from './lib/feedbackStore'
+import { aggregateFor, churchHasTags, loadAggregates, submitFeedback } from './lib/feedbackStore'
 import { dueCards, markAnswered, neverAsk, type LedgerEntry } from './lib/feedbackLedger'
 import { track, conversion, logError } from './analytics'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
@@ -508,13 +508,14 @@ export default function App() {
     setListLimit(LIST_LIMIT) // a new context restarts the cap
   }, [origin, filters, cas, day])
 
-  // Witness aggregates for the nearby churches — loaded only when the "Ohlasy
-  // poutníků" filter is active (the hero list doesn't otherwise show witness
-  // lines). aggTick bumps when a load resolves so the row filter re-runs.
+  // Witness aggregates for the nearby churches — loaded whenever a list is up so
+  // the rows can carry the quiet witness mark, and so the "Ohlasy poutníků"
+  // filter has data to narrow on. aggTick bumps when a load resolves so the row
+  // filter and the per-row mark re-read the refreshed cache.
   const [aggTick, setAggTick] = useState(0)
   const witnessTags = filters.witnessTags
   useEffect(() => {
-    if (!data || witnessTags.length === 0) return
+    if (!data) return
     let cancelled = false
     void loadAggregates(data.nearby.map((c) => c.id)).then(() => {
       if (!cancelled) setAggTick((n) => n + 1)
@@ -522,7 +523,7 @@ export default function App() {
     return () => {
       cancelled = true
     }
-  }, [data, witnessTags])
+  }, [data])
 
   // one shared selector with the map — the seznam and the mapa never disagree.
   // The witness filter is applied on top (over the aggregates, not the service
@@ -538,6 +539,16 @@ export default function App() {
       .slice(0, listLimit)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
   }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick])
+
+  // Churches that carry corroborated (thresholded) church-wide witness tags —
+  // the set the list rows mark with a quiet rubric sign. Read from the same
+  // aggregate cache the map and detail use; aggTick refreshes it on each load.
+  const witnessChurches = useMemo(() => {
+    const set = new Set<string>()
+    if (data) for (const c of data.nearby) if (aggregateFor(c.id).church.chips.length > 0) set.add(c.id)
+    return set
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
+  }, [data, aggTick])
 
   /** Languages on offer nearby (unfiltered) — the options for the lang filter. */
   const langs = useMemo(() => {
@@ -901,6 +912,7 @@ export default function App() {
                 <ServiceList
                   rows={rows}
                   showUntil={day === 'now' || day === 0}
+                  witnessChurches={witnessChurches}
                   onOpen={openChurch}
                   onNavigate={setNavTarget}
                 />
@@ -1136,14 +1148,33 @@ function FeastLine({ day }: { day: DayChoice }) {
   )
 }
 
+/** The quiet witness sign on a list row: the same rubric reference mark (‟) the
+ * map overlays on a chip, inline and small. Presence, not a count — the detail
+ * page carries the testimony. Shown only for churches over the corroboration
+ * floor (docs/PILGRIM-WITNESS-PLAN.md — no stars, no score). */
+function WitnessMark() {
+  return (
+    <span
+      role="img"
+      aria-label={t('fb_list_mark_aria')}
+      title={t('fb_list_mark_aria')}
+      className="font-display font-bold text-rubric"
+    >
+      ‟
+    </span>
+  )
+}
+
 function ServiceList({
   rows,
   showUntil,
+  witnessChurches,
   onOpen,
   onNavigate,
 }: {
   rows: Upcoming[]
   showUntil: boolean
+  witnessChurches: Set<string>
   onOpen: (id: string) => void
   onNavigate: (t: { name: string; lat: number; lng: number }) => void
 }) {
@@ -1208,6 +1239,12 @@ function ServiceList({
                     <>
                       {' '}
                       <Chip label={t('greek_chip')} />
+                    </>
+                  )}
+                  {witnessChurches.has(r.church.id) && (
+                    <>
+                      {' · '}
+                      <WitnessMark />
                     </>
                   )}
                 </p>

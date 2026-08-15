@@ -49,13 +49,13 @@
 }
 .map-chip {
   position: relative; /* containing block for the overlaid witness mark */
-  padding: 1px 5px 2px;
+  padding: 2px 7px 3px;
   background: var(--season);
   color: var(--color-paper);
   border: 1.5px solid var(--color-paper);
   border-radius: 2px;
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: 0.92rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

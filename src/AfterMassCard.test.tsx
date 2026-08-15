@@ -74,6 +74,15 @@ describe('AfterMassCard', () => {
     expect(onDismiss).not.toHaveBeenCalled()
   })
 
+  it('sits near the top — the tightened margin leaves no large dead gap above it', () => {
+    const { container } = render(
+      <AfterMassCard entry={MASS} onSubmit={vi.fn()} onDismiss={vi.fn()} onNeverAsk={vi.fn()} />,
+    )
+    const section = container.querySelector('section')!
+    expect(section.className).toContain('mt-3')
+    expect(section.className).not.toContain('mt-5')
+  })
+
   it('never shows a star, score, or emoji', () => {
     const { container } = render(
       <AfterMassCard entry={MASS} onSubmit={vi.fn()} onDismiss={vi.fn()} onNeverAsk={vi.fn()} />,
