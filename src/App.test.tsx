@@ -1,6 +1,10 @@
 // Persona journey: Marie is in an unfamiliar part of Prague on a Friday
 // afternoon and wants the nearest mass she can still make. One primary
 // journey, all its states (Standard: persona-journey test per journey).
+import { vi } from 'vitest'
+// Force supabase null so a local .env.local can't make witness aggregates hit the
+// live DB (CI has no env). The app + witness store fall back to localStorage.
+vi.mock('./lib/supabase', () => ({ supabase: null }))
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App, { dayOptions } from './App'

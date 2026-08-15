@@ -41,9 +41,10 @@ const hasWitness = (t: { slot?: Aggregate; church: Aggregate }): boolean =>
 const chipIcon = (label: string, otherDay: boolean, witnessed: boolean) =>
   L.divIcon({
     className: 'map-chip-wrap',
-    // witnessed: a small rubric-red reference mark (‟) on the time chip — a
-    // missal cue that there is testimony here. No count, no stars on the marker.
-    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}">${label}${witnessed ? '<span class="map-chip-mark" aria-hidden="true">‟</span>' : ''}</span>`,
+    // witnessed: a rubric "dog-ear" folded corner on the chip (a CSS ::after on
+    // .map-chip--witnessed) — clearly part of the box, not a floating mark that
+    // invites a tap. Presence only; the popover carries the testimony.
+    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}${witnessed ? ' map-chip--witnessed' : ''}">${label}</span>`,
     iconSize: [30, 30], // tap target; the chip centers itself and may overflow
   })
 // non-matching: a tiny faded dot; the 30px wrapper keeps it tappable
