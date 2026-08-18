@@ -186,6 +186,7 @@ export const cs = {
   fb_filter_group: 'Ohlasy poutníků',
   fb_filter_hint: 'Ukázat jen mše, kde poutníci zmiňují:',
   fb_list_mark_aria: 'svědectví poutníků',
+  fb_map_legend: 'ohlasy poutníků',
   detail_parish_web: 'Web farnosti',
 } as const
 
@@ -352,6 +353,7 @@ export const en: Record<Key, string> = {
   fb_filter_group: 'Pilgrim witness',
   fb_filter_hint: 'Show only Masses where pilgrims mention:',
   fb_list_mark_aria: 'pilgrim witness',
+  fb_map_legend: 'pilgrim witness',
   detail_parish_web: 'Parish website',
 }
 

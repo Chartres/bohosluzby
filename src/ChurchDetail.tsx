@@ -11,7 +11,7 @@ import {
 } from './domain/data'
 import { nextOccurrences, pragueToday, recentOccurrence } from './domain/occurrences'
 import { noteUncertain, parseNote } from './domain/notes'
-import { fmtDateCz, isStale } from './domain/format'
+import { fmtDateCz, isStale, withReferral } from './domain/format'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
@@ -50,13 +50,16 @@ export function Chip({ label }: { label: string }) {
 
 /** Service note, set like the rubric it is: conditions the parser can't verify
  * ("1x za 14 dní", "dle ohlášení") print in rubric red so nobody treats an
- * unverified time as a promise. Parsed/descriptive notes stay quiet. */
+ * unverified time as a promise. Parsed/descriptive notes stay quiet. Its own
+ * tight-leading line under the service type — a long note ("…v červenci a srpnu
+ * se bohoslužby nekonají…") then flows cleanly instead of wrapping the type row
+ * tall with a ragged gap beside the time. */
 export function NoteText({ note }: { note: string }) {
   if (!note) return null
-  return noteUncertain(note) ? (
-    <span className="font-semibold text-rubric"> — {note}</span>
-  ) : (
-    <span className="text-ink-faded"> — {note}</span>
+  return (
+    <p className={`text-sm leading-snug ${noteUncertain(note) ? 'font-semibold text-rubric' : 'text-ink-faded'}`}>
+      {note}
+    </p>
   )
 }
 
@@ -357,16 +360,17 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
         {church.barrierFree && ` · ${t('wheelchair_label')}`}
       </p>
 
-      {/* the parish website is a primary thing a pilgrim checks before going —
-          surface it as a clear tappable affordance near the top, not buried in
-          the small map/navigate/share links or the parish footnote below */}
+      {/* the parish website is discoverable near the top, but the page is opened
+          PRIMARILY for Mass times — a quiet rubric link, not a bordered button
+          that competes with the schedule. min-h-11 keeps the tap target while
+          the visual stays light. (The stale-warning link below wants prominence.) */}
       {church.www && (
-        <p className="mt-4">
+        <p className="mt-3">
           <a
-            href={church.www}
+            href={withReferral(church.www)}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-sm border border-hairline px-3.5 text-sm font-semibold hover:text-ink"
+            className={`rubric inline-flex min-h-11 items-center gap-1 ${linkCls}`}
           >
             {t('detail_parish_web')}
             <span aria-hidden="true">→</span>
@@ -399,7 +403,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                 <>
                   {' '}
                   <a
-                    href={church.www}
+                    href={withReferral(church.www)}
                     target="_blank"
                     rel="noreferrer"
                     className="underline decoration-rubric underline-offset-2"
@@ -453,10 +457,8 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                       {x.time}
                     </p>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm">
-                        {x.type || t('service_fallback')}
-                        <NoteText note={x.note} />
-                      </p>
+                      <p className="text-sm">{x.type || t('service_fallback')}</p>
+                      <NoteText note={x.note} />
                       <MassDiverges
                         chips={divergentChips(
                           agg.slots.get(oneOffKey(church.id, x.date, x.time, riteOf(x), x.lang)),
@@ -482,7 +484,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                     const href = contactHref(type, value)
                     const label = type === 'www' ? value.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '') : value
                     return href ? (
-                      <a key={i} className={linkCls} href={href} target={type === 'www' ? '_blank' : undefined} rel="noreferrer">
+                      <a key={i} className={linkCls} href={type === 'www' ? withReferral(href) : href} target={type === 'www' ? '_blank' : undefined} rel="noreferrer">
                         {label}
                       </a>
                     ) : (
@@ -554,9 +556,9 @@ function ServiceRow({
       <div className="min-w-0 flex-1">
         <p className="text-sm">
           {s.type || t('service_fallback')}
-          <NoteText note={s.note} />
           {pausedNow && <span className="font-semibold text-rubric"> · {t('now_paused')}</span>}
         </p>
+        <NoteText note={s.note} />
         <p className="mt-0.5 space-x-2 text-sm empty:hidden">
           {s.lang !== 'česky' && <Chip label={langLabel(s.lang)} />}
           {s.greek && <Chip label={t('greek_chip')} />}

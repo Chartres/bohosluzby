@@ -92,6 +92,51 @@
   pointer-events: none;
 }
 
+/* Discreet key for the dog-ear fold: a matching mini-fold swatch + label, shown
+   under the map only while witnessed chips are on screen. Paper-backed hairline
+   pill, pinned bottom-left (clear of the zoom control and attribution); below
+   the popup pane so a popover always covers it; pointer-events off so it never
+   eats a map drag. */
+.map-legend {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-hairline);
+  border-radius: 2px;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-faded);
+  pointer-events: none;
+}
+.map-legend-fold {
+  position: relative;
+  flex: none;
+  width: 14px;
+  height: 12px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-hairline);
+  border-radius: 2px;
+}
+.map-legend-fold::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 7px 7px 0;
+  border-color: transparent var(--color-rubric) transparent transparent;
+  border-top-right-radius: 2px;
+}
+
 .map-marker {
   display: grid;
   place-items: center;

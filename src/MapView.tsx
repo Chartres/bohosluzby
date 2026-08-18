@@ -5,7 +5,7 @@
 // accent; everything else is a small faded dot (still tappable). Clusters
 // carry the count, accented when they contain a match. Loaded lazily
 // (React.lazy) — the list path never pays for Leaflet.
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './mapview.css'
@@ -84,6 +84,10 @@ export default function MapView({
   fill?: boolean
 }) {
   const divRef = useRef<HTMLDivElement>(null)
+  // The dog-ear fold cue on a chip reads as "something's here" but its meaning
+  // isn't self-evident — show a discreet key (a matching fold swatch) under the
+  // map ONLY while witnessed chips are actually on screen, so it stays low-clutter.
+  const [witnessShown, setWitnessShown] = useState(false)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
   // Callbacks read through refs so the marker effect does NOT depend on their
@@ -304,6 +308,7 @@ export default function MapView({
       // dozen on-screen markers the cost is nil. (moveend fires once per pan, and
       // the effect no longer re-runs on every App render — see the callback refs.)
       layer.clearLayers()
+      let anyWitness = false
       for (const cl of gridCluster(pts, CELL_PX)) {
         if (cl.items.length === 1) {
           const church = cl.items[0]
@@ -319,6 +324,7 @@ export default function MapView({
               : chipTime(next.start)
             : ''
           const witnessed = Boolean(next) && hasWitness(witnessTiers(church, next!))
+          if (witnessed) anyWitness = true
           const marker = L.marker([church.lat, church.lng], {
             icon: next ? chipIcon(label, otherDay, witnessed) : fadedIcon(),
             title: church.name,
@@ -341,6 +347,7 @@ export default function MapView({
             .addTo(layer)
         }
       }
+      setWitnessShown(anyWitness) // React bails out if unchanged — deps exclude it, so no re-subscribe
     }
 
     map.on('moveend', render) // zoom changes end in moveend too
@@ -355,16 +362,24 @@ export default function MapView({
   }, [churches, filters, cas, day, origin])
 
   return (
-    <div
-      ref={divRef}
-      data-testid="mapa"
-      role="region"
-      aria-label={t('map_aria')}
-      className={
-        fill
-          ? 'ordo-map ordo-map--fill w-full border-t border-hairline'
-          : 'ordo-map mt-4 w-full border border-hairline'
-      }
-    />
+    <div className={fill ? 'relative h-full' : 'relative'}>
+      <div
+        ref={divRef}
+        data-testid="mapa"
+        role="region"
+        aria-label={t('map_aria')}
+        className={
+          fill
+            ? 'ordo-map ordo-map--fill w-full border-t border-hairline'
+            : 'ordo-map mt-4 w-full border border-hairline'
+        }
+      />
+      {witnessShown && (
+        <p className="map-legend">
+          <span className="map-legend-fold" aria-hidden="true" />
+          {t('fb_map_legend')}
+        </p>
+      )}
+    </div>
   )
 }

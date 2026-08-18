@@ -31,6 +31,17 @@ export function fmtUntil(now: Date, start: Date): string {
   return `za ${days} ${days === 1 ? 'den' : days >= 5 ? 'dní' : 'dny'}`
 }
 
+/** Tag an outbound parish-website link with our referral UTM so a parish can see
+ * the visit came from us. Keeps any existing query (`&` vs `?`) and preserves a
+ * trailing #fragment. Only ever applied to church.www on the detail page. */
+export function withReferral(url: string): string {
+  const utm = 'utm_source=bohosluzby.dravec.org&utm_medium=referral&utm_campaign=detail'
+  const hash = url.indexOf('#')
+  const base = hash === -1 ? url : url.slice(0, hash)
+  const frag = hash === -1 ? '' : url.slice(hash)
+  return `${base}${base.includes('?') ? '&' : '?'}${utm}${frag}`
+}
+
 /** Registry entry older than 18 months → the schedule is a verify-before-you-go
  * warning, not a promise (shared by the list rows and the detail). */
 export function isStale(iso: string, now = new Date()): boolean {

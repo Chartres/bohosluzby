@@ -369,7 +369,7 @@ describe('Marie finds the nearest mass', () => {
     expect(parish).toHaveTextContent('Křižovnické nám. 4, Praha 1')
     expect(within(parish).getByRole('link', { name: 'farnostsalvator.cz' })).toHaveAttribute(
       'href',
-      'https://www.farnostsalvator.cz',
+      'https://www.farnostsalvator.cz?utm_source=bohosluzby.dravec.org&utm_medium=referral&utm_campaign=detail',
     )
     expect(within(parish).getByRole('link', { name: '222 221 339' })).toHaveAttribute(
       'href',
@@ -414,7 +414,11 @@ describe('Marie finds the nearest mass', () => {
     await user.click(await screen.findByText('kostel Nejsvětějšího Salvátora'))
     // church 1 is fresh (no stale note) → exactly one clear "Web farnosti →" link
     const web = screen.getByRole('link', { name: 'Web farnosti' })
-    expect(web).toHaveAttribute('href', 'https://www.farnostsalvator.cz')
+    // detail parish-web links carry our referral UTM (list rows deliberately do not)
+    expect(web).toHaveAttribute(
+      'href',
+      'https://www.farnostsalvator.cz?utm_source=bohosluzby.dravec.org&utm_medium=referral&utm_campaign=detail',
+    )
     expect(web).toHaveAttribute('target', '_blank')
   })
 
@@ -426,7 +430,10 @@ describe('Marie finds the nearest mass', () => {
     // warning carries a parish-web link right in the sentence
     const warn = await screen.findByText(/Rozpis byl naposledy ověřen 1\. 1\. 2016 — před cestou/)
     const link = within(warn).getByRole('link', { name: /Web farnosti/ })
-    expect(link).toHaveAttribute('href', 'https://www.opatbrno.cz')
+    expect(link).toHaveAttribute(
+      'href',
+      'https://www.opatbrno.cz?utm_source=bohosluzby.dravec.org&utm_medium=referral&utm_campaign=detail',
+    )
   })
 
   it('edge swipe from the left goes back; a mid-screen drag does not', async () => {
