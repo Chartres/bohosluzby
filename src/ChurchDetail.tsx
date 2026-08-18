@@ -438,6 +438,39 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
             })}
           </section>
 
+          {/* Svátost smíření — an auxiliary section, not a Mass: the registry
+              gives these as time WINDOWS (e.g. "08:30 - 11:30"), shown verbatim.
+              No calendar/reminder — a window is not a single event. Grouped by
+              day and styled like the ordo above (rubric day headers, hairlines). */}
+          {svc.confession.length > 0 && (
+            <section aria-label={t('confession_title')} className="mt-7">
+              <h3 className="rubric border-b border-hairline pb-1">{t('confession_title')}</h3>
+              {DAY_ORDER.map((day) => {
+                const rows = svc.confession
+                  .filter((s) => s.days.includes(String(day)))
+                  .sort((a, b) => a.time.localeCompare(b.time))
+                if (rows.length === 0) return null
+                return (
+                  <div key={day} className="mt-4">
+                    <h4 className="rubric text-[0.7rem]">{t(DAY_NAME_KEY[day])}</h4>
+                    <ul>
+                      {rows.map((s, i) => (
+                        <li key={i} className="flex items-baseline gap-4 border-b border-hairline py-2">
+                          <p className="font-display shrink-0 text-base font-semibold tabular-nums">
+                            {s.time}
+                          </p>
+                          <div className="min-w-0 flex-1">
+                            <NoteText note={s.note} />
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              })}
+            </section>
+          )}
+
           {extras.length > 0 && (
             <section aria-label={t('extras_title')} className="mt-7">
               <h3 className="rubric border-b border-hairline pb-1">{t('extras_title')}</h3>

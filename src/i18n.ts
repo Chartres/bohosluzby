@@ -130,6 +130,7 @@ export const cs = {
   // ---- church detail ----
   schedule_title: 'Pořad bohoslužeb',
   extras_title: 'Mimořádné bohoslužby',
+  confession_title: 'Svátost smíření',
   parish_title: 'Farnost',
   no_regular_services: 'Rejstřík pro tento kostel neuvádí žádné pravidelné bohoslužby.',
   last_verified: 'naposledy ověřeno',
@@ -298,6 +299,7 @@ export const en: Record<Key, string> = {
 
   schedule_title: 'Mass times',
   extras_title: 'Special services',
+  confession_title: 'Confession',
   parish_title: 'Parish',
   no_regular_services: 'The registry lists no regular services for this church.',
   last_verified: 'last verified',

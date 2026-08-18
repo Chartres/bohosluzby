@@ -19,6 +19,7 @@ const services = (regular: { days: string; time: string }[], extra: { date: stri
     contacts: [],
     regular: regular.map((r) => ({ ...r, lang: 'česky', greek: false, type: 'mše sv.', note: '' })),
     extra: extra.map((r) => ({ ...r, lang: 'česky', greek: false, type: 'mše sv.', note: '' })),
+    confession: [],
   }) satisfies ChurchServices
 
 // Friday 3 Jul 2026, 17:00 Prague (15:00 UTC); origin = Prague centre.

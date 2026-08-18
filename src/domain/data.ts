@@ -38,7 +38,17 @@ export interface ChurchServices {
   contacts: [type: string, value: string][]
   regular: Service[]
   extra: ExtraService[]
+  /** Confession ("svátost smíření") rows, split out of `regular`: their TIME is a
+   * window range ("08:30 - 11:30"), not a Mass start, so they must stay out of
+   * every Mass path (schedule, ranking, countdowns). Rendered as their own
+   * auxiliary section on the detail page. */
+  confession: Service[]
 }
+
+// ponytail: registry type is free text; confession comes as "svátost smíření"
+// (case varies). Trim + case-insensitive exact match keeps note-mentions of
+// confession — which live in a Mass row's note, not its type — untouched.
+export const isConfession = (type: string): boolean => /^svátost smíření$/i.test(type.trim())
 
 /** services/<cell>.json value shape (compact keys). */
 interface ShardEntry {
@@ -65,19 +75,23 @@ export const decodeIndex = (rows: IndexRow[]): Church[] =>
 export function decodeShard(shard: Record<string, ShardEntry>): Map<string, ChurchServices> {
   const out = new Map<string, ChurchServices>()
   for (const [id, e] of Object.entries(shard)) {
+    const rows = e.s.map(([days, time, lang, greek, type, note]) => ({
+      days,
+      time,
+      lang: normalizeLang(lang),
+      greek: greek === 1,
+      type,
+      note,
+    }))
     out.set(id, {
       updated: e.u,
       parish: e.p,
       parishAddress: e.pa,
       contacts: e.c,
-      regular: e.s.map(([days, time, lang, greek, type, note]) => ({
-        days,
-        time,
-        lang: normalizeLang(lang),
-        greek: greek === 1,
-        type,
-        note,
-      })),
+      // Confession rows never enter `regular`, so ranking, the detail schedule,
+      // and the countdowns that read `regular` all exclude them for free.
+      regular: rows.filter((s) => !isConfession(s.type)),
+      confession: rows.filter((s) => isConfession(s.type)),
       extra: (e.x ?? []).map(([date, time, lang, greek, type, note]) => ({
         date,
         time,
