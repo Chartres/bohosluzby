@@ -340,8 +340,12 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
       >
         {church.name}
       </h2>
-      <p className="mt-1 text-sm text-ink-faded">
-        {church.city && `${church.city} · `}
+      {church.city && <p className="mt-1 text-sm text-ink-faded">{church.city}</p>}
+      {/* one meta row of actions under the title — map · navigate · share · web
+          farnosti. Bundled (not a separate block) so the schedule stays primary;
+          gap-y + a touch more spacing keeps them tappable. Web is rubric-tinted
+          so it's findable among them without a heavy button. */}
+      <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-faded">
         <a
           className={linkCls}
           href={`https://mapy.cz/zakladni?q=${church.lat}%2C${church.lng}`}
@@ -350,33 +354,23 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
         >
           {t('map_link')}
         </a>
-        {' · '}
         {/* geo: is an Android scheme — iOS ignored it; the chooser works everywhere */}
         <button type="button" className={linkCls} onClick={() => setNavOpen(true)}>
           {t('detail_navigate')}
         </button>
-        {' · '}
         <ShareLink church={church} />
-        {church.barrierFree && ` · ${t('wheelchair_label')}`}
-      </p>
-
-      {/* the parish website is discoverable near the top, but the page is opened
-          PRIMARILY for Mass times — a quiet rubric link, not a bordered button
-          that competes with the schedule. min-h-11 keeps the tap target while
-          the visual stays light. (The stale-warning link below wants prominence.) */}
-      {church.www && (
-        <p className="mt-3">
+        {church.www && (
           <a
             href={withReferral(church.www)}
             target="_blank"
             rel="noreferrer"
-            className={`rubric inline-flex min-h-11 items-center gap-1 ${linkCls}`}
+            className={`rubric ${linkCls}`}
           >
             {t('detail_parish_web')}
-            <span aria-hidden="true">→</span>
           </a>
-        </p>
-      )}
+        )}
+        {church.barrierFree && <span className="text-ink-faded">{t('wheelchair_label')}</span>}
+      </p>
 
       <ChurchWitness chips={churchTags} witnesses={agg.church.witnesses} />
 
