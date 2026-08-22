@@ -48,15 +48,22 @@ const SHARD = {
   },
 }
 
+// Church "1" has a photo entry; "2"/"3" do not.
+const PHOTOS = {
+  '1': { url: 'https://commons.example/thumb.jpg', credit: 'Jan Novák', license: 'CC BY-SA 4.0' },
+}
+
 beforeEach(() => {
   localStorage.clear()
   vi.stubGlobal(
     'fetch',
-    vi.fn(async (url: RequestInfo | URL) =>
-      String(url).endsWith('/data/services/50-14.json')
-        ? new Response(JSON.stringify(SHARD), { status: 200 })
-        : new Response('not found', { status: 404 }),
-    ),
+    vi.fn(async (url: RequestInfo | URL) => {
+      const u = String(url)
+      if (u.endsWith('/data/services/50-14.json'))
+        return new Response(JSON.stringify(SHARD), { status: 200 })
+      if (u.endsWith('/data/photos.json')) return new Response(JSON.stringify(PHOTOS), { status: 200 })
+      return new Response('not found', { status: 404 })
+    }),
   )
 })
 afterEach(() => vi.unstubAllGlobals())
@@ -82,6 +89,22 @@ describe('confession section', () => {
     render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
     await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
     expect(screen.queryByRole('region', { name: 'Svátost smíření' })).toBeNull()
+  })
+})
+
+describe('church photo', () => {
+  it('renders the photo and its attribution when a photo exists', async () => {
+    render(<ChurchDetail church={church('1', '50-14')} onBack={() => {}} />)
+    const img = await screen.findByRole('img', { name: 'kostel 1' })
+    expect(img).toHaveAttribute('src', 'https://commons.example/thumb.jpg')
+    expect(img).toHaveAttribute('loading', 'lazy')
+    expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
+  })
+
+  it('renders no image when the church has no photo entry', async () => {
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(screen.queryByRole('img')).toBeNull()
   })
 
   it('surfaces a confession time parsed from a Mass note, keeping the note on its Mass', async () => {

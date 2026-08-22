@@ -15,6 +15,7 @@ import { parseConfessionFromNote } from './domain/confession'
 import { fmtDateCz, isStale, withReferral } from './domain/format'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
+import { loadData } from './lib/dataStore'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { aggregateFor, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { recordExpectedAttendance } from './lib/feedbackLedger'
@@ -205,10 +206,19 @@ function ShareLink({ church }: { church: Church }) {
   )
 }
 
+/** Remote church photo from Wikimedia Commons — url is a ≤480px thumbnail, never
+ * bundled ($0 app-size). credit/license are the required attribution. */
+interface ChurchPhoto {
+  url: string
+  credit: string
+  license: string
+}
+
 export function ChurchDetail({ church, onBack }: { church: Church; onBack: () => void }) {
   const [svc, setSvc] = useState<ChurchServices | null>(null)
   const [failed, setFailed] = useState(false)
   const [navOpen, setNavOpen] = useState(false)
+  const [photo, setPhoto] = useState<ChurchPhoto | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
@@ -239,6 +249,23 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
       .catch((err) => {
         logError(err, { where: 'load-detail', id: church.id })
         if (!cancelled) setFailed(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [church])
+
+  // Church photo (Wikimedia Commons): loaded via the OTA/offline data gateway,
+  // keyed by church id. Absent map, offline, or no entry → render nothing.
+  useEffect(() => {
+    let cancelled = false
+    setPhoto(null)
+    void loadData<Record<string, ChurchPhoto>>('photos.json')
+      .then((map) => {
+        if (!cancelled) setPhoto(map[church.id] ?? null)
+      })
+      .catch(() => {
+        /* no photos.json / offline — the page just shows no photo */
       })
     return () => {
       cancelled = true
@@ -395,6 +422,22 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
         )}
         {church.barrierFree && <span className="text-ink-faded">{t('wheelchair_label')}</span>}
       </p>
+
+      {photo && (
+        <figure className="mt-4">
+          <img
+            src={photo.url}
+            alt={church.name}
+            loading="lazy"
+            decoding="async"
+            className="max-h-[200px] w-full rounded-[2px] object-cover"
+          />
+          <figcaption className="mt-1 text-xs text-ink-faded">
+            {t('photo_credit_prefix')}{' '}
+            {[photo.credit, photo.license, 'Wikimedia Commons'].filter(Boolean).join(' · ')}
+          </figcaption>
+        </figure>
+      )}
 
       <ChurchWitness chips={churchTags} witnesses={agg.church.witnesses} />
 
