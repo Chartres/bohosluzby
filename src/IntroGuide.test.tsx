@@ -66,9 +66,16 @@ describe('first-run intro guide', () => {
 
   it('the colour card names at least one liturgical season', () => {
     render(<App />)
-    // page to card 3 (Barva podle dne)
+    // page to the "Barva podle dne" card (now card 4/5: find-mass, chip, list/map, colour)
+    fireEvent.click(screen.getByRole('button', { name: 'Další' }))
     fireEvent.click(screen.getByRole('button', { name: 'Další' }))
     fireEvent.click(screen.getByRole('button', { name: 'Další' }))
     expect(within(dialog()!).getByText(/mezidobí/)).toBeInTheDocument()
+  })
+
+  it('a card explains the coloured-vs-grey map chip', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Další' })) // card 2: the chip
+    expect(within(dialog()!).getByText(/odpovídá vašemu výběru/i)).toBeInTheDocument()
   })
 })

@@ -202,6 +202,9 @@ export const cs = {
   intro_card1_title: 'Najdi mši poblíž',
   intro_card1_body:
     'Aplikace se otevře na bohoslužbách ve vašem okolí. Seznam řadí nejbližší časy nahoru; na mapě je samotný čas mše značkou.',
+  intro_chip_title: 'Barevný štítek, nebo šedá tečka',
+  intro_chip_body:
+    'Barevný štítek s časem je mše, která odpovídá vašemu výběru (den, čas, filtry) — ještě ji stihnete. Šedá tečka je kostel, kde teď nic nesedí; přesto na něj můžete klepnout a zobrazit jeho pořad.',
   intro_card2_title: 'Seznam a mapa',
   intro_card2_body: 'Mezi seznamem a mapou přepínáte přepínačem nahoře.',
   intro_card3_title: 'Barva podle dne',
@@ -390,6 +393,9 @@ export const en: Record<Key, string> = {
   intro_card1_title: 'Find a Mass nearby',
   intro_card1_body:
     'The app opens to services near you. The list shows the soonest first; on the map, the Mass time itself is the marker.',
+  intro_chip_title: 'Coloured chip, or grey dot',
+  intro_chip_body:
+    'A coloured time chip is a Mass that matches your selection (day, time, filters) — you can still make it. A grey dot is a church where nothing matches right now; you can still tap it to see its schedule.',
   intro_card2_title: 'List and map',
   intro_card2_body: 'Switch between the list and the map with the toggle at the top.',
   intro_card3_title: 'Colour of the day',

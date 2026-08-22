@@ -5,7 +5,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { t, type Key } from './i18n'
 
-const CARDS = ['intro_card1', 'intro_card2', 'intro_card3', 'intro_card4'] as const
+// card order: find-mass → what the coloured-vs-grey chip means (the app-specific
+// bit users miss) → list/map → liturgical colour of the day → verify at parish
+const CARDS = ['intro_card1', 'intro_chip', 'intro_card2', 'intro_card3', 'intro_card4'] as const
 
 export function IntroGuide({ onClose }: { onClose: () => void }) {
   const [i, setI] = useState(0)
