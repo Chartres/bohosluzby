@@ -63,7 +63,9 @@ export function IntroGuide({ onClose }: { onClose: () => void }) {
         className="fixed top-1/2 left-1/2 z-[1300] w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 border border-hairline bg-paper px-6 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
       >
         <div className="flex items-baseline justify-between gap-4">
-          <p className="rubric">{t('intro_rubric')}</p>
+          {/* "vítejte" only on the first card; a neutral "průvodce" after, so the
+              eyebrow doesn't keep saying WELCOME on card 3 of 4 */}
+          <p className="rubric">{i === 0 ? t('intro_rubric') : t('intro_rubric_more')}</p>
           <button type="button" className={`rubric ${linkCls}`} onClick={onClose}>
             {t('intro_skip')}
           </button>

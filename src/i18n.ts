@@ -192,6 +192,7 @@ export const cs = {
 
   // ---- first-run intro guide ----
   intro_rubric: 'vítejte',
+  intro_rubric_more: 'průvodce',
   intro_skip: 'Přeskočit',
   intro_next: 'Další',
   intro_done: 'Zavřít',
@@ -378,6 +379,7 @@ export const en: Record<Key, string> = {
   detail_parish_web: 'Parish website',
 
   intro_rubric: 'welcome',
+  intro_rubric_more: 'guide',
   intro_skip: 'Skip',
   intro_next: 'Next',
   intro_done: 'Close',
