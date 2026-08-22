@@ -116,7 +116,17 @@ export default function MapView({
 
   // the map itself: created once, centered on the origin
   useEffect(() => {
-    const map = L.map(divRef.current!, { zoomControl: true }).setView([origin.lat, origin.lng], 13)
+    // zoomSnap: 0 — a pinch rests at the exact fractional zoom the fingers leave.
+    // Leaflet's default (zoomSnap: 1) snaps a fractional pinch to the nearest whole
+    // zoom on finger-lift, which reads as a "jump" (zooms in, then settles out ~0.3
+    // level on release — owner report, build 70). Clustering is unaffected: render()
+    // already buckets at Math.round(map.getZoom()), so a fractional rest still
+    // clusters deterministically. Tiles are CSS-scaled (slightly soft) at a
+    // fractional rest, muted by the paper/sepia tile filter.
+    const map = L.map(divRef.current!, { zoomControl: true, zoomSnap: 0 }).setView(
+      [origin.lat, origin.lng],
+      13,
+    )
     // default prefix carries an emoji flag — design brief: no emoji. Append the
     // build stamp so any screenshot says which TestFlight build it is (this bug
     // went several rounds partly from build-version confusion).
@@ -133,6 +143,11 @@ export default function MapView({
     }).addTo(map)
     layerRef.current = L.layerGroup().addTo(map)
     mapRef.current = map
+    // test hook (guarded by ?diag): lets the zoomSnap regression e2e assert the
+    // map rests at a fractional zoom instead of snapping. Never active in the app.
+    if (typeof window !== 'undefined' && window.location.search.includes('diag')) {
+      ;(window as unknown as { __map?: L.Map }).__map = map
+    }
     return () => {
       map.remove()
       mapRef.current = null
