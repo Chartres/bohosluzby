@@ -4,6 +4,15 @@ import type { Page } from '@playwright/test'
 import type { IndexRow } from '../src/domain/data'
 
 export async function mockData(page: Page, { delayMs = 0 } = {}) {
+  // These journeys exercise returning users; the first-run intro guide is
+  // covered by its own unit tests and must not overlay every e2e flow / shot.
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('bohosluzby:introSeen', '1')
+    } catch {
+      /* private mode */
+    }
+  })
   await page.route('**/data/churches.json', async (route) => {
     if (delayMs) await new Promise((r) => setTimeout(r, delayMs))
     await route.fulfill({ json: INDEX })

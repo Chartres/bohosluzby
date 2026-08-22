@@ -50,6 +50,7 @@ function stubGeolocation() {
 
 beforeEach(() => {
   localStorage.clear()
+  localStorage.setItem('bohosluzby:introSeen', '1') // returning user, not first-run
   vi.useFakeTimers({ now: NOW, shouldAdvanceTime: true })
   stubFetch()
   Object.defineProperty(window.navigator, 'language', { value: 'en-US', configurable: true })

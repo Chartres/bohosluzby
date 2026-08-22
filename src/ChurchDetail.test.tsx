@@ -38,6 +38,14 @@ const SHARD = {
     c: [],
     s: [['7', '09:00', 'česky', 0, 'mše sv.', '']],
   },
+  // church "3": no typed confession row — its only confession signal is a Mass note.
+  '3': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['5', '18:00', 'česky', 0, 'mše sv.', 'od 17.00 svátost smíření']],
+  },
 }
 
 beforeEach(() => {
@@ -74,5 +82,18 @@ describe('confession section', () => {
     render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
     await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
     expect(screen.queryByRole('region', { name: 'Svátost smíření' })).toBeNull()
+  })
+
+  it('surfaces a confession time parsed from a Mass note, keeping the note on its Mass', async () => {
+    render(<ChurchDetail church={church('3', '50-14')} onBack={() => {}} />)
+
+    // the parsed 17:00 appears in the Confession section...
+    const confession = await screen.findByRole('region', { name: 'Svátost smíření' })
+    expect(within(confession).getByText('17:00')).toBeInTheDocument()
+
+    // ...while the Mass row keeps its note and its own 18:00 time
+    const schedule = screen.getByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(within(schedule).getByText('18:00')).toBeInTheDocument()
+    expect(within(schedule).getByText('od 17.00 svátost smíření')).toBeInTheDocument()
   })
 })

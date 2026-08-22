@@ -11,6 +11,7 @@ import {
 } from './domain/data'
 import { nextOccurrences, pragueToday, recentOccurrence } from './domain/occurrences'
 import { noteUncertain, parseNote } from './domain/notes'
+import { parseConfessionFromNote } from './domain/confession'
 import { fmtDateCz, isStale, withReferral } from './domain/format'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
@@ -287,6 +288,29 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
 
   const extras = svc ? svc.extra.filter((x) => x.date >= isoToday()) : []
 
+  // Confession coverage: the ~6 churches with a typed "svátost smíření" row PLUS
+  // times mined from Mass notes for the ~37 that only mention confession in free
+  // text. De-duplicated by day+time; the Mass note still shows on its own row
+  // above — this section only additionally surfaces the parsed confession time.
+  const confessions = useMemo(() => {
+    if (!svc) return []
+    const rows: { days: string; time: string; note: string }[] = svc.confession.map((c) => ({
+      days: c.days,
+      time: c.time,
+      note: c.note,
+    }))
+    const seen = new Set(rows.map((r) => `${r.days}|${r.time}`))
+    for (const s of svc.regular) {
+      const parsed = parseConfessionFromNote(s.note, s.time, s.days)
+      if (!parsed) continue
+      const key = `${parsed.days}|${parsed.time}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      rows.push(parsed)
+    }
+    return rows
+  }, [svc])
+
   // iOS-style edge swipe: a drag that STARTS near the left screen edge and moves
   // decisively rightward goes back. Guarded so plain vertical scrolling and taps
   // are untouched — only an edge-anchored, horizontal-dominant drag triggers, and
@@ -442,11 +466,11 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
               gives these as time WINDOWS (e.g. "08:30 - 11:30"), shown verbatim.
               No calendar/reminder — a window is not a single event. Grouped by
               day and styled like the ordo above (rubric day headers, hairlines). */}
-          {svc.confession.length > 0 && (
+          {confessions.length > 0 && (
             <section aria-label={t('confession_title')} className="mt-7">
               <h3 className="rubric border-b border-hairline pb-1">{t('confession_title')}</h3>
               {DAY_ORDER.map((day) => {
-                const rows = svc.confession
+                const rows = confessions
                   .filter((s) => s.days.includes(String(day)))
                   .sort((a, b) => a.time.localeCompare(b.time))
                 if (rows.length === 0) return null

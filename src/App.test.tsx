@@ -116,6 +116,7 @@ const openControls = () => fireEvent.click(screen.getByRole('button', { name: /^
 
 beforeEach(() => {
   localStorage.clear() // last-known-origin seeding must not leak across tests
+  localStorage.setItem('bohosluzby:introSeen', '1') // these journeys are returning users, not first-run
   vi.useFakeTimers({ now: NOW, shouldAdvanceTime: true })
   stubFetch()
   // The map is now the default landing view; these journeys exercise the seznam,

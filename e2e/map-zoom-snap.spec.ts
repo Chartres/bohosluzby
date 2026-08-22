@@ -9,6 +9,7 @@ import { PRAGUE } from './fixtures'
 test.use({ geolocation: PRAGUE, permissions: ['geolocation'], viewport: { width: 393, height: 760 } })
 
 test('map rests at a fractional zoom (zoomSnap:0, no jump on release)', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('bohosluzby:introSeen', '1'))
   await page.goto('/?zobrazeni=mapa&diag=1')
   await page.getByTestId('mapa').waitFor()
   await page.waitForFunction(() => (window as unknown as { __map?: unknown }).__map != null, { timeout: 10000 })

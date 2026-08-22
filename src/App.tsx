@@ -19,6 +19,7 @@ import { aggregateCities, findCity, searchPlaces, type City } from './domain/cit
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
+import { IntroGuide } from './IntroGuide'
 import { FeedbackCard } from './FeedbackCard'
 import { AfterMassCard, type CardMass } from './AfterMassCard'
 import { massKey, riteOf, slotKey, WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
@@ -43,6 +44,17 @@ import {
 const NEARBY_KM = 30
 const NEARBY_CAP = 120
 const LIST_LIMIT = 20
+
+// First-run intro guide: shown once (localStorage flag), forceable with ?intro=1.
+const INTRO_SEEN_KEY = 'bohosluzby:introSeen'
+const introInitiallyOpen = (search: string): boolean => {
+  if (new URLSearchParams(search).get('intro') === '1') return true
+  try {
+    return !localStorage.getItem(INTRO_SEEN_KEY)
+  } catch {
+    return false // private mode → don't nag
+  }
+}
 
 /** "2026-07-03" → "3. 7. 2026" (cs) / "3 Jul 2026" (en). */
 const fmtDataDate = (iso: string) => {
@@ -301,6 +313,15 @@ export default function App() {
   const [dueEntry, setDueEntry] = useState<LedgerEntry | null>(null)
   const [previewDismissed, setPreviewDismissed] = useState(false)
   const dismissedRef = useRef<Set<string>>(new Set())
+  const [introOpen, setIntroOpen] = useState(() => introInitiallyOpen(location.search))
+  const closeIntro = () => {
+    setIntroOpen(false)
+    try {
+      localStorage.setItem(INTRO_SEEN_KEY, '1')
+    } catch {
+      // private mode — nothing to persist
+    }
+  }
   const { route, path, search, navigate } = useRoute()
 
   // the selected day + time filter live in the URL (?den=nedele&cas=vecer) —
@@ -948,6 +969,7 @@ export default function App() {
       </main>
 
       {navTarget && <NavSheet target={navTarget} onClose={() => setNavTarget(null)} />}
+      {introOpen && <IntroGuide onClose={closeIntro} />}
 
       {!mapMode && (
       <footer className="border-t border-hairline py-4 text-sm text-ink-faded">
@@ -986,6 +1008,14 @@ export default function App() {
           >
             {t('footer_support')}
           </a>
+          {' · '}
+          <button
+            type="button"
+            className="underline decoration-hairline underline-offset-2 hover:text-ink"
+            onClick={() => setIntroOpen(true)}
+          >
+            {t('intro_help')}
+          </button>
         </p>
       </footer>
       )}

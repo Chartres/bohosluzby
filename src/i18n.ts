@@ -189,6 +189,25 @@ export const cs = {
   fb_list_mark_aria: 'svědectví poutníků',
   fb_map_legend: 'ohlasy poutníků',
   detail_parish_web: 'Web farnosti',
+
+  // ---- first-run intro guide ----
+  intro_rubric: 'vítejte',
+  intro_skip: 'Přeskočit',
+  intro_next: 'Další',
+  intro_done: 'Zavřít',
+  intro_dismiss_aria: 'Zavřít průvodce',
+  intro_help: 'nápověda',
+  intro_card1_title: 'Najdi mši poblíž',
+  intro_card1_body:
+    'Aplikace se otevře na bohoslužbách ve vašem okolí. Seznam řadí nejbližší časy nahoru; na mapě je samotný čas mše značkou.',
+  intro_card2_title: 'Seznam a mapa',
+  intro_card2_body: 'Mezi seznamem a mapou přepínáte přepínačem nahoře.',
+  intro_card3_title: 'Barva podle dne',
+  intro_card3_body:
+    'Aplikace nosí liturgickou barvu dne: zelenou v mezidobí, bílou a zlatou o svátcích a ve velikonoční době, fialovou v adventu a postu, červenou o svátcích mučedníků a na Květnou neděli.',
+  intro_card4_title: 'Ověř ve farnosti',
+  intro_card4_body:
+    'Časy pocházejí z rejstříku ČBK. Před cestou si je ověřte na webu farnosti.',
 } as const
 
 export type Key = keyof typeof cs
@@ -357,6 +376,24 @@ export const en: Record<Key, string> = {
   fb_list_mark_aria: 'pilgrim witness',
   fb_map_legend: 'pilgrim witness',
   detail_parish_web: 'Parish website',
+
+  intro_rubric: 'welcome',
+  intro_skip: 'Skip',
+  intro_next: 'Next',
+  intro_done: 'Close',
+  intro_dismiss_aria: 'Close the guide',
+  intro_help: 'help',
+  intro_card1_title: 'Find a Mass nearby',
+  intro_card1_body:
+    'The app opens to services near you. The list shows the soonest first; on the map, the Mass time itself is the marker.',
+  intro_card2_title: 'List and map',
+  intro_card2_body: 'Switch between the list and the map with the toggle at the top.',
+  intro_card3_title: 'Colour of the day',
+  intro_card3_body:
+    "The app wears the Church's colour of the day: green in Ordinary Time, white and gold on feasts and in Eastertide, violet in Advent and Lent, red for martyrs and on Palm Sunday.",
+  intro_card4_title: 'Verify at the parish',
+  intro_card4_body:
+    'Times come from the ČBK registry. Verify them on the parish website before you go.',
 }
 
 export function t(k: Key): string {
