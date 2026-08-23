@@ -40,12 +40,14 @@ test('the legend explains the chip colours whenever the map is up', async ({ pag
   await page.goto('/?zobrazeni=mapa')
   await expect(page.getByTestId('mapa')).toBeVisible()
   const legend = page.locator('.map-legend')
-  // the colour key is always relevant — shown as soon as the map is up
-  await expect(legend).toContainText('mše, která teď sedí na váš výběr')
-  await expect(legend).toContainText('kostel, kde teď nic nesedí')
-  // its swatches: a season chip and a grey dot
-  await expect(legend.locator('.map-legend-chip')).toBeVisible()
-  await expect(legend.locator('.map-legend-dot')).toBeVisible()
+  // the marker key is always relevant — shown as soon as the map is up
+  await expect(legend).toContainText('vyhovuje zadání')
+  await expect(legend).toContainText('jiný den')
+  await expect(legend).toContainText('počet kostelů')
+  // its swatches: a season chip, a grey time-chip, and the black numbered cluster
+  await expect(legend.locator('.map-legend-chip').first()).toBeVisible()
+  await expect(legend.locator('.map-legend-chip--otherday')).toBeVisible()
+  await expect(legend.locator('.map-legend-cluster')).toBeVisible()
 })
 
 test('seznam · mapa toggle: time chips as markers, popover with next mass, otevřít → detail', async ({ page }) => {

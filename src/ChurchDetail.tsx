@@ -22,7 +22,7 @@ import { recordExpectedAttendance } from './lib/feedbackLedger'
 import { massKey, occurrenceOf, oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
 import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
-import { confirmedByPilgrims, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
+import { churchWitnessIntro, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
 
 // A church viewed within this window after a Mass started seeds the after-Mass
 // ledger — the "recent viewers" cohort (docs/PILGRIM-WITNESS-PLAN.md).
@@ -74,11 +74,10 @@ function ChurchWitness({ chips, witnesses }: { chips: { id: string; count: numbe
   if (chips.length === 0) return null
   return (
     <section aria-label={t('fb_church_often')} className="mt-6 border-t border-hairline pt-4">
-      <p className="text-sm text-ink-faded">{t('fb_church_often')}:</p>
+      <p className="text-sm text-ink-faded">{churchWitnessIntro(witnesses)}:</p>
       <div className="mt-2">
         <WitnessPills chips={chips} />
       </div>
-      <p className="mt-1.5 text-xs text-ink-faded">{confirmedByPilgrims(witnesses)}</p>
     </section>
   )
 }
@@ -482,7 +481,10 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
           photos are tall) instead of a landscape band cropping it off. No photo →
           the plain paper header. The hero bleeds full-width (-mx) like the back bar. */}
       {photo ? (
-        <figure className="relative mt-4 -mx-5 overflow-hidden sm:-mx-8">
+        // z-0 pins the photo hero below the sticky back band (z-20) in the
+        // article's stacking context — an explicit level, so WebKit can't paint
+        // the tall image over the band on scroll (owner iPhone bug).
+        <figure className="relative z-0 mt-4 -mx-5 overflow-hidden sm:-mx-8">
           <img
             src={photo.url}
             alt={church.name}

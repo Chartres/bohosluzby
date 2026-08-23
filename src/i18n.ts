@@ -80,6 +80,7 @@ export const cs = {
   rubric_when: 'kdy',
   anytime: 'kdykoli',
   around_word: 'kolem',
+  around_prompt: 'vlastní čas',
   around_time_aria: 'Kolem času',
   band_past_title: 'dnes už proběhlo — přepne na zítra',
   rubric_range: 'okruh',
@@ -190,8 +191,9 @@ export const cs = {
   fb_filter_hint: 'Ukázat jen mše, kde poutníci zmiňují:',
   fb_list_mark_aria: 'svědectví poutníků',
   fb_map_legend: 'ohlasy poutníků',
-  map_legend_match: 'mše, která teď sedí na váš výběr',
-  map_legend_nomatch: 'kostel, kde teď nic nesedí',
+  map_legend_match: 'vyhovuje zadání',
+  map_legend_otherday: 'jiný den',
+  map_legend_cluster: 'počet kostelů',
   detail_parish_web: 'Web farnosti',
 
   // ---- first-run intro guide ----
@@ -205,9 +207,9 @@ export const cs = {
   intro_card1_title: 'Najdi mši poblíž',
   intro_card1_body:
     'Aplikace se otevře na bohoslužbách ve vašem okolí. Seznam řadí nejbližší časy nahoru; na mapě je samotný čas mše značkou.',
-  intro_chip_title: 'Barevný štítek, nebo šedá tečka',
+  intro_chip_title: 'Barevný nebo šedý štítek',
   intro_chip_body:
-    'Barevný štítek s časem je mše, která odpovídá vašemu výběru (den, čas, filtry) — ještě ji stihnete. Šedá tečka je kostel, kde teď nic nesedí; přesto na něj můžete klepnout a zobrazit jeho pořad.',
+    'Barevný štítek s časem je mše, která vyhovuje vašemu výběru (den, čas, filtry) — ještě ji stihnete. Šedý štítek se zkratkou dne (např. „út 15:00“) je vyhovující mše v jiný den.',
   intro_card2_title: 'Seznam a mapa',
   intro_card2_body: 'Mezi seznamem a mapou přepínáte přepínačem nahoře.',
   intro_card3_title: 'Barva podle dne',
@@ -281,6 +283,7 @@ export const en: Record<Key, string> = {
   rubric_when: 'when',
   anytime: 'anytime',
   around_word: 'around',
+  around_prompt: 'custom time',
   around_time_aria: 'around time',
   band_past_title: 'already over today — switches to tomorrow',
   rubric_range: 'range',
@@ -385,8 +388,9 @@ export const en: Record<Key, string> = {
   fb_filter_hint: 'Show only Masses where pilgrims mention:',
   fb_list_mark_aria: 'pilgrim witness',
   fb_map_legend: 'pilgrim witness',
-  map_legend_match: 'a Mass matching your selection now',
-  map_legend_nomatch: 'a church with nothing matching now',
+  map_legend_match: 'matches your choice',
+  map_legend_otherday: 'another day',
+  map_legend_cluster: 'churches nearby',
   detail_parish_web: 'Parish website',
 
   intro_rubric: 'welcome',
@@ -399,9 +403,9 @@ export const en: Record<Key, string> = {
   intro_card1_title: 'Find a Mass nearby',
   intro_card1_body:
     'The app opens to services near you. The list shows the soonest first; on the map, the Mass time itself is the marker.',
-  intro_chip_title: 'Coloured chip, or grey dot',
+  intro_chip_title: 'Coloured or grey chip',
   intro_chip_body:
-    'A coloured time chip is a Mass that matches your selection (day, time, filters) — you can still make it. A grey dot is a church where nothing matches right now; you can still tap it to see its schedule.',
+    'A coloured time chip is a Mass that matches your choice (day, time, filters) — you can still make it. A grey chip with a weekday (e.g. “Tue 15:00”) is a matching Mass on another day.',
   intro_card2_title: 'List and map',
   intro_card2_body: 'Switch between the list and the map with the toggle at the top.',
   intro_card3_title: 'Colour of the day',
@@ -530,6 +534,18 @@ export function confirmedByPilgrims(n: number): string {
     return `potvrdilo ${n} poutníků`
   }
   return `confirmed by ${n} pilgrim${n === 1 ? '' : 's'}`
+}
+
+/** "V tomto kostele N poutníků často zmiňuje" / "N pilgrims here often mention"
+ * — the church-witness intro on the detail page, with the count folded into the
+ * one sentence the pills follow. Czech subject+verb agreement (1 / 2–4 / 5+). */
+export function churchWitnessIntro(n: number): string {
+  if (lang() === 'cs') {
+    if (n === 1) return 'V tomto kostele 1 poutník často zmiňuje'
+    if (n >= 2 && n <= 4) return `V tomto kostele ${n} poutníci často zmiňují`
+    return `V tomto kostele ${n} poutníků často zmiňuje`
+  }
+  return `${n} pilgrim${n === 1 ? '' : 's'} here often mention${n === 1 ? 's' : ''}`
 }
 
 /** Display name for a normalized Czech language adverb ("latinsky" →

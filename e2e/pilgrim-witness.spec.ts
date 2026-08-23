@@ -30,13 +30,12 @@ test('preview → Ano → witness chips → saved → detail shows the corrobora
   await expect(page.getByText('Díky. Zapsáno pro další poutníky.')).toBeVisible()
 
   // the detail page now leads with the church-level witness block — the primary
-  // testimony across every Mass here — as read-only pills + the aggregate count
-  // ("V tomto kostele poutníci často zmiňují … · potvrdil N poutník"). With a
+  // testimony across every Mass here — as one sentence with the count folded in
+  // ("V tomto kostele 1 poutník často zmiňuje:") + read-only pills. With a
   // single Mass attested there is nothing divergent, so no per-Mass note.
   await page.goto(`/kostel/${churchId}/`)
-  await expect(page.getByText(/V tomto kostele poutníci často zmiňují/)).toBeVisible()
+  await expect(page.getByText(/V tomto kostele 1 poutník často zmiňuje/)).toBeVisible()
   await expect(page.getByText('hluboký prožitek').first()).toBeVisible()
-  await expect(page.getByText(/potvrdil/)).toBeVisible()
   // reverent by construction: no stars anywhere near the Mass
   await expect(page.getByText('★')).toHaveCount(0)
   await shot(page, 'witness-detail', true)

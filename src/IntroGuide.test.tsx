@@ -76,6 +76,6 @@ describe('first-run intro guide', () => {
   it('a card explains the coloured-vs-grey map chip', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Další' })) // card 2: the chip
-    expect(within(dialog()!).getByText(/odpovídá vašemu výběru/i)).toBeInTheDocument()
+    expect(within(dialog()!).getByText(/vyhovuje vašemu výběru/i)).toBeInTheDocument()
   })
 })

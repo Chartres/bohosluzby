@@ -37,6 +37,13 @@ html {
   outline: 2px solid var(--season);
   outline-offset: 2px;
 }
+/* tabindex="-1" targets are focused only programmatically (the detail title and
+   the intro dialog land the screen reader there on mount) — never reachable by
+   Tab, so they must not draw the seasonal ring. Real keyboard focus on buttons
+   and links still shows it. */
+[tabindex='-1']:focus {
+  outline: none;
+}
 
 /* horizontal control rows (day picker): scroll instead of wrapping, no visible scrollbar;
    the right-edge fade hints that more chips sit off-screen */

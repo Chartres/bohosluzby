@@ -1472,7 +1472,9 @@ function OrdoControls({
           }`}
           style={around ? { color: 'var(--season)' } : undefined}
         >
-          {t('around_word')}
+          {/* "kolem" only reads once a time is chosen ("kolem 9:00"); unset, the
+              select carries a self-contained prompt so no dangling em-dash shows */}
+          {around && t('around_word')}
           <select
             aria-label={t('around_time_aria')}
             value={around ?? ''}
@@ -1480,7 +1482,7 @@ function OrdoControls({
             className="-my-2 cursor-pointer border-0 border-b border-hairline bg-transparent py-2 font-sans text-base font-semibold tabular-nums"
             style={around ? { color: 'var(--season)' } : undefined}
           >
-            <option value="">—</option>
+            <option value="">{t('around_prompt')}</option>
             {/* rotated to open at "now"; for today the wrapped-around tail
                 (past times) is dropped — every one guaranteed an empty list */}
             {kolemTimes.map((hhmm) => (
@@ -1572,11 +1574,13 @@ function OrdoControls({
       </div>
       {/* Ohlasy poutníků — its own bordered block, collapsed by default (native
           <details> disclosure). Roomy pills so it doesn't read as cramped. */}
-      <details className="mt-4 border-t border-hairline pt-3">
+      <details className="group mt-4 border-t border-hairline pt-3">
         <summary className="rubric cursor-pointer list-none text-ink-faded marker:hidden">
           {t('fb_filter_group')}
           {filters.witnessTags.length > 0 && ` · ${filters.witnessTags.length}`}
-          <span className="ml-1 text-ink-faded">›</span>
+          <span className="ml-1 inline-block text-ink-faded transition-transform group-open:rotate-90">
+            ›
+          </span>
         </summary>
         <p className="mt-2 text-xs text-ink-faded">{t('fb_filter_hint')}</p>
         <div

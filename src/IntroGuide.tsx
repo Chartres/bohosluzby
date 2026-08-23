@@ -20,7 +20,10 @@ export function IntroGuide({ onClose }: { onClose: () => void }) {
     const node = ref.current
     const prev = document.activeElement as HTMLElement | null
     const focusables = () => Array.from(node?.querySelectorAll<HTMLElement>('button') ?? [])
-    focusables()[0]?.focus()
+    // Land focus on the dialog itself (tabIndex=-1), not the first button — the
+    // screen reader announces the dialog, and no green ring flashes on a control
+    // the user never pressed. Tab still moves into the buttons from here.
+    node?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose()
@@ -62,6 +65,7 @@ export function IntroGuide({ onClose }: { onClose: () => void }) {
         role="dialog"
         aria-modal
         aria-labelledby="intro-title"
+        tabIndex={-1}
         className="fixed top-1/2 left-1/2 z-[1300] w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 border border-hairline bg-paper px-6 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
       >
         <div className="flex items-baseline justify-between gap-4">
