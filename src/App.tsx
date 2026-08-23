@@ -25,6 +25,7 @@ import { AfterMassCard, type CardMass } from './AfterMassCard'
 import { massKey, riteOf, slotKey, WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
 import { aggregateFor, churchHasTags, loadAggregates, submitFeedback } from './lib/feedbackStore'
 import { dueCards, markAnswered, neverAsk, type LedgerEntry } from './lib/feedbackLedger'
+import { WITNESS_ENABLED } from './lib/flags'
 import { track, conversion, logError } from './analytics'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
 import { loadData, refreshData, activeAsOf } from './lib/dataStore'
@@ -160,7 +161,11 @@ function saveSticky<T>(key: string, value: T): void {
 }
 
 function loadFilters(): Filters {
-  return { ...NO_FILTERS, ...loadSticky<Filters>(FILTERS_KEY) }
+  const f = { ...NO_FILTERS, ...loadSticky<Filters>(FILTERS_KEY) }
+  // With witness disabled there is no filter UI to clear a stale persisted
+  // selection — drop it so an old build's witnessTags can't silently narrow the list.
+  if (!WITNESS_ENABLED) f.witnessTags = []
+  return f
 }
 
 // ---- Day picker: 'now' = soonest you can make; 0–6 = the day's full ordo ----
@@ -539,7 +544,7 @@ export default function App() {
   const [aggTick, setAggTick] = useState(0)
   const witnessTags = filters.witnessTags
   useEffect(() => {
-    if (!data) return
+    if (!WITNESS_ENABLED || !data) return
     let cancelled = false
     void loadAggregates(data.nearby.map((c) => c.id)).then(() => {
       if (!cancelled) setAggTick((n) => n + 1)
@@ -569,7 +574,8 @@ export default function App() {
   // aggregate cache the map and detail use; aggTick refreshes it on each load.
   const witnessChurches = useMemo(() => {
     const set = new Set<string>()
-    if (data) for (const c of data.nearby) if (aggregateFor(c.id).church.chips.length > 0) set.add(c.id)
+    if (WITNESS_ENABLED && data)
+      for (const c of data.nearby) if (aggregateFor(c.id).church.chips.length > 0) set.add(c.id)
     return set
     // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
   }, [data, aggTick])
@@ -617,9 +623,9 @@ export default function App() {
   // demo Mass so the owner can toy locally without waiting an hour after a Mass.
   // ?feedback=preview OR a build-time flag (VITE_WITNESS_PREVIEW=1, TestFlight
   // prototype only — there's no URL bar on device) force-shows the demo card.
-  const isPreview = feedbackParam === 'preview' || WITNESS_PREVIEW
+  const isPreview = WITNESS_ENABLED && (feedbackParam === 'preview' || WITNESS_PREVIEW)
   useEffect(() => {
-    if (isPreview) return
+    if (!WITNESS_ENABLED || isPreview) return
     const due = dueCards(new Date()).find((e) => !dismissedRef.current.has(e.massKey)) ?? null
     setDueEntry(due)
   }, [isPreview, route.view])
@@ -1586,7 +1592,9 @@ function OrdoControls({
         )}
       </div>
       {/* Ohlasy poutníků — its own bordered block, collapsed by default (native
-          <details> disclosure). Roomy pills so it doesn't read as cramped. */}
+          <details> disclosure). Roomy pills so it doesn't read as cramped.
+          Gated: the whole witness filter is absent in the public build. */}
+      {WITNESS_ENABLED && (
       <details className="group mt-4 border-t border-hairline pt-3">
         <summary className="rubric cursor-pointer list-none text-ink-faded marker:hidden">
           {t('fb_filter_group')}
@@ -1627,6 +1635,7 @@ function OrdoControls({
           })}
         </div>
       </details>
+      )}
       {narrow && (
         <button
           type="button"

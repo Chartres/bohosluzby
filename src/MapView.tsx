@@ -19,6 +19,7 @@ import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/form
 import { massKey, type Aggregate } from './domain/feedback'
 import { aggregateFor, churchHasTags, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { witnessPillsHtml } from './WitnessPills'
+import { WITNESS_ENABLED } from './lib/flags'
 import { t, churchCount, confirmedByPilgrims } from './i18n'
 
 const CELL_PX = 64 // cluster grid; ~a finger-width of map
@@ -201,7 +202,7 @@ export default function MapView({
       // church-level-first witness (docs/PILGRIM-WITNESS-PLAN.md, no stars): the
       // church's top-3 distinctive tags as read-only pills + the aggregate count,
       // then — only when the shown Mass diverges — that Mass's own note.
-      const churchTags = rankChurchTags(church.id)
+      const churchTags = WITNESS_ENABLED ? rankChurchTags(church.id) : []
       if (churchTags.length > 0) {
         const { slots, church: churchAgg } = aggregateFor(church.id)
         const slot = next ? slots.get(massKey(church.id, next.service, next.start)) : undefined
@@ -284,7 +285,7 @@ export default function MapView({
       // shards, so the popover line and the marker cue have data on first paint.
       const [shards] = await Promise.all([
         Promise.all(cells.map(loadShard)),
-        loadAggregates(visible.map((c) => c.id)),
+        WITNESS_ENABLED ? loadAggregates(visible.map((c) => c.id)) : Promise.resolve(),
       ])
       if (stale || seq !== renderSeq) return // a newer render superseded this one
       const byId = new Map<string, ChurchServices>()
@@ -299,7 +300,7 @@ export default function MapView({
       // only churches carrying ALL of them at slot- or church-tier. Aggregates
       // are loaded for the visible set above, so we cluster over that filtered
       // subset (the pan-invariant whole-index clustering resumes when off).
-      const wt = filters.witnessTags ?? []
+      const wt = WITNESS_ENABLED ? (filters.witnessTags ?? []) : []
       const clusterChurches = wt.length
         ? visible.filter((c) => churchHasTags(c.id, null, wt))
         : churches
@@ -338,7 +339,7 @@ export default function MapView({
               ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
               : chipTime(next.start)
             : ''
-          const witnessed = Boolean(next) && hasWitness(witnessTiers(church, next!))
+          const witnessed = WITNESS_ENABLED && Boolean(next) && hasWitness(witnessTiers(church, next!))
           if (witnessed) anyWitness = true
           const marker = L.marker([church.lat, church.lng], {
             icon: next ? chipIcon(label, otherDay, witnessed) : fadedIcon(),
@@ -402,7 +403,7 @@ export default function MapView({
           <span className="map-legend-chip map-legend-chip--otherday" aria-hidden="true" />
           {t('map_legend_otherday')}
         </span>
-        {witnessShown && (
+        {WITNESS_ENABLED && witnessShown && (
           <span className="map-legend-row">
             <span className="map-legend-fold" aria-hidden="true" />
             {t('fb_map_legend')}

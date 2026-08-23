@@ -19,6 +19,7 @@ import { loadData } from './lib/dataStore'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { aggregateFor, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { recordExpectedAttendance } from './lib/feedbackLedger'
+import { WITNESS_ENABLED } from './lib/flags'
 import { massKey, occurrenceOf, oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
 import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
@@ -391,6 +392,7 @@ export function ChurchDetail({
   // when a load resolves so the ordo witness lines paint.
   const [aggTick, setAggTick] = useState(0)
   useEffect(() => {
+    if (!WITNESS_ENABLED) return
     let cancelled = false
     void loadAggregates([church.id]).then(() => {
       if (!cancelled) setAggTick((n) => n + 1)
@@ -405,13 +407,16 @@ export function ChurchDetail({
   // distinctiveness (top 3) against every loaded church; per-Mass rows only
   // surface tags that diverge from these.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const churchTags = useMemo(() => rankChurchTags(church.id), [church.id, aggTick])
+  const churchTags = useMemo(
+    () => (WITNESS_ENABLED ? rankChurchTags(church.id) : []),
+    [church.id, aggTick],
+  )
   const churchTopIds = useMemo(() => churchTags.map((c) => c.id), [churchTags])
 
   // "recent viewers": opening a church near a Mass time records an expected
   // attendance, so the after-Mass card can ask on the next app open.
   useEffect(() => {
-    if (!svc) return
+    if (!WITNESS_ENABLED || !svc) return
     const now = new Date()
     for (const s of svc.regular) {
       const start = recentOccurrence({ days: s.days, time: s.time }, now, RECENT_VIEW_MIN)
@@ -702,12 +707,14 @@ export function ChurchDetail({
                     <div className="min-w-0 flex-1">
                       <p className="text-sm">{x.type || t('service_fallback')}</p>
                       <NoteText note={x.note} />
-                      <MassDiverges
-                        chips={divergentChips(
-                          agg.slots.get(oneOffKey(church.id, x.date, x.time, riteOf(x), x.lang)),
-                          churchTopIds,
-                        )}
-                      />
+                      {WITNESS_ENABLED && (
+                        <MassDiverges
+                          chips={divergentChips(
+                            agg.slots.get(oneOffKey(church.id, x.date, x.time, riteOf(x), x.lang)),
+                            churchTopIds,
+                          )}
+                        />
+                      )}
                     </div>
                     <ServiceActions church={church} service={x} />
                   </li>
@@ -806,7 +813,7 @@ function ServiceRow({
           {s.lang !== 'česky' && <Chip label={langLabel(s.lang)} />}
           {s.greek && <Chip label={t('greek_chip')} />}
         </p>
-        <MassDiverges chips={divergentChips(slot, churchTopIds)} />
+        {WITNESS_ENABLED && <MassDiverges chips={divergentChips(slot, churchTopIds)} />}
       </div>
       <ServiceActions church={church} service={s} />
     </div>
