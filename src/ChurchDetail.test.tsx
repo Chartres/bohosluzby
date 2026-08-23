@@ -46,11 +46,32 @@ const SHARD = {
     c: [],
     s: [['5', '18:00', 'česky', 0, 'mše sv.', 'od 17.00 svátost smíření']],
   },
+  // church "4": a plain Mass, no registry/note confession — its ONLY confession
+  // signal is the diocesan confession.json entry below.
+  '4': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['7', '10:30', 'česky', 0, 'mše sv.', '']],
+  },
 }
 
-// Church "1" has a photo entry; "2"/"3" do not.
+// Church "1" has a photo entry; "2"/"3"/"4" do not.
 const PHOTOS = {
   '1': { url: 'https://commons.example/thumb.jpg', credit: 'Jan Novák', license: 'CC BY-SA 4.0' },
+}
+
+// Diocesan "stálá zpovědní služba" windows, keyed by church id: verbatim day +
+// (possibly multi-range) time + note.
+const CONFESSION = {
+  '4': {
+    source: 'apha',
+    rows: [
+      { den: 'Po – Pá', cas: '9.00 – 15.00', note: '30 min přede mší sv.' },
+      { den: 'Ne', cas: '9.00 – 9.45 16.00 – 16.45', note: '' },
+    ],
+  },
 }
 
 beforeEach(() => {
@@ -62,6 +83,8 @@ beforeEach(() => {
       if (u.endsWith('/data/services/50-14.json'))
         return new Response(JSON.stringify(SHARD), { status: 200 })
       if (u.endsWith('/data/photos.json')) return new Response(JSON.stringify(PHOTOS), { status: 200 })
+      if (u.endsWith('/data/confession.json'))
+        return new Response(JSON.stringify(CONFESSION), { status: 200 })
       return new Response('not found', { status: 404 })
     }),
   )
@@ -89,6 +112,19 @@ describe('confession section', () => {
     render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
     await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
     expect(screen.queryByRole('region', { name: 'Svátost smíření' })).toBeNull()
+  })
+
+  it('shows diocesan confession.json windows — the section appears from that alone', async () => {
+    render(<ChurchDetail church={church('4', '50-14')} onBack={() => {}} />)
+
+    const confession = await screen.findByRole('region', { name: 'Svátost smíření' })
+    // verbatim day + time-window (multi-range kept intact), not in the Mass schedule
+    expect(within(confession).getByText('Po – Pá')).toBeInTheDocument()
+    expect(within(confession).getByText('9.00 – 9.45 16.00 – 16.45')).toBeInTheDocument()
+    expect(within(confession).getByText('30 min přede mší sv.')).toBeInTheDocument()
+
+    const schedule = screen.getByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(within(schedule).queryByText(/9\.00 – 15\.00/)).toBeNull()
   })
 })
 

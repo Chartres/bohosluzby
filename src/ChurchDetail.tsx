@@ -218,6 +218,15 @@ interface ChurchPhoto {
   license: string
 }
 
+/** Confession windows scraped from a diocesan "stálá zpovědní služba" table
+ * (data/scrape-confession-diocese.mjs), keyed by church id. Day and time are
+ * kept VERBATIM — a window carries nuance ("30 min přede mší", multiple ranges)
+ * that must not be flattened into a single clock time. */
+interface DiocesanConfession {
+  source: string
+  rows: { den: string; cas: string; note: string }[]
+}
+
 /** Church name + city + the meta action row (mapa · navigace · sdílet · web
  * farnosti · bezbariérový). Rendered plain on paper when there's no photo, or
  * OVER the photo hero (hero=true) — paper text on the scrim, light link
@@ -283,6 +292,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
   const [failed, setFailed] = useState(false)
   const [navOpen, setNavOpen] = useState(false)
   const [photo, setPhoto] = useState<ChurchPhoto | null>(null)
+  const [dioc, setDioc] = useState<DiocesanConfession | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
@@ -330,6 +340,25 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
       })
       .catch(() => {
         /* no photos.json / offline — the page just shows no photo */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [church])
+
+  // Diocesan confession windows (data/confession.json): same OTA/offline gateway,
+  // keyed by church id. Absent map, offline, or no entry → render nothing (the
+  // registry/note-mined confession still shows). Kept separate from `svc` so
+  // these windows never touch the Mass schedule or ranking.
+  useEffect(() => {
+    let cancelled = false
+    setDioc(null)
+    void loadData<Record<string, DiocesanConfession>>('confession.json')
+      .then((map) => {
+        if (!cancelled) setDioc(map[church.id] ?? null)
+      })
+      .catch(() => {
+        /* no confession.json / offline — the section just omits diocesan rows */
       })
     return () => {
       cancelled = true
@@ -551,7 +580,7 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
               gives these as time WINDOWS (e.g. "08:30 - 11:30"), shown verbatim.
               No calendar/reminder — a window is not a single event. Grouped by
               day and styled like the ordo above (rubric day headers, hairlines). */}
-          {confessions.length > 0 && (
+          {(confessions.length > 0 || (dioc && dioc.rows.length > 0)) && (
             <section aria-label={t('confession_title')} className="mt-7">
               <h3 className="rubric border-b border-hairline pb-1">{t('confession_title')}</h3>
               {DAY_ORDER.map((day) => {
@@ -577,6 +606,27 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
                   </div>
                 )
               })}
+              {/* Diocesan "stálá zpovědní služba" windows: day + time-range kept
+                  verbatim (they carry nuance — "30 min přede mší", multiple ranges
+                  — a parsed single time would lie). The day label is free text, so
+                  these sit in their own list rather than the digit-day grouping
+                  above; a discreet source line credits the diocese. */}
+              {dioc && dioc.rows.length > 0 && (
+                <div className="mt-4">
+                  <ul>
+                    {dioc.rows.map((r, i) => (
+                      <li key={i} className="border-b border-hairline py-2">
+                        <p className="rubric text-[0.7rem]">{r.den}</p>
+                        {r.cas && (
+                          <p className="font-display text-base font-semibold tabular-nums">{r.cas}</p>
+                        )}
+                        <NoteText note={r.note} />
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-xs text-ink-faded">{t('confession_diocese_source')}</p>
+                </div>
+              )}
             </section>
           )}
 
