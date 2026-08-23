@@ -715,7 +715,20 @@ export default function App() {
           paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
         }}
       >
-        <h1 className="font-display text-xl font-bold tracking-tight">Bohoslužby</h1>
+        {/* wordmark left, an always-reachable help affordance right — the footer
+            "nápověda" link is hidden in map mode (the default view), so the
+            re-open lives in the masthead where it survives every view. */}
+        <div className="flex items-baseline justify-between gap-3">
+          <h1 className="font-display text-xl font-bold tracking-tight">Bohoslužby</h1>
+          <button
+            type="button"
+            onClick={() => setIntroOpen(true)}
+            aria-label={t('intro_help')}
+            className="-my-2 shrink-0 px-1 py-2 text-xs font-semibold tracking-[0.08em] text-ink-faded uppercase hover:text-ink"
+          >
+            ? {t('intro_help')}
+          </button>
+        </div>
       </header>
 
       <main className={mapMode ? 'flex min-h-0 flex-1 flex-col' : 'flex-1 pb-10'}>

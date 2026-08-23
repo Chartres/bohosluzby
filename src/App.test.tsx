@@ -177,6 +177,23 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.queryByTestId('seznam')).not.toBeInTheDocument()
   })
 
+  it('the intro guide is re-openable from the masthead in the default map view', async () => {
+    // regression: the footer "nápověda" link is hidden in map mode (the default),
+    // so a returning user had no way back into the guide. The masthead help
+    // control must reach it regardless of view.
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/') // map default
+    render(<App />)
+    const mapa = await screen.findByRole('button', { name: 'mapa' })
+    expect(mapa).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    // the footer (with its own help link) is not rendered in map mode…
+    expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument()
+    // …but the masthead help control is, and it opens the guide
+    fireEvent.click(screen.getByRole('button', { name: 'nápověda' }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
   it('landing view: falls back to the seznam when offline (the map needs a connection)', async () => {
     Object.defineProperty(navigator, 'onLine', { value: false, configurable: true })
     stubGeolocation('granted')

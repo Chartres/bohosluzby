@@ -389,12 +389,25 @@ export default function MapView({
             : 'ordo-map mt-4 w-full border border-hairline'
         }
       />
-      {witnessShown && (
-        <p className="map-legend">
-          <span className="map-legend-fold" aria-hidden="true" />
-          {t('fb_map_legend')}
-        </p>
-      )}
+      {/* discreet key: the chip colours are always relevant (shown whenever the
+          map is up); the dog-ear fold row only while a witnessed chip is on
+          screen. Overlay, pointer-events off, below the popup pane. */}
+      <div className="map-legend">
+        <span className="map-legend-row">
+          <span className="map-legend-chip" aria-hidden="true" />
+          {t('map_legend_match')}
+        </span>
+        <span className="map-legend-row">
+          <span className="map-legend-dot" aria-hidden="true" />
+          {t('map_legend_nomatch')}
+        </span>
+        {witnessShown && (
+          <span className="map-legend-row">
+            <span className="map-legend-fold" aria-hidden="true" />
+            {t('fb_map_legend')}
+          </span>
+        )}
+      </div>
     </div>
   )
 }

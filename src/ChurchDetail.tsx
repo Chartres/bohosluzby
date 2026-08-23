@@ -1,7 +1,7 @@
 // Church detail — the full weekly schedule set like a printed ordo (grouped by
 // day, times aligned), one-off services in their own rubric section, parish +
 // contacts, and an honest data-freshness line. docs/DESIGN-BRIEF.md governs.
-import { type TouchEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { type RefObject, type TouchEvent, useEffect, useMemo, useRef, useState } from 'react'
 import {
   decodeShard,
   type Church,
@@ -96,6 +96,10 @@ function MassDiverges({ chips }: { chips: { id: string; count: number }[] }) {
 }
 
 const linkCls = 'underline decoration-hairline underline-offset-2 hover:text-ink'
+// meta links when they sit OVER the photo hero: paper text on the scrim,
+// decoration brightening on hover instead of darkening to ink (which would
+// vanish against the dark image).
+const heroLinkCls = 'underline decoration-paper/40 underline-offset-2 hover:decoration-paper'
 
 function contactHref(type: string, value: string): string | null {
   if (type === 'www') return value
@@ -168,7 +172,7 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
 /** Share the church's /kostel/<id>/ URL. Native: the Capacitor Share plugin
  * (WKWebView has no navigator.share — the old code silently did nothing).
  * Web: Web Share API, then clipboard with a VISIBLE confirmation. */
-function ShareLink({ church }: { church: Church }) {
+function ShareLink({ church, linkClassName = linkCls }: { church: Church; linkClassName?: string }) {
   const [copied, setCopied] = useState(false)
   const share = async () => {
     const url = `${location.origin}/kostel/${church.id}/`
@@ -192,7 +196,7 @@ function ShareLink({ church }: { church: Church }) {
   }
   return (
     <>
-      <button type="button" onClick={share} className={linkCls}>
+      <button type="button" onClick={share} className={linkClassName}>
         {t('share')}
       </button>
       <span
@@ -212,6 +216,66 @@ interface ChurchPhoto {
   url: string
   credit: string
   license: string
+}
+
+/** Church name + city + the meta action row (mapa · navigace · sdílet · web
+ * farnosti · bezbariérový). Rendered plain on paper when there's no photo, or
+ * OVER the photo hero (hero=true) — paper text on the scrim, light link
+ * decoration — like a Booking/Airbnb property header. One block, two skins, so
+ * the title and its links never drift between the two layouts. */
+function DetailHeading({
+  church,
+  headingRef,
+  onNavigate,
+  hero,
+}: {
+  church: Church
+  headingRef: RefObject<HTMLHeadingElement | null>
+  onNavigate: () => void
+  hero: boolean
+}) {
+  const text = hero ? 'text-paper' : 'text-ink-faded'
+  const link = hero ? heroLinkCls : linkCls
+  return (
+    <>
+      <h2
+        ref={headingRef}
+        tabIndex={-1}
+        className={`font-display text-2xl leading-tight font-bold outline-none ${hero ? 'text-paper' : 'mt-4'}`}
+      >
+        {church.name}
+      </h2>
+      {church.city && <p className={`mt-1 text-sm ${text}`}>{church.city}</p>}
+      {/* one meta row of actions under the title — map · navigate · share · web
+          farnosti. Bundled (not a separate block) so the schedule stays primary. */}
+      <p className={`mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${text}`}>
+        <a
+          className={link}
+          href={`https://mapy.cz/zakladni?q=${church.lat}%2C${church.lng}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {t('map_link')}
+        </a>
+        {/* geo: is an Android scheme — iOS ignored it; the chooser works everywhere */}
+        <button type="button" className={link} onClick={onNavigate}>
+          {t('detail_navigate')}
+        </button>
+        <ShareLink church={church} linkClassName={link} />
+        {church.www && (
+          <a
+            href={withReferral(church.www)}
+            target="_blank"
+            rel="noreferrer"
+            className={hero ? link : `rubric ${link}`}
+          >
+            {t('detail_parish_web')}
+          </a>
+        )}
+        {church.barrierFree && <span className={text}>{t('wheelchair_label')}</span>}
+      </p>
+    </>
+  )
 }
 
 export function ChurchDetail({ church, onBack }: { church: Church; onBack: () => void }) {
@@ -384,59 +448,37 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
           {t('back_to_list')}
         </button>
       </p>
-      <h2
-        ref={headingRef}
-        tabIndex={-1}
-        className="font-display mt-4 text-2xl leading-tight font-bold outline-none"
-      >
-        {church.name}
-      </h2>
-      {church.city && <p className="mt-1 text-sm text-ink-faded">{church.city}</p>}
-      {/* one meta row of actions under the title — map · navigate · share · web
-          farnosti. Bundled (not a separate block) so the schedule stays primary;
-          gap-y + a touch more spacing keeps them tappable. Web is rubric-tinted
-          so it's findable among them without a heavy button. */}
-      <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-faded">
-        <a
-          className={linkCls}
-          href={`https://mapy.cz/zakladni?q=${church.lat}%2C${church.lng}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t('map_link')}
-        </a>
-        {/* geo: is an Android scheme — iOS ignored it; the chooser works everywhere */}
-        <button type="button" className={linkCls} onClick={() => setNavOpen(true)}>
-          {t('detail_navigate')}
-        </button>
-        <ShareLink church={church} />
-        {church.www && (
-          <a
-            href={withReferral(church.www)}
-            target="_blank"
-            rel="noreferrer"
-            className={`rubric ${linkCls}`}
-          >
-            {t('detail_parish_web')}
-          </a>
-        )}
-        {church.barrierFree && <span className="text-ink-faded">{t('wheelchair_label')}</span>}
-      </p>
-
-      {photo && (
-        <figure className="mt-4">
+      {/* Photo present → a Booking/Airbnb-style HERO: the church name + meta row
+          sit OVER the image on a bottom scrim. object-top keeps the tower (church
+          photos are tall) instead of a landscape band cropping it off. No photo →
+          the plain paper header. The hero bleeds full-width (-mx) like the back bar. */}
+      {photo ? (
+        <figure className="relative mt-4 -mx-5 overflow-hidden sm:-mx-8">
           <img
             src={photo.url}
             alt={church.name}
             loading="lazy"
             decoding="async"
-            className="max-h-[200px] w-full rounded-[2px] object-cover"
+            className="block h-[46vh] max-h-[26rem] min-h-[15rem] w-full object-cover object-top"
           />
-          <figcaption className="mt-1 text-xs text-ink-faded">
-            {t('photo_credit_prefix')}{' '}
-            {[photo.credit, photo.license, 'Wikimedia Commons'].filter(Boolean).join(' · ')}
+          {/* bottom scrim for legibility of the overlaid title — a warm-ink
+              gradient, not a box-shadow (docs/DESIGN-BRIEF.md: no shadows) */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent" />
+          <figcaption className="absolute inset-x-0 bottom-0 px-5 pt-10 pb-4 sm:px-8">
+            <DetailHeading church={church} headingRef={headingRef} onNavigate={() => setNavOpen(true)} hero />
+            <p className="mt-2 text-xs text-paper/80">
+              {t('photo_credit_prefix')}{' '}
+              {[photo.credit, photo.license, 'Wikimedia Commons'].filter(Boolean).join(' · ')}
+            </p>
           </figcaption>
         </figure>
+      ) : (
+        <DetailHeading
+          church={church}
+          headingRef={headingRef}
+          onNavigate={() => setNavOpen(true)}
+          hero={false}
+        />
       )}
 
       <ChurchWitness chips={churchTags} witnesses={agg.church.witnesses} />

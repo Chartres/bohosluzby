@@ -93,18 +93,27 @@ describe('confession section', () => {
 })
 
 describe('church photo', () => {
-  it('renders the photo and its attribution when a photo exists', async () => {
+  it('renders the photo as a hero with the title over it when a photo exists', async () => {
     render(<ChurchDetail church={church('1', '50-14')} onBack={() => {}} />)
     const img = await screen.findByRole('img', { name: 'kostel 1' })
     expect(img).toHaveAttribute('src', 'https://commons.example/thumb.jpg')
     expect(img).toHaveAttribute('loading', 'lazy')
+    // hero: the church title and the image live in the same <figure>, so the
+    // name renders OVER the photo (Booking/Airbnb property-header style)
+    const figure = img.closest('figure')
+    expect(figure).not.toBeNull()
+    expect(within(figure!).getByRole('heading', { name: 'kostel 1' })).toBeInTheDocument()
+    // the meta links sit over the hero too
+    expect(within(figure!).getByRole('link', { name: 'mapa' })).toBeInTheDocument()
     expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
   })
 
-  it('renders no image when the church has no photo entry', async () => {
+  it('renders no image and a plain title when the church has no photo entry', async () => {
     render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
-    await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    const heading = await screen.findByRole('heading', { name: 'kostel 2' })
     expect(screen.queryByRole('img')).toBeNull()
+    // plain layout: the title is NOT wrapped in a photo figure
+    expect(heading.closest('figure')).toBeNull()
   })
 
   it('surfaces a confession time parsed from a Mass note, keeping the note on its Mass', async () => {

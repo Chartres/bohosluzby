@@ -92,28 +92,55 @@
   pointer-events: none;
 }
 
-/* Discreet key for the dog-ear fold: a matching mini-fold swatch + label, shown
-   under the map only while witnessed chips are on screen. Paper-backed hairline
-   pill, pinned bottom-left (clear of the zoom control and attribution); below
-   the popup pane so a popover always covers it; pointer-events off so it never
-   eats a map drag. */
+/* Discreet key: what the marker colours mean — a season-accent chip (a Mass
+   matching now), a grey dot (a church with nothing matching now), and the
+   dog-ear fold (pilgrim witness, only while a witnessed chip is on screen).
+   Paper-backed hairline card, pinned bottom-left (clear of the zoom control and
+   attribution); below the popup pane so a popover always covers it;
+   pointer-events off so it never eats a map drag. */
 .map-legend {
   position: absolute;
   left: 8px;
   bottom: 8px;
   z-index: 650;
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  max-width: min(70vw, 15rem);
+  padding: 5px 8px;
   background: var(--color-paper);
   border: 1px solid var(--color-hairline);
   border-radius: 2px;
   font-family: var(--font-sans);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
+  line-height: 1.2;
   color: var(--color-ink-faded);
   pointer-events: none;
+}
+.map-legend-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+/* mini season-accent time chip — matches the map-chip look, shrunk */
+.map-legend-chip {
+  flex: none;
+  width: 14px;
+  height: 12px;
+  background: var(--season);
+  border: 1px solid var(--color-paper);
+  border-radius: 2px;
+}
+/* grey dot — matches .map-dot--faded */
+.map-legend-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--color-ink-faded) 45%, var(--color-paper));
+  border: 1px solid var(--color-hairline);
 }
 .map-legend-fold {
   position: relative;

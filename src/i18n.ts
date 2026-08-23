@@ -189,6 +189,8 @@ export const cs = {
   fb_filter_hint: 'Ukázat jen mše, kde poutníci zmiňují:',
   fb_list_mark_aria: 'svědectví poutníků',
   fb_map_legend: 'ohlasy poutníků',
+  map_legend_match: 'mše, která teď sedí na váš výběr',
+  map_legend_nomatch: 'kostel, kde teď nic nesedí',
   detail_parish_web: 'Web farnosti',
 
   // ---- first-run intro guide ----
@@ -381,6 +383,8 @@ export const en: Record<Key, string> = {
   fb_filter_hint: 'Show only Masses where pilgrims mention:',
   fb_list_mark_aria: 'pilgrim witness',
   fb_map_legend: 'pilgrim witness',
+  map_legend_match: 'a Mass matching your selection now',
+  map_legend_nomatch: 'a church with nothing matching now',
   detail_parish_web: 'Parish website',
 
   intro_rubric: 'welcome',
