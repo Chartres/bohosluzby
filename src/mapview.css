@@ -93,12 +93,12 @@
 }
 
 /* Discreet key: what the markers mean — a season-accent chip (matches the
-   choice now), a grey time-chip (a matching Mass on another day), the black
-   numbered cluster (churches nearby), and the dog-ear fold (pilgrim witness,
-   only while a witnessed chip is on screen).
-   Paper-backed hairline card, pinned bottom-left (clear of the zoom control and
-   attribution); below the popup pane so a popover always covers it;
-   pointer-events off so it never eats a map drag. */
+   choice now), a grey time-chip (a matching Mass on another day), and the
+   dog-ear fold (pilgrim witness, only while a witnessed chip is on screen).
+   Low-key: NOT a card — a couple of discreet floating swatch+label rows pinned
+   bottom-left (clear of the zoom control and attribution), each on a barely-there
+   paper wash for legibility over the tiles; below the popup pane so a popover
+   always covers it; pointer-events off so it never eats a map drag. */
 .map-legend {
   position: absolute;
   left: 8px;
@@ -107,14 +107,10 @@
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 3px;
   max-width: min(70vw, 15rem);
-  padding: 5px 8px;
-  background: var(--color-paper);
-  border: 1px solid var(--color-hairline);
-  border-radius: 2px;
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   letter-spacing: 0.04em;
   line-height: 1.2;
   color: var(--color-ink-faded);
@@ -123,7 +119,10 @@
 .map-legend-row {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  padding: 1px 5px 1px 3px;
+  background: color-mix(in srgb, var(--color-paper) 78%, transparent);
+  border-radius: 2px;
 }
 /* mini season-accent time chip — matches the map-chip look, shrunk */
 .map-legend-chip {
@@ -139,22 +138,6 @@
 .map-legend-chip--otherday {
   background: color-mix(in srgb, var(--color-ink-faded) 55%, var(--color-paper));
   border-color: var(--color-paper);
-}
-/* black numbered cluster swatch — matches .map-cluster (churches nearby) */
-.map-legend-cluster {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 15px;
-  height: 15px;
-  background: var(--color-ink);
-  color: var(--color-paper);
-  border: 1px solid var(--color-paper);
-  border-radius: 50%;
-  font-family: var(--font-sans);
-  font-size: 0.56rem;
-  font-weight: 600;
-  line-height: 1;
 }
 .map-legend-fold {
   position: relative;

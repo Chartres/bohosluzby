@@ -314,6 +314,9 @@ export default function App() {
   const [previewDismissed, setPreviewDismissed] = useState(false)
   const dismissedRef = useRef<Set<string>>(new Set())
   const [introOpen, setIntroOpen] = useState(() => introInitiallyOpen(location.search))
+  // A church-detail page showing a full-bleed photo hero suppresses the masthead
+  // so the image reaches the very top; ChurchDetail reports this per church.
+  const [detailHero, setDetailHero] = useState(false)
   const closeIntro = () => {
     setIntroOpen(false)
     try {
@@ -700,7 +703,10 @@ export default function App() {
     >
       {/* one header everywhere — the map-mode masthead won: small wordmark on
           the season-colored rule, sticky so the page identity survives scroll.
-          Negative margins bleed the paper background across the column padding. */}
+          Negative margins bleed the paper background across the column padding.
+          Exception: a church detail with a photo hero drops the masthead so the
+          image bleeds full to the top, its back+help overlaid on the hero. */}
+      {!(route.view === 'church' && detailHero) && (
       <header
         className={
           mapMode
@@ -730,6 +736,7 @@ export default function App() {
           </button>
         </div>
       </header>
+      )}
 
       <main className={mapMode ? 'flex min-h-0 flex-1 flex-col' : 'flex-1 pb-10'}>
         {dataError && (
@@ -739,7 +746,13 @@ export default function App() {
         )}
 
         {!dataError && route.view === 'church' && index && (
-          <DetailRoute id={route.id} index={index} onBack={() => navigate(`/${search}`)} />
+          <DetailRoute
+            id={route.id}
+            index={index}
+            onBack={() => navigate(`/${search}`)}
+            onHelp={() => setIntroOpen(true)}
+            onHeroChange={setDetailHero}
+          />
         )}
         {!dataError && route.view === 'church' && !index && (
           <p className="mt-8 text-ink-faded" role="status">
@@ -1666,7 +1679,19 @@ function OrdoControls({
   )
 }
 
-function DetailRoute({ id, index, onBack }: { id: string; index: Church[]; onBack: () => void }) {
+function DetailRoute({
+  id,
+  index,
+  onBack,
+  onHelp,
+  onHeroChange,
+}: {
+  id: string
+  index: Church[]
+  onBack: () => void
+  onHelp: () => void
+  onHeroChange: (hasHero: boolean) => void
+}) {
   const church = index.find((c) => c.id === id)
   if (!church) {
     return (
@@ -1681,7 +1706,7 @@ function DetailRoute({ id, index, onBack }: { id: string; index: Church[]; onBac
       </section>
     )
   }
-  return <ChurchDetail church={church} onBack={onBack} />
+  return <ChurchDetail church={church} onBack={onBack} onHelp={onHelp} onHeroChange={onHeroChange} />
 }
 
 /** Unified typeahead over every municipality and church, diacritics-insensitive

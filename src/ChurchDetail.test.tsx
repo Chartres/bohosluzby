@@ -55,11 +55,21 @@ const SHARD = {
     c: [],
     s: [['7', '10:30', 'česky', 0, 'mše sv.', '']],
   },
+  // church "5": a plain Mass; carries a photo whose credit has duplicate wiki
+  // markup to tidy.
+  '5': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['7', '09:15', 'česky', 0, 'mše sv.', '']],
+  },
 }
 
-// Church "1" has a photo entry; "2"/"3"/"4" do not.
+// Church "1"/"5" have a photo entry; "2"/"3"/"4" do not.
 const PHOTOS = {
   '1': { url: 'https://commons.example/thumb.jpg', credit: 'Jan Novák', license: 'CC BY-SA 4.0' },
+  '5': { url: 'https://commons.example/sju.jpg', credit: 'ŠJů ( cs:ŠJů )', license: 'CC BY-SA 3.0' },
 }
 
 // Diocesan "stálá zpovědní služba" windows, keyed by church id: verbatim day +
@@ -144,12 +154,43 @@ describe('church photo', () => {
     expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
   })
 
+  it('overlays the back control and help on the photo hero, and reports the hero', async () => {
+    const onBack = vi.fn()
+    const onHelp = vi.fn()
+    const onHeroChange = vi.fn()
+    render(
+      <ChurchDetail church={church('1', '50-14')} onBack={onBack} onHelp={onHelp} onHeroChange={onHeroChange} />,
+    )
+    const img = await screen.findByRole('img', { name: 'kostel 1' })
+    const figure = img.closest('figure')!
+    // both global controls live ON the hero (over the photo), not in a separate bar
+    const back = within(figure).getByRole('button', { name: '‹ zpět na seznam' })
+    const help = within(figure).getByRole('button', { name: 'nápověda' })
+    back.click()
+    help.click()
+    expect(onBack).toHaveBeenCalled()
+    expect(onHelp).toHaveBeenCalled()
+    // the shell is told a hero is up so it can drop its masthead
+    expect(onHeroChange).toHaveBeenCalledWith(true)
+  })
+
+  it('tidies the photo credit — drops duplicate wiki markup, keeps licence + source', async () => {
+    render(<ChurchDetail church={church('5', '50-14')} onBack={() => {}} />)
+    await screen.findByRole('img', { name: 'kostel 5' })
+    // "ŠJů ( cs:ŠJů )" → "ŠJů"
+    expect(screen.getByText('foto: ŠJů · CC BY-SA 3.0 · Wikimedia Commons')).toBeInTheDocument()
+    expect(screen.queryByText(/cs:ŠJů/)).toBeNull()
+  })
+
   it('renders no image and a plain title when the church has no photo entry', async () => {
-    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    const onHeroChange = vi.fn()
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} onHeroChange={onHeroChange} />)
     const heading = await screen.findByRole('heading', { name: 'kostel 2' })
     expect(screen.queryByRole('img')).toBeNull()
     // plain layout: the title is NOT wrapped in a photo figure
     expect(heading.closest('figure')).toBeNull()
+    // no hero → the shell keeps its masthead (no back/help overlaid)
+    expect(onHeroChange).not.toHaveBeenCalledWith(true)
   })
 
   it('surfaces a confession time parsed from a Mass note, keeping the note on its Mass', async () => {

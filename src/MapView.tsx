@@ -389,10 +389,10 @@ export default function MapView({
             : 'ordo-map mt-4 w-full border border-hairline'
         }
       />
-      {/* discreet key: season chip (matches the choice), grey chip (a matching
-          Mass on another day), and the black numbered cluster (churches nearby)
-          are always relevant; the dog-ear fold row only while a witnessed chip
-          is on screen. Overlay, pointer-events off, below the popup pane. */}
+      {/* discreet key: season chip (matches the choice) and grey chip (a matching
+          Mass on another day); the dog-ear fold row only while a witnessed chip
+          is on screen. Low-key floating rows (no card), pointer-events off,
+          below the popup pane. */}
       <div className="map-legend">
         <span className="map-legend-row">
           <span className="map-legend-chip" aria-hidden="true" />
@@ -401,12 +401,6 @@ export default function MapView({
         <span className="map-legend-row">
           <span className="map-legend-chip map-legend-chip--otherday" aria-hidden="true" />
           {t('map_legend_otherday')}
-        </span>
-        <span className="map-legend-row">
-          <span className="map-legend-cluster" aria-hidden="true">
-            3
-          </span>
-          {t('map_legend_cluster')}
         </span>
         {witnessShown && (
           <span className="map-legend-row">

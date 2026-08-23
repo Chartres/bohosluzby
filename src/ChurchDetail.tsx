@@ -286,7 +286,21 @@ function DetailHeading({
   )
 }
 
-export function ChurchDetail({ church, onBack }: { church: Church; onBack: () => void }) {
+export function ChurchDetail({
+  church,
+  onBack,
+  onHelp,
+  onHeroChange,
+}: {
+  church: Church
+  onBack: () => void
+  // Re-open the intro guide from the hero nav (photo case). Optional so the
+  // detail renders standalone in unit tests without wiring the app shell.
+  onHelp?: () => void
+  // Tells the app shell whether this detail is showing a full-bleed photo hero,
+  // so the shell can drop its masthead and let the image reach the very top.
+  onHeroChange?: (hasHero: boolean) => void
+}) {
   const [svc, setSvc] = useState<ChurchServices | null>(null)
   const [failed, setFailed] = useState(false)
   const [navOpen, setNavOpen] = useState(false)
@@ -344,6 +358,14 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
       cancelled = true
     }
   }, [church])
+
+  // Report hero presence to the app shell: with a photo, the shell drops its
+  // masthead so the image bleeds full to the top and the nav overlays the hero.
+  // Reset to false on unmount / when the photo goes away.
+  useEffect(() => {
+    onHeroChange?.(Boolean(photo))
+    return () => onHeroChange?.(false)
+  }, [photo, onHeroChange])
 
   // Diocesan confession windows (data/confession.json): same OTA/offline gateway,
   // keyed by church id. Absent map, offline, or no entry → render nothing (the
@@ -456,35 +478,39 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
 
   return (
     <article
-      className="mt-5"
+      className={photo ? '' : 'mt-5'}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {/* the back link stays reachable while scrolling a long ordo — sticky just
-          below the app header, paper-backed so scrolled text never shows through.
-          The top offset mirrors the header's height (safe-area pad + wordmark). */}
-      <p
-        className="sticky z-20 -mx-5 bg-paper px-5 py-1 sm:-mx-8 sm:px-8"
-        style={{ top: 'calc(max(0.75rem, env(safe-area-inset-top)) + 2.25rem)' }}
-      >
-        <button
-          type="button"
-          onClick={onBack}
-          className={`rubric inline-flex min-h-11 items-center ${linkCls}`}
+      {/* No photo → the plain paper header, with a sticky "‹ zpět na seznam" band
+          under the app masthead (paper-backed so scrolled text never shows
+          through; top offset mirrors the header's height). With a photo the back
+          control instead overlays the hero, so this band is suppressed. */}
+      {!photo && (
+        <p
+          className="sticky z-20 -mx-5 bg-paper px-5 py-1 sm:-mx-8 sm:px-8"
+          style={{ top: 'calc(max(0.75rem, env(safe-area-inset-top)) + 2.25rem)' }}
         >
-          {t('back_to_list')}
-        </button>
-      </p>
-      {/* Photo present → a Booking/Airbnb-style HERO: the church name + meta row
-          sit OVER the image on a bottom scrim. object-top keeps the tower (church
-          photos are tall) instead of a landscape band cropping it off. No photo →
-          the plain paper header. The hero bleeds full-width (-mx) like the back bar. */}
+          <button
+            type="button"
+            onClick={onBack}
+            className={`rubric inline-flex min-h-11 items-center ${linkCls}`}
+          >
+            {t('back_to_list')}
+          </button>
+        </p>
+      )}
+      {/* Photo present → a Booking/Airbnb-style full-bleed HERO: the image is the
+          page header (the app shell drops its masthead), so global chrome — the
+          back control and help — overlays the photo on a TOP scrim, and the
+          church name + meta row sit over a BOTTOM scrim. object-top keeps the
+          tower (church photos are tall). No photo → the plain paper header. */}
       {photo ? (
-        // z-0 pins the photo hero below the sticky back band (z-20) in the
-        // article's stacking context — an explicit level, so WebKit can't paint
-        // the tall image over the band on scroll (owner iPhone bug).
-        <figure className="relative z-0 mt-4 -mx-5 overflow-hidden sm:-mx-8">
+        // -mt-5 pulls the hero to the very top of <main> (the shell masthead is
+        // gone in this case); z-0 keeps it an explicit stacking level so WebKit
+        // can't paint the tall image over overlaid chrome on scroll.
+        <figure className="relative z-0 -mx-5 -mt-5 overflow-hidden sm:-mx-8">
           <img
             src={photo.url}
             alt={church.name}
@@ -492,14 +518,43 @@ export function ChurchDetail({ church, onBack }: { church: Church; onBack: () =>
             decoding="async"
             className="block h-[46vh] max-h-[26rem] min-h-[15rem] w-full object-cover object-top"
           />
-          {/* bottom scrim for legibility of the overlaid title — a warm-ink
-              gradient, not a box-shadow (docs/DESIGN-BRIEF.md: no shadows) */}
+          {/* top scrim under the overlaid nav; bottom scrim under the title —
+              warm-ink gradients, not box-shadows (docs/DESIGN-BRIEF.md) */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-ink/70 via-ink/20 to-transparent" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent" />
-          <figcaption className="absolute inset-x-0 bottom-0 px-5 pt-10 pb-4 sm:px-8">
+          {/* hero nav: back (left) + help (right), light on the scrim, ≥44px */}
+          <div
+            className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 px-3 sm:px-6"
+            style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
+          >
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-paper hover:text-paper/80"
+            >
+              {t('back_to_list')}
+            </button>
+            {onHelp && (
+              <button
+                type="button"
+                onClick={onHelp}
+                aria-label={t('intro_help')}
+                className="inline-flex min-h-11 items-center text-xs font-semibold tracking-[0.08em] text-paper uppercase hover:text-paper/80"
+              >
+                ? {t('intro_help')}
+              </button>
+            )}
+          </div>
+          <figcaption className="absolute inset-x-0 bottom-0 px-5 pt-10 pb-3 sm:px-8">
             <DetailHeading church={church} headingRef={headingRef} onNavigate={() => setNavOpen(true)} hero />
-            <p className="mt-2 text-xs text-paper/80">
+            {/* attribution: tiny, right-aligned, still legible on the scrim.
+                The author is tidied to the name before any " (…)" wiki markup
+                ("ŠJů ( cs:ŠJů )" → "ŠJů"); licence + Wikimedia Commons kept. */}
+            <p className="mt-1.5 text-right text-[0.65rem] text-paper/70">
               {t('photo_credit_prefix')}{' '}
-              {[photo.credit, photo.license, 'Wikimedia Commons'].filter(Boolean).join(' · ')}
+              {[photo.credit.split(' (')[0].trim(), photo.license, 'Wikimedia Commons']
+                .filter(Boolean)
+                .join(' · ')}
             </p>
           </figcaption>
         </figure>
