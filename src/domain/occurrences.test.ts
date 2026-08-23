@@ -1,4 +1,10 @@
-import { nextOccurrences, nextReminderAt, pragueInstant, pragueToday } from './occurrences'
+import {
+  nextOccurrences,
+  nextReminderAt,
+  pragueInstant,
+  pragueToday,
+  recentOccurrence,
+} from './occurrences'
 
 // Europe/Prague is UTC+2 in summer (CEST), UTC+1 in winter (CET).
 
@@ -57,6 +63,26 @@ describe('nextOccurrences — periodic services', () => {
 
   it('ignores unparseable times', () => {
     expect(nextOccurrences({ days: '5', time: '' }, now)).toEqual([])
+  })
+})
+
+describe('recentOccurrence — the "you were probably just there" window', () => {
+  // Monday 6 Jul 2026, 13:00 Prague (11:00 UTC).
+  const now = new Date('2026-07-06T11:00:00Z')
+  it('returns a mass that started within the window', () => {
+    // 12:00 Monday mass — an hour before now
+    const r = recentOccurrence({ days: '1', time: '12:00' }, now, 150)
+    expect(r?.toISOString()).toBe('2026-07-06T10:00:00.000Z')
+  })
+  it('ignores a mass that started longer ago than the window', () => {
+    // 07:00 Monday mass is 4h back — outside a 150-min window
+    expect(recentOccurrence({ days: '1', time: '07:00' }, now, 150)).toBeNull()
+  })
+  it('ignores a mass still in the future', () => {
+    expect(recentOccurrence({ days: '1', time: '18:00' }, now, 150)).toBeNull()
+  })
+  it('ignores a service that does not run today', () => {
+    expect(recentOccurrence({ days: '7', time: '12:00' }, now, 150)).toBeNull()
   })
 })
 

@@ -1,6 +1,10 @@
 // Persona journey: Marie is in an unfamiliar part of Prague on a Friday
 // afternoon and wants the nearest mass she can still make. One primary
 // journey, all its states (Standard: persona-journey test per journey).
+import { vi } from 'vitest'
+// Force supabase null so a local .env.local can't make witness aggregates hit the
+// live DB (CI has no env). The app + witness store fall back to localStorage.
+vi.mock('./lib/supabase', () => ({ supabase: null }))
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App, { dayOptions } from './App'
@@ -20,7 +24,7 @@ const qp = (key: string) => new URLSearchParams(window.location.search).get(key)
 const INDEX: IndexRow[] = [
   ['1', 'kostel Nejsvětějšího Salvátora', 'Praha 1', 50.086, 14.417, 1, '50-14', 'https://www.farnostsalvator.cz'],
   ['2', 'kostel sv. Havla', 'Praha 1', 50.0855, 14.4229, 0, '50-14'],
-  ['3', 'kostel sv. Tomáše', 'Brno', 49.1986, 16.6072, 0, '49-16'],
+  ['3', 'kostel sv. Tomáše', 'Brno', 49.1986, 16.6072, 0, '49-16', 'https://www.opatbrno.cz'],
   ['7', 'kaple sv. Anny', 'Praha 1', 50.088, 14.42, 0, '50-14'],
 ]
 const SHARD_50_14 = {
@@ -67,7 +71,8 @@ const SHARD_50_14 = {
   },
 }
 const SHARD_49_16 = {
-  '3': { u: '2026-06-01', p: '', pa: '', c: [], s: [['7', '09:00', 'česky', 0, 'mše sv.', '']] },
+  // decade-stale + a known parish web — drives the stale-warning parish link test
+  '3': { u: '2016-01-01', p: '', pa: '', c: [], s: [['7', '09:00', 'česky', 0, 'mše sv.', '']] },
 }
 
 function stubFetch() {
@@ -111,6 +116,7 @@ const openControls = () => fireEvent.click(screen.getByRole('button', { name: /^
 
 beforeEach(() => {
   localStorage.clear() // last-known-origin seeding must not leak across tests
+  localStorage.setItem('bohosluzby:introSeen', '1') // these journeys are returning users, not first-run
   vi.useFakeTimers({ now: NOW, shouldAdvanceTime: true })
   stubFetch()
   // The map is now the default landing view; these journeys exercise the seznam,
@@ -169,6 +175,23 @@ describe('Marie finds the nearest mass', () => {
     const mapa = await screen.findByRole('button', { name: 'mapa' })
     expect(mapa).toHaveAttribute('aria-pressed', 'true')
     expect(screen.queryByTestId('seznam')).not.toBeInTheDocument()
+  })
+
+  it('the intro guide is re-openable from the masthead in the default map view', async () => {
+    // regression: the footer "nápověda" link is hidden in map mode (the default),
+    // so a returning user had no way back into the guide. The masthead help
+    // control must reach it regardless of view.
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/') // map default
+    render(<App />)
+    const mapa = await screen.findByRole('button', { name: 'mapa' })
+    expect(mapa).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    // the footer (with its own help link) is not rendered in map mode…
+    expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument()
+    // …but the masthead help control is, and it opens the guide
+    fireEvent.click(screen.getByRole('button', { name: 'nápověda' }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
   it('landing view: falls back to the seznam when offline (the map needs a connection)', async () => {
@@ -364,7 +387,7 @@ describe('Marie finds the nearest mass', () => {
     expect(parish).toHaveTextContent('Křižovnické nám. 4, Praha 1')
     expect(within(parish).getByRole('link', { name: 'farnostsalvator.cz' })).toHaveAttribute(
       'href',
-      'https://www.farnostsalvator.cz',
+      'https://www.farnostsalvator.cz?utm_source=bohosluzby.dravec.org&utm_medium=referral&utm_campaign=detail',
     )
     expect(within(parish).getByRole('link', { name: '222 221 339' })).toHaveAttribute(
       'href',
@@ -400,6 +423,72 @@ describe('Marie finds the nearest mass', () => {
     expect(
       screen.getByText(/Rozpis byl naposledy ověřen 6\. 9\. 2016 — před cestou/),
     ).toBeInTheDocument()
+  })
+
+  it('parish web is a prominent affordance near the top of the detail', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await user.click(await screen.findByText('kostel Nejsvětějšího Salvátora'))
+    // church 1 is fresh (no stale note) → exactly one clear "Web farnosti →" link
+    const web = screen.getByRole('link', { name: 'Web farnosti' })
+    // detail parish-web links carry our referral UTM (list rows deliberately do not)
+    expect(web).toHaveAttribute(
+      'href',
+      'https://www.farnostsalvator.cz?utm_source=bohosluzby.dravec.org&utm_medium=referral&utm_campaign=detail',
+    )
+    expect(web).toHaveAttribute('target', '_blank')
+  })
+
+  it('stale warning links the parish website when known', async () => {
+    stubGeolocation('denied')
+    window.history.pushState(null, '', '/kostel/3/')
+    render(<App />)
+    // Brno church 3 is decade-stale AND has a known web → the verify-before-you-go
+    // warning carries a parish-web link right in the sentence
+    const warn = await screen.findByText(/Rozpis byl naposledy ověřen 1\. 1\. 2016 — před cestou/)
+    const link = within(warn).getByRole('link', { name: /Web farnosti/ })
+    expect(link).toHaveAttribute(
+      'href',
+      'https://www.opatbrno.cz?utm_source=bohosluzby.dravec.org&utm_medium=referral&utm_campaign=detail',
+    )
+  })
+
+  it('edge swipe from the left goes back; a mid-screen drag does not', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await user.click(await screen.findByText('kostel Nejsvětějšího Salvátora'))
+    const article = await screen.findByRole('article')
+
+    // a drag NOT anchored at the left edge is ignored (normal content pan)
+    fireEvent.touchStart(article, { touches: [{ clientX: 200, clientY: 120 }] })
+    fireEvent.touchMove(article, { touches: [{ clientX: 300, clientY: 122 }] })
+    fireEvent.touchEnd(article)
+    expect(window.location.pathname).toBe('/kostel/1/')
+
+    // an edge-anchored, horizontal-dominant rightward drag navigates back
+    fireEvent.touchStart(article, { touches: [{ clientX: 10, clientY: 120 }] })
+    fireEvent.touchMove(article, { touches: [{ clientX: 90, clientY: 128 }] })
+    fireEvent.touchEnd(article)
+    expect(await screen.findByText('kostel sv. Havla')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/')
+  })
+
+  it('list rows carry a quiet witness mark only where testimony is corroborated', async () => {
+    localStorage.setItem(
+      'bohosluzby:massFeedback',
+      JSON.stringify([{ churchId: '1', massKey: 'm1', deviceId: 'd1', chips: ['krasny_zpev'] }]),
+    )
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText('kostel Nejsvětějšího Salvátora')
+    // the mark lands once the aggregates fold in from the localStorage mirror
+    await seznam().findByRole('img', { name: 'svědectví poutníků' })
+    const salvator = seznam().getAllByText('kostel Nejsvětějšího Salvátora')[0].closest('li')!
+    expect(within(salvator).getByRole('img', { name: 'svědectví poutníků' })).toBeInTheDocument()
+    const havla = seznam().getByText('kostel sv. Havla').closest('li')!
+    expect(within(havla).queryByRole('img', { name: 'svědectví poutníků' })).not.toBeInTheDocument()
   })
 
   it('season advisory banner shows over the list (NOW is July → summer)', async () => {

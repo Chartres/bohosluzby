@@ -80,6 +80,7 @@ export const cs = {
   rubric_when: 'kdy',
   anytime: 'kdykoli',
   around_word: 'kolem',
+  around_prompt: 'vlastní čas',
   around_time_aria: 'Kolem času',
   band_past_title: 'dnes už proběhlo — přepne na zítra',
   rubric_range: 'okruh',
@@ -130,6 +131,8 @@ export const cs = {
   // ---- church detail ----
   schedule_title: 'Pořad bohoslužeb',
   extras_title: 'Mimořádné bohoslužby',
+  confession_title: 'Svátost smíření',
+  confession_diocese_source: 'podle stálé zpovědní služby diecéze',
   parish_title: 'Farnost',
   no_regular_services: 'Rejstřík pro tento kostel neuvádí žádné pravidelné bohoslužby.',
   last_verified: 'naposledy ověřeno',
@@ -147,6 +150,7 @@ export const cs = {
   map_link: 'mapa',
   now_paused: 'nyní se nekoná',
   detail_title_suffix: 'pořad bohoslužeb',
+  photo_credit_prefix: 'foto:',
   service_fallback: 'bohoslužba',
   wd_mon: 'pondělí',
   wd_tue: 'úterý',
@@ -167,6 +171,52 @@ export const cs = {
   feedback_aria: 'Zpětná vazba',
   feedback_close: 'Zavřít',
   feedback_send: 'Odeslat',
+
+  // ---- after-Mass witness card (pilgrim witness) ----
+  fb_card_aria: 'Byli jste na této mši?',
+  fb_attended_q: 'Byli jste na této mši?',
+  fb_yes: 'Ano, byl/a jsem',
+  fb_not_now: 'Teď ne',
+  fb_never: 'Neptat se',
+  fb_chips_intro: 'Co jste ocenili? (nepovinné)',
+  fb_suggest_link: 'navrhnout štítek',
+  fb_suggest_placeholder: 'Váš štítek',
+  fb_suggest_note: 'Nezveřejní se — pomůže rozšířit nabídku štítků.',
+  fb_save: 'Uložit',
+  fb_saved: 'Díky. Zapsáno pro další poutníky.',
+  fb_often: 'často zmiňují',
+  fb_church_often: 'V tomto kostele poutníci často zmiňují',
+  fb_mass_diverges: 'u této mše navíc zmiňují',
+  fb_filter_group: 'Ohlasy poutníků',
+  fb_filter_hint: 'Ukázat jen mše, kde poutníci zmiňují:',
+  fb_list_mark_aria: 'svědectví poutníků',
+  fb_map_legend: 'ohlasy poutníků',
+  map_legend_match: 'vyhovuje zadání',
+  map_legend_otherday: 'jiný den',
+  detail_parish_web: 'Web farnosti',
+
+  // ---- first-run intro guide ----
+  intro_rubric: 'vítejte',
+  intro_rubric_more: 'průvodce',
+  intro_skip: 'Přeskočit',
+  intro_next: 'Další',
+  intro_done: 'Zavřít',
+  intro_dismiss_aria: 'Zavřít průvodce',
+  intro_help: 'nápověda',
+  intro_card1_title: 'Najdi mši poblíž',
+  intro_card1_body:
+    'Aplikace se otevře na bohoslužbách ve vašem okolí. Seznam řadí nejbližší časy nahoru; na mapě je samotný čas mše značkou.',
+  intro_chip_title: 'Barevný nebo šedý štítek',
+  intro_chip_body:
+    'Barevný štítek s časem je mše, která vyhovuje vašemu výběru (den, čas, filtry) — ještě ji stihnete. Šedý štítek se zkratkou dne (např. „út 15:00“) je vyhovující mše v jiný den.',
+  intro_card2_title: 'Seznam a mapa',
+  intro_card2_body: 'Mezi seznamem a mapou přepínáte přepínačem nahoře.',
+  intro_card3_title: 'Barva podle dne',
+  intro_card3_body:
+    'Aplikace nosí liturgickou barvu dne: zelenou v mezidobí, bílou a zlatou o svátcích a ve velikonoční době, fialovou v adventu a postu, červenou o svátcích mučedníků a na Květnou neděli.',
+  intro_card4_title: 'Ověř ve farnosti',
+  intro_card4_body:
+    'Časy pocházejí z rejstříku ČBK. Před cestou si je ověřte na webu farnosti.',
 } as const
 
 export type Key = keyof typeof cs
@@ -232,6 +282,7 @@ export const en: Record<Key, string> = {
   rubric_when: 'when',
   anytime: 'anytime',
   around_word: 'around',
+  around_prompt: 'custom time',
   around_time_aria: 'around time',
   band_past_title: 'already over today — switches to tomorrow',
   rubric_range: 'range',
@@ -277,6 +328,8 @@ export const en: Record<Key, string> = {
 
   schedule_title: 'Mass times',
   extras_title: 'Special services',
+  confession_title: 'Confession',
+  confession_diocese_source: 'from the diocesan confession service',
   parish_title: 'Parish',
   no_regular_services: 'The registry lists no regular services for this church.',
   last_verified: 'last verified',
@@ -294,6 +347,7 @@ export const en: Record<Key, string> = {
   map_link: 'map',
   now_paused: 'not currently held',
   detail_title_suffix: 'mass times',
+  photo_credit_prefix: 'photo:',
   service_fallback: 'service',
   wd_mon: 'monday',
   wd_tue: 'tuesday',
@@ -314,6 +368,50 @@ export const en: Record<Key, string> = {
   feedback_aria: 'Feedback',
   feedback_close: 'Close',
   feedback_send: 'Send',
+
+  fb_card_aria: 'Were you at this Mass?',
+  fb_attended_q: 'Were you at this Mass?',
+  fb_yes: 'Yes, I was',
+  fb_not_now: 'Not now',
+  fb_never: "Don't ask",
+  fb_chips_intro: 'What were you glad of? (optional)',
+  fb_suggest_link: 'suggest a tag',
+  fb_suggest_placeholder: 'Your tag',
+  fb_suggest_note: 'Not published — it helps grow the set of tags.',
+  fb_save: 'Save',
+  fb_saved: 'Thank you. Recorded for other pilgrims.',
+  fb_often: 'often mentioned',
+  fb_church_often: 'Pilgrims here often mention',
+  fb_mass_diverges: 'at this Mass, pilgrims also mention',
+  fb_filter_group: 'Pilgrim witness',
+  fb_filter_hint: 'Show only Masses where pilgrims mention:',
+  fb_list_mark_aria: 'pilgrim witness',
+  fb_map_legend: 'pilgrim witness',
+  map_legend_match: 'matches your choice',
+  map_legend_otherday: 'another day',
+  detail_parish_web: 'Parish website',
+
+  intro_rubric: 'welcome',
+  intro_rubric_more: 'guide',
+  intro_skip: 'Skip',
+  intro_next: 'Next',
+  intro_done: 'Close',
+  intro_dismiss_aria: 'Close the guide',
+  intro_help: 'help',
+  intro_card1_title: 'Find a Mass nearby',
+  intro_card1_body:
+    'The app opens to services near you. The list shows the soonest first; on the map, the Mass time itself is the marker.',
+  intro_chip_title: 'Coloured or grey chip',
+  intro_chip_body:
+    'A coloured time chip is a Mass that matches your choice (day, time, filters) — you can still make it. A grey chip with a weekday (e.g. “Tue 15:00”) is a matching Mass on another day.',
+  intro_card2_title: 'List and map',
+  intro_card2_body: 'Switch between the list and the map with the toggle at the top.',
+  intro_card3_title: 'Colour of the day',
+  intro_card3_body:
+    "The app wears the Church's colour of the day: green in Ordinary Time, white and gold on feasts and in Eastertide, violet in Advent and Lent, red for martyrs and on Palm Sunday.",
+  intro_card4_title: 'Verify at the parish',
+  intro_card4_body:
+    'Times come from the ČBK registry. Verify them on the parish website before you go.',
 }
 
 export function t(k: Key): string {
@@ -423,6 +521,29 @@ const LANG_LABEL_EN: Record<string, string> = {
   'ukrajinsky': 'Ukrainian',
   'církevněslovansky': 'Church Slavonic',
   'slovensky': 'Slovak',
+}
+
+/** "potvrdilo N poutníků" / "confirmed by N pilgrims" — the witness count on
+ * the detail page. Czech verb+noun agreement (1 / 2–4 / 5+). */
+export function confirmedByPilgrims(n: number): string {
+  if (lang() === 'cs') {
+    if (n === 1) return 'potvrdil 1 poutník'
+    if (n >= 2 && n <= 4) return `potvrdili ${n} poutníci`
+    return `potvrdilo ${n} poutníků`
+  }
+  return `confirmed by ${n} pilgrim${n === 1 ? '' : 's'}`
+}
+
+/** "V tomto kostele N poutníků často zmiňuje" / "N pilgrims here often mention"
+ * — the church-witness intro on the detail page, with the count folded into the
+ * one sentence the pills follow. Czech subject+verb agreement (1 / 2–4 / 5+). */
+export function churchWitnessIntro(n: number): string {
+  if (lang() === 'cs') {
+    if (n === 1) return 'V tomto kostele 1 poutník často zmiňuje'
+    if (n >= 2 && n <= 4) return `V tomto kostele ${n} poutníci často zmiňují`
+    return `V tomto kostele ${n} poutníků často zmiňuje`
+  }
+  return `${n} pilgrim${n === 1 ? '' : 's'} here often mention${n === 1 ? 's' : ''}`
 }
 
 /** Display name for a normalized Czech language adverb ("latinsky" →

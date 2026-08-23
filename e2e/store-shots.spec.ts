@@ -31,6 +31,9 @@ for (const d of DEVICES) {
 
     test('store screens', async ({ page }) => {
       test.skip(!!process.env.CI, 'store screenshots are generated locally, not in CI')
+      // the first-run intro guide must not overlay the store shots (step 1 uses
+      // real bundled data, so mockData's seed hasn't run yet)
+      await page.addInitScript(() => localStorage.setItem('bohosluzby:introSeen', '1'))
       const dir = `store-assets/ios/${d.name}`
       // 1 — MAP hero (the centerpiece — leads the listing). REAL bundled data
       // (no mock) at a plain-green Sunday 07:00 local (05:00 UTC): the whole

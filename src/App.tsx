@@ -19,7 +19,13 @@ import { aggregateCities, findCity, searchPlaces, type City } from './domain/cit
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
+import { IntroGuide } from './IntroGuide'
 import { FeedbackCard } from './FeedbackCard'
+import { AfterMassCard, type CardMass } from './AfterMassCard'
+import { massKey, riteOf, slotKey, WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
+import { aggregateFor, churchHasTags, loadAggregates, submitFeedback } from './lib/feedbackStore'
+import { dueCards, markAnswered, neverAsk, type LedgerEntry } from './lib/feedbackLedger'
+import { WITNESS_ENABLED } from './lib/flags'
 import { track, conversion, logError } from './analytics'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
 import { loadData, refreshData, activeAsOf } from './lib/dataStore'
@@ -39,6 +45,17 @@ import {
 const NEARBY_KM = 30
 const NEARBY_CAP = 120
 const LIST_LIMIT = 20
+
+// First-run intro guide: shown once (localStorage flag), forceable with ?intro=1.
+const INTRO_SEEN_KEY = 'bohosluzby:introSeen'
+const introInitiallyOpen = (search: string): boolean => {
+  if (new URLSearchParams(search).get('intro') === '1') return true
+  try {
+    return !localStorage.getItem(INTRO_SEEN_KEY)
+  } catch {
+    return false // private mode → don't nag
+  }
+}
 
 /** "2026-07-03" → "3. 7. 2026" (cs) / "3 Jul 2026" (en). */
 const fmtDataDate = (iso: string) => {
@@ -144,7 +161,11 @@ function saveSticky<T>(key: string, value: T): void {
 }
 
 function loadFilters(): Filters {
-  return { ...NO_FILTERS, ...loadSticky<Filters>(FILTERS_KEY) }
+  const f = { ...NO_FILTERS, ...loadSticky<Filters>(FILTERS_KEY) }
+  // With witness disabled there is no filter UI to clear a stale persisted
+  // selection — drop it so an old build's witnessTags can't silently narrow the list.
+  if (!WITNESS_ENABLED) f.witnessTags = []
+  return f
 }
 
 // ---- Day picker: 'now' = soonest you can make; 0–6 = the day's full ordo ----
@@ -248,6 +269,35 @@ export function dayFromParam(now: Date, param: string | null): DayChoice {
   return 'now' // unreachable — every weekday occurs within 7 days
 }
 
+// Prototype flag (TestFlight builds only, never production): force-shows the
+// witness card so it can be tried on device where there's no URL bar for
+// ?feedback=preview. Baked in by the build with VITE_WITNESS_PREVIEW=1.
+const WITNESS_PREVIEW = import.meta.env.VITE_WITNESS_PREVIEW === '1'
+
+/** `?feedback=preview` demo Mass: the first nearby church with a regular
+ * service, keyed to that service's first weekday so the detail page shows the
+ * corroborated line after saving. Lets the owner toy locally with no waiting. */
+function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> }): CardMass | null {
+  for (const c of data.nearby) {
+    const svc = data.byId.get(c.id)?.regular[0]
+    if (!svc) continue
+    const weekday = Number(svc.days[0])
+    const { y, m, d } = pragueToday(new Date())
+    return {
+      churchId: c.id,
+      massKey: slotKey(c.id, weekday, svc.time, riteOf(svc), svc.lang),
+      churchName: c.name,
+      type: svc.type || t('service_fallback'),
+      weekday,
+      time: svc.time,
+      rite: riteOf(svc),
+      lang: svc.lang,
+      massDate: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+    }
+  }
+  return null
+}
+
 export default function App() {
   const [index, setIndex] = useState<Church[] | null>(null)
   const [dataError, setDataError] = useState(false)
@@ -265,11 +315,27 @@ export default function App() {
   const [navTarget, setNavTarget] = useState<NavTarget | null>(null) // "trasa" chooser sheet
   const season = useMemo(() => currentLiturgicalDay(), [])
   const convertedRef = useRef(false)
+  const [dueEntry, setDueEntry] = useState<LedgerEntry | null>(null)
+  const [previewDismissed, setPreviewDismissed] = useState(false)
+  const dismissedRef = useRef<Set<string>>(new Set())
+  const [introOpen, setIntroOpen] = useState(() => introInitiallyOpen(location.search))
+  // A church-detail page showing a full-bleed photo hero suppresses the masthead
+  // so the image reaches the very top; ChurchDetail reports this per church.
+  const [detailHero, setDetailHero] = useState(false)
+  const closeIntro = () => {
+    setIntroOpen(false)
+    try {
+      localStorage.setItem(INTRO_SEEN_KEY, '1')
+    } catch {
+      // private mode — nothing to persist
+    }
+  }
   const { route, path, search, navigate } = useRoute()
 
   // the selected day + time filter live in the URL (?den=nedele&cas=vecer) —
   // bookmarkable, back-safe, and they compose ("v neděli kolem 9:00")
   const params = new URLSearchParams(search)
+  const feedbackParam = params.get('feedback')
   const den = params.get('den')
   const day = useMemo(() => dayFromParam(new Date(), den), [den])
   const cas = parseCas(params.get('cas'))
@@ -471,13 +537,48 @@ export default function App() {
     setListLimit(LIST_LIMIT) // a new context restarts the cap
   }, [origin, filters, cas, day])
 
-  // one shared selector with the map — the seznam and the mapa never disagree
+  // Witness aggregates for the nearby churches — loaded whenever a list is up so
+  // the rows can carry the quiet witness mark, and so the "Ohlasy poutníků"
+  // filter has data to narrow on. aggTick bumps when a load resolves so the row
+  // filter and the per-row mark re-read the refreshed cache.
+  const [aggTick, setAggTick] = useState(0)
+  const witnessTags = filters.witnessTags
+  useEffect(() => {
+    if (!WITNESS_ENABLED || !data) return
+    let cancelled = false
+    void loadAggregates(data.nearby.map((c) => c.id)).then(() => {
+      if (!cancelled) setAggTick((n) => n + 1)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [data])
+
+  // one shared selector with the map — the seznam and the mapa never disagree.
+  // The witness filter is applied on top (over the aggregates, not the service
+  // data): keep only Masses carrying ALL selected tags at slot- or church-tier.
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
-    return selectUpcoming(new Date(), origin, data.nearby, data.byId, filters, cas, day, {
-      limit: listLimit,
+    const all = selectUpcoming(new Date(), origin, data.nearby, data.byId, filters, cas, day, {
+      limit: witnessTags.length ? Infinity : listLimit,
     })
-  }, [data, origin, filters, day, cas, listLimit])
+    if (witnessTags.length === 0) return all
+    return all
+      .filter((u) => churchHasTags(u.church.id, massKey(u.church.id, u.service, u.start), witnessTags))
+      .slice(0, listLimit)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
+  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick])
+
+  // Churches that carry corroborated (thresholded) church-wide witness tags —
+  // the set the list rows mark with a quiet rubric sign. Read from the same
+  // aggregate cache the map and detail use; aggTick refreshes it on each load.
+  const witnessChurches = useMemo(() => {
+    const set = new Set<string>()
+    if (WITNESS_ENABLED && data)
+      for (const c of data.nearby) if (aggregateFor(c.id).church.chips.length > 0) set.add(c.id)
+    return set
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
+  }, [data, aggTick])
 
   /** Languages on offer nearby (unfiltered) — the options for the lang filter. */
   const langs = useMemo(() => {
@@ -496,6 +597,7 @@ export default function App() {
     filters.barrierFree ||
     filters.massOnly ||
     Boolean(filters.maxKm) ||
+    filters.witnessTags.length > 0 ||
     Boolean(cas)
 
   const updateFilters = (next: Filters) => {
@@ -514,6 +616,45 @@ export default function App() {
       // private mode
     }
     track('key_action', { action: 'filters_reset' })
+  }
+
+  // ---- after-Mass witness card (pilgrim witness) --------------------------
+  // Real due cards come from the local ledger; ?feedback=preview force-shows a
+  // demo Mass so the owner can toy locally without waiting an hour after a Mass.
+  // ?feedback=preview OR a build-time flag (VITE_WITNESS_PREVIEW=1, TestFlight
+  // prototype only — there's no URL bar on device) force-shows the demo card.
+  const isPreview = WITNESS_ENABLED && (feedbackParam === 'preview' || WITNESS_PREVIEW)
+  useEffect(() => {
+    if (!WITNESS_ENABLED || isPreview) return
+    const due = dueCards(new Date()).find((e) => !dismissedRef.current.has(e.massKey)) ?? null
+    setDueEntry(due)
+  }, [isPreview, route.view])
+  const previewMass = useMemo(
+    () => (isPreview && !previewDismissed && data ? demoMass(data) : null),
+    [isPreview, previewDismissed, data],
+  )
+  const cardMass: CardMass | null = previewMass ?? dueEntry
+  const clearPreview = () => {
+    if (feedbackParam) setParam('feedback', null)
+  }
+  const onCardSubmit = (s: MassFeedback) => {
+    submitFeedback(s)
+    markAnswered(s.massKey)
+  }
+  const onCardDismiss = () => {
+    if (isPreview) {
+      clearPreview()
+      setPreviewDismissed(true)
+    } else if (dueEntry) {
+      dismissedRef.current.add(dueEntry.massKey)
+      setDueEntry(null)
+    }
+  }
+  const onCardNever = () => {
+    neverAsk()
+    setDueEntry(null)
+    clearPreview()
+    setPreviewDismissed(true)
   }
 
   const loading = !dataError && (!index || (!origin && !geoDenied) || (Boolean(origin) && rows === null))
@@ -568,7 +709,10 @@ export default function App() {
     >
       {/* one header everywhere — the map-mode masthead won: small wordmark on
           the season-colored rule, sticky so the page identity survives scroll.
-          Negative margins bleed the paper background across the column padding. */}
+          Negative margins bleed the paper background across the column padding.
+          Exception: a church detail with a photo hero drops the masthead so the
+          image bleeds full to the top, its back+help overlaid on the hero. */}
+      {!(route.view === 'church' && detailHero) && (
       <header
         className={
           mapMode
@@ -583,8 +727,22 @@ export default function App() {
           paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
         }}
       >
-        <h1 className="font-display text-xl font-bold tracking-tight">Bohoslužby</h1>
+        {/* wordmark left, an always-reachable help affordance right — the footer
+            "nápověda" link is hidden in map mode (the default view), so the
+            re-open lives in the masthead where it survives every view. */}
+        <div className="flex items-baseline justify-between gap-3">
+          <h1 className="font-display text-xl font-bold tracking-tight">Bohoslužby</h1>
+          <button
+            type="button"
+            onClick={() => setIntroOpen(true)}
+            aria-label={t('intro_help')}
+            className="-my-2 shrink-0 px-1 py-2 text-xs font-semibold tracking-[0.08em] text-ink-faded uppercase hover:text-ink"
+          >
+            ? {t('intro_help')}
+          </button>
+        </div>
       </header>
+      )}
 
       <main className={mapMode ? 'flex min-h-0 flex-1 flex-col' : 'flex-1 pb-10'}>
         {dataError && (
@@ -594,7 +752,13 @@ export default function App() {
         )}
 
         {!dataError && route.view === 'church' && index && (
-          <DetailRoute id={route.id} index={index} onBack={() => navigate(`/${search}`)} />
+          <DetailRoute
+            id={route.id}
+            index={index}
+            onBack={() => navigate(`/${search}`)}
+            onHelp={() => setIntroOpen(true)}
+            onHeroChange={setDetailHero}
+          />
         )}
         {!dataError && route.view === 'church' && !index && (
           <p className="mt-8 text-ink-faded" role="status">
@@ -604,6 +768,25 @@ export default function App() {
 
         {route.view !== 'church' && (
           <>
+        {!dataError && cardMass && (
+          <AfterMassCard
+            key={cardMass.massKey}
+            entry={cardMass}
+            onSubmit={onCardSubmit}
+            onDismiss={onCardDismiss}
+            onNeverAsk={onCardNever}
+          />
+        )}
+        {/* prototype only: re-open the demo card after dismissing it on device */}
+        {WITNESS_PREVIEW && !cardMass && (
+          <button
+            type="button"
+            onClick={() => setPreviewDismissed(false)}
+            className="rubric mt-5 min-h-11 px-1 underline decoration-hairline underline-offset-2 hover:text-ink"
+          >
+            Zobrazit náhled zpětné vazby znovu
+          </button>
+        )}
         {!dataError && loading && (
           <div className="mt-14 text-center" role="status">
             <p className="font-display text-xl">{t('loading_title')}</p>
@@ -782,6 +965,7 @@ export default function App() {
                 <ServiceList
                   rows={rows}
                   showUntil={day === 'now' || day === 0}
+                  witnessChurches={witnessChurches}
                   onOpen={openChurch}
                   onNavigate={setNavTarget}
                 />
@@ -817,6 +1001,7 @@ export default function App() {
       </main>
 
       {navTarget && <NavSheet target={navTarget} onClose={() => setNavTarget(null)} />}
+      {introOpen && <IntroGuide onClose={closeIntro} />}
 
       {!mapMode && (
       <footer className="border-t border-hairline py-4 text-sm text-ink-faded">
@@ -855,6 +1040,14 @@ export default function App() {
           >
             {t('footer_support')}
           </a>
+          {' · '}
+          <button
+            type="button"
+            className="underline decoration-hairline underline-offset-2 hover:text-ink"
+            onClick={() => setIntroOpen(true)}
+          >
+            {t('intro_help')}
+          </button>
         </p>
       </footer>
       )}
@@ -1017,14 +1210,33 @@ function FeastLine({ day }: { day: DayChoice }) {
   )
 }
 
+/** The quiet witness sign on a list row: the same rubric reference mark (‟) the
+ * map overlays on a chip, inline and small. Presence, not a count — the detail
+ * page carries the testimony. Shown only for churches over the corroboration
+ * floor (docs/PILGRIM-WITNESS-PLAN.md — no stars, no score). */
+function WitnessMark() {
+  return (
+    <span
+      role="img"
+      aria-label={t('fb_list_mark_aria')}
+      title={t('fb_list_mark_aria')}
+      className="font-display font-bold text-rubric"
+    >
+      ‟
+    </span>
+  )
+}
+
 function ServiceList({
   rows,
   showUntil,
+  witnessChurches,
   onOpen,
   onNavigate,
 }: {
   rows: Upcoming[]
   showUntil: boolean
+  witnessChurches: Set<string>
   onOpen: (id: string) => void
   onNavigate: (t: { name: string; lat: number; lng: number }) => void
 }) {
@@ -1089,6 +1301,12 @@ function ServiceList({
                     <>
                       {' '}
                       <Chip label={t('greek_chip')} />
+                    </>
+                  )}
+                  {witnessChurches.has(r.church.id) && (
+                    <>
+                      {' · '}
+                      <WitnessMark />
                     </>
                   )}
                 </p>
@@ -1183,9 +1401,9 @@ function OrdoControls({
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
-  const whatCount = [filters.massOnly, filters.barrierFree, filters.greek, filters.lang].filter(
-    Boolean,
-  ).length
+  const whatCount =
+    [filters.massOnly, filters.barrierFree, filters.greek, filters.lang].filter(Boolean).length +
+    filters.witnessTags.length
   const dayLbl =
     day === 'now'
       ? t('day_now')
@@ -1273,7 +1491,9 @@ function OrdoControls({
           }`}
           style={around ? { color: 'var(--season)' } : undefined}
         >
-          {t('around_word')}
+          {/* "kolem" only reads once a time is chosen ("kolem 9:00"); unset, the
+              select carries a self-contained prompt so no dangling em-dash shows */}
+          {around && t('around_word')}
           <select
             aria-label={t('around_time_aria')}
             value={around ?? ''}
@@ -1281,7 +1501,7 @@ function OrdoControls({
             className="-my-2 cursor-pointer border-0 border-b border-hairline bg-transparent py-2 font-sans text-base font-semibold tabular-nums"
             style={around ? { color: 'var(--season)' } : undefined}
           >
-            <option value="">—</option>
+            <option value="">{t('around_prompt')}</option>
             {/* rotated to open at "now"; for today the wrapped-around tail
                 (past times) is dropped — every one guaranteed an empty list */}
             {kolemTimes.map((hhmm) => (
@@ -1371,6 +1591,51 @@ function OrdoControls({
           </select>
         )}
       </div>
+      {/* Ohlasy poutníků — its own bordered block, collapsed by default (native
+          <details> disclosure). Roomy pills so it doesn't read as cramped.
+          Gated: the whole witness filter is absent in the public build. */}
+      {WITNESS_ENABLED && (
+      <details className="group mt-4 border-t border-hairline pt-3">
+        <summary className="rubric cursor-pointer list-none text-ink-faded marker:hidden">
+          {t('fb_filter_group')}
+          {filters.witnessTags.length > 0 && ` · ${filters.witnessTags.length}`}
+          <span className="ml-1 inline-block text-ink-faded transition-transform group-open:rotate-90">
+            ›
+          </span>
+        </summary>
+        <p className="mt-2 text-xs text-ink-faded">{t('fb_filter_hint')}</p>
+        <div
+          role="group"
+          aria-label={t('fb_filter_group')}
+          className="mt-2 flex flex-wrap gap-2 pb-1"
+        >
+          {WITNESS_CHIPS.map((c) => {
+            const active = filters.witnessTags.includes(c.id)
+            return (
+              <button
+                key={c.id}
+                type="button"
+                aria-pressed={active}
+                style={active ? { borderColor: 'var(--season)', backgroundColor: 'color-mix(in srgb, var(--season) 10%, transparent)' } : undefined}
+                className={`inline-flex min-h-9 items-center rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                  active ? 'text-ink' : 'border-hairline text-ink-faded hover:text-ink'
+                }`}
+                onClick={() =>
+                  onChange({
+                    ...filters,
+                    witnessTags: active
+                      ? filters.witnessTags.filter((x) => x !== c.id)
+                      : [...filters.witnessTags, c.id],
+                  })
+                }
+              >
+                {c.label}
+              </button>
+            )
+          })}
+        </div>
+      </details>
+      )}
       {narrow && (
         <button
           type="button"
@@ -1423,7 +1688,19 @@ function OrdoControls({
   )
 }
 
-function DetailRoute({ id, index, onBack }: { id: string; index: Church[]; onBack: () => void }) {
+function DetailRoute({
+  id,
+  index,
+  onBack,
+  onHelp,
+  onHeroChange,
+}: {
+  id: string
+  index: Church[]
+  onBack: () => void
+  onHelp: () => void
+  onHeroChange: (hasHero: boolean) => void
+}) {
   const church = index.find((c) => c.id === id)
   if (!church) {
     return (
@@ -1438,7 +1715,7 @@ function DetailRoute({ id, index, onBack }: { id: string; index: Church[]; onBac
       </section>
     )
   }
-  return <ChurchDetail church={church} onBack={onBack} />
+  return <ChurchDetail church={church} onBack={onBack} onHelp={onHelp} onHeroChange={onHeroChange} />
 }
 
 /** Unified typeahead over every municipality and church, diacritics-insensitive

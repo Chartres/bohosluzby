@@ -97,6 +97,35 @@ export function nextOccurrences(spec: OccurrenceSpec, now: Date, horizonDays = 8
 }
 
 /**
+ * The most recent start of a periodic service at or before `now`, but no more
+ * than `withinMin` in the past — the "you were probably just there" window used
+ * to seed the after-Mass ledger when a church detail is opened near Mass time.
+ */
+export function recentOccurrence(spec: PeriodicSpec, now: Date, withinMin: number): Date | null {
+  const t = parseTime(spec.time)
+  if (!t) return null
+  const [hh, mm] = t
+  const wanted = new Set([...spec.days].map(Number).filter((n) => n >= 1 && n <= 7))
+  if (wanted.size === 0) return null
+
+  const today = pragueToday(now)
+  const base = Date.UTC(today.y, today.m - 1, today.d)
+  const floor = now.getTime() - withinMin * 60_000
+  let best: Date | null = null
+  for (let off = 0; off >= -1; off--) {
+    // today, then yesterday (a late-night service viewed after midnight)
+    const cal = new Date(base + off * 86_400_000)
+    const isoDow = cal.getUTCDay() === 0 ? 7 : cal.getUTCDay()
+    if (!wanted.has(isoDow)) continue
+    const start = pragueInstant(cal.getUTCFullYear(), cal.getUTCMonth() + 1, cal.getUTCDate(), hh, mm)
+    if (start.getTime() <= now.getTime() && start.getTime() >= floor && (!best || start > best)) {
+      best = start
+    }
+  }
+  return best
+}
+
+/**
  * When a reminder should fire: `leadMinutes` before the next occurrence whose
  * lead time is *still in the future* (so we skip a mass starting within the
  * lead window and reach for the one after). Returns null if none in horizon.

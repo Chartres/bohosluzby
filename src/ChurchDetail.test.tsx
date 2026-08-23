@@ -1,0 +1,208 @@
+// Confession ("svátost smíření") rows are stored as service rows whose TIME is a
+// window range, not a Mass start. They must stay out of the Mass schedule and
+// render in their own auxiliary section, range intact.
+import { vi } from 'vitest'
+vi.mock('./lib/supabase', () => ({ supabase: null }))
+import { render, screen, within } from '@testing-library/react'
+import { ChurchDetail } from './ChurchDetail'
+import type { Church } from './domain/data'
+
+const church = (id: string, cell: string): Church => ({
+  id,
+  name: `kostel ${id}`,
+  city: 'Praha 1',
+  lat: 50.086,
+  lng: 14.417,
+  barrierFree: false,
+  cell,
+})
+
+// A shard with one Mass row plus two confession rows (mixed case + a per-day
+// code "24" = Tue & Thu) for church "1"; church "2" has only a Mass.
+const SHARD = {
+  '1': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [
+      ['7', '18:00', 'česky', 0, 'mše sv.', ''],
+      ['7', '08:30 - 11:30', 'česky', 0, 'svátost smíření', ''],
+      ['24', '17:00 - 17:45', 'česky', 0, 'Svátost smíření', ''],
+    ],
+  },
+  '2': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['7', '09:00', 'česky', 0, 'mše sv.', '']],
+  },
+  // church "3": no typed confession row — its only confession signal is a Mass note.
+  '3': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['5', '18:00', 'česky', 0, 'mše sv.', 'od 17.00 svátost smíření']],
+  },
+  // church "4": a plain Mass, no registry/note confession — its ONLY confession
+  // signal is the diocesan confession.json entry below.
+  '4': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['7', '10:30', 'česky', 0, 'mše sv.', '']],
+  },
+  // church "5": a plain Mass; carries a photo whose credit has duplicate wiki
+  // markup to tidy.
+  '5': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['7', '09:15', 'česky', 0, 'mše sv.', '']],
+  },
+}
+
+// Church "1"/"5" have a photo entry; "2"/"3"/"4" do not.
+const PHOTOS = {
+  '1': { url: 'https://commons.example/thumb.jpg', credit: 'Jan Novák', license: 'CC BY-SA 4.0' },
+  '5': { url: 'https://commons.example/sju.jpg', credit: 'ŠJů ( cs:ŠJů )', license: 'CC BY-SA 3.0' },
+}
+
+// Diocesan "stálá zpovědní služba" windows, keyed by church id: verbatim day +
+// (possibly multi-range) time + note.
+const CONFESSION = {
+  '4': {
+    source: 'apha',
+    rows: [
+      { den: 'Po – Pá', cas: '9.00 – 15.00', note: '30 min přede mší sv.' },
+      { den: 'Ne', cas: '9.00 – 9.45 16.00 – 16.45', note: '' },
+    ],
+  },
+}
+
+beforeEach(() => {
+  localStorage.clear()
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: RequestInfo | URL) => {
+      const u = String(url)
+      if (u.endsWith('/data/services/50-14.json'))
+        return new Response(JSON.stringify(SHARD), { status: 200 })
+      if (u.endsWith('/data/photos.json')) return new Response(JSON.stringify(PHOTOS), { status: 200 })
+      if (u.endsWith('/data/confession.json'))
+        return new Response(JSON.stringify(CONFESSION), { status: 200 })
+      return new Response('not found', { status: 404 })
+    }),
+  )
+})
+afterEach(() => vi.unstubAllGlobals())
+
+describe('confession section', () => {
+  it('keeps confession rows out of the Mass schedule and renders them verbatim', async () => {
+    render(<ChurchDetail church={church('1', '50-14')} onBack={() => {}} />)
+
+    const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    // (a) the Mass schedule holds the Mass, not the confession windows
+    expect(within(schedule).getByText('18:00')).toBeInTheDocument()
+    expect(within(schedule).queryByText(/08:30 - 11:30/)).toBeNull()
+    expect(within(schedule).queryByText(/17:00 - 17:45/)).toBeNull()
+
+    // (b) both confession windows show under the Confession section, range intact
+    const confession = screen.getByRole('region', { name: 'Svátost smíření' })
+    expect(within(confession).getByText('08:30 - 11:30')).toBeInTheDocument()
+    // days code "24" = Tuesday & Thursday, so this window groups under both days
+    expect(within(confession).getAllByText('17:00 - 17:45')).toHaveLength(2)
+  })
+
+  it('renders no Confession section when the church has none', async () => {
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(screen.queryByRole('region', { name: 'Svátost smíření' })).toBeNull()
+  })
+
+  it('shows diocesan confession.json windows — the section appears from that alone', async () => {
+    render(<ChurchDetail church={church('4', '50-14')} onBack={() => {}} />)
+
+    const confession = await screen.findByRole('region', { name: 'Svátost smíření' })
+    // verbatim day + time-window (multi-range kept intact), not in the Mass schedule
+    expect(within(confession).getByText('Po – Pá')).toBeInTheDocument()
+    expect(within(confession).getByText('9.00 – 9.45 16.00 – 16.45')).toBeInTheDocument()
+    expect(within(confession).getByText('30 min přede mší sv.')).toBeInTheDocument()
+
+    const schedule = screen.getByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(within(schedule).queryByText(/9\.00 – 15\.00/)).toBeNull()
+  })
+})
+
+describe('church photo', () => {
+  it('renders the photo as a hero with the title over it when a photo exists', async () => {
+    render(<ChurchDetail church={church('1', '50-14')} onBack={() => {}} />)
+    const img = await screen.findByRole('img', { name: 'kostel 1' })
+    expect(img).toHaveAttribute('src', 'https://commons.example/thumb.jpg')
+    expect(img).toHaveAttribute('loading', 'lazy')
+    // hero: the church title and the image live in the same <figure>, so the
+    // name renders OVER the photo (Booking/Airbnb property-header style)
+    const figure = img.closest('figure')
+    expect(figure).not.toBeNull()
+    expect(within(figure!).getByRole('heading', { name: 'kostel 1' })).toBeInTheDocument()
+    // the meta links sit over the hero too
+    expect(within(figure!).getByRole('link', { name: 'mapa' })).toBeInTheDocument()
+    expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
+  })
+
+  it('overlays the back control and help on the photo hero, and reports the hero', async () => {
+    const onBack = vi.fn()
+    const onHelp = vi.fn()
+    const onHeroChange = vi.fn()
+    render(
+      <ChurchDetail church={church('1', '50-14')} onBack={onBack} onHelp={onHelp} onHeroChange={onHeroChange} />,
+    )
+    const img = await screen.findByRole('img', { name: 'kostel 1' })
+    const figure = img.closest('figure')!
+    // both global controls live ON the hero (over the photo), not in a separate bar
+    const back = within(figure).getByRole('button', { name: '‹ zpět na seznam' })
+    const help = within(figure).getByRole('button', { name: 'nápověda' })
+    back.click()
+    help.click()
+    expect(onBack).toHaveBeenCalled()
+    expect(onHelp).toHaveBeenCalled()
+    // the shell is told a hero is up so it can drop its masthead
+    expect(onHeroChange).toHaveBeenCalledWith(true)
+  })
+
+  it('tidies the photo credit — drops duplicate wiki markup, keeps licence + source', async () => {
+    render(<ChurchDetail church={church('5', '50-14')} onBack={() => {}} />)
+    await screen.findByRole('img', { name: 'kostel 5' })
+    // "ŠJů ( cs:ŠJů )" → "ŠJů"
+    expect(screen.getByText('foto: ŠJů · CC BY-SA 3.0 · Wikimedia Commons')).toBeInTheDocument()
+    expect(screen.queryByText(/cs:ŠJů/)).toBeNull()
+  })
+
+  it('renders no image and a plain title when the church has no photo entry', async () => {
+    const onHeroChange = vi.fn()
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} onHeroChange={onHeroChange} />)
+    const heading = await screen.findByRole('heading', { name: 'kostel 2' })
+    expect(screen.queryByRole('img')).toBeNull()
+    // plain layout: the title is NOT wrapped in a photo figure
+    expect(heading.closest('figure')).toBeNull()
+    // no hero → the shell keeps its masthead (no back/help overlaid)
+    expect(onHeroChange).not.toHaveBeenCalledWith(true)
+  })
+
+  it('surfaces a confession time parsed from a Mass note, keeping the note on its Mass', async () => {
+    render(<ChurchDetail church={church('3', '50-14')} onBack={() => {}} />)
+
+    // the parsed 17:00 appears in the Confession section...
+    const confession = await screen.findByRole('region', { name: 'Svátost smíření' })
+    expect(within(confession).getByText('17:00')).toBeInTheDocument()
+
+    // ...while the Mass row keeps its note and its own 18:00 time
+    const schedule = screen.getByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(within(schedule).getByText('18:00')).toBeInTheDocument()
+    expect(within(schedule).getByText('od 17.00 svátost smíření')).toBeInTheDocument()
+  })
+})

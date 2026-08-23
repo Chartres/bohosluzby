@@ -5,7 +5,7 @@
 // accent; everything else is a small faded dot (still tappable). Clusters
 // carry the count, accented when they contain a match. Loaded lazily
 // (React.lazy) — the list path never pays for Leaflet.
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './mapview.css'
@@ -16,19 +16,36 @@ import { gridCluster } from './domain/cluster'
 import { NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
-import { t, churchCount } from './i18n'
+import { massKey, type Aggregate } from './domain/feedback'
+import { aggregateFor, churchHasTags, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
+import { witnessPillsHtml } from './WitnessPills'
+import { WITNESS_ENABLED } from './lib/flags'
+import { t, churchCount, confirmedByPilgrims } from './i18n'
 
 const CELL_PX = 64 // cluster grid; ~a finger-width of map
 
 /** "8:30", not "08:30" — chips are read at a glance, the zero is noise. */
 const chipTime = (d: Date) => fmtTime(d).replace(/^0/, '')
 
+/** Both directness tiers for the Mass a marker/popover shows: the specific slot
+ * aggregate and the church-wide one (from the in-memory cache; empty until
+ * loadAggregates fills it). */
+const witnessTiers = (church: Church, u: Upcoming): { slot?: Aggregate; church: Aggregate } => {
+  const { slots, church: churchAgg } = aggregateFor(church.id)
+  return { slot: slots.get(massKey(church.id, u.service, u.start)), church: churchAgg }
+}
+const hasWitness = (t: { slot?: Aggregate; church: Aggregate }): boolean =>
+  (t.slot?.chips.length ?? 0) > 0 || t.church.chips.length > 0
+
 /** A bare time on a pin reads as TODAY — on "hned" a church's next mass can be
  * days out, so a not-today chip carries its weekday ("út 15:00") and greys. */
-const chipIcon = (label: string, otherDay: boolean) =>
+const chipIcon = (label: string, otherDay: boolean, witnessed: boolean) =>
   L.divIcon({
     className: 'map-chip-wrap',
-    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}">${label}</span>`,
+    // witnessed: a rubric "dog-ear" folded corner on the chip (a CSS ::after on
+    // .map-chip--witnessed) — clearly part of the box, not a floating mark that
+    // invites a tap. Presence only; the popover carries the testimony.
+    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}${witnessed ? ' map-chip--witnessed' : ''}">${label}</span>`,
     iconSize: [30, 30], // tap target; the chip centers itself and may overflow
   })
 // non-matching: a tiny faded dot; the 30px wrapper keeps it tappable
@@ -68,6 +85,10 @@ export default function MapView({
   fill?: boolean
 }) {
   const divRef = useRef<HTMLDivElement>(null)
+  // The dog-ear fold cue on a chip reads as "something's here" but its meaning
+  // isn't self-evident — show a discreet key (a matching fold swatch) under the
+  // map ONLY while witnessed chips are actually on screen, so it stays low-clutter.
+  const [witnessShown, setWitnessShown] = useState(false)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
   // Callbacks read through refs so the marker effect does NOT depend on their
@@ -96,7 +117,17 @@ export default function MapView({
 
   // the map itself: created once, centered on the origin
   useEffect(() => {
-    const map = L.map(divRef.current!, { zoomControl: true }).setView([origin.lat, origin.lng], 13)
+    // zoomSnap: 0 — a pinch rests at the exact fractional zoom the fingers leave.
+    // Leaflet's default (zoomSnap: 1) snaps a fractional pinch to the nearest whole
+    // zoom on finger-lift, which reads as a "jump" (zooms in, then settles out ~0.3
+    // level on release — owner report, build 70). Clustering is unaffected: render()
+    // already buckets at Math.round(map.getZoom()), so a fractional rest still
+    // clusters deterministically. Tiles are CSS-scaled (slightly soft) at a
+    // fractional rest, muted by the paper/sepia tile filter.
+    const map = L.map(divRef.current!, { zoomControl: true, zoomSnap: 0 }).setView(
+      [origin.lat, origin.lng],
+      13,
+    )
     // default prefix carries an emoji flag — design brief: no emoji. Append the
     // build stamp so any screenshot says which TestFlight build it is (this bug
     // went several rounds partly from build-version confusion).
@@ -113,6 +144,11 @@ export default function MapView({
     }).addTo(map)
     layerRef.current = L.layerGroup().addTo(map)
     mapRef.current = map
+    // test hook (guarded by ?diag): lets the zoomSnap regression e2e assert the
+    // map rests at a fractional zoom instead of snapping. Never active in the app.
+    if (typeof window !== 'undefined' && window.location.search.includes('diag')) {
+      ;(window as unknown as { __map?: L.Map }).__map = map
+    }
     return () => {
       map.remove()
       mapRef.current = null
@@ -163,6 +199,40 @@ export default function MapView({
           line.textContent = t('map_none_soon')
         }
       }
+      // church-level-first witness (docs/PILGRIM-WITNESS-PLAN.md, no stars): the
+      // church's top-3 distinctive tags as read-only pills + the aggregate count,
+      // then — only when the shown Mass diverges — that Mass's own note.
+      const churchTags = WITNESS_ENABLED ? rankChurchTags(church.id) : []
+      if (churchTags.length > 0) {
+        const { slots, church: churchAgg } = aggregateFor(church.id)
+        const slot = next ? slots.get(massKey(church.id, next.service, next.start)) : undefined
+        const divergent = divergentChips(slot, churchTags.map((c) => c.id))
+        const witness = document.createElement('div')
+        witness.className = 'map-pop-witness'
+        const label = document.createElement('p')
+        label.className = 'map-pop-witness-label'
+        label.textContent = `${t('fb_church_often')}:`
+        const pills = document.createElement('p')
+        pills.className = 'witness-pills'
+        pills.innerHTML = witnessPillsHtml(churchTags)
+        const count = document.createElement('p')
+        count.className = 'map-pop-witness-count'
+        count.textContent = confirmedByPilgrims(churchAgg.witnesses)
+        witness.append(label, pills, count)
+        if (divergent.length > 0) {
+          const dLabel = document.createElement('p')
+          dLabel.className = 'map-pop-witness-label'
+          dLabel.textContent = `${t('fb_mass_diverges')}:`
+          const dPills = document.createElement('p')
+          dPills.className = 'witness-pills'
+          dPills.innerHTML = witnessPillsHtml(divergent)
+          witness.append(dLabel, dPills)
+        }
+        el.append(name, line, witness)
+      } else {
+        el.append(name, line)
+      }
+
       // the popover's verbs mirror a list row: detail · trasa · web — each
       // carries the church name in aria-label, same as the list row's verbs,
       // so a screen reader doesn't just hear "otevřít" with no context
@@ -197,7 +267,7 @@ export default function MapView({
         www.setAttribute('aria-label', `${t('row_web')}: ${church.name}`)
         actions.append(www)
       }
-      el.append(name, line, actions)
+      el.append(actions)
       L.popup({ maxWidth: 260, closeButton: false })
         .setLatLng([church.lat, church.lng])
         .setContent(el)
@@ -211,7 +281,12 @@ export default function MapView({
       const visible = churches.filter((c) => bounds.contains([c.lat, c.lng]))
       // the chips need each church's next matching service → shards for the view
       const cells = [...new Set(visible.map((c) => c.cell))]
-      const shards = await Promise.all(cells.map(loadShard))
+      // Prefetch witness aggregates for the visible churches alongside the
+      // shards, so the popover line and the marker cue have data on first paint.
+      const [shards] = await Promise.all([
+        Promise.all(cells.map(loadShard)),
+        WITNESS_ENABLED ? loadAggregates(visible.map((c) => c.id)) : Promise.resolve(),
+      ])
       if (stale || seq !== renderSeq) return // a newer render superseded this one
       const byId = new Map<string, ChurchServices>()
       for (const shard of shards) for (const [id, s] of shard) byId.set(id, s)
@@ -221,6 +296,14 @@ export default function MapView({
       for (const u of selectUpcoming(now, origin, visible, byId, filters, cas, day, { limit: Infinity })) {
         if (!matched.has(u.church.id)) matched.set(u.church.id, u) // ordo: keep the day's earliest
       }
+      // Witness filter (Ohlasy poutníků): when tags are selected, the map shows
+      // only churches carrying ALL of them at slot- or church-tier. Aggregates
+      // are loaded for the visible set above, so we cluster over that filtered
+      // subset (the pan-invariant whole-index clustering resumes when off).
+      const wt = WITNESS_ENABLED ? (filters.witnessTags ?? []) : []
+      const clusterChurches = wt.length
+        ? visible.filter((c) => churchHasTags(c.id, null, wt))
+        : churches
       // Cluster over ALL churches, not just the viewport subset. Bucket
       // membership must not depend on the pan: a grid cell straddling the
       // viewport edge used to gain/lose members every moveend, so its centroid
@@ -228,7 +311,7 @@ export default function MapView({
       // visibly drifted. Buckets key on absolute world-pixel coords at this
       // zoom — pan-invariant — so clusters are decided once; we only RENDER the
       // markers that fall on screen.
-      const pts = churches.map((c) => {
+      const pts = clusterChurches.map((c) => {
         const p = map.project([c.lat, c.lng], zoom)
         return { x: p.x, y: p.y, item: c }
       })
@@ -241,6 +324,7 @@ export default function MapView({
       // dozen on-screen markers the cost is nil. (moveend fires once per pan, and
       // the effect no longer re-runs on every App render — see the callback refs.)
       layer.clearLayers()
+      let anyWitness = false
       for (const cl of gridCluster(pts, CELL_PX)) {
         if (cl.items.length === 1) {
           const church = cl.items[0]
@@ -255,8 +339,10 @@ export default function MapView({
               ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
               : chipTime(next.start)
             : ''
+          const witnessed = WITNESS_ENABLED && Boolean(next) && hasWitness(witnessTiers(church, next!))
+          if (witnessed) anyWitness = true
           const marker = L.marker([church.lat, church.lng], {
-            icon: next ? chipIcon(label, otherDay) : fadedIcon(),
+            icon: next ? chipIcon(label, otherDay, witnessed) : fadedIcon(),
             title: church.name,
             keyboard: false,
           })
@@ -277,6 +363,7 @@ export default function MapView({
             .addTo(layer)
         }
       }
+      setWitnessShown(anyWitness) // React bails out if unchanged — deps exclude it, so no re-subscribe
     }
 
     map.on('moveend', render) // zoom changes end in moveend too
@@ -291,16 +378,38 @@ export default function MapView({
   }, [churches, filters, cas, day, origin])
 
   return (
-    <div
-      ref={divRef}
-      data-testid="mapa"
-      role="region"
-      aria-label={t('map_aria')}
-      className={
-        fill
-          ? 'ordo-map ordo-map--fill w-full border-t border-hairline'
-          : 'ordo-map mt-4 w-full border border-hairline'
-      }
-    />
+    <div className={fill ? 'relative h-full' : 'relative'}>
+      <div
+        ref={divRef}
+        data-testid="mapa"
+        role="region"
+        aria-label={t('map_aria')}
+        className={
+          fill
+            ? 'ordo-map ordo-map--fill w-full border-t border-hairline'
+            : 'ordo-map mt-4 w-full border border-hairline'
+        }
+      />
+      {/* discreet key: season chip (matches the choice) and grey chip (a matching
+          Mass on another day); the dog-ear fold row only while a witnessed chip
+          is on screen. Low-key floating rows (no card), pointer-events off,
+          below the popup pane. */}
+      <div className="map-legend">
+        <span className="map-legend-row">
+          <span className="map-legend-chip" aria-hidden="true" />
+          {t('map_legend_match')}
+        </span>
+        <span className="map-legend-row">
+          <span className="map-legend-chip map-legend-chip--otherday" aria-hidden="true" />
+          {t('map_legend_otherday')}
+        </span>
+        {WITNESS_ENABLED && witnessShown && (
+          <span className="map-legend-row">
+            <span className="map-legend-fold" aria-hidden="true" />
+            {t('fb_map_legend')}
+          </span>
+        )}
+      </div>
+    </div>
   )
 }

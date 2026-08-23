@@ -37,6 +37,13 @@ html {
   outline: 2px solid var(--season);
   outline-offset: 2px;
 }
+/* tabindex="-1" targets are focused only programmatically (the detail title and
+   the intro dialog land the screen reader there on mount) — never reachable by
+   Tab, so they must not draw the seasonal ring. Real keyboard focus on buttons
+   and links still shows it. */
+[tabindex='-1']:focus {
+  outline: none;
+}
 
 /* horizontal control rows (day picker): scroll instead of wrapping, no visible scrollbar;
    the right-edge fade hints that more chips sit off-screen */
@@ -46,6 +53,40 @@ html {
 }
 .scroll-row::-webkit-scrollbar {
   display: none;
+}
+
+/* read-only witness pills (detail + map popover): the AfterMassCard chip look —
+   rounded, hairline, a whisper of season tint — but smaller and non-interactive.
+   Icon + label, one pen weight. No shadows, no emoji (docs/DESIGN-BRIEF.md). */
+.witness-pills {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  vertical-align: middle;
+}
+.witness-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid color-mix(in srgb, var(--season) 35%, var(--color-hairline));
+  background: color-mix(in srgb, var(--season) 7%, transparent);
+  border-radius: 9999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--color-ink-faded);
+  white-space: nowrap;
+}
+/* the single strongest tag (production, qualitative): a touch more presence */
+.witness-pill--strong {
+  color: var(--color-ink);
+  font-weight: 600;
+  border-color: color-mix(in srgb, var(--season) 55%, var(--color-hairline));
+}
+.witness-pill-ico {
+  width: 15px;
+  height: 15px;
+  flex: none;
 }
 
 /* rubric: small red functional labels, like instructions in a missal */

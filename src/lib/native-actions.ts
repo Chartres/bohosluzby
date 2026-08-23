@@ -4,6 +4,8 @@ import type { Church, ExtraService, Service } from '../domain/data'
 import { buildICS } from '../domain/ics'
 import { nextReminderAt, pragueToday } from '../domain/occurrences'
 import { parseNote } from '../domain/notes'
+import { recordExpectedAttendance } from './feedbackLedger'
+import { massKey, occurrenceOf } from '../domain/feedback'
 
 /** How long before a service the reminder fires. */
 export const REMINDER_LEAD_MIN = 30
@@ -110,7 +112,18 @@ export async function scheduleMassReminder(
     // don't just trust the resolved promise — 'scheduled' is a UI promise to the
     // user, so confirm the OS actually holds the pending notification
     const pending = await LocalNotifications.getPending()
-    return pending.notifications.some((n) => n.id === id) ? 'scheduled' : 'failed'
+    if (!pending.notifications.some((n) => n.id === id)) return 'failed'
+    // seed the after-Mass ledger: `at` is REMINDER_LEAD_MIN before the start
+    const start = new Date(at.getTime() + REMINDER_LEAD_MIN * 60_000)
+    recordExpectedAttendance({
+      churchId: church.id,
+      massKey: massKey(church.id, service, start),
+      startISO: start.toISOString(),
+      churchName: church.name,
+      type,
+      ...occurrenceOf(service, start),
+    })
+    return 'scheduled'
   } catch {
     return 'failed'
   }

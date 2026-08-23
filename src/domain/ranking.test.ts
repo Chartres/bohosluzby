@@ -19,6 +19,7 @@ const services = (regular: { days: string; time: string }[], extra: { date: stri
     contacts: [],
     regular: regular.map((r) => ({ ...r, lang: 'česky', greek: false, type: 'mše sv.', note: '' })),
     extra: extra.map((r) => ({ ...r, lang: 'česky', greek: false, type: 'mše sv.', note: '' })),
+    confession: [],
   }) satisfies ChurchServices
 
 // Friday 3 Jul 2026, 17:00 Prague (15:00 UTC); origin = Prague centre.
@@ -151,7 +152,7 @@ describe('selectUpcoming — okruh (maxKm) filter', () => {
     [near.id, services([{ days: '5', time: '18:00' }])],
     [far.id, services([{ days: '5', time: '18:00' }])],
   ])
-  const f = { lang: null, greek: false, barrierFree: false, massOnly: false, maxKm: null }
+  const f = { lang: null, greek: false, barrierFree: false, massOnly: false, maxKm: null, witnessTags: [] }
 
   it('maxKm drops churches beyond the radius in both day modes', async () => {
     const { selectUpcoming } = await import('./ranking')

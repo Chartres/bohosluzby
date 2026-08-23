@@ -7,6 +7,7 @@ import {
   fmtDateCz,
   normalizeLang,
   samePragueDay,
+  withReferral,
 } from './format'
 
 const now = new Date('2026-07-03T08:00:00Z') // Friday 10:00 Prague
@@ -26,6 +27,20 @@ describe('fmtUntil', () => {
     expect(fmtUntil(now, new Date('2026-07-04T08:00:00Z'))).toBe('za 1 den')
     expect(fmtUntil(now, new Date('2026-07-05T08:00:00Z'))).toBe('za 2 dny')
     expect(fmtUntil(now, new Date('2026-07-08T09:00:00Z'))).toBe('za 5 dní')
+  })
+})
+
+describe('withReferral (parish-web UTM tagging)', () => {
+  const utm = 'utm_source=bohosluzby.dravec.org&utm_medium=referral&utm_campaign=detail'
+  it('appends with ? when the URL has no query', () => {
+    expect(withReferral('https://www.farnostsalvator.cz')).toBe(`https://www.farnostsalvator.cz?${utm}`)
+  })
+  it('appends with & when the URL already has a query', () => {
+    expect(withReferral('https://x.cz/?a=1')).toBe(`https://x.cz/?a=1&${utm}`)
+  })
+  it('preserves a trailing #fragment (UTM before the hash)', () => {
+    expect(withReferral('https://x.cz/bohosluzby#dnes')).toBe(`https://x.cz/bohosluzby?${utm}#dnes`)
+    expect(withReferral('https://x.cz/?a=1#dnes')).toBe(`https://x.cz/?a=1&${utm}#dnes`)
   })
 })
 
