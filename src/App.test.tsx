@@ -834,7 +834,8 @@ describe('Marie finds the nearest mass', () => {
     // list header names the city
     expect(screen.getByRole('button', { name: 'změnit' }).parentElement).toHaveTextContent(/^Praha ·/)
     expect(getCurrentPosition).not.toHaveBeenCalled()
-    expect(document.title).toContain('Bohoslužby Praha')
+    expect(document.title).toContain('Kam na mši')
+    expect(document.title).toContain('Praha')
   })
 
   it('empty area: reports no services within 30 km and keeps the picker', async () => {

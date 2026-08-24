@@ -20,8 +20,8 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Bohoslužby — mše svatá poblíž',
-        short_name: 'Bohoslužby',
+        name: 'Kam na mši — mše svatá poblíž',
+        short_name: 'Kam na mši',
         description:
           'Nejbližší katolické bohoslužby v ČR podle vaší polohy — kterou mši ještě stihnete. Zdarma, bez reklam a bez registrace.',
         lang: 'cs',

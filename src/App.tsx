@@ -487,7 +487,7 @@ export default function App() {
       const city = findCity(index, citySlug)
       if (city) {
         setOrigin({ lat: city.lat, lng: city.lng, source: 'city', label: city.name })
-        document.title = `Bohoslužby ${city.name} — ${t('city_title_suffix')} | Bohoslužby`
+        document.title = `Kam na mši — ${city.name} | ${t('city_title_suffix')}`
       } else {
         setGeoDenied(true) // stale link → offer the picker
       }
@@ -731,7 +731,7 @@ export default function App() {
             "nápověda" link is hidden in map mode (the default view), so the
             re-open lives in the masthead where it survives every view. */}
         <div className="flex items-baseline justify-between gap-3">
-          <h1 className="font-display text-xl font-bold tracking-tight">Bohoslužby</h1>
+          <h1 className="font-display text-xl font-bold tracking-tight">Kam na mši</h1>
           <button
             type="button"
             onClick={() => setIntroOpen(true)}
