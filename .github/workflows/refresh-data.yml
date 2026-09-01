@@ -1,11 +1,16 @@
 # Scheduled registry refresh — P5/P6/P7 run on data freshness (docs/PERSONAS.md).
-# Monthly by cron; run manually (workflow_dispatch) the week before liturgical
-# peaks — Holy Week and 20–24 Dec — so late-published feast one-offs land in time.
+# Monthly by cron plus seasonal-boundary runs (parishes flip schedules at the
+# school year, Christmas, and around Easter); workflow_dispatch stays the escape
+# hatch for anything last-minute.
 name: Refresh data
 
 on:
   schedule:
     - cron: '17 2 3 * *' # 3rd of each month, 02:17 UTC
+    - cron: '17 2 1 9 *' # 1 Sep — school year starts, summer schedules end
+    - cron: '17 2 15 12 *' # 15 Dec — before the 20-24 Dec peak
+    - cron: '17 2 15 3 *' # 15 Mar + 5 Apr — Easter moves (22 Mar-25 Apr);
+    - cron: '17 2 5 4 *' #   two runs bracket most Holy Weeks
   workflow_dispatch:
 
 permissions:
@@ -19,7 +24,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 300 # Aug 2026: a manual run hit the old 120-min cap and died as 'cancelled'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -73,3 +78,15 @@ jobs:
               "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ci.yml/dispatches" \
               -d '{"ref":"main"}'
           fi
+
+      # A dead refresh must be loud (the Aug 2026 timeout surfaced only when a
+      # human asked why the data was stale). Failure AND timeout (which GitHub
+      # reports as 'cancelled') open/refresh an issue.
+      - name: Raise an issue when the refresh dies
+        if: failure() || cancelled()
+        run: |
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/issues" \
+            -d "{\"title\":\"Registry refresh failed ($(date -u +%Y-%m-%d))\",\"body\":\"Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} — status \`${{ job.status }}\`. The app keeps serving the last good data; re-run the workflow or investigate the scraper.\",\"labels\":[\"data\"]}" 
