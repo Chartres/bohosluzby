@@ -69,6 +69,10 @@ jobs:
             echo "registry unchanged — nothing to commit"
           else
             git commit -m "data: registry refresh ($(date -u +%Y-%m-%d))"
+            # the scrape runs ~75+ min — main may have moved under us (the
+            # 2026-09-01 run lost its whole crawl to a non-fast-forward push);
+            # rebase the one data commit onto current main before pushing
+            git pull --rebase origin main
             git push
             # GITHUB_TOKEN pushes don't fire the push trigger — dispatch CI so
             # the fresh data actually deploys (ci.yml deploys dispatch runs on main)
