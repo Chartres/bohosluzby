@@ -1,4 +1,16 @@
+# Everyone is welcome — search engines, link unfurlers and AI agents alike.
 User-agent: *
+Allow: /
+
+# Named so nobody mistakes silence for a block (same rule as above).
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: CCBot
 Allow: /
 
 Sitemap: https://bohosluzby.dravec.org/sitemap.xml

@@ -1,0 +1,40 @@
+# Kam na mši
+
+> Mše svatá poblíž, právě teď. Webová a iOS aplikace, která najde nejbližší katolické
+> bohoslužby v České republice podle vaší polohy a seřadí je podle toho, kterou ještě
+> stihnete — hned, dnes, zítra nebo v neděli. Pořady bohoslužeb pro zhruba 4 000 kostelů
+> a kaplí z oficiálního rejstříku České biskupské konference. Zdarma, bez reklam, bez
+> registrace, bez cookies; funguje offline. Česky, s anglickým rozhraním.
+
+## What it is
+- A mass finder for Czechia: "which Catholic mass can I still make, when and where".
+- Day switcher (now / today / tomorrow / Sunday) works like leafing through the ordo; a map
+  with the next mass on each pin (greyed when it is on another day than the one you picked).
+- Church detail: weekly schedule, extraordinary services, parish contacts, map / navigation
+  link (mapy.cz), shareable URL per church (`/kostel/<id>/`), add-to-calendar (ICS).
+- Filters: only Holy Mass, wheelchair access, Greek-Catholic rite, language.
+- Offline: the whole dataset (~1.3 MB) is stored on the device; the last location is
+  remembered. The iOS app (App Store, "Kam na mši") adds reminders and native sharing.
+- Free, no account, no ads, no cookies; only first-party anonymous usage counts.
+
+## How to use it
+- https://bohosluzby.dravec.org/ — allow location (or pick a city) and read the list.
+- City pages are real URLs, e.g. https://bohosluzby.dravec.org/mesto/praha/ (see the sitemap).
+- Church pages: https://bohosluzby.dravec.org/kostel/<id>/
+
+## Data & provenance
+- Source: the official register of the Czech Bishops' Conference, https://bohosluzby.cirkev.cz
+  — parishes maintain their own entries. The app refreshes the dataset monthly and at the
+  start of each liturgical season, and shows "naposledy ověřeno" (last verified) per church.
+- Some register entries are old; the app flags stale ones. Before travelling, confirm the time
+  with the parish.
+
+## Links
+- App: https://bohosluzby.dravec.org/
+- iOS: search "Kam na mši" on the App Store
+- Source code: https://github.com/Chartres/bohosluzby
+- Sitemap: https://bohosluzby.dravec.org/sitemap.xml
+- More from the author: https://flywheel.dravec.org/
+
+## Contact
+- Issues: https://github.com/Chartres/bohosluzby/issues
