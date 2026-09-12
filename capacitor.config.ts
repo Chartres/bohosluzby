@@ -14,6 +14,11 @@ const config: CapacitorConfig = {
   // top of the header's own env(safe-area-inset-top) padding — a double gap
   // that appeared after the first scroll. CSS owns the safe area alone.
   ios: { contentInset: 'never', backgroundColor: '#f6f1e5' },
+  // Android: same parchment behind the WebView (edge-to-edge on Android 15+ —
+  // Capacitor 8's SystemBars plugin feeds env(safe-area-inset-*) to the CSS, so
+  // the header/bottom-nav padding works unchanged). Mixed content stays off:
+  // everything the app loads is bundled or https.
+  android: { backgroundColor: '#f6f1e5', allowMixedContent: false },
 }
 
 export default config

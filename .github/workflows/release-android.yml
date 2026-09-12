@@ -1,0 +1,158 @@
+# Android release (Flywheel Standard §7 — docs/standards/android-app.md).
+# Tag `android-vX.Y.Z` (or run by hand) → web build → cap sync → signed AAB +
+# APK → GitHub Release assets → (when PLAY_SERVICE_ACCOUNT_JSON exists) upload
+# to the Google Play internal track. Ships dark without the secrets: the build
+# still runs and the unsigned artifacts are attached, so CI never blocks on
+# credentials that live outside the repo (Standard §3).
+#
+# Secrets (repo → Settings → Secrets → Actions), all set by scripts/android-keystore.sh:
+#   ANDROID_KEYSTORE_BASE64   the upload keystore, base64
+#   ANDROID_KEYSTORE_PASSWORD · ANDROID_KEY_ALIAS · ANDROID_KEY_PASSWORD
+# Optional (Play Console → Setup → API access → service account JSON):
+#   PLAY_SERVICE_ACCOUNT_JSON
+# Plus the web build's VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY.
+name: Release Android
+
+on:
+  push:
+    tags: ['android-v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: versionName (e.g. 1.2.0); defaults to the tag or build.gradle
+        required: false
+        default: ''
+      track:
+        description: Play track when PLAY_SERVICE_ACCOUNT_JSON is set
+        required: false
+        default: internal
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-android
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version != '' && inputs.version || (startsWith(github.ref, 'refs/tags/android-v') && github.ref_name || '') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-36 build-tools;36.0.0
+
+      - name: Web build (same env as the site — analytics keys are publishable)
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          npm ci
+          npm run build
+          npx cap sync android
+
+      - name: Resolve version
+        id: v
+        run: |
+          name="${VERSION#android-v}"
+          if [ -z "$name" ]; then
+            name=$(sed -n "s/.*findProperty('versionName') ?: '\([^']*\)'.*/\1/p" android/app/build.gradle)
+          fi
+          # monotonic; +100 keeps clear of the iOS build numbers (75 at the time of writing)
+          code=$((100 + GITHUB_RUN_NUMBER))
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "versionName=$name versionCode=$code"
+
+      - name: Upload keystore (from secrets; absent → unsigned build, loud notice)
+        id: ks
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KS_B64" ]; then
+            echo "::warning::ANDROID_KEYSTORE_BASE64 not set — building UNSIGNED. Run scripts/android-keystore.sh once to create + store the upload key."
+            echo "signed=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          echo "path=$RUNNER_TEMP/upload.jks" >> "$GITHUB_OUTPUT"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Gradle — bundleRelease + assembleRelease
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ steps.ks.outputs.path }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon bundleRelease assembleRelease \
+            -PversionName="${{ steps.v.outputs.name }}" -PversionCode="${{ steps.v.outputs.code }}"
+          ls -la app/build/outputs/bundle/release app/build/outputs/apk/release
+
+      - name: Rename artifacts
+        run: |
+          v="${{ steps.v.outputs.name }}"; c="${{ steps.v.outputs.code }}"
+          mkdir -p out
+          cp android/app/build/outputs/bundle/release/app-release.aab "out/kam-na-msi-${v}-${c}.aab"
+          apk=$(ls android/app/build/outputs/apk/release/*.apk | head -1)
+          cp "$apk" "out/kam-na-msi-${v}-${c}.apk"
+          ls -la out
+
+      - name: Read back — the bundle carries the expected versionName/versionCode + permissions
+        run: |
+          aapt=$(ls -d "$ANDROID_HOME"/build-tools/36.0.0/aapt2)
+          "$aapt" dump badging out/*.apk | grep -E "^package:|uses-permission" | head -8
+          "$aapt" dump badging out/*.apk | grep -q "versionName='${{ steps.v.outputs.name }}'" || { echo "::error::versionName mismatch"; exit 1; }
+          if [ "${{ steps.ks.outputs.signed }}" = "true" ]; then
+            "$ANDROID_HOME"/build-tools/36.0.0/apksigner verify --print-certs out/*.apk | head -3
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kam-na-msi-android-${{ steps.v.outputs.name }}
+          path: out/*
+
+      - name: GitHub Release (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/android-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Android ${{ steps.v.outputs.name }}
+          files: out/*
+          body: |
+            Kam na mši for Android — versionName ${{ steps.v.outputs.name }}, versionCode ${{ steps.v.outputs.code }}.
+            `.aab` is the Play Store upload; `.apk` installs directly (sideload / testers).
+            Signed: ${{ steps.ks.outputs.signed }}.
+
+      - name: Google Play — upload to ${{ inputs.track || 'internal' }} (only when the service account exists)
+        if: steps.ks.outputs.signed == 'true' && env.PLAY_JSON != ''
+        env:
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: org.dravec.bohosluzby
+          releaseFiles: out/*.aab
+          track: ${{ inputs.track || 'internal' }}
+          status: completed
+          whatsNewDirectory: store-assets/android/whatsnew
+
+      - name: Play upload skipped
+        if: steps.ks.outputs.signed != 'true' || env.PLAY_JSON == ''
+        env:
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: echo "::notice::Play upload skipped (signed=${{ steps.ks.outputs.signed }}, PLAY_SERVICE_ACCOUNT_JSON set=$([ -n "$PLAY_JSON" ] && echo yes || echo no)). Upload out/*.aab by hand in Play Console, or add the secret (docs/store/play-metadata.md §API)."

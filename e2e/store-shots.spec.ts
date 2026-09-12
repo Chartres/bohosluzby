@@ -14,9 +14,13 @@ import { FIXED_NOW, PRAGUE, mockData } from './fixtures'
 const FASTLANE_CS = 'ios/App/fastlane/screenshots/cs'
 
 
+// Google Play accepts phone screenshots only between 16:9 and 9:16, so the
+// iPhone 6.9" shots (2.17:1) can't be reused — the Android entry renders the
+// classic 1080×1920 (360×640 @3) into store-assets/android/phone/.
 const DEVICES = [
-  { name: 'iphone-6.9', viewport: { width: 440, height: 956 }, dsf: 3 },
-  { name: 'ipad-13', viewport: { width: 1032, height: 1376 }, dsf: 2 },
+  { name: 'iphone-6.9', store: 'ios', viewport: { width: 440, height: 956 }, dsf: 3 },
+  { name: 'ipad-13', store: 'ios', viewport: { width: 1032, height: 1376 }, dsf: 2 },
+  { name: 'phone', store: 'android', viewport: { width: 360, height: 640 }, dsf: 3 },
 ]
 
 for (const d of DEVICES) {
@@ -34,7 +38,7 @@ for (const d of DEVICES) {
       // the first-run intro guide must not overlay the store shots (step 1 uses
       // real bundled data, so mockData's seed hasn't run yet)
       await page.addInitScript(() => localStorage.setItem('bohosluzby:introSeen', '1'))
-      const dir = `store-assets/ios/${d.name}`
+      const dir = `store-assets/${d.store}/${d.name}`
       // 1 — MAP hero (the centerpiece — leads the listing). REAL bundled data
       // (no mock) at a plain-green Sunday 07:00 local (05:00 UTC): the whole
       // day's masses are still ahead, so nearly every church shows a vibrant
@@ -68,10 +72,13 @@ for (const d of DEVICES) {
 
       // Sync into deliver's upload dir (fastlane/screenshots/cs/) with the
       // device-prefixed names deliver expects — so store-assets and the upload
-      // source never diverge again.
-      mkdirSync(FASTLANE_CS, { recursive: true })
-      for (const f of readdirSync(dir)) {
-        cpSync(`${dir}/${f}`, `${FASTLANE_CS}/${d.name}-${f}`)
+      // source never diverge again. (Android's upload source IS store-assets —
+      // the release workflow reads it directly.)
+      if (d.store === 'ios') {
+        mkdirSync(FASTLANE_CS, { recursive: true })
+        for (const f of readdirSync(dir)) {
+          cpSync(`${dir}/${f}`, `${FASTLANE_CS}/${d.name}-${f}`)
+        }
       }
     })
   })

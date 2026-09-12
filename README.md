@@ -42,6 +42,13 @@ npx playwright test   # e2e journeys + screenshoty do e2e/shots/
 Build/test/release kontrakt: `AGENTS.md`. Vizuální kontrakt (misálová
 typografie, liturgické barvy): `docs/DESIGN-BRIEF.md`.
 
+## Mobilní aplikace
+
+Stejná aplikace běží jako nativní obal (Capacitor 8) pro **iOS** (`ios/`, App Store)
+i **Android** (`android/`, Google Play). Android vydání: `git tag android-vX.Y.Z`
+→ workflow `release-android.yml` sestaví podepsaný `.aab` + `.apk` na GitHub Release.
+Podklady pro obchody: `docs/store/`.
+
 ## Licence
 
 Kód: [MIT](LICENSE). Údaje o bohoslužbách: rejstřík ČBK

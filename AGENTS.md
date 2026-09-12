@@ -59,6 +59,20 @@ offline. Language values are normalized to Czech lowercase at decode (`normalize
   build_type=workflow, cname set via API; DNS CNAME managed outside this repo).
   Build reads `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` from repo secrets
   (set; shared flywheel-core project); the app works fully without them.
+- **iOS** → App Store via Capacitor 8 (`ios/`), `fastlane ios release` from `ios/App/`;
+  listing + privacy answers in `docs/store/ios-metadata.md`, human steps in
+  `docs/store/asc-submission-checklist.md`.
+- **Android** → Google Play via the same Capacitor shell (`android/`, committed; icons/splash
+  from `resources/` via `npx capacitor-assets generate --android`). Release =
+  `git tag android-vX.Y.Z && git push origin android-vX.Y.Z` → `.github/workflows/release-android.yml`
+  builds the web app, `cap sync`, produces a **signed `.aab` + `.apk`** on a GitHub Release and
+  reads the bundle back (versionName, permissions, signature). Signing needs the four
+  `ANDROID_*` secrets from a one-time `scripts/android-keystore.sh`; without them it builds
+  unsigned and says so. `PLAY_SERVICE_ACCOUNT_JSON` (optional) makes the workflow upload to the
+  Play internal track itself. Listing, data-safety and content-rating answers, and the
+  owner-only console steps: `docs/store/play-metadata.md`. Screenshots: the `phone` device in
+  `e2e/store-shots.spec.ts` (1080×1920). Local build check: `cd android && ./gradlew assembleDebug`
+  (needs `ANDROID_HOME`; CI runs it on every push as the `android` job).
 Adoption is read from web KPIs — no extra telemetry needed.
 
 ## Analytics (Common Platform)
