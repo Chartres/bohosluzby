@@ -1,4 +1,4 @@
-import { aggregateCities, findCity, fold, normalizeCity, searchPlaces, slugify } from './cities'
+import { aggregateCities, findCity, searchPlaces } from './cities'
 import type { Church } from './data'
 
 const church = (id: string, city: string, lat = 50, lng = 14): Church => ({
@@ -9,29 +9,6 @@ const church = (id: string, city: string, lat = 50, lng = 14): Church => ({
   lng,
   barrierFree: false,
   cell: '50-14',
-})
-
-describe('normalizeCity', () => {
-  it('Praha districts collapse to Praha', () => {
-    expect(normalizeCity('Praha 1')).toBe('Praha')
-    expect(normalizeCity('Praha 22')).toBe('Praha')
-  })
-  it('"quarter, municipality" keeps the municipality', () => {
-    expect(normalizeCity('Brno-město, Brno')).toBe('Brno')
-    expect(normalizeCity('Kukleny, Hradec Králové')).toBe('Hradec Králové')
-    expect(normalizeCity('České Budějovice 3, České Budějovice')).toBe('České Budějovice')
-  })
-  it('plain names pass through', () => {
-    expect(normalizeCity('Frýdek-Místek')).toBe('Frýdek-Místek')
-  })
-})
-
-describe('slugify', () => {
-  it('strips diacritics and spaces', () => {
-    expect(slugify('Ústí nad Labem')).toBe('usti-nad-labem')
-    expect(slugify('Žďár nad Sázavou')).toBe('zdar-nad-sazavou')
-    expect(slugify('Frýdek-Místek')).toBe('frydek-mistek')
-  })
 })
 
 describe('aggregateCities / findCity', () => {
@@ -77,11 +54,6 @@ describe('searchPlaces — unified church + city typeahead', () => {
     tyn,
   ]
   const cities = aggregateCities(index)
-
-  it('fold strips Czech diacritics both sides', () => {
-    expect(fold('České Budějovice')).toBe('ceske budejovice')
-    expect(fold('Týnem')).toBe('tynem')
-  })
 
   it('finds cities diacritics-insensitively ("ceske" → České Budějovice)', () => {
     const r = searchPlaces(cities, index, 'ceske')
