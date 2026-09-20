@@ -45,10 +45,12 @@ export async function getPermissionState(): Promise<GeoPermission> {
 export async function getCurrentPosition(
   opts: { timeout?: number; maximumAge?: number; deadlineMs?: number } = {},
 ): Promise<GeoResult> {
-  const deadline = new Promise<GeoResult>((resolve) =>
-    setTimeout(() => resolve({ coords: null, error: 'deadline' }), opts.deadlineMs ?? 10_000),
-  )
+  let deadlineTimer: ReturnType<typeof setTimeout>
+  const deadline = new Promise<GeoResult>((resolve) => {
+    deadlineTimer = setTimeout(() => resolve({ coords: null, error: 'deadline' }), opts.deadlineMs ?? 10_000)
+  })
   const result = await Promise.race([deadline, read(opts)])
+  clearTimeout(deadlineTimer!)
   if (result.error) {
     // fire-and-forget telemetry: which failure class do real devices hit?
     try {
