@@ -3,20 +3,20 @@
 // Imported by the app AND by scripts/prerender.mjs (node runs the .ts directly).
 import type { Church } from './data'
 
-export function normalizeCity(raw: string): string {
+function normalizeCity(raw: string): string {
   const city = raw.includes(',') ? raw.slice(raw.lastIndexOf(',') + 1).trim() : raw.trim()
   return /^Praha \d+$/.test(city) ? 'Praha' : city
 }
 
 /** Diacritics-insensitive fold: 'České' → 'ceske' (both sides of every match). */
-export function fold(s: string): string {
+function fold(s: string): string {
   return s
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
 }
 
-export function slugify(name: string): string {
+function slugify(name: string): string {
   return fold(name)
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')

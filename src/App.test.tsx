@@ -7,7 +7,7 @@ import { vi } from 'vitest'
 vi.mock('./lib/supabase', () => ({ supabase: null }))
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import App, { dayOptions } from './App'
+import App, { dayOptions, dayFromParam, dayToParam } from './App'
 import type { IndexRow } from './domain/data'
 
 // Friday 3 Jul 2026 17:00 Prague. Vitest fake timers pin "now".
@@ -865,5 +865,17 @@ describe('dayOptions', () => {
     const labels = dayOptions(friday).map((o) => o.label)
     expect(labels.filter((l) => l === 'neděle')).toHaveLength(1)
     expect(dayOptions(friday).at(-1)?.key).toBe(6)
+  })
+})
+
+describe('dayFromParam / dayToParam Sunday round-trip', () => {
+  it('key=7 round-trips through ?den=nedele on a Sunday', () => {
+    const sunday = new Date('2026-07-05T10:00:00Z') // UTC Sunday
+    expect(dayToParam(sunday, 7)).toBe('nedele')
+    expect(dayFromParam(sunday, 'nedele')).toBe(7)
+  })
+  it('?den=nedele on a non-Sunday resolves to the next Sunday offset', () => {
+    const friday = new Date('2026-07-03T10:00:00Z') // Friday; next Sunday = off 2
+    expect(dayFromParam(friday, 'nedele')).toBe(2)
   })
 })

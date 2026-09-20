@@ -9,8 +9,8 @@ import {
   type ExtraService,
   type Service,
 } from './domain/data'
-import { nextOccurrences, pragueToday, recentOccurrence } from './domain/occurrences'
-import { noteUncertain, parseNote } from './domain/notes'
+import { nextOccurrences, pragueIsoDate, recentOccurrence } from './domain/occurrences'
+import { noteRunsOn, noteUncertain } from './domain/notes'
 import { parseConfessionFromNote } from './domain/confession'
 import { fmtDateCz, isStale, withReferral } from './domain/format'
 import { logError, track } from './analytics'
@@ -108,10 +108,7 @@ function contactHref(type: string, value: string): string | null {
   return null
 }
 
-const isoToday = (): string => {
-  const { y, m, d } = pragueToday(new Date())
-  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-}
+const isoToday = (): string => pragueIsoDate(new Date())
 
 /** Per-service actions: add to calendar (native share sheet / web download) and,
  * on native only, schedule a local reminder before the next occurrence. */
@@ -326,8 +323,7 @@ export function ChurchDetail({
     let cancelled = false
     setSvc(null)
     setFailed(false)
-    fetch(`/data/services/${church.cell}.json`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`shard ${r.status}`))))
+    loadData<Parameters<typeof decodeShard>[0]>(`services/${church.cell}.json`)
       .then((shard) => {
         if (cancelled) return
         const s = decodeShard(shard).get(church.id)
@@ -786,16 +782,9 @@ function ServiceRow({
   // Uncertain notes never mute either — they already print loud instead.
   const pausedNow = (() => {
     if (!s.note) return false
-    const rule = parseNote(s.note)
-    if (rule.uncertain) return false
+    if (noteUncertain(s.note)) return false
     const upcoming = nextOccurrences({ days: s.days, time: s.time }, new Date(), 35)
-    return (
-      upcoming.length > 0 &&
-      upcoming.every((start) => {
-        const w = pragueToday(start)
-        return !rule.runsOn(w.y, w.m, w.d)
-      })
-    )
+    return upcoming.length > 0 && upcoming.every((start) => !noteRunsOn(s.note, start))
   })()
   return (
     <div

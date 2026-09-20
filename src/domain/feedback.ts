@@ -2,7 +2,7 @@
 // aggregates by Mass. docs/PILGRIM-WITNESS-PLAN.md: positive-only witness chips,
 // no scale, no opposite — a wall with no way to say anything unkind.
 
-import { pragueToday } from './occurrences'
+import { pragueIsoDate, pragueToday } from './occurrences'
 
 export interface Chip {
   /** Stable ascii id (stored, aggregated). */
@@ -94,12 +94,6 @@ function pragueIsoWeekday(when: Date): number {
   return dow === 0 ? 7 : dow
 }
 
-/** ISO date ("YYYY-MM-DD") of an instant on the Prague wall clock. */
-function pragueIsoDate(when: Date): string {
-  const { y, m, d } = pragueToday(when)
-  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-}
-
 /**
  * Stable grouping key for a Mass. Regular masses group by weekday+time+rite+lang
  * slot (so every Sunday 09:00 ordinary-form Czech is one profile, and a Latin
@@ -115,7 +109,7 @@ export function massKey(churchId: string, service: MassRef, attendedDate: Date):
 /** The write-path occurrence fields for a Mass attended on `attendedDate`. */
 export function occurrenceOf(service: MassRef, attendedDate: Date): Occurrence {
   return {
-    weekday: service.date ? pragueIsoWeekday(new Date(`${service.date}T${service.time}`)) : pragueIsoWeekday(attendedDate),
+    weekday: service.date ? pragueIsoWeekday(new Date(`${service.date}T12:00:00Z`)) : pragueIsoWeekday(attendedDate),
     time: service.time,
     rite: riteOf(service),
     lang: service.lang,

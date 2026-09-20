@@ -462,12 +462,6 @@ export function reminderScheduledMsg(min: number): string {
   return lang() === 'cs' ? `✓ připomeneme ${min} min předem` : `✓ we'll remind you ${min} min before`
 }
 
-/** " · ověřeno 2016" / " · verified 2016" — the list row's stale-data marker. */
-export function verifiedYear(iso: string): string {
-  const y = iso.slice(0, 4)
-  return lang() === 'cs' ? `ověřeno ${y}` : `verified ${y}`
-}
-
 /** Season-window advisory: one banner over the list (and in the route sheet)
  * during the windows when parishes actually shuffle schedules. */
 export function verifyBanner(season: 'summer' | 'advent' | 'christmas' | 'lent' | 'easter'): string {

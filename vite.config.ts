@@ -65,5 +65,8 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     css: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}', 'data/**/*.test.mjs'],
+    // VITE_CORROBORATION_ONE=1 keeps CORROBORATION_MIN=1 in tests (prototype semantics)
+    // without enabling WITNESS_ENABLED (that's gated on VITE_WITNESS_PREVIEW/ENABLED).
+    env: { VITE_CORROBORATION_ONE: '1' },
   },
 })

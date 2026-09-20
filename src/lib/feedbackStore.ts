@@ -8,10 +8,16 @@ import { supabase } from './supabase'
 import { resolveIds } from '../platform/flywheel-client'
 
 // A tag appears on the detail page only after this many independent witnesses.
-// Prod value is 3 (a single device publishes nothing). Local prototype uses 1
-// so the owner sees their own submissions while toying.
-// TODO(prod): set CORROBORATION_MIN = 3
-export const CORROBORATION_MIN = 1
+// Prototype/preview builds (VITE_WITNESS_PREVIEW=1) use 1 so the owner sees
+// their own submission while toying; all other builds require 3.
+// VITE_CORROBORATION_ONE=1 is a separate test/dev override that keeps min=1
+// without enabling the full WITNESS_ENABLED flag (set in vite.config test.env).
+// ponytail: single-expression guard; upgrade to env-config if more tiers needed
+export const CORROBORATION_MIN =
+  import.meta.env.VITE_WITNESS_PREVIEW === '1' ||
+  import.meta.env.VITE_CORROBORATION_ONE === '1'
+    ? 1
+    : 3
 
 const STORE_KEY = 'bohosluzby:massFeedback'
 const SUGGEST_KEY = 'bohosluzby:tagSuggestions'

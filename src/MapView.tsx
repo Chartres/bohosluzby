@@ -302,7 +302,7 @@ export default function MapView({
       // subset (the pan-invariant whole-index clustering resumes when off).
       const wt = WITNESS_ENABLED ? (filters.witnessTags ?? []) : []
       const clusterChurches = wt.length
-        ? visible.filter((c) => churchHasTags(c.id, null, wt))
+        ? churches.filter((c) => churchHasTags(c.id, null, wt))
         : churches
       // Cluster over ALL churches, not just the viewport subset. Bucket
       // membership must not depend on the pan: a grid cell straddling the

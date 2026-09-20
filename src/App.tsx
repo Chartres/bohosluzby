@@ -12,7 +12,7 @@ import {
 import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
-import { pragueToday } from './domain/occurrences'
+import { pragueIsoDate, pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
@@ -264,7 +264,11 @@ export function dayFromParam(now: Date, param: string | null): DayChoice {
   const today = pragueToday(now)
   const base = Date.UTC(today.y, today.m - 1, today.d)
   for (let off = 0; off <= 6; off++) {
-    if (new Date(base + off * 86_400_000).getUTCDay() === dow) return off
+    if (new Date(base + off * 86_400_000).getUTCDay() === dow) {
+      // off=0 means today already is that weekday; dayToParam(0) → 'dnes', not a slug,
+      // so a slug for today's weekday can only mean "next week" (key=7, Sunday-only).
+      return off === 0 ? 7 : off
+    }
   }
   return 'now' // unreachable — every weekday occurs within 7 days
 }
@@ -282,7 +286,6 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
     const svc = data.byId.get(c.id)?.regular[0]
     if (!svc) continue
     const weekday = Number(svc.days[0])
-    const { y, m, d } = pragueToday(new Date())
     return {
       churchId: c.id,
       massKey: slotKey(c.id, weekday, svc.time, riteOf(svc), svc.lang),
@@ -292,7 +295,7 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
       time: svc.time,
       rite: riteOf(svc),
       lang: svc.lang,
-      massDate: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      massDate: pragueIsoDate(new Date()),
     }
   }
   return null
