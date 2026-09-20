@@ -11,6 +11,7 @@
 // feedback card surfaces them.
 
 import { liturgicalDay } from './liturgical'
+import { pragueToday } from './occurrences'
 
 export interface NoteRule {
   /** true = may run on that Prague calendar date; false = provably does not. */
@@ -296,3 +297,12 @@ export function parseNote(note: string): NoteRule {
 
 /** Should this note be rendered as a warning rubric? */
 export const noteUncertain = (note: string): boolean => parseNote(note).uncertain
+
+/** Note-aware occurrence check: does the note allow the Prague calendar day
+ * `start` falls on? No note → yes. (parseNote is memoized, so this is cheap
+ * to call once per occurrence.) */
+export const noteRunsOn = (note: string | undefined, start: Date): boolean => {
+  if (!note) return true
+  const w = pragueToday(start)
+  return parseNote(note).runsOn(w.y, w.m, w.d)
+}

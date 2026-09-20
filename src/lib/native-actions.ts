@@ -2,8 +2,8 @@ import { isNative } from './native'
 import { reminderTitle, t } from '../i18n'
 import type { Church, ExtraService, Service } from '../domain/data'
 import { buildICS } from '../domain/ics'
-import { nextReminderAt, pragueToday } from '../domain/occurrences'
-import { parseNote } from '../domain/notes'
+import { nextReminderAt } from '../domain/occurrences'
+import { noteRunsOn } from '../domain/notes'
 import { recordExpectedAttendance } from './feedbackLedger'
 import { massKey, occurrenceOf } from '../domain/feedback'
 
@@ -70,11 +70,9 @@ export type ReminderResult = 'scheduled' | 'denied' | 'no-upcoming' | 'unsupport
  * scheduling a reminder for a mass that provably doesn't happen.
  */
 export function reminderTimeFor(service: AnyService, now: Date): Date | null {
-  const rule = parseNote(service.note)
-  return nextReminderAt(specOf(service), now, REMINDER_LEAD_MIN, 366, (start) => {
-    const w = pragueToday(start)
-    return rule.runsOn(w.y, w.m, w.d)
-  })
+  return nextReminderAt(specOf(service), now, REMINDER_LEAD_MIN, 366, (start) =>
+    noteRunsOn(service.note, start),
+  )
 }
 
 /**

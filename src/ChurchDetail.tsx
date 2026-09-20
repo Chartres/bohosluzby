@@ -9,8 +9,8 @@ import {
   type ExtraService,
   type Service,
 } from './domain/data'
-import { nextOccurrences, pragueIsoDate, pragueToday, recentOccurrence } from './domain/occurrences'
-import { noteUncertain, parseNote } from './domain/notes'
+import { nextOccurrences, pragueIsoDate, recentOccurrence } from './domain/occurrences'
+import { noteRunsOn, noteUncertain } from './domain/notes'
 import { parseConfessionFromNote } from './domain/confession'
 import { fmtDateCz, isStale, withReferral } from './domain/format'
 import { logError, track } from './analytics'
@@ -782,16 +782,9 @@ function ServiceRow({
   // Uncertain notes never mute either — they already print loud instead.
   const pausedNow = (() => {
     if (!s.note) return false
-    const rule = parseNote(s.note)
-    if (rule.uncertain) return false
+    if (noteUncertain(s.note)) return false
     const upcoming = nextOccurrences({ days: s.days, time: s.time }, new Date(), 35)
-    return (
-      upcoming.length > 0 &&
-      upcoming.every((start) => {
-        const w = pragueToday(start)
-        return !rule.runsOn(w.y, w.m, w.d)
-      })
-    )
+    return upcoming.length > 0 && upcoming.every((start) => !noteRunsOn(s.note, start))
   })()
   return (
     <div
