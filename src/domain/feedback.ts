@@ -115,7 +115,7 @@ export function massKey(churchId: string, service: MassRef, attendedDate: Date):
 /** The write-path occurrence fields for a Mass attended on `attendedDate`. */
 export function occurrenceOf(service: MassRef, attendedDate: Date): Occurrence {
   return {
-    weekday: service.date ? pragueIsoWeekday(new Date(`${service.date}T${service.time}`)) : pragueIsoWeekday(attendedDate),
+    weekday: service.date ? pragueIsoWeekday(new Date(`${service.date}T12:00:00Z`)) : pragueIsoWeekday(attendedDate),
     time: service.time,
     rite: riteOf(service),
     lang: service.lang,
