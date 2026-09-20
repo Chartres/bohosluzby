@@ -326,8 +326,7 @@ export function ChurchDetail({
     let cancelled = false
     setSvc(null)
     setFailed(false)
-    fetch(`/data/services/${church.cell}.json`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`shard ${r.status}`))))
+    loadData<Parameters<typeof decodeShard>[0]>(`services/${church.cell}.json`)
       .then((shard) => {
         if (cancelled) return
         const s = decodeShard(shard).get(church.id)
