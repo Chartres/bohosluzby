@@ -52,6 +52,12 @@ export function pragueToday(now: Date): { y: number; m: number; d: number } {
   return { y, m, d }
 }
 
+/** ISO date ("YYYY-MM-DD") of an instant on the Prague wall clock. */
+export function pragueIsoDate(when: Date): string {
+  const { y, m, d } = pragueToday(when)
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
 /** Minutes since midnight on the Prague wall clock. */
 export function pragueMinutes(now: Date): number {
   const { hh, mm } = pragueWall(now)

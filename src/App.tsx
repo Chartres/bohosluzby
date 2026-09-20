@@ -12,7 +12,7 @@ import {
 import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
-import { pragueToday } from './domain/occurrences'
+import { pragueIsoDate, pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
@@ -286,7 +286,6 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
     const svc = data.byId.get(c.id)?.regular[0]
     if (!svc) continue
     const weekday = Number(svc.days[0])
-    const { y, m, d } = pragueToday(new Date())
     return {
       churchId: c.id,
       massKey: slotKey(c.id, weekday, svc.time, riteOf(svc), svc.lang),
@@ -296,7 +295,7 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
       time: svc.time,
       rite: riteOf(svc),
       lang: svc.lang,
-      massDate: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      massDate: pragueIsoDate(new Date()),
     }
   }
   return null
