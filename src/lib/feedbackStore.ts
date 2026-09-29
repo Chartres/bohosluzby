@@ -65,12 +65,18 @@ const cache = new Map<string, ChurchAggregate>()
 
 interface Tally {
   devices: Set<string>
-  counts: Map<string, number>
+  /** chip id → set of deviceIds that submitted it; deduplicated so one device
+   * can't single-handedly reach CORROBORATION_MIN by submitting repeatedly. */
+  chipDevices: Map<string, Set<string>>
 }
-const emptyTally = (): Tally => ({ devices: new Set<string>(), counts: new Map<string, number>() })
+const emptyTally = (): Tally => ({ devices: new Set<string>(), chipDevices: new Map() })
 const bump = (a: Tally, r: Row) => {
   a.devices.add(r.deviceId)
-  for (const id of r.chips) a.counts.set(id, (a.counts.get(id) ?? 0) + 1)
+  for (const id of r.chips) {
+    const devSet = a.chipDevices.get(id) ?? new Set<string>()
+    devSet.add(r.deviceId)
+    a.chipDevices.set(id, devSet)
+  }
 }
 
 /** A Tally → Aggregate: chips over the corroboration floor, ordered by frequency
@@ -78,8 +84,8 @@ const bump = (a: Tally, r: Row) => {
 function roll(key: string, a: Tally): Aggregate {
   const order = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
   const chips = WITNESS_CHIPS.map((c) => c.id)
-    .filter((id) => (a.counts.get(id) ?? 0) >= CORROBORATION_MIN)
-    .map((id) => ({ id, count: a.counts.get(id)! }))
+    .filter((id) => (a.chipDevices.get(id)?.size ?? 0) >= CORROBORATION_MIN)
+    .map((id) => ({ id, count: a.chipDevices.get(id)!.size }))
     .sort((x, y) => y.count - x.count || order.get(x.id)! - order.get(y.id)!)
   return { massKey: key, witnesses: a.devices.size, chips }
 }
