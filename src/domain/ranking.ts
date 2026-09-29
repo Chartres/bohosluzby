@@ -9,7 +9,7 @@
 // not as a hard cutoff.
 
 import { haversineKm } from './distance'
-import { nextOccurrences, pragueToday } from './occurrences'
+import { nextOccurrences, pragueIsoDate, pragueToday } from './occurrences'
 import { noteRunsOn } from './notes'
 import { applyFilters, type Filters } from './filters'
 import type { Church, ChurchServices, Service, ExtraService } from './data'
@@ -74,13 +74,10 @@ export function ordoForDay(
   servicesById: ReadonlyMap<string, ChurchServices>,
 ): Upcoming[] {
   const today = pragueToday(now)
-  const target = new Date(Date.UTC(today.y, today.m - 1, today.d) + dayOffset * 86_400_000)
-  const onTarget = (d: Date): boolean => {
-    const w = pragueToday(d)
-    return (
-      w.y === target.getUTCFullYear() && w.m === target.getUTCMonth() + 1 && w.d === target.getUTCDate()
-    )
-  }
+  const targetIso = new Date(Date.UTC(today.y, today.m - 1, today.d) + dayOffset * 86_400_000)
+    .toISOString()
+    .slice(0, 10)
+  const onTarget = (d: Date): boolean => pragueIsoDate(d) === targetIso
   const out: Upcoming[] = []
   for (const church of churches) {
     const svc = servicesById.get(church.id)
