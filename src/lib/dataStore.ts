@@ -17,6 +17,10 @@ const ASOF_KEY = 'data_asof'
 export interface DataVersion {
   /** ISO date the registry was scraped, e.g. "2026-07-03". Also the "as of" label. */
   generated: string
+  /** ISO datetime the snapshot was published, e.g. "2026-07-03T14:05:00.000Z".
+   * Used for freshness comparison so same-day re-publishes reach native clients.
+   * Absent in snapshots emitted before this field was added; falls back to `generated`. */
+  timestamp?: string
   /** church count — powers the shrunken-payload sanity gate. */
   churches: number
 }
@@ -132,7 +136,11 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
   const remote = await fetchText(`${REMOTE}/data/version.json`)
     .then((t) => JSON.parse(t) as DataVersion)
     .catch(() => null)
-  if (!remote?.generated || (asOf && remote.generated <= asOf)) return { asOf, updated: false }
+  if (!remote?.generated) return { asOf, updated: false }
+  // Use timestamp for comparison when available so same-day re-publishes reach clients.
+  // Lexicographic order works for both date-only strings and ISO timestamps.
+  const remoteKey = remote.timestamp ?? remote.generated
+  if (asOf && remoteKey <= asOf) return { asOf, updated: false }
 
   try {
     onDownloading?.() // a real payload download is starting — light the indicator
@@ -160,7 +168,8 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
     await writeCache('churches.json', churchesText)
     await writeCache('version.json', JSON.stringify(remote)) // marker, written last
     cacheReady = true // only set after ALL writes succeed
-    setAsOf(remote.generated)
+    // Store timestamp as asOf when available so subsequent comparisons detect same-day updates.
+    setAsOf(remote.timestamp ?? remote.generated)
     return { asOf: remote.generated, updated: true }
   } catch {
     return { asOf, updated: false } // keep the old snapshot on any failure
