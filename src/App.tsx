@@ -864,7 +864,7 @@ export default function App() {
           </section>
         )}
 
-        {!dataError && !picking && !loading && origin && rows && rows.length === 0 && !anyFilter && index && (
+        {!dataError && !picking && !loading && origin && rows && rows.length === 0 && !anyFilter && day === 'now' && index && (
           <section className="mt-10">
             <h2 className="font-display text-xl font-semibold">{t('nothing_nearby_title')}</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
