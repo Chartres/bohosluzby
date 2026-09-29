@@ -210,11 +210,13 @@ export function dayOptions(now: Date): { key: DayChoice; label: string; lit: Lit
 // Minimal history routing (GH Pages serves 404.html = the app for deep links).
 type Route = { view: 'home' } | { view: 'church'; id: string } | { view: 'city'; slug: string }
 
+const safeDecode = (s: string) => { try { return decodeURIComponent(s) } catch { return s } }
+
 export function parseRoute(path: string): Route {
   const kostel = /^\/kostel\/([^/]+)\/?$/.exec(path)
-  if (kostel) return { view: 'church', id: decodeURIComponent(kostel[1]) }
+  if (kostel) return { view: 'church', id: safeDecode(kostel[1]) }
   const mesto = /^\/mesto\/([^/]+)\/?$/.exec(path)
-  if (mesto) return { view: 'city', slug: decodeURIComponent(mesto[1]) }
+  if (mesto) return { view: 'city', slug: safeDecode(mesto[1]) }
   return { view: 'home' }
 }
 
