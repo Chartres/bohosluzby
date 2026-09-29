@@ -771,7 +771,7 @@ export default function App() {
           <DetailRoute
             id={route.id}
             index={index}
-            onBack={() => navigate(`/${search}`)}
+            onBack={() => history.back()}
             onHelp={() => setIntroOpen(true)}
             onHeroChange={setDetailHero}
           />
