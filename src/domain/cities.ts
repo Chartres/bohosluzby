@@ -33,19 +33,32 @@ export interface City {
 
 /** All municipalities with their churches and centroid, largest first. */
 export function aggregateCities(index: Church[]): City[] {
-  const byName = new Map<string, Church[]>()
+  // Group by (name, cell) so same-named towns in different regions stay separate.
+  const byKey = new Map<string, Church[]>()
   for (const c of index) {
     const name = normalizeCity(c.city)
     if (!name) continue
-    const list = byName.get(name)
+    const key = `${name}|${c.cell}`
+    const list = byKey.get(key)
     if (list) list.push(c)
-    else byName.set(name, [c])
+    else byKey.set(key, [c])
+  }
+  // Count how many cells each name appears in (for slug disambiguation).
+  const nameCounts = new Map<string, number>()
+  for (const key of byKey.keys()) {
+    const name = key.slice(0, key.lastIndexOf('|'))
+    nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1)
   }
   const out: City[] = []
-  for (const [name, churches] of byName) {
+  for (const [key, churches] of byKey) {
+    const name = key.slice(0, key.lastIndexOf('|'))
+    const cell = key.slice(key.lastIndexOf('|') + 1)
+    const baseSlug = slugify(name)
+    // ponytail: append cell digits only when two municipalities share a name
+    const slug = (nameCounts.get(name) ?? 1) > 1 ? `${baseSlug}-${cell.replace('-', '')}` : baseSlug
     out.push({
       name,
-      slug: slugify(name),
+      slug,
       count: churches.length,
       lat: churches.reduce((s, c) => s + c.lat, 0) / churches.length,
       lng: churches.reduce((s, c) => s + c.lng, 0) / churches.length,
