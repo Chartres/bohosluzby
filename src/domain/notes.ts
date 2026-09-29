@@ -123,24 +123,41 @@ function parseOrdinals(s: string): (number | 'last')[] | null {
 }
 
 /** Positive-inclusion object after "kromě/mimo/vyjma" or "pouze v": months,
- * prázdniny, advent, nth weekday — or an " a "-joined union of those. */
-function parseInclusion(s: string): Pred | null {
+ * prázdniny, advent, nth weekday — or an " a "-joined union of those.
+ * negated=true is used by the except branch so the correct predicate is built
+ * in one call; notably nthWeekday returns true for non-target weekdays (a
+ * "governs only wd" sentinel) so not(nthWeekday) would wrongly exclude them. */
+function parseInclusion(s: string, negated = false): Pred | null {
   const months = parseMonthSet(s)
-  if (months) return (_y, m) => months.has(m)
-  if (/^(?:období\s+|dobu\s+|doby\s+)?(?:letní(?:ch)?\s+|hlavní(?:ch)?\s+)?prázdnin(?:y|ách)?$/.test(s)) return julyAugust
-  if (/^adventu?$/.test(s)) return advent
-  if (/^(?:dobu\s+|doby\s+|období\s+)?postní(?:\s+dob[uy])?$/.test(s) || s === 'postu') return lent
+  if (months) {
+    const pos: Pred = (_y, m) => months.has(m)
+    return negated ? not(pos) : pos
+  }
+  if (/^(?:období\s+|dobu\s+|doby\s+)?(?:letní(?:ch)?\s+|hlavní(?:ch)?\s+)?prázdnin(?:y|ách)?$/.test(s))
+    return negated ? not(julyAugust) : julyAugust
+  if (/^adventu?$/.test(s)) return negated ? not(advent) : advent
+  if (/^(?:dobu\s+|doby\s+|období\s+)?postní(?:\s+dob[uy])?$/.test(s) || s === 'postu')
+    return negated ? not(lent) : lent
   const nth = new RegExp(`^(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
   if (nth) {
     const ords = parseOrdinals(nth[1])
-    if (ords) return nthWeekday(ords, WEEKDAY[nth[2]])
+    const wd = WEEKDAY[nth[2]]
+    if (ords) {
+      if (negated) {
+        // "kromě Nth wd": exclude only that specific occurrence; pass all other days including other weekdays
+        return (y, m, d) => isoDow(y, m, d) !== wd || !ords.some((o) => o === 'last' ? d + 7 > daysInMonth(y, m) : Math.ceil(d / 7) === o)
+      }
+      return nthWeekday(ords, wd)
+    }
   }
-  // union: "adventu a letních prázdnin"
+  // union: "adventu a letních prázdnin" — De Morgan: not(A or B) = not(A) and not(B)
   const parts = s.split(/\s+a\s+/)
   if (parts.length > 1) {
-    const preds = parts.map((p) => parseInclusion(p.trim()))
+    const preds = parts.map((p) => parseInclusion(p.trim(), negated))
     if (preds.every((p): p is Pred => p !== null))
-      return (y, m, d) => preds.some((p) => p(y, m, d))
+      return negated
+        ? (y, m, d) => (preds as Pred[]).every((p) => p(y, m, d))
+        : (y, m, d) => (preds as Pred[]).some((p) => p(y, m, d))
   }
   return null
 }
@@ -176,10 +193,7 @@ function parseSegment(seg: string): Pred | 'none' | null {
 
   // kromě/mimo/vyjma <inclusion>
   const except = /^(?:kromě|mimo|vyjma|s výjimkou)\s+(.+)$/.exec(s)
-  if (except) {
-    const inc = parseInclusion(except[1])
-    return inc ? not(inc) : null
-  }
+  if (except) return parseInclusion(except[1], true)
 
   if (/školní(?:m|ho)?\s+ro[ck]/.test(s)) return schoolYear
 
