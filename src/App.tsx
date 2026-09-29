@@ -548,6 +548,15 @@ export default function App() {
     setListLimit(LIST_LIMIT) // a new context restarts the cap
   }, [origin, filters, cas, day])
 
+  // clockTick bumps when the page becomes visible again (resume / cross-midnight)
+  // so selectUpcoming re-runs with a fresh new Date().
+  const [clockTick, setClockTick] = useState(0)
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') setClockTick((n) => n + 1) }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
+
   // Witness aggregates for the nearby churches — loaded whenever a list is up so
   // the rows can carry the quiet witness mark, and so the "Ohlasy poutníků"
   // filter has data to narrow on. aggTick bumps when a load resolves so the row
@@ -577,8 +586,8 @@ export default function App() {
     return all
       .filter((u) => churchHasTags(u.church.id, massKey(u.church.id, u.service, u.start), witnessTags))
       .slice(0, listLimit)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
-  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick/clockTick refresh reads without stable deps
+  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, clockTick])
 
   // Churches that carry corroborated (thresholded) church-wide witness tags —
   // the set the list rows mark with a quiet rubric sign. Read from the same
