@@ -308,7 +308,7 @@ export function parseNote(note: string): NoteRule {
   const rule: NoteRule =
     preds.length === 0 || uncertain
       ? { runsOn: ALWAYS.runsOn, uncertain }
-      : { runsOn: (y, m, d) => preds.every((p) => p(y, m, d)), uncertain }
+      : { runsOn: (y, m, d) => preds.some((p) => p(y, m, d)), uncertain }
   cache.set(trimmed, rule)
   return rule
 }
