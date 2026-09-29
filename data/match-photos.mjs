@@ -179,7 +179,9 @@ async function main() {
   if (args.cell) churches = churches.filter((c) => c.cell.startsWith(args.cell))
   churches = churches.slice(0, args.limit)
 
-  const photos = {}
+  // Load existing results so --cell / --limit runs add to, not replace, the file.
+  let photos = {}
+  try { photos = JSON.parse(readFileSync(`${root}public/data/photos.json`, 'utf8')) } catch { /* new file */ }
   const licenses = {}
   let processed = 0, matched = 0, hadCandidate = 0
   for (const c of churches) {
