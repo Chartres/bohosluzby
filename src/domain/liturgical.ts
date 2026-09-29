@@ -83,7 +83,8 @@ export function liturgicalDay(year: number, month: number, day: number): Liturgi
 
   // Advent: 4th Sunday before 25 Dec (the Sunday in the 27 Nov – 3 Dec window).
   const christmas = utc(year, 12, 25)
-  const advent1 = christmas - dow(christmas) * DAY - 21 * DAY
+  // Use (dow || 7) so a Sunday Christmas steps back to the previous Sunday first.
+  const advent1 = christmas - (dow(christmas) || 7) * DAY - 21 * DAY
   if (t >= christmas) return { season: 'christmas', color: 'gold', feast: fixed?.feast }
   if (t === advent1 - 7 * DAY) return { season: 'ordinary', color: 'gold', feast: 'Ježíše Krista Krále' }
   if (t >= advent1) return { season: 'advent', color: fixed?.color ?? 'violet', feast: fixed?.feast }
