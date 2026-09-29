@@ -449,7 +449,11 @@ export default function App() {
       getCurrentPosition({ deadlineMs: perm === 'prompt' ? 30_000 : 10_000 }).then((r) => {
         setLocating(false)
         setGeoPrompting(false)
-        if (r.coords) setOrigin({ lat: r.coords.lat, lng: r.coords.lng, source: 'geo' })
+        if (r.coords) {
+          const { lat, lng } = r.coords
+          // Don't overwrite a city the user already picked via URL while geolocation was pending.
+          setOrigin((cur) => cur?.source === 'city' ? cur : { lat, lng, source: 'geo' })
+        }
         else fallback(r.error ?? 'timeout')
       })
     })
