@@ -302,6 +302,7 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
 export default function App() {
   const [index, setIndex] = useState<Church[] | null>(null)
   const [dataError, setDataError] = useState(false)
+  const [partialData, setPartialData] = useState(false)
   const [geoDenied, setGeoDenied] = useState(false)
   const [geoPrompting, setGeoPrompting] = useState(false) // browser permission dialog pending
   const [geoFail, setGeoFail] = useState<GeoFailure | null>(null) // why — picks the guidance
@@ -507,6 +508,7 @@ export default function App() {
     if (!index || !origin) return
     let cancelled = false
     setData(null)
+    setPartialData(false)
     const nearby = index
       .map((c) => ({ c, d: haversineKm(origin.lat, origin.lng, c.lat, c.lng) }))
       .filter(({ d }) => d <= NEARBY_KM)
@@ -529,7 +531,7 @@ export default function App() {
         const byId = new Map<string, ChurchServices>()
         for (const shard of shards) for (const [id, s] of decodeShard(shard)) byId.set(id, s)
         setData({ nearby, byId })
-        if (shardFailed) setDataError(true)
+        if (shardFailed) setPartialData(true) // show what loaded; a banner warns of missing data
       })
       .catch((err) => {
         logError(err, { where: 'load-shards' })
@@ -768,6 +770,11 @@ export default function App() {
         {dataError && (
           <p className="mt-10 text-ink-faded" role="alert">
             {t('data_error')}
+          </p>
+        )}
+        {partialData && (
+          <p className="mt-2 px-4 text-sm text-ink-faded" role="status">
+            {t('partial_data')}
           </p>
         )}
 
