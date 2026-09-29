@@ -164,9 +164,12 @@ function parseInclusion(s: string, negated = false): Pred | null {
 
 /** "od X do Y" boundary → [month, day] (day defaults per edge). */
 function parseBound(s: string, edge: 'from' | 'to'): [number, number] | null {
+  const konce = /^kon(?:ce|ec)\s+/.test(s)
   const t = s.replace(/^kon(?:ce|ec)\s+/, '').trim()
   const m = MONTH[t]
-  if (m) return [m, edge === 'from' ? 1 : 31]
+  // "od konce června" = from last day of June, not day 1. Use daysInMonth with
+  // a representative non-leap year (2023); for all non-Feb months this is exact.
+  if (m) return [m, konce ? daysInMonth(2023, m) : edge === 'from' ? 1 : 31]
   const dm = /^(\d{1,2})\.\s*(\d{1,2})\.?$/.exec(t)
   if (dm) return [Number(dm[2]), Number(dm[1])]
   return null

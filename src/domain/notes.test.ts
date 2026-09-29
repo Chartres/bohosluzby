@@ -83,6 +83,12 @@ describe('month ranges (období od … do …)', () => {
     expect(runs('období od července do konce srpna', '2026-08-31')).toBe(true)
     expect(runs('období od července do konce srpna', '2026-09-01')).toBe(false)
   })
+  it('od konce června do září: starts at end of June, not June 1 (M2)', () => {
+    expect(runs('od konce června do září', '2026-06-30')).toBe(true)  // last day of June
+    expect(runs('od konce června do září', '2026-06-05')).toBe(false) // before end of June
+    expect(runs('od konce června do září', '2026-07-15')).toBe(true)  // inside range
+    expect(runs('od konce června do září', '2026-10-01')).toBe(false) // after September
+  })
 })
 
 describe('summer/winter time (DST)', () => {
