@@ -54,7 +54,16 @@ async function writeCache(path: string, text: string): Promise<void> {
 
 async function ready(): Promise<boolean> {
   if (!isNative) return false
-  if (cacheReady === null) cacheReady = (await readCache('version.json')) !== null
+  if (cacheReady === null) {
+    const cached = await readCache('version.json')
+    if (!cached) { cacheReady = false; return false }
+    // Bypass cache when the bundled snapshot is newer (new app release).
+    const bundled = await fetch('/data/version.json')
+      .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
+      .catch(() => null)
+    const cachedVersion = (JSON.parse(cached) as DataVersion).generated
+    cacheReady = !bundled || bundled.generated <= cachedVersion
+  }
   return cacheReady
 }
 
