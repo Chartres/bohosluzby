@@ -514,9 +514,14 @@ export default function App() {
       .slice(0, NEARBY_CAP)
       .map(({ c }) => c)
     const cells = [...new Set(nearby.map((c) => c.cell))]
+    let shardFailed = false
     Promise.all(
       cells.map((cell) =>
-        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch(() => ({})),
+        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch((err) => {
+          logError(err, { where: 'load-shard', cell })
+          shardFailed = true
+          return {}
+        }),
       ),
     )
       .then((shards) => {
@@ -524,6 +529,7 @@ export default function App() {
         const byId = new Map<string, ChurchServices>()
         for (const shard of shards) for (const [id, s] of decodeShard(shard)) byId.set(id, s)
         setData({ nearby, byId })
+        if (shardFailed) setDataError(true)
       })
       .catch((err) => {
         logError(err, { where: 'load-shards' })
