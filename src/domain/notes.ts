@@ -226,7 +226,10 @@ function parseSegment(seg: string): Pred | 'none' | null {
 
   // nth weekday: "1. sobota v měsíci", "2. a 4. neděle v měsíci", "pouze první sobota…",
   // with an optional prose prefix before "pouze" ("Mše sv. je sloužena pouze 1. sobotu v měsíci")
-  const nthRe = new RegExp(`(?:^|^.*\\s)(?:vždy\\s+)?(?:pouze|jen)\\s+(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s) ??
+  // Guard: skip when the prefix prose contains negation ("nekoná se pouze…" means the opposite).
+  const nthRe = (!NEGATION.test(s)
+    ? new RegExp(`(?:^|^.*\\s)(?:vždy\\s+)?(?:pouze|jen)\\s+(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
+    : null) ??
     new RegExp(`^(?:1x\\s+za\\s+měsíc\\s+)?(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})\\s+v\\s+měsíci$`).exec(s)
   if (nthRe) {
     const ords = parseOrdinals(nthRe[1])
