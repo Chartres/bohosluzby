@@ -285,7 +285,8 @@ export default function MapView({
       // shards, so the popover line and the marker cue have data on first paint.
       const [shards] = await Promise.all([
         Promise.all(cells.map(loadShard)),
-        WITNESS_ENABLED ? loadAggregates(visible.map((c) => c.id)) : Promise.resolve(),
+        // ponytail: cap at 500 to avoid HTTP 414 at country zoom
+        WITNESS_ENABLED ? loadAggregates(visible.slice(0, 500).map((c) => c.id)) : Promise.resolve(),
       ])
       if (stale || seq !== renderSeq) return // a newer render superseded this one
       const byId = new Map<string, ChurchServices>()
@@ -366,11 +367,18 @@ export default function MapView({
       setWitnessShown(anyWitness) // React bails out if unchanged — deps exclude it, so no re-subscribe
     }
 
-    map.on('moveend', render) // zoom changes end in moveend too
+    // Debounce moveend so rapid panning doesn't fire a Supabase query every event.
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+    const onMoveEnd = () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => void render(), 150)
+    }
+    map.on('moveend', onMoveEnd) // zoom changes end in moveend too
     void render()
     return () => {
       stale = true
-      map.off('moveend', render)
+      if (debounceTimer) clearTimeout(debounceTimer)
+      map.off('moveend', onMoveEnd)
     }
     // onOpen/onNavigate deliberately excluded — read via refs so an unstable
     // callback identity can't re-run this effect off the moveend cycle.
