@@ -32,7 +32,7 @@ export const MAX_KM_OPTIONS = [2, 5, 10] as const
 // and a blank type — the registry leaves it empty for a plain Mass (Telč, most villages).
 export const isMass = (type: string) => !type.trim() || /mše|liturgi/i.test(type)
 
-export const serviceMatches =
+const serviceMatches =
   (f: Filters, cas: string | null = null) =>
   (s: Service | ExtraService): boolean =>
     (!f.lang || s.lang === f.lang) &&
