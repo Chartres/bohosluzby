@@ -13,6 +13,8 @@
 //   Ordinary    = the rest
 // Fixed-date CZ solemnities override the running season's color.
 
+import { pragueToday } from './occurrences'
+
 export type Season = 'advent' | 'christmas' | 'lent' | 'easter' | 'ordinary'
 export type LiturgicalColor = 'green' | 'violet' | 'gold' | 'red'
 
@@ -94,14 +96,8 @@ export function liturgicalDay(year: number, month: number, day: number): Liturgi
 
 /** Today's liturgical color in Prague (used for the --season accent). */
 export function currentLiturgicalDay(now: Date = new Date()): LiturgicalDay {
-  const p = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Prague',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-  }).formatToParts(now)
-  const get = (type: string) => Number(p.find((x) => x.type === type)?.value)
-  return liturgicalDay(get('year'), get('month'), get('day'))
+  const { y, m, d } = pragueToday(now)
+  return liturgicalDay(y, m, d)
 }
 
 // ---- "verify the times" advisory season -----------------------------------
@@ -112,14 +108,7 @@ export function currentLiturgicalDay(now: Date = new Date()): LiturgicalDay {
 export type VerifySeason = 'summer' | 'advent' | 'christmas' | 'lent' | 'easter' | null
 
 export function verifySeason(now: Date = new Date()): VerifySeason {
-  const p = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Prague',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-  }).formatToParts(now)
-  const get = (type: string) => Number(p.find((x) => x.type === type)?.value)
-  const [year, month, day] = [get('year'), get('month'), get('day')]
+  const { y: year, m: month, d: day } = pragueToday(now)
   // CZ school summer holidays — the single biggest schedule-shuffle window
   if (month === 7 || month === 8) return 'summer'
   const lit = liturgicalDay(year, month, day)
