@@ -303,6 +303,8 @@ export function ChurchDetail({
   const [failed, setFailed] = useState(false)
   const [navOpen, setNavOpen] = useState(false)
   const [photo, setPhoto] = useState<ChurchPhoto | null>(null)
+  // Suppress hero when credit is missing — CC licences require attribution.
+  const heroPhoto = photo?.credit ? photo : null
   const [dioc, setDioc] = useState<DiocesanConfession | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
@@ -360,9 +362,9 @@ export function ChurchDetail({
   // masthead so the image bleeds full to the top and the nav overlays the hero.
   // Reset to false on unmount / when the photo goes away.
   useEffect(() => {
-    onHeroChange?.(Boolean(photo))
+    onHeroChange?.(Boolean(heroPhoto))
     return () => onHeroChange?.(false)
-  }, [photo, onHeroChange])
+  }, [heroPhoto, onHeroChange])
 
   // Diocesan confession windows (data/confession.json): same OTA/offline gateway,
   // keyed by church id. Absent map, offline, or no entry → render nothing (the
@@ -479,7 +481,7 @@ export function ChurchDetail({
 
   return (
     <article
-      className={photo ? '' : 'mt-5'}
+      className={heroPhoto ? '' : 'mt-5'}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -488,7 +490,7 @@ export function ChurchDetail({
           under the app masthead (paper-backed so scrolled text never shows
           through; top offset mirrors the header's height). With a photo the back
           control instead overlays the hero, so this band is suppressed. */}
-      {!photo && (
+      {!heroPhoto && (
         <p
           className="sticky z-20 -mx-5 bg-paper px-5 py-1 sm:-mx-8 sm:px-8"
           style={{ top: 'calc(max(0.75rem, env(safe-area-inset-top)) + 2.25rem)' }}
@@ -507,13 +509,13 @@ export function ChurchDetail({
           back control and help — overlays the photo on a TOP scrim, and the
           church name + meta row sit over a BOTTOM scrim. object-top keeps the
           tower (church photos are tall). No photo → the plain paper header. */}
-      {photo ? (
+      {heroPhoto ? (
         // -mt-5 pulls the hero to the very top of <main> (the shell masthead is
         // gone in this case); z-0 keeps it an explicit stacking level so WebKit
         // can't paint the tall image over overlaid chrome on scroll.
         <figure className="relative z-0 -mx-5 -mt-5 overflow-hidden sm:-mx-8">
           <img
-            src={photo.url}
+            src={heroPhoto.url}
             alt={church.name}
             loading="lazy"
             decoding="async"
@@ -553,7 +555,7 @@ export function ChurchDetail({
                 ("ŠJů ( cs:ŠJů )" → "ŠJů"); licence + Wikimedia Commons kept. */}
             <p className="mt-1.5 text-right text-[0.65rem] text-paper/70">
               {t('photo_credit_prefix')}{' '}
-              {[photo.credit.split(' (')[0].trim(), photo.license, 'Wikimedia Commons']
+              {[heroPhoto.credit.split(' (')[0].trim(), heroPhoto.license, 'Wikimedia Commons']
                 .filter(Boolean)
                 .join(' · ')}
             </p>
