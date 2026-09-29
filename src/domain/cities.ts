@@ -71,7 +71,8 @@ export function aggregateCities(index: Church[]): City[] {
     }
   }
 
-  // Step 3: slug disambiguation — append cell digits only for groups sharing a name.
+  // Step 3: slug assignment — cell suffix for same-name groups, then numeric suffix
+  // for distinct municipalities whose names produce the same slug after diacritics strip.
   const nameCounts = new Map<string, number>()
   for (const { name } of groups) {
     nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1)
@@ -83,6 +84,15 @@ export function aggregateCities(index: Church[]): City[] {
     out.push({ name, slug, count: churches.length, lat, lng, churches })
   }
   out.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'cs'))
+
+  // Resolve any remaining slug collisions (e.g. "Skřipov" vs "Skřípov" → same base slug).
+  // Sorted largest-first: first occurrence keeps the slug, subsequent get "-2", "-3", …
+  const seen = new Map<string, number>()
+  for (const city of out) {
+    const n = (seen.get(city.slug) ?? 0) + 1
+    seen.set(city.slug, n)
+    if (n > 1) city.slug = `${city.slug}-${n}`
+  }
   return out
 }
 
