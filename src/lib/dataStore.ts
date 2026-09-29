@@ -146,10 +146,13 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
     const shards = await Promise.all(
       cells.map(async (c) => [c, await fetchText(`${REMOTE}/data/services/${c}.json`)] as const),
     )
+    // Invalidate in-memory flag before writes so partial failures don't leave a
+    // valid cacheReady=true with mixed old+new shard files.
+    cacheReady = null
     for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
     await writeCache('churches.json', churchesText)
     await writeCache('version.json', JSON.stringify(remote)) // marker, written last
-    cacheReady = true
+    cacheReady = true // only set after ALL writes succeed
     setAsOf(remote.generated)
     return { asOf: remote.generated, updated: true }
   } catch {
