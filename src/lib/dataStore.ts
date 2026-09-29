@@ -65,10 +65,14 @@ async function ready(): Promise<boolean> {
     const bundled = await fetch('/data/version.json')
       .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
       .catch(() => null)
-    let cachedVersion: string | undefined
-    try { cachedVersion = (JSON.parse(cached) as DataVersion).generated } catch { /* corrupt */ }
-    if (!cachedVersion) { cacheReady = false; return false }
-    cacheReady = !bundled || bundled.generated <= cachedVersion
+    let cachedParsed: DataVersion | undefined
+    try { cachedParsed = JSON.parse(cached) as DataVersion } catch { /* corrupt */ }
+    if (!cachedParsed?.generated) { cacheReady = false; return false }
+    // Use timestamp when available so a same-day re-publish of the bundled snapshot
+    // (new app release with updated data) correctly supersedes the OTA cache.
+    const cachedKey = cachedParsed.timestamp ?? cachedParsed.generated
+    const bundledKey = bundled ? (bundled.timestamp ?? bundled.generated) : undefined
+    cacheReady = !bundledKey || bundledKey <= cachedKey
   }
   return cacheReady
 }
