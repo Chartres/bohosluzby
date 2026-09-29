@@ -14,7 +14,7 @@ import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueIsoDate, pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
-import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
+import { fmtDistance, fmtTime, fmtUntil, dayLabel, fmtWeekdayShort } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
@@ -172,11 +172,6 @@ function loadFilters(): Filters {
 
 export type { DayChoice }
 
-const WEEKDAY_SHORT_CS = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'] // Date.getUTCDay order
-const WEEKDAY_SHORT_EN = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-/** Read per call — see seasonLabel above for why this isn't a plain constant. */
-const weekdayShort = (dow: number): string => (lang() === 'cs' ? WEEKDAY_SHORT_CS : WEEKDAY_SHORT_EN)[dow]
-
 /** The liturgical day for a day-picker choice ('now' = today). */
 export function litForChoice(now: Date, day: DayChoice): LiturgicalDay {
   const today = pragueToday(now)
@@ -196,8 +191,9 @@ export function dayOptions(now: Date): { key: DayChoice; label: string; lit: Lit
     { key: 1, label: t('day_tomorrow'), lit: litForChoice(now, 1) },
   ]
   for (let off = 2; off <= 6; off++) {
-    const dow = new Date(base + off * 86_400_000).getUTCDay()
-    out.push({ key: off, label: dow === 0 ? t('day_sunday_full') : weekdayShort(dow), lit: litForChoice(now, off) })
+    const date = new Date(base + off * 86_400_000)
+    const label = date.getUTCDay() === 0 ? t('day_sunday_full') : fmtWeekdayShort(date)
+    out.push({ key: off, label, lit: litForChoice(now, off) })
   }
   // ON a Sunday the 0..6 window holds no future neděle — but Sunday evening IS
   // when next week gets planned. Offer next Sunday explicitly (audit finding).
