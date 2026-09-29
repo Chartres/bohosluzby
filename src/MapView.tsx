@@ -293,9 +293,12 @@ export default function MapView({
       for (const shard of shards) for (const [id, s] of shard) byId.set(id, s)
       const now = new Date()
       // the SAME selector as the seznam — a chip on the map is a row in the list
-      // Skip when too many churches are visible: country zoom clusters everything anyway.
+      // Skip when very many churches are visible: at country zoom everything clusters
+      // anyway. Cap raised to 500 so city-scale viewports (200–400 churches) still
+      // get chips and are not all faded. ponytail: upgrade to per-cluster matching
+      // if selectUpcoming becomes the bottleneck at this scale.
       const matched = new Map<string, Upcoming>()
-      if (visible.length <= 200) {
+      if (visible.length <= 500) {
         for (const u of selectUpcoming(now, origin, visible, byId, filters, cas, day, { limit: Infinity })) {
           if (!matched.has(u.church.id)) matched.set(u.church.id, u) // ordo: keep the day's earliest
         }
