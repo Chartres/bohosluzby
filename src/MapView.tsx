@@ -293,9 +293,12 @@ export default function MapView({
       for (const shard of shards) for (const [id, s] of shard) byId.set(id, s)
       const now = new Date()
       // the SAME selector as the seznam — a chip on the map is a row in the list
+      // Skip when too many churches are visible: country zoom clusters everything anyway.
       const matched = new Map<string, Upcoming>()
-      for (const u of selectUpcoming(now, origin, visible, byId, filters, cas, day, { limit: Infinity })) {
-        if (!matched.has(u.church.id)) matched.set(u.church.id, u) // ordo: keep the day's earliest
+      if (visible.length <= 200) {
+        for (const u of selectUpcoming(now, origin, visible, byId, filters, cas, day, { limit: Infinity })) {
+          if (!matched.has(u.church.id)) matched.set(u.church.id, u) // ordo: keep the day's earliest
+        }
       }
       // Witness filter (Ohlasy poutníků): when tags are selected, the map shows
       // only churches carrying ALL of them at slot- or church-tier. Aggregates
