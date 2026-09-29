@@ -61,7 +61,9 @@ async function ready(): Promise<boolean> {
     const bundled = await fetch('/data/version.json')
       .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
       .catch(() => null)
-    const cachedVersion = (JSON.parse(cached) as DataVersion).generated
+    let cachedVersion: string | undefined
+    try { cachedVersion = (JSON.parse(cached) as DataVersion).generated } catch { /* corrupt */ }
+    if (!cachedVersion) { cacheReady = false; return false }
     cacheReady = !bundled || bundled.generated <= cachedVersion
   }
   return cacheReady
