@@ -167,8 +167,7 @@ function parseSegment(seg: string): Pred | 'none' | null {
   if (/^(?:pouze\s+|jen\s+)?(?:v\s+)?(?:období\s+|době\s+)?letní(?:ho|m)?\s+(?:čas[eu]?|období)$/.test(s)) return summerTime
   if (/^(?:pouze\s+|jen\s+)?(?:v\s+)?(?:období\s+|době\s+)?zimní(?:ho|m)?\s+(?:čas[eu]?|období)$/.test(s)) return not(summerTime)
 
-  // school year / holidays
-  if (/školní(?:m|ho)?\s+ro[ck]/.test(s)) return schoolYear
+  // school year / holidays — checked AFTER negation so "kromě … školního roku" hits except first
   if (/^(?:pouze\s+|jen\s+)?(?:o|v|během)\s+(?:době\s+|období\s+)?(?:letních\s+)?prázdnin(?:ách)?$/.test(s)) return julyAugust
 
   // advent ("v adventu rorátní" = a rorate mass — advent-only by definition)
@@ -181,6 +180,8 @@ function parseSegment(seg: string): Pred | 'none' | null {
     const inc = parseInclusion(except[1])
     return inc ? not(inc) : null
   }
+
+  if (/školní(?:m|ho)?\s+ro[ck]/.test(s)) return schoolYear
 
   // (období) od X do Y
   const range = /^(?:(?:v\s+)?období\s+)?od\s+(.+?)\s+do\s+(.+)$/.exec(s)
