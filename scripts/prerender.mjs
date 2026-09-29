@@ -14,7 +14,7 @@ const CITY_PAGES = 30
 const MAX_CHURCH_LINKS = 60
 
 const index = JSON.parse(readFileSync(`${root}public/data/churches.json`, 'utf8')).map(
-  ([id, name, city, lat, lng]) => ({ id, name, city, lat, lng }),
+  ([id, name, city, lat, lng, barrierFree, cell, www]) => ({ id, name, city, lat, lng, barrierFree: !!barrierFree, cell, www }),
 )
 const cities = aggregateCities(index).slice(0, CITY_PAGES)
 
