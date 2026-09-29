@@ -42,7 +42,7 @@ export function buildICS(church: Church, service: Service | ExtraService, now: D
   if (!first) return null
 
   const w = pragueToday(first)
-  const [hh, mm] = service.time.split(':').map(Number)
+  const [hh, mm] = service.time.split(/\s/)[0].split(':').map(Number)
   const dtstart = `${w.y}${pad(w.m)}${pad(w.d)}T${pad(hh)}${pad(mm)}00`
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`
