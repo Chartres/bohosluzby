@@ -47,7 +47,7 @@ export function recordExpectedAttendance(entry: Omit<LedgerEntry, 'answered'>): 
   write(list)
 }
 
-export function isNeverAsk(): boolean {
+function isNeverAsk(): boolean {
   try {
     return localStorage.getItem(NEVER_ASK_KEY) === '1'
   } catch {

@@ -33,7 +33,7 @@ export function bandLabel(band: Band): string {
   return (lang() === 'cs' ? BAND_LABEL_CS : BAND_LABEL_EN)[band]
 }
 
-export const AROUND_MIN = 90
+const AROUND_MIN = 90
 
 /** Minutes since midnight; prefix-tolerant like occurrences' parser
  * (registry times can carry suffixes), strict about the digits themselves. */

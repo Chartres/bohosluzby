@@ -128,7 +128,7 @@ export async function scheduleMassReminder(
 }
 
 /** Light impact on native taps; silent no-op on web. */
-export async function tapFeedback(): Promise<void> {
+async function tapFeedback(): Promise<void> {
   if (!isNative) return
   try {
     const { Haptics, ImpactStyle } = await import('@capacitor/haptics')
