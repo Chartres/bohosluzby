@@ -146,8 +146,13 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
     const shards = await Promise.all(
       cells.map(async (c) => [c, await fetchText(`${REMOTE}/data/services/${c}.json`)] as const),
     )
-    // Invalidate in-memory flag before writes so partial failures don't leave a
-    // valid cacheReady=true with mixed old+new shard files.
+    // Delete the version marker before ANY shard write so a partial failure
+    // leaves no valid sentinel — ready() returns false and loadData falls back
+    // to bundled. Without this, a crash between shard writes but before
+    // version.json would leave a stale version.json pointing at a mixed cache.
+    try {
+      await Filesystem.deleteFile({ path: `${CACHE}/version.json`, directory: Directory.Data })
+    } catch { /* absent on first install */ }
     cacheReady = null
     for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
     await writeCache('churches.json', churchesText)
