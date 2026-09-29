@@ -160,6 +160,14 @@ describe('advent', () => {
     expect(runs('kromě adventu a letních prázdnin', '2026-12-06')).toBe(false)
     expect(runs('kromě adventu a letních prázdnin', '2026-10-06')).toBe(true)
   })
+  it('exclusion + schedule: exclusion is not cancelled by a schedule predicate (H1)', () => {
+    // "kromě července a srpna, 1. sobota v měsíci" — should exclude July even on 1st Saturdays
+    const note = 'kromě července a srpna, 1. sobota v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(false) // 1st Saturday of July — excluded
+    expect(runs(note, '2026-08-01')).toBe(false) // 1st Saturday of August — excluded
+    expect(runs(note, '2026-09-05')).toBe(true)  // 1st Saturday of September — runs
+    expect(runs(note, '2026-09-12')).toBe(false) // 2nd Saturday of September — not 1st Sat
+  })
 })
 
 describe('conditional-in-months', () => {

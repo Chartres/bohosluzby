@@ -276,6 +276,8 @@ const CONDITIONAL = new RegExp(
 const FREQUENCY = /^(?:1x\s+(?:za\s+měsíc|měsíčně|za\s+14\s+dní|za\s+2\s+týdny)|každých\s+14\s+dní)$/
 
 const cache = new Map<string, NoteRule>()
+// Segments that contribute exclusion predicates — ANDed so each exclusion stacks.
+const EXCL_SEG = /^(?:kromě|mimo|vyjma|s\s+výjimkou)\s+/
 
 export function parseNote(note: string): NoteRule {
   const trimmed = note.trim()
@@ -305,10 +307,29 @@ export function parseNote(note: string): NoteRule {
   // school-year exclusion but can't read segment 2 — applying the exclusion
   // would hide the real summer mass. Degrade to kept-uncertain (runs, flagged);
   // showing a flagged row beats silently dropping a mass the note half-explains.
-  const rule: NoteRule =
-    preds.length === 0 || uncertain
-      ? { runsOn: ALWAYS.runsOn, uncertain }
-      : { runsOn: (y, m, d) => preds.some((p) => p(y, m, d)), uncertain }
+  let rule: NoteRule
+  if (preds.length === 0 || uncertain) {
+    rule = { runsOn: ALWAYS.runsOn, uncertain }
+  } else {
+    // Exclusion segs (kromě/mimo/vyjma) are ANDed — each exclusion must hold.
+    // Inclusion segs are ORed — any match suffices. Mixed: match any inclusion
+    // AND pass every exclusion. Without this split, a 2nd-Saturday predicate
+    // would cancel a "not July/August" exclusion via OR (returning true in July).
+    const excls: Pred[] = []
+    const incls: Pred[] = []
+    parsed.forEach((p, i) => {
+      if (typeof p !== 'function') return
+      if (EXCL_SEG.test(segs[i])) excls.push(p)
+      else incls.push(p)
+    })
+    const runsOn: Pred =
+      excls.length === 0
+        ? (y, m, d) => incls.some((p) => p(y, m, d))
+        : incls.length === 0
+          ? (y, m, d) => excls.every((p) => p(y, m, d))
+          : (y, m, d) => incls.some((p) => p(y, m, d)) && excls.every((p) => p(y, m, d))
+    rule = { runsOn, uncertain }
+  }
   cache.set(trimmed, rule)
   return rule
 }
