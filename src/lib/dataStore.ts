@@ -73,6 +73,12 @@ async function ready(): Promise<boolean> {
     const cachedKey = cachedParsed.timestamp ?? cachedParsed.generated
     const bundledKey = bundled ? (bundled.timestamp ?? bundled.generated) : undefined
     cacheReady = !bundledKey || bundledKey <= cachedKey
+    // When the bundled snapshot is newer, the stored asOf is stale — clear it
+    // so the footer shows the honest bundled date and refreshData re-checks the
+    // remote instead of skipping because remoteKey ≤ stale-asOf (M5).
+    if (!cacheReady) {
+      try { localStorage.removeItem(ASOF_KEY) } catch { /* private mode */ }
+    }
   }
   return cacheReady
 }
