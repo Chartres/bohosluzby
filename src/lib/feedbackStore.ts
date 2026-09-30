@@ -210,6 +210,12 @@ export function aggregateFor(churchId: string): ChurchAggregate {
   return cache.get(churchId) ?? emptyChurchAggregate(churchId)
 }
 
+/** True iff loadAggregates has settled for this church (even if it has no witnesses).
+ * M8: lets the map distinguish "no witnesses loaded yet" from "no witnesses exist". */
+export function hasAggregate(churchId: string): boolean {
+  return cache.has(churchId)
+}
+
 /** Rank a church's chips by corroboration × distinctiveness and keep the top
  * `max`. Distinctiveness down-weights a tag that is common across all currently
  * loaded churches, so "rodinná atmosféra" everywhere counts for less than a tag
