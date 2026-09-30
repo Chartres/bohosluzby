@@ -143,9 +143,7 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
   }
 
   if (!isNative) {
-    const v = await fetch('/data/version.json')
-      .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
-      .catch(() => null)
+    const v = await loadData<DataVersion>('version.json').catch(() => null)
     return { asOf: v?.generated ?? asOf, updated: false }
   }
 
