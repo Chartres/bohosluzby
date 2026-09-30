@@ -34,6 +34,19 @@ describe('aggregateCities / findCity', () => {
     expect(findCity(index, 'brno')?.name).toBe('Brno')
     expect(findCity(index, 'nowhere')).toBeUndefined()
   })
+  it('slug collision resolution is stable regardless of church counts (M11)', () => {
+    // "Skřipov" and "Skřípov" both fold to "skripov". Whichever has more churches
+    // should not affect the slug assignment — it's name-ordered so it never drifts.
+    const makeIdx = (skipovCount: number, skripovCount: number) => [
+      ...Array.from({ length: skipovCount }, (_, i) => church(`s${i}`, 'Skřipov', 49.8, 17.6)),
+      ...Array.from({ length: skripovCount }, (_, i) => church(`r${i}`, 'Skřípov', 49.5, 17.4)),
+    ]
+    const slugsA = aggregateCities(makeIdx(5, 1)).map((c) => [c.name, c.slug])
+    const slugsB = aggregateCities(makeIdx(1, 5)).map((c) => [c.name, c.slug])
+    // Slug assignments must be identical regardless of which town has more churches.
+    const toMap = (pairs: [string, string][]) => Object.fromEntries(pairs)
+    expect(toMap(slugsA as [string,string][])).toEqual(toMap(slugsB as [string,string][]))
+  })
 })
 
 describe('searchPlaces — unified church + city typeahead', () => {
