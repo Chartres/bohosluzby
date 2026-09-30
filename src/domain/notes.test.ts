@@ -89,6 +89,11 @@ describe('month ranges (období od … do …)', () => {
     expect(runs('od konce června do září', '2026-07-15')).toBe(true)  // inside range
     expect(runs('od konce června do září', '2026-10-01')).toBe(false) // after September
   })
+  it('do konce února includes Feb 29 in leap years (M2)', () => {
+    expect(runs('od ledna do konce února', '2024-02-29')).toBe(true)  // leap year Feb 29
+    expect(runs('od ledna do konce února', '2024-02-28')).toBe(true)
+    expect(runs('od ledna do konce února', '2024-03-01')).toBe(false) // after range
+  })
 })
 
 describe('summer/winter time (DST)', () => {

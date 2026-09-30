@@ -167,9 +167,11 @@ function parseBound(s: string, edge: 'from' | 'to'): [number, number] | null {
   const konce = /^kon(?:ce|ec)\s+/.test(s)
   const t = s.replace(/^kon(?:ce|ec)\s+/, '').trim()
   const m = MONTH[t]
-  // "od konce června" = from last day of June, not day 1. Use daysInMonth with
-  // a representative non-leap year (2023); for all non-Feb months this is exact.
-  if (m) return [m, konce ? daysInMonth(2023, m) : edge === 'from' ? 1 : 31]
+  // For 'to' edge: return 31 — a sentinel always ≥ the real last day, so
+  // Feb 29 in a leap year passes the range check (M2). For 'from' edge with
+  // konce: use daysInMonth with non-leap 2023; all non-Feb months are exact
+  // and Feb 'from' uses day 28 which still includes Feb 29 (k≥228).
+  if (m) return [m, konce && edge === 'from' ? daysInMonth(2023, m) : edge === 'from' ? 1 : 31]
   const dm = /^(\d{1,2})\.\s*(\d{1,2})\.?$/.exec(t)
   if (dm) return [Number(dm[2]), Number(dm[1])]
   return null
