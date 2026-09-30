@@ -41,6 +41,16 @@ describe('month exclusions (kromě/mimo/vyjma)', () => {
   })
 })
 
+describe('AND-combination of inclusion segments (M1)', () => {
+  it('ve školním roce, 1. sobota v měsíci — both conditions must hold', () => {
+    const note = 've školním roce, 1. sobota v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(false) // 1st Saturday of July — not school year
+    expect(runs(note, '2026-09-05')).toBe(true)  // 1st Saturday of September — in school year
+    expect(runs(note, '2026-09-12')).toBe(false) // 2nd Saturday — not 1st Sat
+    expect(noteUncertain(note)).toBe(false)
+  })
+})
+
 describe('summer holidays and school year', () => {
   it.each([
     'kromě letních prázdnin',

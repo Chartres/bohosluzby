@@ -317,9 +317,9 @@ export function parseNote(note: string): NoteRule {
     rule = { runsOn: ALWAYS.runsOn, uncertain }
   } else {
     // Exclusion segs (kromě/mimo/vyjma) are ANDed — each exclusion must hold.
-    // Inclusion segs are ORed — any match suffices. Mixed: match any inclusion
-    // AND pass every exclusion. Without this split, a 2nd-Saturday predicate
-    // would cancel a "not July/August" exclusion via OR (returning true in July).
+    // Inclusion segs are also ANDed — each narrows the applicability (M1).
+    // "ve školním roce, 1. sobota v měsíci" means both conditions must be true,
+    // not either condition. Mixed: all inclusions AND all exclusions.
     const excls: Pred[] = []
     const incls: Pred[] = []
     parsed.forEach((p, i) => {
@@ -329,10 +329,10 @@ export function parseNote(note: string): NoteRule {
     })
     const runsOn: Pred =
       excls.length === 0
-        ? (y, m, d) => incls.some((p) => p(y, m, d))
+        ? (y, m, d) => incls.every((p) => p(y, m, d))
         : incls.length === 0
           ? (y, m, d) => excls.every((p) => p(y, m, d))
-          : (y, m, d) => incls.some((p) => p(y, m, d)) && excls.every((p) => p(y, m, d))
+          : (y, m, d) => incls.every((p) => p(y, m, d)) && excls.every((p) => p(y, m, d))
     rule = { runsOn, uncertain }
   }
   cache.set(trimmed, rule)
