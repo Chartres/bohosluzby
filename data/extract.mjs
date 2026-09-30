@@ -202,7 +202,9 @@ function transform() {
       p: inst.institution_parish_name ?? '',
       pa: inst.institution_parish_address ?? '',
       // parish-level contacts only; named persons are deliberately not published
-      c: (d.contacts ?? []).filter((c) => c.type && c.contact).map((c) => [c.type, c.contact]),
+      // normUrl fixes typo'd schemes (http:\\, http:/) for www contacts.
+      c: (d.contacts ?? []).filter((c) => c.type && c.contact).map((c) =>
+        [c.type, c.type === 'www' ? (normUrl(c.contact) || c.contact) : c.contact]),
       s: regular.map(svcRow),
     }
     // the detail page's Farnost section reads the shard contacts — surface the
