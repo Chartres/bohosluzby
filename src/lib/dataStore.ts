@@ -31,6 +31,9 @@ export interface RefreshResult {
 }
 
 let cacheReady: boolean | null = null
+/** Held during the OTA write phase; loadData awaits it so no concurrent call
+ * sees a mixed (bundled index + cached shards) state (M4). */
+let refreshLock: Promise<void> | null = null
 
 async function readCache(path: string): Promise<string | null> {
   if (!isNative) return null
@@ -85,6 +88,7 @@ async function ready(): Promise<boolean> {
 
 /** Load a /data/<path> JSON from the freshest available source: cache → bundled. */
 export async function loadData<T>(path: string): Promise<T> {
+  if (refreshLock) await refreshLock
   if (await ready()) {
     const cached = await readCache(path)
     if (cached) return JSON.parse(cached) as T
@@ -168,20 +172,30 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
     const shards = await Promise.all(
       cells.map(async (c) => [c, await fetchText(`${REMOTE}/data/services/${c}.json`)] as const),
     )
-    // Delete the version marker before ANY shard write so a partial failure
-    // leaves no valid sentinel — ready() returns false and loadData falls back
-    // to bundled. Without this, a crash between shard writes but before
-    // version.json would leave a stale version.json pointing at a mixed cache.
+    // Hold refreshLock for the entire write phase so concurrent loadData calls
+    // wait instead of reading a mixed (bundled index + partially-written shards)
+    // state (M4).
+    let resolveRefreshLock!: () => void
+    refreshLock = new Promise<void>((r) => { resolveRefreshLock = r })
     try {
-      await Filesystem.deleteFile({ path: `${CACHE}/version.json`, directory: Directory.Data })
-    } catch { /* absent on first install */ }
-    cacheReady = null
-    for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
-    await writeCache('churches.json', churchesText)
-    await writeCache('version.json', JSON.stringify(remote)) // marker, written last
-    cacheReady = true // only set after ALL writes succeed
-    // Store timestamp as asOf when available so subsequent comparisons detect same-day updates.
-    setAsOf(remote.timestamp ?? remote.generated)
+      // Delete the version marker before ANY shard write so a partial failure
+      // leaves no valid sentinel — ready() returns false and loadData falls back
+      // to bundled. Without this, a crash between shard writes but before
+      // version.json would leave a stale version.json pointing at a mixed cache.
+      try {
+        await Filesystem.deleteFile({ path: `${CACHE}/version.json`, directory: Directory.Data })
+      } catch { /* absent on first install */ }
+      cacheReady = null
+      for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
+      await writeCache('churches.json', churchesText)
+      await writeCache('version.json', JSON.stringify(remote)) // marker, written last
+      cacheReady = true // only set after ALL writes succeed
+      // Store timestamp as asOf when available so subsequent comparisons detect same-day updates.
+      setAsOf(remote.timestamp ?? remote.generated)
+    } finally {
+      refreshLock = null
+      resolveRefreshLock()
+    }
     return { asOf: remote.generated, updated: true }
   } catch {
     return { asOf, updated: false } // keep the old snapshot on any failure
