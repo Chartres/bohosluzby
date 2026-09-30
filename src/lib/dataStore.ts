@@ -126,7 +126,9 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
   let asOf = activeAsOf()
   if (!asOf) {
     const bundled = await loadData<DataVersion>('version.json').catch(() => null)
-    asOf = bundled?.generated ?? null
+    // Store timestamp when available so subsequent remote comparisons detect same-day updates;
+    // fall back to generated (date string) for older snapshots without a timestamp field.
+    asOf = bundled ? (bundled.timestamp ?? bundled.generated) : null
     if (asOf) setAsOf(asOf)
   }
 
