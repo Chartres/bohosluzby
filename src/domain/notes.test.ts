@@ -227,6 +227,22 @@ describe('long-tail variants', () => {
   })
 })
 
+describe('CONDITIONAL catches missing patterns (M3)', () => {
+  it('ordinal weekday without "v měsíci" is flagged uncertain', () => {
+    expect(noteUncertain('1. neděle')).toBe(true)
+    expect(noteUncertain('2. a 4. neděle')).toBe(true)
+    expect(runs('1. neděle', '2026-07-06')).toBe(true)   // kept, not silently dropped
+  })
+  it('sudou/lichou weekday is flagged uncertain', () => {
+    expect(noteUncertain('sudou neděli')).toBe(true)
+    expect(noteUncertain('lichou sobotu')).toBe(true)
+  })
+  it('seasonal patterns not in parser are flagged uncertain', () => {
+    expect(noteUncertain('v zimě')).toBe(true)
+    expect(noteUncertain('od Velikonoc do Dušiček')).toBe(true)
+  })
+})
+
 describe('uncertain notes: kept, flagged', () => {
   it.each([
     '1x za 14 dní',

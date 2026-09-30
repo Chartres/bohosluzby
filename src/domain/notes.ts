@@ -274,7 +274,9 @@ function parseSegment(seg: string): Pred | 'none' | null {
 // Descriptive segments ("pro děti", "s nedělní platností", "č/p") pass silently.
 const CONDITIONAL = new RegExp(
   // 'svát(?:ek|k|c)' not bare 'svát' — "svátost smíření" is not a feast condition
-  `krom|mimo|vyjma|výjimk|pouze|\\bjen\\b|nepravidel|není|nejsou|nekoná|neslouž|nebývá|odpadá|období|prázdnin|čas|týd(?:en|n)|měsíc|advent|postní|škol|sud[ýé]|lich[ýé]|svát(?:ek|k|c)|ohlášen|\\d+\\s*[x×]|${MONTH_RE}`,
+  // WEEKDAY_RE catches ordinal-weekday without "v měsíci" ("1. neděle", "sudou neděli") (M3)
+  // zim|velikono|dušič catch "v zimě", "od Velikonoc do Dušiček" (M3)
+  `krom|mimo|vyjma|výjimk|pouze|\\bjen\\b|nepravidel|není|nejsou|nekoná|neslouž|nebývá|odpadá|období|prázdnin|čas|týd(?:en|n)|měsíc|advent|postní|škol|sud[ýé]|lich[ýé]|svát(?:ek|k|c)|ohlášen|\\d+\\s*[x×]|${MONTH_RE}|${WEEKDAY_RE}|zim|velikono|dušič`,
 )
 
 // Frequency markers that a sibling segment makes concrete ("1x za měsíc, 1. týden v měsíci").
