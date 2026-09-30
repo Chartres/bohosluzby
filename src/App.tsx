@@ -995,7 +995,7 @@ export default function App() {
                   onNavigate={setNavTarget}
                 />
                 {/* the cap is honest: another page of the ordo instead of "evening ends at 18:00" */}
-                {day === 'now' && rows.length >= listLimit && (
+                {(day === 'now' || witnessTags.length > 0) && rows.length >= listLimit && (
                   <button
                     type="button"
                     className="rubric mt-4 -ml-1 min-h-11 px-1 py-3 underline decoration-hairline underline-offset-4 hover:text-ink"
