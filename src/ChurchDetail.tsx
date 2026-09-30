@@ -417,7 +417,7 @@ export function ChurchDetail({
     if (!WITNESS_ENABLED || !svc) return
     const now = new Date()
     for (const s of svc.regular) {
-      const start = recentOccurrence({ days: s.days, time: s.time }, now, RECENT_VIEW_MIN)
+      const start = recentOccurrence(s, now, RECENT_VIEW_MIN)
       if (!start) continue
       recordExpectedAttendance({
         churchId: church.id,
@@ -785,7 +785,7 @@ function ServiceRow({
   const pausedNow = (() => {
     if (!s.note) return false
     if (noteUncertain(s.note)) return false
-    const upcoming = nextOccurrences({ days: s.days, time: s.time }, new Date(), 35)
+    const upcoming = nextOccurrences(s, new Date(), 35)
     return upcoming.length > 0 && upcoming.every((start) => !noteRunsOn(s.note, start))
   })()
   return (

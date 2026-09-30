@@ -45,16 +45,16 @@ export function rankUpcoming(
     const distanceKm = haversineKm(origin.lat, origin.lng, church.lat, church.lng)
 
     let best: Upcoming | null = null
-    const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
-      for (const start of nextOccurrences(spec, now, horizonDays)) {
+    const consider = (service: Service | ExtraService) => {
+      for (const start of nextOccurrences(service, now, horizonDays)) {
         if (!noteRunsOn(service.note, start)) continue // "kromě července a srpna" — don't lie in July
         if (!best || start < best.start)
           best = { church, distanceKm, start, service, updated: svc.updated }
         break // occurrences are sorted; the first running one is this service's best
       }
     }
-    for (const s of svc.regular) consider(s, { days: s.days, time: s.time })
-    for (const x of svc.extra) consider(x, { date: x.date, time: x.time })
+    for (const s of svc.regular) consider(s)
+    for (const x of svc.extra) consider(x)
     if (best) out.push(best)
   }
   out.sort((a, b) => a.start.getTime() - b.start.getTime() || a.distanceKm - b.distanceKm)
@@ -83,14 +83,14 @@ export function ordoForDay(
     const svc = servicesById.get(church.id)
     if (!svc) continue
     const distanceKm = haversineKm(origin.lat, origin.lng, church.lat, church.lng)
-    const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
-      for (const start of nextOccurrences(spec, now, dayOffset + 1)) {
+    const consider = (service: Service | ExtraService) => {
+      for (const start of nextOccurrences(service, now, dayOffset + 1)) {
         if (onTarget(start) && noteRunsOn(service.note, start))
           out.push({ church, distanceKm, start, service, updated: svc.updated })
       }
     }
-    for (const s of svc.regular) consider(s, { days: s.days, time: s.time })
-    for (const x of svc.extra) consider(x, { date: x.date, time: x.time })
+    for (const s of svc.regular) consider(s)
+    for (const x of svc.extra) consider(x)
   }
   out.sort((a, b) => a.start.getTime() - b.start.getTime() || a.distanceKm - b.distanceKm)
   return out

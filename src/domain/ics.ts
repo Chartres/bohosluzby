@@ -36,9 +36,7 @@ const pad = (n: number) => String(n).padStart(2, '0')
 /** VEVENT text for one service of a church, or null when the service has no
  * upcoming occurrence (past one-off, unparsable time). */
 export function buildICS(church: Church, service: Service | ExtraService, now: Date): string | null {
-  const spec =
-    'days' in service ? { days: service.days, time: service.time } : { date: service.date, time: service.time }
-  const first = nextOccurrences(spec, now, 8)[0]
+  const first = nextOccurrences(service, now, 8)[0]
   if (!first) return null
 
   const [hh, mm] = service.time.split(/\s/)[0].split(':').map(Number)
