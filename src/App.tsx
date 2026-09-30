@@ -170,10 +170,8 @@ function loadFilters(): Filters {
 
 // ---- Day picker: 'now' = soonest you can make; 0–6 = the day's full ordo ----
 
-export type { DayChoice }
-
 /** The liturgical day for a day-picker choice ('now' = today). */
-export function litForChoice(now: Date, day: DayChoice): LiturgicalDay {
+function litForChoice(now: Date, day: DayChoice): LiturgicalDay {
   const today = pragueToday(now)
   const t = new Date(Date.UTC(today.y, today.m - 1, today.d) + (day === 'now' ? 0 : day) * 86_400_000)
   return liturgicalDay(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate())
@@ -208,7 +206,7 @@ type Route = { view: 'home' } | { view: 'church'; id: string } | { view: 'city';
 
 const safeDecode = (s: string) => { try { return decodeURIComponent(s) } catch { return s } }
 
-export function parseRoute(path: string): Route {
+function parseRoute(path: string): Route {
   const kostel = /^\/kostel\/([^/]+)\/?$/.exec(path)
   if (kostel) return { view: 'church', id: safeDecode(kostel[1]) }
   const mesto = /^\/mesto\/([^/]+)\/?$/.exec(path)
