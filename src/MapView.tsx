@@ -16,7 +16,7 @@ import { gridCluster } from './domain/cluster'
 import { NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
-import { massKey, type Aggregate } from './domain/feedback'
+import { massKey } from './domain/feedback'
 import { aggregateFor, churchHasTags, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { witnessPillsHtml } from './WitnessPills'
 import { WITNESS_ENABLED } from './lib/flags'
@@ -26,16 +26,6 @@ const CELL_PX = 64 // cluster grid; ~a finger-width of map
 
 /** "8:30", not "08:30" — chips are read at a glance, the zero is noise. */
 const chipTime = (d: Date) => fmtTime(d).replace(/^0/, '')
-
-/** Both directness tiers for the Mass a marker/popover shows: the specific slot
- * aggregate and the church-wide one (from the in-memory cache; empty until
- * loadAggregates fills it). */
-const witnessTiers = (church: Church, u: Upcoming): { slot?: Aggregate; church: Aggregate } => {
-  const { slots, church: churchAgg } = aggregateFor(church.id)
-  return { slot: slots.get(massKey(church.id, u.service, u.start)), church: churchAgg }
-}
-const hasWitness = (t: { slot?: Aggregate; church: Aggregate }): boolean =>
-  (t.slot?.chips.length ?? 0) > 0 || t.church.chips.length > 0
 
 /** A bare time on a pin reads as TODAY — on "hned" a church's next mass can be
  * days out, so a not-today chip carries its weekday ("út 15:00") and greys. */
@@ -357,7 +347,8 @@ export default function MapView({
               ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
               : chipTime(next.start)
             : ''
-          const witnessed = WITNESS_ENABLED && Boolean(next) && hasWitness(witnessTiers(church, next!))
+          // the church tier folds every slot, so any witnessed slot shows here too
+          const witnessed = WITNESS_ENABLED && Boolean(next) && aggregateFor(church.id).church.chips.length > 0
           if (witnessed) anyWitness = true
           const marker = L.marker([church.lat, church.lng], {
             icon: next ? chipIcon(label, otherDay, witnessed) : fadedIcon(),
