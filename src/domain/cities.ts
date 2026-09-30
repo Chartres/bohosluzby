@@ -86,12 +86,21 @@ export function aggregateCities(index: Church[]): City[] {
   out.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'cs'))
 
   // Resolve any remaining slug collisions (e.g. "Skřipov" vs "Skřípov" → same base slug).
-  // Sorted largest-first: first occurrence keeps the slug, subsequent get "-2", "-3", …
-  const seen = new Map<string, number>()
+  // Assign suffixes in name order (stable), not count order, so a data refresh that
+  // changes church counts doesn't repoint an existing /mesto/<slug>/ URL.
+  const slugGroups = new Map<string, City[]>()
   for (const city of out) {
-    const n = (seen.get(city.slug) ?? 0) + 1
-    seen.set(city.slug, n)
-    if (n > 1) city.slug = `${city.slug}-${n}`
+    const g = slugGroups.get(city.slug)
+    if (g) g.push(city)
+    else slugGroups.set(city.slug, [city])
+  }
+  for (const group of slugGroups.values()) {
+    if (group.length <= 1) continue
+    // Sort by name for a stable assignment; lat as tiebreaker for same-name edge cases.
+    group.sort((a, b) => a.name.localeCompare(b.name, 'cs') || (a.lat - b.lat))
+    group.forEach((city, i) => {
+      if (i > 0) city.slug = `${city.slug}-${i + 1}`
+    })
   }
   return out
 }
