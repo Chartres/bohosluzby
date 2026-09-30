@@ -115,13 +115,18 @@ async function details(ids) {
     for (;;) {
       const id = queue.shift()
       if (id === undefined) return
-      const text = await fetchPolite(`${BASE}detail?id=${id}`)
-      JSON.parse(text)
-      writeFileSync(`${CACHE}/detail/${id}.json`, text)
+      try {
+        const text = await fetchPolite(`${BASE}detail?id=${id}`)
+        JSON.parse(text)
+        writeFileSync(`${CACHE}/detail/${id}.json`, text)
+      } catch (err) {
+        // M6: log individual 4xx/parse failures without aborting the whole batch
+        process.stderr.write(`  detail ${id}: ${err.message}\n`)
+      }
       if (++done % 200 === 0) process.stderr.write(`  detail ${done}/${queue.length + done}\n`)
     }
   }
-  await Promise.all(Array.from({ length: 4 }, worker))
+  await Promise.allSettled(Array.from({ length: 4 }, worker))
   process.stderr.write(`details: ${ids.length} churches cached\n`)
 }
 
