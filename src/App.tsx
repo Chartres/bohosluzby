@@ -934,6 +934,7 @@ export default function App() {
                 onChange={updateFilters}
                 langs={langs}
                 onReset={resetAll}
+                clockTick={clockTick}
               />
               {/* not on a live fix (offline / last-known / picked city): search is the
                   main CTA — a visible input-shaped button, not a buried "změnit" link */}
@@ -1083,8 +1084,8 @@ export default function App() {
 
 // The day rubric of the ordo, as a picker: which page are you reading?
 // Active day is set in rubric red — day labels are rubrics in a missal.
-function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice) => void }) {
-  const options = useMemo(() => dayOptions(new Date()), [])
+function DayPicker({ day, onChange, clockTick = 0 }: { day: DayChoice; onChange: (d: DayChoice) => void; clockTick?: number }) {
+  const options = useMemo(() => dayOptions(new Date()), [clockTick])
   // a bookmarked ?den= must not hide its own chip off-screen
   const activeRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
@@ -1406,6 +1407,7 @@ function OrdoControls({
   onChange,
   langs,
   onReset,
+  clockTick = 0,
 }: {
   day: DayChoice
   onDay: (d: DayChoice) => void
@@ -1415,6 +1417,7 @@ function OrdoControls({
   onChange: (f: Filters) => void
   langs: string[]
   onReset: () => void
+  clockTick?: number
 }) {
   const [open, setOpen] = useState(false)
   const narrow = useNarrow()
@@ -1484,7 +1487,7 @@ function OrdoControls({
       }
     >
       <p className="rubric mt-2 text-ink-faded">{t('day_group').toLowerCase()}</p>
-      <DayPicker day={day} onChange={onDay} />
+      <DayPicker day={day} onChange={onDay} clockTick={clockTick} />
       <p className="rubric mt-2 text-ink-faded">{t('rubric_when')}</p>
       <div
         role="group"
