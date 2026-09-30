@@ -71,24 +71,6 @@ const fmtDataDate = (iso: string) => {
 // Leaflet + tiles code-split behind the "mapa" toggle — the list path pays nothing.
 const MapView = lazy(() => import('./MapView'))
 
-const SEASON_LABEL_CS: Record<LiturgicalDay['season'], string> = {
-  ordinary: 'liturgické mezidobí',
-  advent: 'doba adventní',
-  christmas: 'doba vánoční',
-  lent: 'doba postní',
-  easter: 'doba velikonoční',
-}
-const SEASON_LABEL_EN: Record<LiturgicalDay['season'], string> = {
-  ordinary: 'ordinary time',
-  advent: 'Advent',
-  christmas: 'Christmas season',
-  lent: 'Lent',
-  easter: 'Easter season',
-}
-// Read per call (not a module-level constant) — a test flipping
-// navigator.language must see the new language on the next render.
-const seasonLabel = (s: LiturgicalDay['season']): string =>
-  (lang() === 'cs' ? SEASON_LABEL_CS : SEASON_LABEL_EN)[s]
 const SEASON_VAR: Record<LiturgicalDay['color'], string> = {
   green: 'var(--color-season-green)',
   violet: 'var(--color-season-violet)',
@@ -1038,7 +1020,7 @@ export default function App() {
         <FeedbackCard />
         <p className="mt-1">
           <span className="font-semibold" style={{ color: 'var(--season)' }}>
-            {seasonLabel(season.season)}
+            {t(`season_${season.season}`)}
           </span>
           {' · '}
           {lang() === 'cs' ? 'Data: rejstřík' : 'Data: registry'}{' '}
