@@ -368,7 +368,7 @@ export default function MapView({
             title: churchCount(cl.items.length),
             keyboard: false,
           })
-            .on('click', () => map.setView(latlng, Math.min(zoom + 2, 17)))
+            .on('click', () => map.setView(latlng, Math.max(Math.min(zoom + 2, 18), zoom)))
             .addTo(layer)
         }
       }
