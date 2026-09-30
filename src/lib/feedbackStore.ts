@@ -79,14 +79,16 @@ const bump = (a: Tally, r: Row) => {
   }
 }
 
+/** Locked display order of the chips — the tie-breaker when counts match. */
+const CHIP_ORDER = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
+
 /** A Tally → Aggregate: chips over the corroboration floor, ordered by frequency
  * (most-mentioned first; ties keep the locked display order for stability). */
 function roll(key: string, a: Tally): Aggregate {
-  const order = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
   const chips = WITNESS_CHIPS.map((c) => c.id)
     .filter((id) => (a.chipDevices.get(id)?.size ?? 0) >= CORROBORATION_MIN)
     .map((id) => ({ id, count: a.chipDevices.get(id)!.size }))
-    .sort((x, y) => y.count - x.count || order.get(x.id)! - order.get(y.id)!)
+    .sort((x, y) => y.count - x.count || CHIP_ORDER.get(x.id)! - CHIP_ORDER.get(y.id)!)
   return { massKey: key, witnesses: a.devices.size, chips }
 }
 
@@ -211,10 +213,9 @@ export function rankDistinctive(
   if (corpus.length < 2) return target.slice(0, max)
   const prevalence = new Map<string, number>()
   for (const chips of corpus) for (const c of chips) prevalence.set(c.id, (prevalence.get(c.id) ?? 0) + 1)
-  const order = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
   const weight = (c: { id: string; count: number }) => c.count / (1 + (prevalence.get(c.id) ?? 0))
   return [...target]
-    .sort((a, b) => weight(b) - weight(a) || b.count - a.count || order.get(a.id)! - order.get(b.id)!)
+    .sort((a, b) => weight(b) - weight(a) || b.count - a.count || CHIP_ORDER.get(a.id)! - CHIP_ORDER.get(b.id)!)
     .slice(0, max)
 }
 
