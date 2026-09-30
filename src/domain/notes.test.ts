@@ -51,6 +51,31 @@ describe('AND-combination of inclusion segments (M1)', () => {
   })
 })
 
+describe('OR-combination of same-kind inclusion segments (H2)', () => {
+  it('"v červenci, v srpnu" means July OR August, not July AND August', () => {
+    const note = 'v červenci, v srpnu'
+    expect(runs(note, '2026-07-15')).toBe(true)  // July
+    expect(runs(note, '2026-08-15')).toBe(true)  // August
+    expect(runs(note, '2026-06-15')).toBe(false) // June
+    expect(noteUncertain(note)).toBe(false)
+  })
+  it('"1. sobota, 3. sobota" means 1st OR 3rd Saturday', () => {
+    const note = '1. sobota v měsíci, 3. sobota v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(true)  // 1st Saturday
+    expect(runs(note, '2026-07-18')).toBe(true)  // 3rd Saturday
+    expect(runs(note, '2026-07-11')).toBe(false) // 2nd Saturday
+    expect(runs(note, '2026-07-05')).toBe(true)  // Sunday — not governed
+    expect(noteUncertain(note)).toBe(false)
+  })
+  it('cross-kind is still AND: "v červenci, 1. sobota v měsíci" = July AND 1st Sat', () => {
+    const note = 'v červenci, 1. sobota v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(true)  // 1st Saturday of July
+    expect(runs(note, '2026-07-11')).toBe(false) // 2nd Saturday of July
+    expect(runs(note, '2026-09-05')).toBe(false) // 1st Saturday outside July
+    expect(noteUncertain(note)).toBe(false)
+  })
+})
+
 describe('summer holidays and school year', () => {
   it.each([
     'kromě letních prázdnin',

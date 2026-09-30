@@ -286,6 +286,18 @@ const cache = new Map<string, NoteRule>()
 // Segments that contribute exclusion predicates — ANDed so each exclusion stacks.
 const EXCL_SEG = /^(?:kromě|mimo|vyjma|s\s+výjimkou)\s+/
 
+// H2: classify an inclusion segment so same-kind segments can be OR'd.
+// "v červenci, v srpnu" → both 'month' → OR → July or August.
+// "ve školním roce, 1. sobota" → 'other' + 'weekday' → AND across kinds.
+function segKind(seg: string): string {
+  const s = seg.replace(/\.$/, '').trim()
+  const onlyMonths = /^(?:pouze\s+|jen\s+)?v(?:e)?\s+(.+)$/.exec(s)
+  if (onlyMonths && parseMonthSet(onlyMonths[1])) return 'month'
+  if (new RegExp(WEEKDAY_RE).test(s)) return 'weekday'
+  if (/^(?:(?:v\s+)?období\s+)?od\s+.+\s+do\s+/.test(s)) return 'range'
+  return 'other'
+}
+
 export function parseNote(note: string): NoteRule {
   const trimmed = note.trim()
   if (!trimmed) return ALWAYS
@@ -327,22 +339,34 @@ export function parseNote(note: string): NoteRule {
     rule = { runsOn: ALWAYS.runsOn, uncertain }
   } else {
     // Exclusion segs (kromě/mimo/vyjma) are ANDed — each exclusion must hold.
-    // Inclusion segs are also ANDed — each narrows the applicability (M1).
-    // "ve školním roce, 1. sobota v měsíci" means both conditions must be true,
-    // not either condition. Mixed: all inclusions AND all exclusions.
+    // Inclusion segs: same-kind segs are OR'd (alternatives), different kinds AND'd (H2).
+    // "v červenci, v srpnu" → OR (both month kind). "ve školním roce, 1. sobota" → AND.
     const excls: Pred[] = []
     const incls: Pred[] = []
+    const inclSegs: string[] = []
     parsed.forEach((p, i) => {
       if (typeof p !== 'function') return
       if (EXCL_SEG.test(segs[i])) excls.push(p)
-      else incls.push(p)
+      else { incls.push(p); inclSegs.push(segs[i]) }
     })
+    // Group inclusions by kind; OR within group, AND across groups.
+    const kindGroups = new Map<string, Pred[]>()
+    incls.forEach((p, i) => {
+      const k = segKind(inclSegs[i])
+      const arr = kindGroups.get(k) ?? []
+      arr.push(p)
+      kindGroups.set(k, arr)
+    })
+    const inclPred: Pred =
+      kindGroups.size === 0
+        ? () => true
+        : (y, m, d) => [...kindGroups.values()].every((group) => group.some((p) => p(y, m, d)))
     const runsOn: Pred =
       excls.length === 0
-        ? (y, m, d) => incls.every((p) => p(y, m, d))
+        ? inclPred
         : incls.length === 0
           ? (y, m, d) => excls.every((p) => p(y, m, d))
-          : (y, m, d) => incls.every((p) => p(y, m, d)) && excls.every((p) => p(y, m, d))
+          : (y, m, d) => inclPred(y, m, d) && excls.every((p) => p(y, m, d))
     rule = { runsOn, uncertain }
   }
   cache.set(trimmed, rule)
