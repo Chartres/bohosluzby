@@ -12,9 +12,9 @@ import {
 import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
-import { pragueToday } from './domain/occurrences'
+import { pragueIsoDate, pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
-import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
+import { fmtDistance, fmtTime, fmtUntil, dayLabel, fmtWeekdayShort } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
@@ -71,24 +71,6 @@ const fmtDataDate = (iso: string) => {
 // Leaflet + tiles code-split behind the "mapa" toggle — the list path pays nothing.
 const MapView = lazy(() => import('./MapView'))
 
-const SEASON_LABEL_CS: Record<LiturgicalDay['season'], string> = {
-  ordinary: 'liturgické mezidobí',
-  advent: 'doba adventní',
-  christmas: 'doba vánoční',
-  lent: 'doba postní',
-  easter: 'doba velikonoční',
-}
-const SEASON_LABEL_EN: Record<LiturgicalDay['season'], string> = {
-  ordinary: 'ordinary time',
-  advent: 'Advent',
-  christmas: 'Christmas season',
-  lent: 'Lent',
-  easter: 'Easter season',
-}
-// Read per call (not a module-level constant) — a test flipping
-// navigator.language must see the new language on the next render.
-const seasonLabel = (s: LiturgicalDay['season']): string =>
-  (lang() === 'cs' ? SEASON_LABEL_CS : SEASON_LABEL_EN)[s]
 const SEASON_VAR: Record<LiturgicalDay['color'], string> = {
   green: 'var(--color-season-green)',
   violet: 'var(--color-season-violet)',
@@ -170,15 +152,8 @@ function loadFilters(): Filters {
 
 // ---- Day picker: 'now' = soonest you can make; 0–6 = the day's full ordo ----
 
-export type { DayChoice }
-
-const WEEKDAY_SHORT_CS = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'] // Date.getUTCDay order
-const WEEKDAY_SHORT_EN = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-/** Read per call — see seasonLabel above for why this isn't a plain constant. */
-const weekdayShort = (dow: number): string => (lang() === 'cs' ? WEEKDAY_SHORT_CS : WEEKDAY_SHORT_EN)[dow]
-
 /** The liturgical day for a day-picker choice ('now' = today). */
-export function litForChoice(now: Date, day: DayChoice): LiturgicalDay {
+function litForChoice(now: Date, day: DayChoice): LiturgicalDay {
   const today = pragueToday(now)
   const t = new Date(Date.UTC(today.y, today.m - 1, today.d) + (day === 'now' ? 0 : day) * 86_400_000)
   return liturgicalDay(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate())
@@ -196,8 +171,9 @@ export function dayOptions(now: Date): { key: DayChoice; label: string; lit: Lit
     { key: 1, label: t('day_tomorrow'), lit: litForChoice(now, 1) },
   ]
   for (let off = 2; off <= 6; off++) {
-    const dow = new Date(base + off * 86_400_000).getUTCDay()
-    out.push({ key: off, label: dow === 0 ? t('day_sunday_full') : weekdayShort(dow), lit: litForChoice(now, off) })
+    const date = new Date(base + off * 86_400_000)
+    const label = date.getUTCDay() === 0 ? t('day_sunday_full') : fmtWeekdayShort(date)
+    out.push({ key: off, label, lit: litForChoice(now, off) })
   }
   // ON a Sunday the 0..6 window holds no future neděle — but Sunday evening IS
   // when next week gets planned. Offer next Sunday explicitly (audit finding).
@@ -210,11 +186,13 @@ export function dayOptions(now: Date): { key: DayChoice; label: string; lit: Lit
 // Minimal history routing (GH Pages serves 404.html = the app for deep links).
 type Route = { view: 'home' } | { view: 'church'; id: string } | { view: 'city'; slug: string }
 
-export function parseRoute(path: string): Route {
+const safeDecode = (s: string) => { try { return decodeURIComponent(s) } catch { return s } }
+
+function parseRoute(path: string): Route {
   const kostel = /^\/kostel\/([^/]+)\/?$/.exec(path)
-  if (kostel) return { view: 'church', id: decodeURIComponent(kostel[1]) }
+  if (kostel) return { view: 'church', id: safeDecode(kostel[1]) }
   const mesto = /^\/mesto\/([^/]+)\/?$/.exec(path)
-  if (mesto) return { view: 'city', slug: decodeURIComponent(mesto[1]) }
+  if (mesto) return { view: 'city', slug: safeDecode(mesto[1]) }
   return { view: 'home' }
 }
 
@@ -262,11 +240,11 @@ export function dayFromParam(now: Date, param: string | null): DayChoice {
   const dow = DAY_SLUGS.indexOf(param ?? '')
   if (dow === -1) return 'now'
   const today = pragueToday(now)
-  const base = Date.UTC(today.y, today.m - 1, today.d)
-  for (let off = 0; off <= 6; off++) {
-    if (new Date(base + off * 86_400_000).getUTCDay() === dow) return off
-  }
-  return 'now' // unreachable — every weekday occurs within 7 days
+  const todayDow = new Date(Date.UTC(today.y, today.m - 1, today.d)).getUTCDay()
+  const off = (dow - todayDow + 7) % 7
+  // off=0 means today already is that weekday; dayToParam(0) → 'dnes', not a slug,
+  // so a slug for today's weekday can only mean "next week" (key=7, Sunday-only).
+  return off === 0 ? 7 : off
 }
 
 // Prototype flag (TestFlight builds only, never production): force-shows the
@@ -282,7 +260,6 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
     const svc = data.byId.get(c.id)?.regular[0]
     if (!svc) continue
     const weekday = Number(svc.days[0])
-    const { y, m, d } = pragueToday(new Date())
     return {
       churchId: c.id,
       massKey: slotKey(c.id, weekday, svc.time, riteOf(svc), svc.lang),
@@ -292,7 +269,7 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
       time: svc.time,
       rite: riteOf(svc),
       lang: svc.lang,
-      massDate: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      massDate: pragueIsoDate(new Date()),
     }
   }
   return null
@@ -301,6 +278,7 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
 export default function App() {
   const [index, setIndex] = useState<Church[] | null>(null)
   const [dataError, setDataError] = useState(false)
+  const [partialData, setPartialData] = useState(false)
   const [geoDenied, setGeoDenied] = useState(false)
   const [geoPrompting, setGeoPrompting] = useState(false) // browser permission dialog pending
   const [geoFail, setGeoFail] = useState<GeoFailure | null>(null) // why — picks the guidance
@@ -337,7 +315,9 @@ export default function App() {
   const params = new URLSearchParams(search)
   const feedbackParam = params.get('feedback')
   const den = params.get('den')
-  const day = useMemo(() => dayFromParam(new Date(), den), [den])
+  // clockTick declared here (before day) so day's memo can list it as a dep.
+  const [clockTick, setClockTick] = useState(0)
+  const day = useMemo(() => dayFromParam(new Date(), den), [den, clockTick])
   const cas = parseCas(params.get('cas'))
   const setParams = (entries: Record<string, string | null>) => {
     const p = new URLSearchParams(search)
@@ -448,7 +428,11 @@ export default function App() {
       getCurrentPosition({ deadlineMs: perm === 'prompt' ? 30_000 : 10_000 }).then((r) => {
         setLocating(false)
         setGeoPrompting(false)
-        if (r.coords) setOrigin({ lat: r.coords.lat, lng: r.coords.lng, source: 'geo' })
+        if (r.coords) {
+          const { lat, lng } = r.coords
+          // Don't overwrite a city the user already picked via URL while geolocation was pending.
+          setOrigin((cur) => cur?.source === 'city' ? cur : { lat, lng, source: 'geo' })
+        }
         else fallback(r.error ?? 'timeout')
       })
     })
@@ -502,6 +486,7 @@ export default function App() {
     if (!index || !origin) return
     let cancelled = false
     setData(null)
+    setPartialData(false)
     const nearby = index
       .map((c) => ({ c, d: haversineKm(origin.lat, origin.lng, c.lat, c.lng) }))
       .filter(({ d }) => d <= NEARBY_KM)
@@ -509,9 +494,14 @@ export default function App() {
       .slice(0, NEARBY_CAP)
       .map(({ c }) => c)
     const cells = [...new Set(nearby.map((c) => c.cell))]
+    let shardFailed = false
     Promise.all(
       cells.map((cell) =>
-        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch(() => ({})),
+        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch((err) => {
+          logError(err, { where: 'load-shard', cell })
+          shardFailed = true
+          return {}
+        }),
       ),
     )
       .then((shards) => {
@@ -519,6 +509,7 @@ export default function App() {
         const byId = new Map<string, ChurchServices>()
         for (const shard of shards) for (const [id, s] of decodeShard(shard)) byId.set(id, s)
         setData({ nearby, byId })
+        if (shardFailed) setPartialData(true) // show what loaded; a banner warns of missing data
       })
       .catch((err) => {
         logError(err, { where: 'load-shards' })
@@ -536,6 +527,15 @@ export default function App() {
   useEffect(() => {
     setListLimit(LIST_LIMIT) // a new context restarts the cap
   }, [origin, filters, cas, day])
+
+  // clockTick bumps when the page becomes visible again (resume / cross-midnight)
+  // so selectUpcoming re-runs with a fresh new Date(). Declared above (before the
+  // day memo) so it can be included in that memo's dep array.
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') setClockTick((n) => n + 1) }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
 
   // Witness aggregates for the nearby churches — loaded whenever a list is up so
   // the rows can carry the quiet witness mark, and so the "Ohlasy poutníků"
@@ -566,8 +566,8 @@ export default function App() {
     return all
       .filter((u) => churchHasTags(u.church.id, massKey(u.church.id, u.service, u.start), witnessTags))
       .slice(0, listLimit)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
-  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick/clockTick refresh reads without stable deps
+  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, clockTick])
 
   // Churches that carry corroborated (thresholded) church-wide witness tags —
   // the set the list rows mark with a quiet rubric sign. Read from the same
@@ -750,12 +750,17 @@ export default function App() {
             {t('data_error')}
           </p>
         )}
+        {partialData && (
+          <p className="mt-2 px-4 text-sm text-ink-faded" role="status">
+            {t('partial_data')}
+          </p>
+        )}
 
         {!dataError && route.view === 'church' && index && (
           <DetailRoute
             id={route.id}
             index={index}
-            onBack={() => navigate(`/${search}`)}
+            onBack={() => history.back()}
             onHelp={() => setIntroOpen(true)}
             onHeroChange={setDetailHero}
           />
@@ -844,7 +849,7 @@ export default function App() {
           </section>
         )}
 
-        {!dataError && !picking && !loading && origin && rows && rows.length === 0 && !anyFilter && index && (
+        {!dataError && !picking && !loading && origin && rows && rows.length === 0 && !anyFilter && day === 'now' && index && (
           <section className="mt-10">
             <h2 className="font-display text-xl font-semibold">{t('nothing_nearby_title')}</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
@@ -909,6 +914,7 @@ export default function App() {
                 onChange={updateFilters}
                 langs={langs}
                 onReset={resetAll}
+                clockTick={clockTick}
               />
               {/* not on a live fix (offline / last-known / picked city): search is the
                   main CTA — a visible input-shaped button, not a buried "změnit" link */}
@@ -949,6 +955,7 @@ export default function App() {
                       onOpen={openChurch}
                       onNavigate={setNavTarget}
                       fill={mapMode}
+                      reloadKey={reloadKey}
                     />
                   </Suspense>
                 </div>
@@ -970,7 +977,7 @@ export default function App() {
                   onNavigate={setNavTarget}
                 />
                 {/* the cap is honest: another page of the ordo instead of "evening ends at 18:00" */}
-                {day === 'now' && rows.length >= listLimit && (
+                {(day === 'now' || witnessTags.length > 0) && rows.length >= listLimit && (
                   <button
                     type="button"
                     className="rubric mt-4 -ml-1 min-h-11 px-1 py-3 underline decoration-hairline underline-offset-4 hover:text-ink"
@@ -1013,7 +1020,7 @@ export default function App() {
         <FeedbackCard />
         <p className="mt-1">
           <span className="font-semibold" style={{ color: 'var(--season)' }}>
-            {seasonLabel(season.season)}
+            {t(`season_${season.season}`)}
           </span>
           {' · '}
           {lang() === 'cs' ? 'Data: rejstřík' : 'Data: registry'}{' '}
@@ -1057,8 +1064,8 @@ export default function App() {
 
 // The day rubric of the ordo, as a picker: which page are you reading?
 // Active day is set in rubric red — day labels are rubrics in a missal.
-function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice) => void }) {
-  const options = useMemo(() => dayOptions(new Date()), [])
+function DayPicker({ day, onChange, clockTick = 0 }: { day: DayChoice; onChange: (d: DayChoice) => void; clockTick?: number }) {
+  const options = useMemo(() => dayOptions(new Date()), [clockTick])
   // a bookmarked ?den= must not hide its own chip off-screen
   const activeRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
@@ -1380,6 +1387,7 @@ function OrdoControls({
   onChange,
   langs,
   onReset,
+  clockTick = 0,
 }: {
   day: DayChoice
   onDay: (d: DayChoice) => void
@@ -1389,6 +1397,7 @@ function OrdoControls({
   onChange: (f: Filters) => void
   langs: string[]
   onReset: () => void
+  clockTick?: number
 }) {
   const [open, setOpen] = useState(false)
   const narrow = useNarrow()
@@ -1458,7 +1467,7 @@ function OrdoControls({
       }
     >
       <p className="rubric mt-2 text-ink-faded">{t('day_group').toLowerCase()}</p>
-      <DayPicker day={day} onChange={onDay} />
+      <DayPicker day={day} onChange={onDay} clockTick={clockTick} />
       <p className="rubric mt-2 text-ink-faded">{t('rubric_when')}</p>
       <div
         role="group"

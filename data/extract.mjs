@@ -115,13 +115,18 @@ async function details(ids) {
     for (;;) {
       const id = queue.shift()
       if (id === undefined) return
-      const text = await fetchPolite(`${BASE}detail?id=${id}`)
-      JSON.parse(text)
-      writeFileSync(`${CACHE}/detail/${id}.json`, text)
+      try {
+        const text = await fetchPolite(`${BASE}detail?id=${id}`)
+        JSON.parse(text)
+        writeFileSync(`${CACHE}/detail/${id}.json`, text)
+      } catch (err) {
+        // M6: log individual 4xx/parse failures without aborting the whole batch
+        process.stderr.write(`  detail ${id}: ${err.message}\n`)
+      }
       if (++done % 200 === 0) process.stderr.write(`  detail ${done}/${queue.length + done}\n`)
     }
   }
-  await Promise.all(Array.from({ length: 4 }, worker))
+  await Promise.allSettled(Array.from({ length: 4 }, worker))
   process.stderr.write(`details: ${ids.length} churches cached\n`)
 }
 
@@ -202,7 +207,9 @@ function transform() {
       p: inst.institution_parish_name ?? '',
       pa: inst.institution_parish_address ?? '',
       // parish-level contacts only; named persons are deliberately not published
-      c: (d.contacts ?? []).filter((c) => c.type && c.contact).map((c) => [c.type, c.contact]),
+      // normUrl fixes typo'd schemes (http:\\, http:/) for www contacts.
+      c: (d.contacts ?? []).filter((c) => c.type && c.contact).map((c) =>
+        [c.type, c.type === 'www' ? (normUrl(c.contact) || c.contact) : c.contact]),
       s: regular.map(svcRow),
     }
     // the detail page's Farnost section reads the shard contacts — surface the
@@ -218,7 +225,7 @@ function transform() {
   // and shows `generated` as the "aktuální k …" date. (src/lib/dataStore.ts)
   writeFileSync(
     `${OUT}/version.json`,
-    JSON.stringify({ generated: new Date().toISOString().slice(0, 10), churches: index.length }),
+    JSON.stringify({ generated: new Date().toISOString().slice(0, 10), timestamp: new Date().toISOString(), churches: index.length }),
   )
   let total = statSync(`${OUT}/churches.json`).size
   for (const [cell, data] of Object.entries(shards)) {

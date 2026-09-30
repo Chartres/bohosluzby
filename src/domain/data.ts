@@ -48,7 +48,7 @@ export interface ChurchServices {
 // ponytail: registry type is free text; confession comes as "svátost smíření"
 // (case varies). Trim + case-insensitive exact match keeps note-mentions of
 // confession — which live in a Mass row's note, not its type — untouched.
-export const isConfession = (type: string): boolean => /^svátost smíření$/i.test(type.trim())
+const isConfession = (type: string): boolean => /^svátost smíření$/i.test(type.trim())
 
 /** services/<cell>.json value shape (compact keys). */
 interface ShardEntry {

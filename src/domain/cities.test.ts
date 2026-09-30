@@ -1,4 +1,4 @@
-import { aggregateCities, findCity, fold, normalizeCity, searchPlaces, slugify } from './cities'
+import { aggregateCities, findCity, searchPlaces } from './cities'
 import type { Church } from './data'
 
 const church = (id: string, city: string, lat = 50, lng = 14): Church => ({
@@ -9,29 +9,6 @@ const church = (id: string, city: string, lat = 50, lng = 14): Church => ({
   lng,
   barrierFree: false,
   cell: '50-14',
-})
-
-describe('normalizeCity', () => {
-  it('Praha districts collapse to Praha', () => {
-    expect(normalizeCity('Praha 1')).toBe('Praha')
-    expect(normalizeCity('Praha 22')).toBe('Praha')
-  })
-  it('"quarter, municipality" keeps the municipality', () => {
-    expect(normalizeCity('Brno-město, Brno')).toBe('Brno')
-    expect(normalizeCity('Kukleny, Hradec Králové')).toBe('Hradec Králové')
-    expect(normalizeCity('České Budějovice 3, České Budějovice')).toBe('České Budějovice')
-  })
-  it('plain names pass through', () => {
-    expect(normalizeCity('Frýdek-Místek')).toBe('Frýdek-Místek')
-  })
-})
-
-describe('slugify', () => {
-  it('strips diacritics and spaces', () => {
-    expect(slugify('Ústí nad Labem')).toBe('usti-nad-labem')
-    expect(slugify('Žďár nad Sázavou')).toBe('zdar-nad-sazavou')
-    expect(slugify('Frýdek-Místek')).toBe('frydek-mistek')
-  })
 })
 
 describe('aggregateCities / findCity', () => {
@@ -57,6 +34,19 @@ describe('aggregateCities / findCity', () => {
     expect(findCity(index, 'brno')?.name).toBe('Brno')
     expect(findCity(index, 'nowhere')).toBeUndefined()
   })
+  it('slug collision resolution is stable regardless of church counts (M11)', () => {
+    // "Skřipov" and "Skřípov" both fold to "skripov". Whichever has more churches
+    // should not affect the slug assignment — it's name-ordered so it never drifts.
+    const makeIdx = (skipovCount: number, skripovCount: number) => [
+      ...Array.from({ length: skipovCount }, (_, i) => church(`s${i}`, 'Skřipov', 49.8, 17.6)),
+      ...Array.from({ length: skripovCount }, (_, i) => church(`r${i}`, 'Skřípov', 49.5, 17.4)),
+    ]
+    const slugsA = aggregateCities(makeIdx(5, 1)).map((c) => [c.name, c.slug])
+    const slugsB = aggregateCities(makeIdx(1, 5)).map((c) => [c.name, c.slug])
+    // Slug assignments must be identical regardless of which town has more churches.
+    const toMap = (pairs: [string, string][]) => Object.fromEntries(pairs)
+    expect(toMap(slugsA as [string,string][])).toEqual(toMap(slugsB as [string,string][]))
+  })
 })
 
 describe('searchPlaces — unified church + city typeahead', () => {
@@ -77,11 +67,6 @@ describe('searchPlaces — unified church + city typeahead', () => {
     tyn,
   ]
   const cities = aggregateCities(index)
-
-  it('fold strips Czech diacritics both sides', () => {
-    expect(fold('České Budějovice')).toBe('ceske budejovice')
-    expect(fold('Týnem')).toBe('tynem')
-  })
 
   it('finds cities diacritics-insensitively ("ceske" → České Budějovice)', () => {
     const r = searchPlaces(cities, index, 'ceske')

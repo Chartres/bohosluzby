@@ -41,6 +41,41 @@ describe('month exclusions (kromě/mimo/vyjma)', () => {
   })
 })
 
+describe('AND-combination of inclusion segments (M1)', () => {
+  it('ve školním roce, 1. sobota v měsíci — both conditions must hold', () => {
+    const note = 've školním roce, 1. sobota v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(false) // 1st Saturday of July — not school year
+    expect(runs(note, '2026-09-05')).toBe(true)  // 1st Saturday of September — in school year
+    expect(runs(note, '2026-09-12')).toBe(false) // 2nd Saturday — not 1st Sat
+    expect(noteUncertain(note)).toBe(false)
+  })
+})
+
+describe('OR-combination of same-kind inclusion segments (H2)', () => {
+  it('"v červenci, v srpnu" means July OR August, not July AND August', () => {
+    const note = 'v červenci, v srpnu'
+    expect(runs(note, '2026-07-15')).toBe(true)  // July
+    expect(runs(note, '2026-08-15')).toBe(true)  // August
+    expect(runs(note, '2026-06-15')).toBe(false) // June
+    expect(noteUncertain(note)).toBe(false)
+  })
+  it('"1. sobota, 3. sobota" means 1st OR 3rd Saturday', () => {
+    const note = '1. sobota v měsíci, 3. sobota v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(true)  // 1st Saturday
+    expect(runs(note, '2026-07-18')).toBe(true)  // 3rd Saturday
+    expect(runs(note, '2026-07-11')).toBe(false) // 2nd Saturday
+    expect(runs(note, '2026-07-05')).toBe(true)  // Sunday — not governed
+    expect(noteUncertain(note)).toBe(false)
+  })
+  it('cross-kind is still AND: "v červenci, 1. sobota v měsíci" = July AND 1st Sat', () => {
+    const note = 'v červenci, 1. sobota v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(true)  // 1st Saturday of July
+    expect(runs(note, '2026-07-11')).toBe(false) // 2nd Saturday of July
+    expect(runs(note, '2026-09-05')).toBe(false) // 1st Saturday outside July
+    expect(noteUncertain(note)).toBe(false)
+  })
+})
+
 describe('summer holidays and school year', () => {
   it.each([
     'kromě letních prázdnin',
@@ -82,6 +117,17 @@ describe('month ranges (období od … do …)', () => {
   it('od července do konce srpna', () => {
     expect(runs('období od července do konce srpna', '2026-08-31')).toBe(true)
     expect(runs('období od července do konce srpna', '2026-09-01')).toBe(false)
+  })
+  it('od konce června do září: starts at end of June, not June 1 (M2)', () => {
+    expect(runs('od konce června do září', '2026-06-30')).toBe(true)  // last day of June
+    expect(runs('od konce června do září', '2026-06-05')).toBe(false) // before end of June
+    expect(runs('od konce června do září', '2026-07-15')).toBe(true)  // inside range
+    expect(runs('od konce června do září', '2026-10-01')).toBe(false) // after September
+  })
+  it('do konce února includes Feb 29 in leap years (M2)', () => {
+    expect(runs('od ledna do konce února', '2024-02-29')).toBe(true)  // leap year Feb 29
+    expect(runs('od ledna do konce února', '2024-02-28')).toBe(true)
+    expect(runs('od ledna do konce února', '2024-03-01')).toBe(false) // after range
   })
 })
 
@@ -130,6 +176,16 @@ describe('nth weekday of month', () => {
     expect(runs('kromě 1. soboty v měsíci', '2026-07-11')).toBe(true)
     expect(runs('kromě poslední neděle v měsíci', '2026-07-26')).toBe(false)
   })
+  it('comma-joined ordinals "1., 3. sobota v měsíci" — both treated as one multi-nth predicate (H1)', () => {
+    // "1., 3. sobota v měsíci" means 1st OR 3rd Saturday; the comma is an ordinal
+    // conjunction, not a segment separator.
+    const note = '1., 3. sobota v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(true)  // 1st Saturday
+    expect(runs(note, '2026-07-18')).toBe(true)  // 3rd Saturday
+    expect(runs(note, '2026-07-11')).toBe(false) // 2nd Saturday
+    expect(runs(note, '2026-07-05')).toBe(true)  // Sunday — note doesn't govern it
+    expect(noteUncertain(note)).toBe(false)
+  })
 })
 
 describe('week-of-month and parity', () => {
@@ -159,6 +215,14 @@ describe('advent', () => {
     expect(runs('kromě adventu a letních prázdnin', '2026-07-06')).toBe(false)
     expect(runs('kromě adventu a letních prázdnin', '2026-12-06')).toBe(false)
     expect(runs('kromě adventu a letních prázdnin', '2026-10-06')).toBe(true)
+  })
+  it('exclusion + schedule: exclusion is not cancelled by a schedule predicate (H1)', () => {
+    // "kromě července a srpna, 1. sobota v měsíci" — should exclude July even on 1st Saturdays
+    const note = 'kromě července a srpna, 1. sobota v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(false) // 1st Saturday of July — excluded
+    expect(runs(note, '2026-08-01')).toBe(false) // 1st Saturday of August — excluded
+    expect(runs(note, '2026-09-05')).toBe(true)  // 1st Saturday of September — runs
+    expect(runs(note, '2026-09-12')).toBe(false) // 2nd Saturday of September — not 1st Sat
   })
 })
 
@@ -195,6 +259,22 @@ describe('long-tail variants', () => {
   })
   it('svátost smíření is not a feast condition', () => {
     expect(noteUncertain('půlhodiny před mší svatou je možnost přijetí svátosti smíření.')).toBe(false)
+  })
+})
+
+describe('CONDITIONAL catches missing patterns (M3)', () => {
+  it('ordinal weekday without "v měsíci" is flagged uncertain', () => {
+    expect(noteUncertain('1. neděle')).toBe(true)
+    expect(noteUncertain('2. a 4. neděle')).toBe(true)
+    expect(runs('1. neděle', '2026-07-06')).toBe(true)   // kept, not silently dropped
+  })
+  it('sudou/lichou weekday is flagged uncertain', () => {
+    expect(noteUncertain('sudou neděli')).toBe(true)
+    expect(noteUncertain('lichou sobotu')).toBe(true)
+  })
+  it('seasonal patterns not in parser are flagged uncertain', () => {
+    expect(noteUncertain('v zimě')).toBe(true)
+    expect(noteUncertain('od Velikonoc do Dušiček')).toBe(true)
   })
 })
 

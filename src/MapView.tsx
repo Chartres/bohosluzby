@@ -16,8 +16,8 @@ import { gridCluster } from './domain/cluster'
 import { NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
-import { massKey, type Aggregate } from './domain/feedback'
-import { aggregateFor, churchHasTags, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
+import { massKey } from './domain/feedback'
+import { aggregateFor, churchHasTags, divergentChips, hasAggregate, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { witnessPillsHtml } from './WitnessPills'
 import { WITNESS_ENABLED } from './lib/flags'
 import { t, churchCount, confirmedByPilgrims } from './i18n'
@@ -26,16 +26,6 @@ const CELL_PX = 64 // cluster grid; ~a finger-width of map
 
 /** "8:30", not "08:30" — chips are read at a glance, the zero is noise. */
 const chipTime = (d: Date) => fmtTime(d).replace(/^0/, '')
-
-/** Both directness tiers for the Mass a marker/popover shows: the specific slot
- * aggregate and the church-wide one (from the in-memory cache; empty until
- * loadAggregates fills it). */
-const witnessTiers = (church: Church, u: Upcoming): { slot?: Aggregate; church: Aggregate } => {
-  const { slots, church: churchAgg } = aggregateFor(church.id)
-  return { slot: slots.get(massKey(church.id, u.service, u.start)), church: churchAgg }
-}
-const hasWitness = (t: { slot?: Aggregate; church: Aggregate }): boolean =>
-  (t.slot?.chips.length ?? 0) > 0 || t.church.chips.length > 0
 
 /** A bare time on a pin reads as TODAY — on "hned" a church's next mass can be
  * days out, so a not-today chip carries its weekday ("út 15:00") and greys. */
@@ -73,6 +63,7 @@ export default function MapView({
   onOpen,
   onNavigate,
   fill = false,
+  reloadKey = 0,
 }: {
   origin: { lat: number; lng: number }
   churches: Church[] // the whole index — matching is the selector's job
@@ -83,6 +74,8 @@ export default function MapView({
   onNavigate: (t: { name: string; lat: number; lng: number }) => void
   /** Map mode: fill the parent column instead of the in-flow plate height. */
   fill?: boolean
+  /** Bumped after an OTA refresh — clears stale shards so new church data is shown. */
+  reloadKey?: number
 }) {
   const divRef = useRef<HTMLDivElement>(null)
   // The dog-ear fold cue on a chip reads as "something's here" but its meaning
@@ -103,13 +96,21 @@ export default function MapView({
   onNavigateRef.current = onNavigate
   const shardCache = useRef(new Map<string, Promise<Map<string, ChurchServices>>>())
 
+  // Clear stale shards when new church data arrives (OTA refresh bumps reloadKey).
+  useEffect(() => { shardCache.current.clear() }, [reloadKey])
+
   const loadShard = (cell: string) => {
     let p = shardCache.current.get(cell)
     if (!p) {
       // via dataStore, not raw fetch — the map must see an OTA-refreshed registry too
       p = loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`)
-        .catch(() => ({}))
         .then(decodeShard)
+        .catch(() => {
+          // Don't cache failures — let the next pan retry rather than serving
+          // a permanently empty map for this cell.
+          shardCache.current.delete(cell)
+          return new Map<string, import('./domain/data').ChurchServices>()
+        })
       shardCache.current.set(cell, p)
     }
     return p
@@ -285,24 +286,36 @@ export default function MapView({
       // shards, so the popover line and the marker cue have data on first paint.
       const [shards] = await Promise.all([
         Promise.all(cells.map(loadShard)),
-        WITNESS_ENABLED ? loadAggregates(visible.map((c) => c.id)) : Promise.resolve(),
+        // ponytail: cap at 500 to avoid HTTP 414 at country zoom
+        WITNESS_ENABLED ? loadAggregates(visible.slice(0, 500).map((c) => c.id)) : Promise.resolve(),
       ])
       if (stale || seq !== renderSeq) return // a newer render superseded this one
       const byId = new Map<string, ChurchServices>()
       for (const shard of shards) for (const [id, s] of shard) byId.set(id, s)
       const now = new Date()
       // the SAME selector as the seznam — a chip on the map is a row in the list
+      // Skip when very many churches are visible: at country zoom everything clusters
+      // anyway. Cap raised to 500 so city-scale viewports (200–400 churches) still
+      // get chips and are not all faded. ponytail: upgrade to per-cluster matching
+      // if selectUpcoming becomes the bottleneck at this scale.
       const matched = new Map<string, Upcoming>()
-      for (const u of selectUpcoming(now, origin, visible, byId, filters, cas, day, { limit: Infinity })) {
-        if (!matched.has(u.church.id)) matched.set(u.church.id, u) // ordo: keep the day's earliest
+      if (visible.length <= 500) {
+        for (const u of selectUpcoming(now, origin, visible, byId, filters, cas, day, { limit: Infinity })) {
+          if (!matched.has(u.church.id)) matched.set(u.church.id, u) // ordo: keep the day's earliest
+        }
       }
       // Witness filter (Ohlasy poutníků): when tags are selected, the map shows
       // only churches carrying ALL of them at slot- or church-tier. Aggregates
       // are loaded for the visible set above, so we cluster over that filtered
       // subset (the pan-invariant whole-index clustering resumes when off).
+      // M8: cluster ONLY over churches whose aggregates have been loaded so
+      // cluster membership is pan-invariant.  Unloaded churches are rendered
+      // separately at reduced opacity so the user sees "not yet assessed" rather
+      // than "no witnesses" — the distinction is honest and survives panning.
       const wt = WITNESS_ENABLED ? (filters.witnessTags ?? []) : []
+      const unknownChurches = wt.length ? churches.filter((c) => !hasAggregate(c.id)) : []
       const clusterChurches = wt.length
-        ? visible.filter((c) => churchHasTags(c.id, null, wt))
+        ? churches.filter((c) => hasAggregate(c.id) && churchHasTags(c.id, null, wt))
         : churches
       // Cluster over ALL churches, not just the viewport subset. Bucket
       // membership must not depend on the pan: a grid cell straddling the
@@ -339,7 +352,8 @@ export default function MapView({
               ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
               : chipTime(next.start)
             : ''
-          const witnessed = WITNESS_ENABLED && Boolean(next) && hasWitness(witnessTiers(church, next!))
+          // the church tier folds every slot, so any witnessed slot shows here too
+          const witnessed = WITNESS_ENABLED && Boolean(next) && aggregateFor(church.id).church.chips.length > 0
           if (witnessed) anyWitness = true
           const marker = L.marker([church.lat, church.lng], {
             icon: next ? chipIcon(label, otherDay, witnessed) : fadedIcon(),
@@ -359,18 +373,38 @@ export default function MapView({
             title: churchCount(cl.items.length),
             keyboard: false,
           })
-            .on('click', () => map.setView(latlng, Math.min(zoom + 2, 17)))
+            .on('click', () => map.setView(latlng, Math.max(Math.min(zoom + 2, 18), zoom)))
             .addTo(layer)
         }
+      }
+      // M8: render not-yet-loaded churches at half opacity so they read as
+      // "unknown / not yet assessed" rather than "confirmed: no witnesses".
+      for (const c of unknownChurches) {
+        if (!bounds.contains([c.lat, c.lng])) continue
+        L.marker([c.lat, c.lng], {
+          icon: fadedIcon(),
+          title: c.name,
+          keyboard: false,
+          opacity: 0.4,
+        })
+          .on('click', () => void openPopover(c))
+          .addTo(layer)
       }
       setWitnessShown(anyWitness) // React bails out if unchanged — deps exclude it, so no re-subscribe
     }
 
-    map.on('moveend', render) // zoom changes end in moveend too
+    // Debounce moveend so rapid panning doesn't fire a Supabase query every event.
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+    const onMoveEnd = () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => void render(), 150)
+    }
+    map.on('moveend', onMoveEnd) // zoom changes end in moveend too
     void render()
     return () => {
       stale = true
-      map.off('moveend', render)
+      if (debounceTimer) clearTimeout(debounceTimer)
+      map.off('moveend', onMoveEnd)
     }
     // onOpen/onNavigate deliberately excluded — read via refs so an unstable
     // callback identity can't re-run this effect off the moveend cycle.

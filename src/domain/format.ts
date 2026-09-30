@@ -3,7 +3,8 @@
 // load, so a runtime language change (or a test flipping navigator.language)
 // takes effect on the next format call.
 
-import { lang, locale } from '../i18n'
+import { lang, locale, t } from '../i18n'
+import { pragueIsoDate } from './occurrences'
 
 const TZ = 'Europe/Prague'
 
@@ -72,8 +73,6 @@ const timeFmt = new Intl.DateTimeFormat('cs-CZ', {
 })
 export const fmtTime = (d: Date): string => timeFmt.format(d)
 
-const dateKeyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }) // YYYY-MM-DD
-
 // One cache, keyed by "kind:locale" — Intl.DateTimeFormat construction isn't
 // free, and locale() can flip mid-session (a test, or a live language change).
 const fmtCache = new Map<string, Intl.DateTimeFormat>()
@@ -128,16 +127,15 @@ export function fmtDateCz(iso: string): string {
 }
 
 export function dayLabel(now: Date, start: Date): string {
-  const key = dateKeyFmt.format(start)
-  if (key === dateKeyFmt.format(now)) return lang() === 'cs' ? 'dnes' : 'today'
-  if (key === dateKeyFmt.format(new Date(now.getTime() + 86_400_000)))
-    return lang() === 'cs' ? 'zítra' : 'tomorrow'
+  const key = pragueIsoDate(start)
+  if (key === pragueIsoDate(now)) return t('day_today')
+  if (key === pragueIsoDate(new Date(now.getTime() + 86_400_000))) return t('day_tomorrow')
   return weekdayFmt().format(start).toLowerCase()
 }
 
 /** Same Prague calendar day? (The map chip's "is this actually today" check.) */
 export function samePragueDay(a: Date, b: Date): boolean {
-  return dateKeyFmt.format(a) === dateKeyFmt.format(b)
+  return pragueIsoDate(a) === pragueIsoDate(b)
 }
 
 const weekdayShortFmt = () => cachedFmt('weekdayShort', { timeZone: TZ, weekday: 'short' })

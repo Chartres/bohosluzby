@@ -14,7 +14,7 @@ const CITY_PAGES = 30
 const MAX_CHURCH_LINKS = 60
 
 const index = JSON.parse(readFileSync(`${root}public/data/churches.json`, 'utf8')).map(
-  ([id, name, city, lat, lng]) => ({ id, name, city, lat, lng }),
+  ([id, name, city, lat, lng, barrierFree, cell, www]) => ({ id, name, city, lat, lng, barrierFree: !!barrierFree, cell, www }),
 )
 const cities = aggregateCities(index).slice(0, CITY_PAGES)
 
@@ -72,6 +72,23 @@ for (const city of cities) {
   writeFileSync(`${root}dist/mesto/${city.slug}/index.html`, html)
 }
 
+// church pages — prerender each church linked from city pages so crawlers
+// don't hit 404 on /kostel/<id>/ (M7)
+const linkedChurches = new Map()
+for (const city of cities) {
+  for (const c of city.churches.slice(0, MAX_CHURCH_LINKS)) {
+    if (!linkedChurches.has(c.id)) linkedChurches.set(c.id, { ...c, cityName: city.name })
+  }
+}
+for (const [id, c] of linkedChurches) {
+  const url = `${ORIGIN}/kostel/${id}/`
+  const title = `${c.name} — bohoslužby, ${c.cityName}`
+  const description = `Pořad bohoslužeb: ${c.name}, ${c.cityName}. Aktuální časy mší z rejstříku ČBK.`
+  const html = withMeta(template, { title, description, url })
+  mkdirSync(`${root}dist/kostel/${id}`, { recursive: true })
+  writeFileSync(`${root}dist/kostel/${id}/index.html`, html)
+}
+
 // home page: inject the city index into its static seo block, then mirror it
 // to 404.html (GH Pages deep-link fallback for /kostel/<id>/)
 const home = template.replace(
@@ -86,11 +103,15 @@ writeFileSync(`${root}dist/index.html`, home)
 copyFileSync(`${root}dist/index.html`, `${root}dist/404.html`)
 
 const today = new Date().toISOString().slice(0, 10)
-const urls = ['/', ...cities.map((c) => `/mesto/${c.slug}/`)]
+const urls = [
+  '/',
+  ...cities.map((c) => `/mesto/${c.slug}/`),
+  ...[...linkedChurches.keys()].map((id) => `/kostel/${id}/`),
+]
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${ORIGIN}${u}</loc><lastmod>${today}</lastmod></url>`).join('\n')}
 </urlset>
 `
 writeFileSync(`${root}dist/sitemap.xml`, sitemap)
-console.log(`prerendered ${cities.length} city pages + sitemap.xml + 404.html`)
+console.log(`prerendered ${cities.length} city pages + ${linkedChurches.size} church pages + sitemap.xml + 404.html`)

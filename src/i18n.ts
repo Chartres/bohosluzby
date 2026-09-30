@@ -33,6 +33,7 @@ export const cs = {
   picking_title: 'Jiná obec nebo kostel',
   nothing_nearby_title: 'V okolí nic nenacházím',
   data_error: 'Data se nepodařilo načíst. Zkuste to prosím znovu.',
+  partial_data: 'Část dat se nepodařila načíst — zobrazeny jsou dostupné bohoslužby.',
 
   // ---- the hero list ----
   nearest_services: 'Nejbližší bohoslužby',
@@ -239,6 +240,7 @@ export const en: Record<Key, string> = {
   picking_title: 'A different town or church',
   nothing_nearby_title: 'Nothing nearby',
   data_error: "Couldn't load data. Please try again.",
+  partial_data: 'Some data failed to load — showing available services.',
 
   nearest_services: 'Nearest services',
   last_known_suffix: 'last known',
@@ -460,12 +462,6 @@ export function nothingNearbyBody(km: number, place: string | null): string {
 /** "✓ připomeneme 30 min předem" / "✓ we'll remind you 30 min before". */
 export function reminderScheduledMsg(min: number): string {
   return lang() === 'cs' ? `✓ připomeneme ${min} min předem` : `✓ we'll remind you ${min} min before`
-}
-
-/** " · ověřeno 2016" / " · verified 2016" — the list row's stale-data marker. */
-export function verifiedYear(iso: string): string {
-  const y = iso.slice(0, 4)
-  return lang() === 'cs' ? `ověřeno ${y}` : `verified ${y}`
 }
 
 /** Season-window advisory: one banner over the list (and in the route sheet)

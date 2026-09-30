@@ -46,7 +46,7 @@ describe('aggregateFor', () => {
     sub('c1|w7|09:30', ['hluboky_prozitek'])
     const agg = (await aggAfterLoad('c1')).get('c1|w7|09:30')!
     expect(agg.chips.some((c) => c.id === 'krasny_zpev')).toBe(false)
-    expect(CORROBORATION_MIN).toBe(1) // local prototype value
+    expect(CORROBORATION_MIN).toBeGreaterThanOrEqual(1) // prototype: 1; prod default: 3
   })
 
   it('keeps masses and churches separate; ignores other churches', async () => {

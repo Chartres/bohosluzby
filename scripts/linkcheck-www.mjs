@@ -189,12 +189,14 @@ async function selftest() {
   let m = 0
   mock(async () => {
     m++
-    // flip-flops between two different hard-failure codes across rounds —
-    // the real-world case that motivated 3 rounds over 2 (still all hard,
-    // still drops, but proves mixed failure kinds are handled)
-    return m % 2 ? { ok: false, status: 401 } : { ok: false, status: 456 }
+    // flip-flops between 401 (KEEP_STATUS — alive but blocking bots) and 456
+    // across rounds; this is the real-world case that motivated 3 rounds.
+    // checkOnce tries HEAD then GET within a round, so group calls in pairs:
+    // rounds 1,3 → 401 (not a hard fail); round 2 → 456 (hard fail).
+    // [false, true, false].every(isHardFail) === false → keep the link.
+    return Math.ceil(m / 2) % 2 !== 0 ? { ok: false, status: 401 } : { ok: false, status: 456 }
   })
-  assert.equal((await checkUrl('https://flip.example')).drop, true, 'alternating hard failures still drop after 3/3')
+  assert.equal((await checkUrl('https://flip.example')).drop, false, '401/456 flip-flop: 401 is KEEP_STATUS so not all rounds hard-fail → keep')
 
   mock(async () => {
     throw Object.assign(new Error('timeout'), { name: 'TimeoutError' })

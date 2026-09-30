@@ -8,10 +8,16 @@ import { supabase } from './supabase'
 import { resolveIds } from '../platform/flywheel-client'
 
 // A tag appears on the detail page only after this many independent witnesses.
-// Prod value is 3 (a single device publishes nothing). Local prototype uses 1
-// so the owner sees their own submissions while toying.
-// TODO(prod): set CORROBORATION_MIN = 3
-export const CORROBORATION_MIN = 1
+// Prototype/preview builds (VITE_WITNESS_PREVIEW=1) use 1 so the owner sees
+// their own submission while toying; all other builds require 3.
+// VITE_CORROBORATION_ONE=1 is a separate test/dev override that keeps min=1
+// without enabling the full WITNESS_ENABLED flag (set in vite.config test.env).
+// ponytail: single-expression guard; upgrade to env-config if more tiers needed
+export const CORROBORATION_MIN =
+  import.meta.env.VITE_WITNESS_PREVIEW === '1' ||
+  import.meta.env.VITE_CORROBORATION_ONE === '1'
+    ? 1
+    : 3
 
 const STORE_KEY = 'bohosluzby:massFeedback'
 const SUGGEST_KEY = 'bohosluzby:tagSuggestions'
@@ -56,25 +62,37 @@ export interface ChurchAggregate {
 // In-memory rollup cache, filled by loadAggregates(), read synchronously by
 // aggregateFor(). Empty until a load resolves for that church.
 const cache = new Map<string, ChurchAggregate>()
+// ponytail: generation counter — discard any loadAggregates response that
+// started before the most-recently-started call (prevents a slow pre-submit
+// fetch from overwriting a fast post-submit refresh).
+let loadGen = 0
 
 interface Tally {
   devices: Set<string>
-  counts: Map<string, number>
+  /** chip id → set of deviceIds that submitted it; deduplicated so one device
+   * can't single-handedly reach CORROBORATION_MIN by submitting repeatedly. */
+  chipDevices: Map<string, Set<string>>
 }
-const emptyTally = (): Tally => ({ devices: new Set<string>(), counts: new Map<string, number>() })
+const emptyTally = (): Tally => ({ devices: new Set<string>(), chipDevices: new Map() })
 const bump = (a: Tally, r: Row) => {
   a.devices.add(r.deviceId)
-  for (const id of r.chips) a.counts.set(id, (a.counts.get(id) ?? 0) + 1)
+  for (const id of r.chips) {
+    const devSet = a.chipDevices.get(id) ?? new Set<string>()
+    devSet.add(r.deviceId)
+    a.chipDevices.set(id, devSet)
+  }
 }
+
+/** Locked display order of the chips — the tie-breaker when counts match. */
+const CHIP_ORDER = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
 
 /** A Tally → Aggregate: chips over the corroboration floor, ordered by frequency
  * (most-mentioned first; ties keep the locked display order for stability). */
 function roll(key: string, a: Tally): Aggregate {
-  const order = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
   const chips = WITNESS_CHIPS.map((c) => c.id)
-    .filter((id) => (a.counts.get(id) ?? 0) >= CORROBORATION_MIN)
-    .map((id) => ({ id, count: a.counts.get(id)! }))
-    .sort((x, y) => y.count - x.count || order.get(x.id)! - order.get(y.id)!)
+    .filter((id) => (a.chipDevices.get(id)?.size ?? 0) >= CORROBORATION_MIN)
+    .map((id) => ({ id, count: a.chipDevices.get(id)!.size }))
+    .sort((x, y) => y.count - x.count || CHIP_ORDER.get(x.id)! - CHIP_ORDER.get(y.id)!)
   return { massKey: key, witnesses: a.devices.size, chips }
 }
 
@@ -108,6 +126,7 @@ function aggregate(rows: Row[]): Map<string, ChurchAggregate> {
 export async function loadAggregates(churchIds: string[]): Promise<void> {
   const ids = [...new Set(churchIds)].filter(Boolean)
   if (ids.length === 0) return
+  const gen = ++loadGen // capture before any await
   let rows: Row[]
   if (supabase) {
     const { data, error } = await supabase
@@ -115,7 +134,11 @@ export async function loadAggregates(churchIds: string[]): Promise<void> {
       .select('church_id,mass_key,device_id,chips')
       .eq('status', 'visible')
       .in('church_id', ids)
+      // ponytail: 1000 row cap; add cursor pagination when a single viewport
+      // regularly exceeds this (≈333 churches × 3 submissions each).
+      .limit(1000)
     if (error) return // leave the cache as-is; the UI just shows no line
+    if (gen !== loadGen) return // a newer call started while we awaited; discard
     rows = (data ?? []).map((d) => ({
       churchId: d.church_id as string,
       massKey: d.mass_key as string,
@@ -169,8 +192,12 @@ export function submitFeedback(submission: MassFeedback): void {
         },
       })
       .then(
-        () => void loadAggregates([row.churchId]), // refresh the church after a submit
-        () => {},
+        ({ error }) => {
+          // functions.invoke resolves (not rejects) even on function errors;
+          // only refresh when the submit actually landed in the DB.
+          if (!error) void loadAggregates([row.churchId])
+        },
+        () => {}, // network-level rejection: localStorage record remains as-is
       )
   } else {
     void loadAggregates([row.churchId])
@@ -181,6 +208,12 @@ export function submitFeedback(submission: MassFeedback): void {
  * (empty until loadAggregates([churchId]) resolves). */
 export function aggregateFor(churchId: string): ChurchAggregate {
   return cache.get(churchId) ?? emptyChurchAggregate(churchId)
+}
+
+/** True iff loadAggregates has settled for this church (even if it has no witnesses).
+ * M8: lets the map distinguish "no witnesses loaded yet" from "no witnesses exist". */
+export function hasAggregate(churchId: string): boolean {
+  return cache.has(churchId)
 }
 
 /** Rank a church's chips by corroboration × distinctiveness and keep the top
@@ -199,10 +232,9 @@ export function rankDistinctive(
   if (corpus.length < 2) return target.slice(0, max)
   const prevalence = new Map<string, number>()
   for (const chips of corpus) for (const c of chips) prevalence.set(c.id, (prevalence.get(c.id) ?? 0) + 1)
-  const order = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
   const weight = (c: { id: string; count: number }) => c.count / (1 + (prevalence.get(c.id) ?? 0))
   return [...target]
-    .sort((a, b) => weight(b) - weight(a) || b.count - a.count || order.get(a.id)! - order.get(b.id)!)
+    .sort((a, b) => weight(b) - weight(a) || b.count - a.count || CHIP_ORDER.get(a.id)! - CHIP_ORDER.get(b.id)!)
     .slice(0, max)
 }
 

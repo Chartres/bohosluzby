@@ -31,7 +31,7 @@ export const MAX_KM_OPTIONS = [2, 5, 10] as const
 // ponytail: registry types are free text; "mass" = anything named mše/liturgie.
 const isMass = (type: string) => /mše|liturgi/i.test(type)
 
-export const serviceMatches =
+const serviceMatches =
   (f: Filters, cas: string | null = null) =>
   (s: Service | ExtraService): boolean =>
     (!f.lang || s.lang === f.lang) &&

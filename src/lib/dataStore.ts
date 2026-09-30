@@ -17,6 +17,10 @@ const ASOF_KEY = 'data_asof'
 export interface DataVersion {
   /** ISO date the registry was scraped, e.g. "2026-07-03". Also the "as of" label. */
   generated: string
+  /** ISO datetime the snapshot was published, e.g. "2026-07-03T14:05:00.000Z".
+   * Used for freshness comparison so same-day re-publishes reach native clients.
+   * Absent in snapshots emitted before this field was added; falls back to `generated`. */
+  timestamp?: string
   /** church count — powers the shrunken-payload sanity gate. */
   churches: number
 }
@@ -27,6 +31,9 @@ export interface RefreshResult {
 }
 
 let cacheReady: boolean | null = null
+/** Held during the OTA write phase; loadData awaits it so no concurrent call
+ * sees a mixed (bundled index + cached shards) state (M4). */
+let refreshLock: Promise<void> | null = null
 
 async function readCache(path: string): Promise<string | null> {
   if (!isNative) return null
@@ -54,12 +61,34 @@ async function writeCache(path: string, text: string): Promise<void> {
 
 async function ready(): Promise<boolean> {
   if (!isNative) return false
-  if (cacheReady === null) cacheReady = (await readCache('version.json')) !== null
+  if (cacheReady === null) {
+    const cached = await readCache('version.json')
+    if (!cached) { cacheReady = false; return false }
+    // Bypass cache when the bundled snapshot is newer (new app release).
+    const bundled = await fetch('/data/version.json')
+      .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
+      .catch(() => null)
+    let cachedParsed: DataVersion | undefined
+    try { cachedParsed = JSON.parse(cached) as DataVersion } catch { /* corrupt */ }
+    if (!cachedParsed?.generated) { cacheReady = false; return false }
+    // Use timestamp when available so a same-day re-publish of the bundled snapshot
+    // (new app release with updated data) correctly supersedes the OTA cache.
+    const cachedKey = cachedParsed.timestamp ?? cachedParsed.generated
+    const bundledKey = bundled ? (bundled.timestamp ?? bundled.generated) : undefined
+    cacheReady = !bundledKey || bundledKey <= cachedKey
+    // When the bundled snapshot is newer, the stored asOf is stale — clear it
+    // so the footer shows the honest bundled date and refreshData re-checks the
+    // remote instead of skipping because remoteKey ≤ stale-asOf (M5).
+    if (!cacheReady) {
+      try { localStorage.removeItem(ASOF_KEY) } catch { /* private mode */ }
+    }
+  }
   return cacheReady
 }
 
 /** Load a /data/<path> JSON from the freshest available source: cache → bundled. */
 export async function loadData<T>(path: string): Promise<T> {
+  if (refreshLock) await refreshLock
   if (await ready()) {
     const cached = await readCache(path)
     if (cached) return JSON.parse(cached) as T
@@ -107,21 +136,25 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
   let asOf = activeAsOf()
   if (!asOf) {
     const bundled = await loadData<DataVersion>('version.json').catch(() => null)
-    asOf = bundled?.generated ?? null
+    // Store timestamp when available so subsequent remote comparisons detect same-day updates;
+    // fall back to generated (date string) for older snapshots without a timestamp field.
+    asOf = bundled ? (bundled.timestamp ?? bundled.generated) : null
     if (asOf) setAsOf(asOf)
   }
 
   if (!isNative) {
-    const v = await fetch('/data/version.json')
-      .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
-      .catch(() => null)
+    const v = await loadData<DataVersion>('version.json').catch(() => null)
     return { asOf: v?.generated ?? asOf, updated: false }
   }
 
   const remote = await fetchText(`${REMOTE}/data/version.json`)
     .then((t) => JSON.parse(t) as DataVersion)
     .catch(() => null)
-  if (!remote?.generated || (asOf && remote.generated <= asOf)) return { asOf, updated: false }
+  if (!remote?.generated) return { asOf, updated: false }
+  // Use timestamp for comparison when available so same-day re-publishes reach clients.
+  // Lexicographic order works for both date-only strings and ISO timestamps.
+  const remoteKey = remote.timestamp ?? remote.generated
+  if (asOf && remoteKey <= asOf) return { asOf, updated: false }
 
   try {
     onDownloading?.() // a real payload download is starting — light the indicator
@@ -137,11 +170,30 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
     const shards = await Promise.all(
       cells.map(async (c) => [c, await fetchText(`${REMOTE}/data/services/${c}.json`)] as const),
     )
-    for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
-    await writeCache('churches.json', churchesText)
-    await writeCache('version.json', JSON.stringify(remote)) // marker, written last
-    cacheReady = true
-    setAsOf(remote.generated)
+    // Hold refreshLock for the entire write phase so concurrent loadData calls
+    // wait instead of reading a mixed (bundled index + partially-written shards)
+    // state (M4).
+    let resolveRefreshLock!: () => void
+    refreshLock = new Promise<void>((r) => { resolveRefreshLock = r })
+    try {
+      // Delete the version marker before ANY shard write so a partial failure
+      // leaves no valid sentinel — ready() returns false and loadData falls back
+      // to bundled. Without this, a crash between shard writes but before
+      // version.json would leave a stale version.json pointing at a mixed cache.
+      try {
+        await Filesystem.deleteFile({ path: `${CACHE}/version.json`, directory: Directory.Data })
+      } catch { /* absent on first install */ }
+      cacheReady = null
+      for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
+      await writeCache('churches.json', churchesText)
+      await writeCache('version.json', JSON.stringify(remote)) // marker, written last
+      cacheReady = true // only set after ALL writes succeed
+      // Store timestamp as asOf when available so subsequent comparisons detect same-day updates.
+      setAsOf(remote.timestamp ?? remote.generated)
+    } finally {
+      refreshLock = null
+      resolveRefreshLock()
+    }
     return { asOf: remote.generated, updated: true }
   } catch {
     return { asOf, updated: false } // keep the old snapshot on any failure

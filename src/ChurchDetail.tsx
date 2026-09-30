@@ -9,8 +9,8 @@ import {
   type ExtraService,
   type Service,
 } from './domain/data'
-import { nextOccurrences, pragueToday, recentOccurrence } from './domain/occurrences'
-import { noteUncertain, parseNote } from './domain/notes'
+import { nextOccurrences, pragueIsoDate, recentOccurrence } from './domain/occurrences'
+import { noteRunsOn, noteUncertain } from './domain/notes'
 import { parseConfessionFromNote } from './domain/confession'
 import { fmtDateCz, isStale, withReferral } from './domain/format'
 import { logError, track } from './analytics'
@@ -102,16 +102,13 @@ const linkCls = 'underline decoration-hairline underline-offset-2 hover:text-ink
 const heroLinkCls = 'underline decoration-paper/40 underline-offset-2 hover:decoration-paper'
 
 function contactHref(type: string, value: string): string | null {
-  if (type === 'www') return value
+  if (type === 'www') return value.startsWith('www.') ? `https://${value}` : value
   if (type === 'email') return `mailto:${value}`
   if (type === 'phone') return `tel:+420${value.replace(/\s/g, '')}`
   return null
 }
 
-const isoToday = (): string => {
-  const { y, m, d } = pragueToday(new Date())
-  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-}
+const isoToday = (): string => pragueIsoDate(new Date())
 
 /** Per-service actions: add to calendar (native share sheet / web download) and,
  * on native only, schedule a local reminder before the next occurrence. */
@@ -306,6 +303,8 @@ export function ChurchDetail({
   const [failed, setFailed] = useState(false)
   const [navOpen, setNavOpen] = useState(false)
   const [photo, setPhoto] = useState<ChurchPhoto | null>(null)
+  // Suppress hero when credit is missing — CC licences require attribution.
+  const heroPhoto = photo?.credit ? photo : null
   const [dioc, setDioc] = useState<DiocesanConfession | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
@@ -326,8 +325,7 @@ export function ChurchDetail({
     let cancelled = false
     setSvc(null)
     setFailed(false)
-    fetch(`/data/services/${church.cell}.json`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`shard ${r.status}`))))
+    loadData<Parameters<typeof decodeShard>[0]>(`services/${church.cell}.json`)
       .then((shard) => {
         if (cancelled) return
         const s = decodeShard(shard).get(church.id)
@@ -364,9 +362,9 @@ export function ChurchDetail({
   // masthead so the image bleeds full to the top and the nav overlays the hero.
   // Reset to false on unmount / when the photo goes away.
   useEffect(() => {
-    onHeroChange?.(Boolean(photo))
+    onHeroChange?.(Boolean(heroPhoto))
     return () => onHeroChange?.(false)
-  }, [photo, onHeroChange])
+  }, [heroPhoto, onHeroChange])
 
   // Diocesan confession windows (data/confession.json): same OTA/offline gateway,
   // keyed by church id. Absent map, offline, or no entry → render nothing (the
@@ -419,7 +417,7 @@ export function ChurchDetail({
     if (!WITNESS_ENABLED || !svc) return
     const now = new Date()
     for (const s of svc.regular) {
-      const start = recentOccurrence({ days: s.days, time: s.time }, now, RECENT_VIEW_MIN)
+      const start = recentOccurrence(s, now, RECENT_VIEW_MIN)
       if (!start) continue
       recordExpectedAttendance({
         churchId: church.id,
@@ -483,7 +481,7 @@ export function ChurchDetail({
 
   return (
     <article
-      className={photo ? '' : 'mt-5'}
+      className={heroPhoto ? '' : 'mt-5'}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -492,7 +490,7 @@ export function ChurchDetail({
           under the app masthead (paper-backed so scrolled text never shows
           through; top offset mirrors the header's height). With a photo the back
           control instead overlays the hero, so this band is suppressed. */}
-      {!photo && (
+      {!heroPhoto && (
         <p
           className="sticky z-20 -mx-5 bg-paper px-5 py-1 sm:-mx-8 sm:px-8"
           style={{ top: 'calc(max(0.75rem, env(safe-area-inset-top)) + 2.25rem)' }}
@@ -511,13 +509,13 @@ export function ChurchDetail({
           back control and help — overlays the photo on a TOP scrim, and the
           church name + meta row sit over a BOTTOM scrim. object-top keeps the
           tower (church photos are tall). No photo → the plain paper header. */}
-      {photo ? (
+      {heroPhoto ? (
         // -mt-5 pulls the hero to the very top of <main> (the shell masthead is
         // gone in this case); z-0 keeps it an explicit stacking level so WebKit
         // can't paint the tall image over overlaid chrome on scroll.
         <figure className="relative z-0 -mx-5 -mt-5 overflow-hidden sm:-mx-8">
           <img
-            src={photo.url}
+            src={heroPhoto.url}
             alt={church.name}
             loading="lazy"
             decoding="async"
@@ -557,7 +555,7 @@ export function ChurchDetail({
                 ("ŠJů ( cs:ŠJů )" → "ŠJů"); licence + Wikimedia Commons kept. */}
             <p className="mt-1.5 text-right text-[0.65rem] text-paper/70">
               {t('photo_credit_prefix')}{' '}
-              {[photo.credit.split(' (')[0].trim(), photo.license, 'Wikimedia Commons']
+              {[heroPhoto.credit.split(' (')[0].trim(), heroPhoto.license, 'Wikimedia Commons']
                 .filter(Boolean)
                 .join(' · ')}
             </p>
@@ -786,16 +784,9 @@ function ServiceRow({
   // Uncertain notes never mute either — they already print loud instead.
   const pausedNow = (() => {
     if (!s.note) return false
-    const rule = parseNote(s.note)
-    if (rule.uncertain) return false
-    const upcoming = nextOccurrences({ days: s.days, time: s.time }, new Date(), 35)
-    return (
-      upcoming.length > 0 &&
-      upcoming.every((start) => {
-        const w = pragueToday(start)
-        return !rule.runsOn(w.y, w.m, w.d)
-      })
-    )
+    if (noteUncertain(s.note)) return false
+    const upcoming = nextOccurrences(s, new Date(), 35)
+    return upcoming.length > 0 && upcoming.every((start) => !noteRunsOn(s.note, start))
   })()
   return (
     <div

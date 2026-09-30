@@ -2,7 +2,7 @@
 // an RRULE; times are Prague wall clock via TZID + an explicit VTIMEZONE so
 // every client agrees across DST.
 import type { Church, ExtraService, Service } from './data'
-import { nextOccurrences, pragueToday } from './occurrences'
+import { nextOccurrences, pragueIsoDate } from './occurrences'
 
 const BYDAY: Record<string, string> = { 1: 'MO', 2: 'TU', 3: 'WE', 4: 'TH', 5: 'FR', 6: 'SA', 7: 'SU' }
 
@@ -36,14 +36,11 @@ const pad = (n: number) => String(n).padStart(2, '0')
 /** VEVENT text for one service of a church, or null when the service has no
  * upcoming occurrence (past one-off, unparsable time). */
 export function buildICS(church: Church, service: Service | ExtraService, now: Date): string | null {
-  const spec =
-    'days' in service ? { days: service.days, time: service.time } : { date: service.date, time: service.time }
-  const first = nextOccurrences(spec, now, 8)[0]
+  const first = nextOccurrences(service, now, 8)[0]
   if (!first) return null
 
-  const w = pragueToday(first)
-  const [hh, mm] = service.time.split(':').map(Number)
-  const dtstart = `${w.y}${pad(w.m)}${pad(w.d)}T${pad(hh)}${pad(mm)}00`
+  const [hh, mm] = service.time.split(/\s/)[0].split(':').map(Number)
+  const dtstart = `${pragueIsoDate(first).replace(/-/g, '')}T${pad(hh)}${pad(mm)}00`
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`
   const url = `https://bohosluzby.dravec.org/kostel/${church.id}/`
