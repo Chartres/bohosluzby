@@ -294,8 +294,16 @@ export function parseNote(note: string): NoteRule {
 
   // split sentences (". " before an uppercase letter) and comma/semicolon segments;
   // the lookbehind spares ordinals ("1. sobotu") and abbreviations ("posl. týden")
+  //
+  // H1: protect "1., 3. sobota v měsíci" style ordinal lists from the generic
+  // comma split — replace internal commas with " a " so the phrase stays one segment.
+  const multiNthRe = new RegExp(
+    `(${ORDINAL_RE}(?:\\s*,\\s*${ORDINAL_RE})+)(\\s+(?:${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?)`,
+    'gi',
+  )
   const segs = trimmed
     .split(/(?<=\p{Ll}{3})\.\s+(?=\p{Lu})/u)
+    .map((s) => s.replace(multiNthRe, (_, ords: string, wd: string) => ords.replace(/\s*,\s*/g, ' a ') + wd))
     .flatMap((s) => s.split(/\s*[,;]\s*/))
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean)

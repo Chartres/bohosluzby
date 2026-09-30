@@ -151,6 +151,16 @@ describe('nth weekday of month', () => {
     expect(runs('kromě 1. soboty v měsíci', '2026-07-11')).toBe(true)
     expect(runs('kromě poslední neděle v měsíci', '2026-07-26')).toBe(false)
   })
+  it('comma-joined ordinals "1., 3. sobota v měsíci" — both treated as one multi-nth predicate (H1)', () => {
+    // "1., 3. sobota v měsíci" means 1st OR 3rd Saturday; the comma is an ordinal
+    // conjunction, not a segment separator.
+    const note = '1., 3. sobota v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(true)  // 1st Saturday
+    expect(runs(note, '2026-07-18')).toBe(true)  // 3rd Saturday
+    expect(runs(note, '2026-07-11')).toBe(false) // 2nd Saturday
+    expect(runs(note, '2026-07-05')).toBe(true)  // Sunday — note doesn't govern it
+    expect(noteUncertain(note)).toBe(false)
+  })
 })
 
 describe('week-of-month and parity', () => {
