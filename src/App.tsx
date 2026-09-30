@@ -335,7 +335,9 @@ export default function App() {
   const params = new URLSearchParams(search)
   const feedbackParam = params.get('feedback')
   const den = params.get('den')
-  const day = useMemo(() => dayFromParam(new Date(), den), [den])
+  // clockTick declared here (before day) so day's memo can list it as a dep.
+  const [clockTick, setClockTick] = useState(0)
+  const day = useMemo(() => dayFromParam(new Date(), den), [den, clockTick])
   const cas = parseCas(params.get('cas'))
   const setParams = (entries: Record<string, string | null>) => {
     const p = new URLSearchParams(search)
@@ -547,8 +549,8 @@ export default function App() {
   }, [origin, filters, cas, day])
 
   // clockTick bumps when the page becomes visible again (resume / cross-midnight)
-  // so selectUpcoming re-runs with a fresh new Date().
-  const [clockTick, setClockTick] = useState(0)
+  // so selectUpcoming re-runs with a fresh new Date(). Declared above (before the
+  // day memo) so it can be included in that memo's dep array.
   useEffect(() => {
     const onVisible = () => { if (document.visibilityState === 'visible') setClockTick((n) => n + 1) }
     document.addEventListener('visibilitychange', onVisible)
