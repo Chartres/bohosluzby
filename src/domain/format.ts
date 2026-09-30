@@ -3,7 +3,7 @@
 // load, so a runtime language change (or a test flipping navigator.language)
 // takes effect on the next format call.
 
-import { lang, locale } from '../i18n'
+import { lang, locale, t } from '../i18n'
 import { pragueIsoDate } from './occurrences'
 
 const TZ = 'Europe/Prague'
@@ -128,9 +128,8 @@ export function fmtDateCz(iso: string): string {
 
 export function dayLabel(now: Date, start: Date): string {
   const key = pragueIsoDate(start)
-  if (key === pragueIsoDate(now)) return lang() === 'cs' ? 'dnes' : 'today'
-  if (key === pragueIsoDate(new Date(now.getTime() + 86_400_000)))
-    return lang() === 'cs' ? 'zítra' : 'tomorrow'
+  if (key === pragueIsoDate(now)) return t('day_today')
+  if (key === pragueIsoDate(new Date(now.getTime() + 86_400_000))) return t('day_tomorrow')
   return weekdayFmt().format(start).toLowerCase()
 }
 
