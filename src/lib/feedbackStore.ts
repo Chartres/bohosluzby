@@ -62,6 +62,10 @@ export interface ChurchAggregate {
 // In-memory rollup cache, filled by loadAggregates(), read synchronously by
 // aggregateFor(). Empty until a load resolves for that church.
 const cache = new Map<string, ChurchAggregate>()
+// ponytail: generation counter — discard any loadAggregates response that
+// started before the most-recently-started call (prevents a slow pre-submit
+// fetch from overwriting a fast post-submit refresh).
+let loadGen = 0
 
 interface Tally {
   devices: Set<string>
@@ -122,6 +126,7 @@ function aggregate(rows: Row[]): Map<string, ChurchAggregate> {
 export async function loadAggregates(churchIds: string[]): Promise<void> {
   const ids = [...new Set(churchIds)].filter(Boolean)
   if (ids.length === 0) return
+  const gen = ++loadGen // capture before any await
   let rows: Row[]
   if (supabase) {
     const { data, error } = await supabase
@@ -133,6 +138,7 @@ export async function loadAggregates(churchIds: string[]): Promise<void> {
       // regularly exceeds this (≈333 churches × 3 submissions each).
       .limit(1000)
     if (error) return // leave the cache as-is; the UI just shows no line
+    if (gen !== loadGen) return // a newer call started while we awaited; discard
     rows = (data ?? []).map((d) => ({
       churchId: d.church_id as string,
       massKey: d.mass_key as string,
