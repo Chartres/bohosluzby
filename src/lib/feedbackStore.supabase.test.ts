@@ -17,10 +17,12 @@ vi.mock('./supabase', () => ({
     from: (table: string) => ({
       select: () => ({
         eq: (_col: string, status: string) => ({
-          in: (_c2: string, ids: string[]) => {
-            h.query = { table, status, ids }
-            return Promise.resolve({ data: h.rows, error: null })
-          },
+          in: (_c2: string, ids: string[]) => ({
+            limit: (_n: number) => {
+              h.query = { table, status, ids }
+              return Promise.resolve({ data: h.rows, error: null })
+            },
+          }),
         }),
       }),
     }),

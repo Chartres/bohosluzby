@@ -129,6 +129,9 @@ export async function loadAggregates(churchIds: string[]): Promise<void> {
       .select('church_id,mass_key,device_id,chips')
       .eq('status', 'visible')
       .in('church_id', ids)
+      // ponytail: 1000 row cap; add cursor pagination when a single viewport
+      // regularly exceeds this (≈333 churches × 3 submissions each).
+      .limit(1000)
     if (error) return // leave the cache as-is; the UI just shows no line
     rows = (data ?? []).map((d) => ({
       churchId: d.church_id as string,
