@@ -192,8 +192,12 @@ export function submitFeedback(submission: MassFeedback): void {
         },
       })
       .then(
-        () => void loadAggregates([row.churchId]), // refresh the church after a submit
-        () => {},
+        ({ error }) => {
+          // functions.invoke resolves (not rejects) even on function errors;
+          // only refresh when the submit actually landed in the DB.
+          if (!error) void loadAggregates([row.churchId])
+        },
+        () => {}, // network-level rejection: localStorage record remains as-is
       )
   } else {
     void loadAggregates([row.churchId])
