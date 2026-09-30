@@ -73,6 +73,7 @@ export default function MapView({
   onOpen,
   onNavigate,
   fill = false,
+  reloadKey = 0,
 }: {
   origin: { lat: number; lng: number }
   churches: Church[] // the whole index — matching is the selector's job
@@ -83,6 +84,8 @@ export default function MapView({
   onNavigate: (t: { name: string; lat: number; lng: number }) => void
   /** Map mode: fill the parent column instead of the in-flow plate height. */
   fill?: boolean
+  /** Bumped after an OTA refresh — clears stale shards so new church data is shown. */
+  reloadKey?: number
 }) {
   const divRef = useRef<HTMLDivElement>(null)
   // The dog-ear fold cue on a chip reads as "something's here" but its meaning
@@ -102,6 +105,9 @@ export default function MapView({
   const onNavigateRef = useRef(onNavigate)
   onNavigateRef.current = onNavigate
   const shardCache = useRef(new Map<string, Promise<Map<string, ChurchServices>>>())
+
+  // Clear stale shards when new church data arrives (OTA refresh bumps reloadKey).
+  useEffect(() => { shardCache.current.clear() }, [reloadKey])
 
   const loadShard = (cell: string) => {
     let p = shardCache.current.get(cell)

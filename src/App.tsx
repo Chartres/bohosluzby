@@ -972,6 +972,7 @@ export default function App() {
                       onOpen={openChurch}
                       onNavigate={setNavTarget}
                       fill={mapMode}
+                      reloadKey={reloadKey}
                     />
                   </Suspense>
                 </div>
