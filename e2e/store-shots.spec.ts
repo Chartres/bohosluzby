@@ -9,6 +9,7 @@
 // shots because only store-assets was regenerated (verify_listing caught it).
 import { test } from '@playwright/test'
 import { cpSync, mkdirSync, readdirSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { FIXED_NOW, PRAGUE, mockData } from './fixtures'
 
 const FASTLANE_CS = 'ios/App/fastlane/screenshots/cs'
@@ -38,6 +39,13 @@ for (const d of DEVICES) {
       // the first-run intro guide must not overlay the store shots (step 1 uses
       // real bundled data, so mockData's seed hasn't run yet)
       await page.addInitScript(() => localStorage.setItem('bohosluzby:introSeen', '1'))
+      // Sandboxes whose browser can't reach tile.openstreetmap.org (but curl can):
+      // PW_TILES_VIA_CURL=1 serves the map tiles through curl. Local-only escape hatch.
+      if (process.env.PW_TILES_VIA_CURL)
+        await page.route('https://tile.openstreetmap.org/**', async (route) => {
+          const body = execFileSync('curl', ['-sf', '-A', 'bohosluzby.dravec.org store screenshots', route.request().url()])
+          await route.fulfill({ status: 200, contentType: 'image/png', body })
+        })
       const dir = `store-assets/${d.store}/${d.name}`
       // 1 — MAP hero (the centerpiece — leads the listing). REAL bundled data
       // (no mock) at a plain-green Sunday 07:00 local (05:00 UTC): the whole

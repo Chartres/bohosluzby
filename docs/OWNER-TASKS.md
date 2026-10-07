@@ -32,7 +32,8 @@ free block limit refused them on 2026-10-07). Newest batch first.
 4. [ ] **Create the app + closed test** (12 Oct):
        - *Create app* (Kam na mši, Czech, free).
        - *Closed testing → Create release* with the `.aab`.
-       - *Store listing* from `docs/store/play-metadata.md`.
+       - *Store listing* from `docs/store/play-metadata.md`; phone screenshots are in
+         `store-assets/android/phone/` (1080×1920: map, list, detail).
        - *App content*: data safety, IARC, audience, no ads.
 5. [ ] **12 testers for 14 days** (from 13 Oct): family, friends, the parish list. They opt in
        via the closed-testing link and keep the app installed. Earliest production request is
