@@ -113,6 +113,43 @@ MAINTAIN".
 - *Against:* 3 months live at ~25 a week, and an official ČBK app now exists. ITERATE can
   become a habit, so the playbook caps it at two in a row.
 
+### Pavol's picks (2026-10-07, same day)
+His numbers refer to the **first-pass** list (shown to him in chat), not the revised table
+above. Mapped here:
+
+| First-pass # | Idea | Decision | Where it went |
+|---|---|---|---|
+| 1 | Use the app without location permission | yes | Shipped: one-tap city chips on the no-location screen, on top of the late-GPS fix |
+| 2 | Moje kostely + Saturday nudge | yes, **without the nudge** | Shipped: ☆ on the detail, "Moje kostely" above the list; nothing ever notifies |
+| 3 | Lock-screen widget | — (not picked) | parked |
+| 4 | Holy-day alerts | yes, **very subtle** | Shipped: one line on the eve/day of a weekday solemnity, "bohoslužby na zítra". Says "slavnost", not "zasvěcený svátek" (the CZ list of days of obligation is ČBK's call) |
+| 5 | Parish embed | yes; asked about infra load | candidate; infra math below |
+| 6 | ČBK data-quality partner | yes | Report shipped (`docs/registry-quality.md` + CSV); email drafted, Pavol sends |
+| 7 | Chips as private thanks to parishes | likes it; "will users engage with no loop back?" | candidate, with the loop design below |
+| 8 | Travel mode | yes | candidate |
+| 9 | Rating prompt after 3rd conversion | yes | candidate (native release) |
+| 10 | Siri / Assistant shortcut | yes | candidate (native release) |
+| 11 | Release Android | Pavol does it | `docs/OWNER-TASKS.md`, 6 dated steps |
+| 12 | Telemetry | yes, more detail **without identifying anyone more** | Shipped: page_view context (#36) + `list_ready` (time to a visible list, origin source); no new ids |
+
+**Parish embed — what it costs the infra.** The embed would be `embed.js` (~3 KB gzipped)
+plus one prerendered `embed/<id>.json` (~0.5 KB), both static and HTTP-cached.
+- Load: 100 parishes × 3,000 page views a month ≈ 300 k loads × 4 KB ≈ 1.2 GB/month, about
+  1 % of GitHub Pages' 100 GB soft limit. Cloudflare Pages (the Standard's host) has no
+  bandwidth cap.
+- What must not happen: logging every embed view to flywheel-core. At ~300 B a row that is
+  ~90 MB a month against the 500 MB free database. So views stay unlogged; only clicks
+  through count, as `page_view` with `utm_source=embed`.
+
+**Witness chips as private thanks — closing the loop for the giver.**
+- After tapping, they see: "Poděkování předáme farnosti v měsíčním dopise."
+- Their own "ohlasy" list (on device) shows "odesláno farnosti v říjnu" once the monthly
+  note goes out.
+- Optional: the parish's own reply, published only if the parish wants.
+
+The loop is "your thanks arrived", not a public count. Test: share of givers who give a
+second time within 4 weeks, compared with the public-chip pilot.
+
 ### Open questions for Pavol
 1. **Gate**: ITERATE to 2026-12-31 with #1 + #5 as the channel attempt, or MAINTAIN now?
 2. **ČBK**: send #10 (a concrete stale-entry report) as the second contact, or stay quiet and

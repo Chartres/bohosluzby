@@ -197,6 +197,44 @@ describe('Marie finds the nearest mass', () => {
     expect(window.location.pathname).toBe('/mesto/brno/')
   })
 
+  it('without permission: the big cities are one tap away (no typing)', async () => {
+    stubGeolocation('denied')
+    render(<App />)
+    const chips = await screen.findByRole('group', { name: 'Častá města' })
+    fireEvent.click(within(chips).getByRole('button', { name: 'Praha' }))
+    expect(await screen.findByText(/Salvátora/)).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/mesto/praha/')
+  })
+
+  it('Moje kostely: starred churches show their next service above the list, wherever they are', async () => {
+    localStorage.setItem('bohosluzby:favorites', JSON.stringify(['3'])) // Brno, 180 km away
+    stubGeolocation('granted') // Prague
+    render(<App />)
+    const mine = await screen.findByRole('region', { name: 'Moje kostely' })
+    expect(await within(mine).findByText('kostel sv. Tomáše')).toBeInTheDocument()
+    expect(within(mine).getByText('09:00')).toBeInTheDocument()
+    expect(within(mine).getByText(/neděle/)).toBeInTheDocument()
+    // the nearby list is unchanged underneath
+    expect(seznam().getByText(/Salvátora/)).toBeInTheDocument()
+  })
+
+  it('no stars, no section', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    expect(screen.queryByRole('region', { name: 'Moje kostely' })).toBeNull()
+  })
+
+  it('the eve of a solemnity: one quiet line that opens tomorrow', async () => {
+    vi.setSystemTime(new Date('2026-12-07T15:00:00Z')) // Mon; 8 Dec is a Tuesday
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    expect(screen.getByText(/Zítra je slavnost Neposkvrněného početí Panny Marie/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'bohoslužby na zítra' }))
+    expect(qp('den')).not.toBeNull()
+  })
+
   it('footer shows how fresh the registry data is', async () => {
     stubGeolocation('granted')
     render(<App />)

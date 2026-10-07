@@ -7,6 +7,19 @@ sprint (1–3) → shipped; parked holds `persona:?` asks and explicit no's, eac
 
 ## candidates
 
+- **Parish embed** (evolve #5, Pavol: yes): `embed.js` + prerendered `embed/<id>.json`, next 3
+  services, utm-tagged link. Views unlogged; clicks arrive as page_view `utm_source=embed`.
+  Infra math in docs/EVOLVE.md. First test: 3 parishes embed it.
+- **Christmas pages** (`/vanoce/`, per-city půlnoční lists): build by 15 Nov, filled by the
+  15 Dec refresh + one extra ~20 Dec. Kill: 21–27 Dec week < 100 visitors.
+- **Travel mode** (evolve #8, Pavol: yes): "jedu v neděli Praha → Brno" → masses at arrival.
+- **Rating prompt after the 3rd conversion** (#9, Pavol: yes): StoreKit / Play in-app review;
+  native release needed.
+- **Siri / Google Assistant shortcut** "Kdy je nejbližší mše?" (#10, Pavol: yes): App
+  Intents + Android App Actions; native release needed.
+- **Witness chips → private thanks to parishes** (#7, Pavol: likes it): needs the giver's
+  loop ("předáno farnosti v říjnu") — design in docs/EVOLVE.md.
+
 ## sprint
 
 ## parked
@@ -16,6 +29,14 @@ sprint (1–3) → shipped; parked holds `persona:?` asks and explicit no's, eac
   Second signal (a real tourist stuck) promotes it. (2026-07-09)
 
 ## shipped
+
+- 2026-10-07 · Evolve picks: one-tap city chips without location; Moje kostely (☆ on the
+  detail, section above the list, no notifications); quiet holy-day line on the eve/day of a
+  weekday solemnity; `list_ready` telemetry (time to a visible list, origin source);
+  registry data-quality report for ČBK (`docs/registry-quality.md`, `data/registry-quality.mjs`).
+- 2026-10-07 · Evolve no-regret fixes (#36): 4 000 prerendered church pages (were HTTP 404),
+  native share links, iOS 15 blank-app lookbehind, late GPS fixes kept, page_view context, bots
+  excluded.
 
 - 2026-08-08 · v1.1 persona-fix batch: dead parish `www` links dropped from the served
   data via a batched liveness pass (`scripts/linkcheck-www.mjs`, wired into

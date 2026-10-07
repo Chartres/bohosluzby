@@ -222,3 +222,16 @@ describe('share', () => {
     Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })
   })
 })
+
+describe('Moje kostely star', () => {
+  it('saves the church on this device and shows it as saved', async () => {
+    localStorage.clear()
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    const star = screen.getByRole('button', { name: /uložit mezi moje kostely/i })
+    expect(star).toHaveAttribute('aria-pressed', 'false')
+    star.click()
+    await vi.waitFor(() => expect(star).toHaveAttribute('aria-pressed', 'true'))
+    expect(JSON.parse(localStorage.getItem('bohosluzby:favorites')!)).toEqual(['2'])
+  })
+})

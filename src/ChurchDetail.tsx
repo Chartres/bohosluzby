@@ -1,7 +1,7 @@
 // Church detail — the full weekly schedule set like a printed ordo (grouped by
 // day, times aligned), one-off services in their own rubric section, parish +
 // contacts, and an honest data-freshness line. docs/DESIGN-BRIEF.md governs.
-import { type RefObject, type TouchEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { type RefObject, type TouchEvent, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import {
   decodeShard,
   type Church,
@@ -24,6 +24,7 @@ import { massKey, occurrenceOf, oneOffKey, riteOf, slotKey, type Aggregate } fro
 import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
 import { churchUrl } from './domain/site'
+import { favoritesSnapshot, subscribeFavorites, toggleFavorite } from './lib/favorites'
 import { churchWitnessIntro, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
 
 // A church viewed within this window after a Mass started seeds the after-Mass
@@ -170,6 +171,26 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
   )
 }
 
+/** Moje kostely star — saved on this device only (src/lib/favorites.ts). */
+function FavoriteToggle({ id, className }: { id: string; className: string }) {
+  const favs = useSyncExternalStore(subscribeFavorites, favoritesSnapshot)
+  const on = favs.includes(id)
+  return (
+    <button
+      type="button"
+      className={className}
+      aria-pressed={on}
+      aria-label={t('fav_label')}
+      onClick={() => {
+        const now = toggleFavorite(id)
+        track('key_action', { action: 'favorite', on: now })
+      }}
+    >
+      {on ? t('fav_saved') : t('fav_save')}
+    </button>
+  )
+}
+
 /** Share the church's /kostel/<id>/ URL. Native: the Capacitor Share plugin
  * (WKWebView has no navigator.share — the old code silently did nothing).
  * Web: Web Share API, then clipboard with a VISIBLE confirmation. */
@@ -272,6 +293,7 @@ function DetailHeading({
           {t('detail_navigate')}
         </button>
         <ShareLink church={church} linkClassName={link} />
+        <FavoriteToggle id={church.id} className={link} />
         {church.www && (
           <a
             href={withReferral(church.www)}

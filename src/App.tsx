@@ -20,6 +20,8 @@ import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
 import { IntroGuide } from './IntroGuide'
+import { MyChurches } from './MyChurches'
+import { holyDayLine } from './domain/holyday'
 import { FeedbackCard } from './FeedbackCard'
 import { AfterMassCard, type CardMass } from './AfterMassCard'
 import { massKey, riteOf, slotKey, WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
@@ -621,6 +623,24 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
   }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick])
 
+  // the no-location path: the six towns with the most churches, one tap each
+  const popularCities = useMemo(() => (index ? aggregateCities(index).slice(0, 6) : []), [index])
+  const holy = useMemo(() => holyDayLine(new Date()), [])
+
+  // list_ready — the aha that needs no click: a list of times stood on screen.
+  // Once per visit; how long it took and how the origin was found.
+  const listReadySent = useRef(false)
+  useEffect(() => {
+    if (listReadySent.current || !rows || rows.length === 0 || !origin) return
+    listReadySent.current = true
+    track('key_action', {
+      action: 'list_ready',
+      ms: Math.round(performance.now()),
+      source: origin.source,
+      rows: rows.length,
+    })
+  }, [rows, origin])
+
   // Churches that carry corroborated (thresholded) church-wide witness tags —
   // the set the list rows mark with a quiet rubric sign. Read from the same
   // aggregate cache the map and detail use; aggTick refreshes it on each load.
@@ -878,6 +898,19 @@ export default function App() {
               </button>
               {t('geo_fail_tail')}
             </p>
+            {/* the no-location path is first-class: the big towns are one tap away */}
+            <div role="group" aria-label={t('popular_cities')} className="mt-3 flex flex-wrap gap-2">
+              {popularCities.map((c) => (
+                <button
+                  key={c.slug}
+                  type="button"
+                  className="min-h-11 rounded-full border border-hairline px-4 text-sm hover:border-ink"
+                  onClick={() => pickCity(c)}
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
             <SearchPicker index={index} onPickCity={pickCity} onPickChurch={pickChurch} />
           </section>
         )}
@@ -902,6 +935,27 @@ export default function App() {
             </p>
             <SearchPicker index={index} onPickCity={pickCity} onPickChurch={pickChurch} />
           </section>
+        )}
+
+        {!dataError && !picking && !loading && origin && index && !mapMode && (
+          <MyChurches index={index} origin={origin} onOpen={openChurch} />
+        )}
+        {!dataError && !picking && !loading && origin && holy && !(holy.when === 'tomorrow' && day === 1) && (
+          <p className="mt-4 text-sm text-ink-faded">
+            {holy.when === 'tomorrow' ? t('holy_tomorrow') : t('holy_today')} {holy.feast}
+            {holy.when === 'tomorrow' && (
+              <>
+                {' · '}
+                <button
+                  type="button"
+                  className="-my-3 inline-block py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
+                  onClick={() => setDay(1)}
+                >
+                  {t('holy_cta')}
+                </button>
+              </>
+            )}
+          </p>
         )}
 
         {!dataError && !picking && !loading && origin && rows && (rows.length > 0 || anyFilter || day !== 'now') && (
