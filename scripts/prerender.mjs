@@ -12,6 +12,7 @@ import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { aggregateCities } from '../src/domain/cities.ts'
 import { churchPage } from '../src/domain/churchPage.ts'
+import { embedData } from '../src/domain/embedData.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const ORIGIN = 'https://bohosluzby.dravec.org'
@@ -120,6 +121,12 @@ if (CHURCH_PAGES) {
     mkdirSync(`${root}dist/kostel/${church.id}`, { recursive: true })
     writeFileSync(`${root}dist/kostel/${church.id}/index.html`, html)
     churchUrls.push(`/kostel/${church.id}/`)
+    // the parish-website widget's data (public/embed.js)
+    mkdirSync(`${root}dist/embed`, { recursive: true })
+    writeFileSync(
+      `${root}dist/embed/${church.id}.json`,
+      JSON.stringify(embedData({ church, entry: shard(church.cell)[church.id], today })),
+    )
   }
 }
 

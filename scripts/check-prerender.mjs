@@ -24,9 +24,11 @@ for (const [id, name] of index) {
   if (!html.includes(`<link rel="canonical" href="https://bohosluzby.dravec.org/kostel/${id}/" />`))
     problems.push(`${id}: canonical is not the church page`)
   if (!sitemap.includes(`/kostel/${id}/</loc>`)) problems.push(`${id}: missing from sitemap.xml`)
+  const embed = `${root}dist/embed/${id}.json`
+  if (!existsSync(embed) || JSON.parse(readFileSync(embed, 'utf8')).id !== id) problems.push(`${id}: no embed json`)
 }
 if (problems.length) {
   console.error(`church pages: ${problems.length} problem(s)\n${problems.slice(0, 20).join('\n')}`)
   process.exit(1)
 }
-console.log(`church pages: all ${index.length} present, titled, canonical, in the sitemap`)
+console.log(`church pages: all ${index.length} present, titled, canonical, in the sitemap, with embed json`)

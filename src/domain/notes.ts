@@ -10,7 +10,7 @@
 // "uncertain", never to a wrong exclusion. Upgrade path: add patterns as the
 // feedback card surfaces them.
 
-import { liturgicalDay } from './liturgical'
+import { liturgicalDay } from './liturgical.ts' // explicit: the Node prerender imports this
 
 export interface NoteRule {
   /** true = may run on that Prague calendar date; false = provably does not. */
@@ -171,8 +171,13 @@ function parseSegment(seg: string): Pred | 'none' | null {
   if (/^(?:pouze\s+|jen\s+)?(?:o|v|během)\s+(?:době\s+|období\s+)?(?:letních\s+)?prázdnin(?:ách)?$/.test(s)) return julyAugust
 
   // advent ("v adventu rorátní" = a rorate mass — advent-only by definition)
-  if (/^v\s+adventu(?:\s+rorátní)?$/.test(s)) return advent
-  if (/^v\s+(?:době\s+|období\s+)?postní(?:\s+době)?$/.test(s) || /^v\s+postu$/.test(s)) return lent
+  // "pouze/jen" only restates the inclusion; "během" = "v"; "v době adventní" = advent
+  if (/^(?:pouze\s+|jen\s+)?(?:v|během)\s+(?:době\s+adventní|adventu(?:\s+rorátní)?)$/.test(s)) return advent
+  if (
+    /^(?:pouze\s+|jen\s+)?(?:v|během)\s+(?:době\s+|období\s+)?postní(?:\s+době)?$/.test(s) ||
+    /^(?:pouze\s+|jen\s+)?(?:v|během)\s+postu$/.test(s)
+  )
+    return lent
 
   // kromě/mimo/vyjma <inclusion>
   const except = /^(?:kromě|mimo|vyjma|s výjimkou)\s+(.+)$/.exec(s)
