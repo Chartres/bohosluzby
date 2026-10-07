@@ -11,7 +11,8 @@ test('city landing renders the Praha list from the centroid', async ({ page }) =
   await page.goto('/mesto/praha/?zobrazeni=seznam')
   await expect(page.getByText('katedrála sv. Víta, Václava a Vojtěcha')).toBeVisible()
   await expect(page.getByText('Praha ·')).toBeVisible()
-  await expect(page).toHaveTitle(/Bohoslužby Praha — mše svatá dnes/)
+  // the app retitles on boot (since #14); the static page's own title is asserted in seo.spec
+  await expect(page).toHaveTitle(/Kam na mši — Praha \| mše svatá dnes/)
   await shot(page, 'city-praha', true)
 
   // a church detail still opens from the landing list

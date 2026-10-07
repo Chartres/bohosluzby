@@ -44,7 +44,7 @@ export default defineConfig({
     // (Note: not VITE_WITNESS_PREVIEW=1 — that one ALSO force-shows the demo
     // after-Mass card everywhere, which breaks specs that don't expect it; the
     // witness specs trigger the card themselves via ?feedback=preview.)
-    command: 'VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_WITNESS_ENABLED=1 npm run build && npm run preview -- --port 4173',
+    command: 'VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_WITNESS_ENABLED=1 PRERENDER_CHURCHES=1 npm run build && npm run preview -- --port 4173',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

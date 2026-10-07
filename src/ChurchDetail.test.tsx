@@ -206,3 +206,19 @@ describe('church photo', () => {
     expect(within(schedule).getByText('od 17.00 svátost smíření')).toBeInTheDocument()
   })
 })
+
+describe('share', () => {
+  // Inside the native shell location.origin is capacitor://localhost (iOS) or
+  // https://localhost (Android) — sharing it handed people a dead link. The
+  // shared URL is always the public one, whatever origin the app runs on.
+  it('shares the public church URL, never the app origin', async () => {
+    const share = vi.fn(async () => {})
+    Object.defineProperty(navigator, 'share', { value: share, configurable: true })
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    screen.getAllByRole('button', { name: 'sdílet' })[0].click()
+    await vi.waitFor(() => expect(share).toHaveBeenCalled())
+    expect(share).toHaveBeenCalledWith({ title: 'kostel 2', url: 'https://bohosluzby.dravec.org/kostel/2/' })
+    Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })
+  })
+})

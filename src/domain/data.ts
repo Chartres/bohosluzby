@@ -1,6 +1,6 @@
 // Dataset types + decoding of the compact JSON written by data/extract.mjs.
 
-import { normalizeLang } from './format'
+import { isConfession, normalizeLang } from './registry'
 
 export interface Church {
   id: string
@@ -45,10 +45,7 @@ export interface ChurchServices {
   confession: Service[]
 }
 
-// ponytail: registry type is free text; confession comes as "svátost smíření"
-// (case varies). Trim + case-insensitive exact match keeps note-mentions of
-// confession — which live in a Mass row's note, not its type — untouched.
-export const isConfession = (type: string): boolean => /^svátost smíření$/i.test(type.trim())
+export { isConfession } // moved to ./registry; re-exported for existing imports
 
 /** services/<cell>.json value shape (compact keys). */
 interface ShardEntry {

@@ -5,9 +5,9 @@ import { vi } from 'vitest'
 // Force supabase null so a local .env.local can't make witness aggregates hit the
 // live DB (CI has no env). The app + witness store fall back to localStorage.
 vi.mock('./lib/supabase', () => ({ supabase: null }))
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import App, { dayOptions } from './App'
+import App, { dayOptions, geoFailKey } from './App'
 import type { IndexRow } from './domain/data'
 
 // Friday 3 Jul 2026 17:00 Prague. Vitest fake timers pin "now".
@@ -158,6 +158,43 @@ describe('Marie finds the nearest mass', () => {
     expect(await screen.findByText('Bez přístupu k poloze')).toBeInTheDocument()
     expect(getCurrentPosition).not.toHaveBeenCalled()
     Object.defineProperty(navigator, 'permissions', { value: undefined, configurable: true })
+  })
+
+  // iOS answers a coarse fix in ~10–12 s; the 10 s UI deadline used to throw
+  // that fix away (12 of 14 native visitors logged geo_deadline, docs/EVOLVE.md).
+  const slowFix = (ms: number) =>
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: vi.fn((ok: (p: { coords: { latitude: number; longitude: number } }) => void) => {
+          setTimeout(() => ok({ coords: { latitude: 50.0875, longitude: 14.4213 } }), ms)
+        }),
+      },
+      configurable: true,
+    })
+
+  it('slow fix: the list appears when the position lands after the deadline', async () => {
+    slowFix(12_000)
+    render(<App />)
+    await act(() => vi.advanceTimersByTimeAsync(10_000))
+    expect(await screen.findByText('Bez přístupu k poloze')).toBeInTheDocument()
+    await act(() => vi.advanceTimersByTimeAsync(2_000))
+    expect(await screen.findByText(/Salvátora/)).toBeInTheDocument()
+    expect(screen.queryByText('Bez přístupu k poloze')).toBeNull()
+  })
+
+  it('a late fix never overrides a city picked in the meantime', async () => {
+    slowFix(12_000)
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await act(() => vi.advanceTimersByTimeAsync(10_000))
+    await screen.findByText('Bez přístupu k poloze')
+    await user.type(screen.getByLabelText('Kostel nebo obec'), 'brno')
+    await user.click(await screen.findByRole('option', { name: /^Brno/ }))
+    expect(await screen.findByText(/sv\. Tomáše/)).toBeInTheDocument()
+    await act(() => vi.advanceTimersByTimeAsync(5_000)) // the Prague fix lands now
+    expect(screen.getByText(/sv\. Tomáše/)).toBeInTheDocument()
+    expect(screen.queryByText(/Salvátora/)).toBeNull()
+    expect(window.location.pathname).toBe('/mesto/brno/')
   })
 
   it('footer shows how fresh the registry data is', async () => {
@@ -532,7 +569,7 @@ describe('Marie finds the nearest mass', () => {
       expect(ics).toContain('DTSTART;TZID=Europe/Prague:')
 
       await user.click(screen.getByRole('button', { name: 'sdílet' }))
-      expect(writeText).toHaveBeenCalledWith('http://localhost/kostel/1/')
+      expect(writeText).toHaveBeenCalledWith('https://bohosluzby.dravec.org/kostel/1/') // public URL, never the app origin
       expect(await screen.findByText('odkaz zkopírován ✓')).toBeInTheDocument()
     } finally {
       click.mockRestore()
@@ -865,5 +902,22 @@ describe('dayOptions', () => {
     const labels = dayOptions(friday).map((o) => o.label)
     expect(labels.filter((l) => l === 'neděle')).toHaveLength(1)
     expect(dayOptions(friday).at(-1)?.key).toBe(6)
+  })
+})
+
+describe('geoFailKey', () => {
+  // The native shell has no address bar, no lock icon and no browser dialog —
+  // the web guidance was wrong advice there.
+  it('native shell: phone wording, never browser advice', () => {
+    expect(geoFailKey('deadline', true, true)).toBe('geo_fail_native_slow')
+    expect(geoFailKey('deadline', true, false)).toBe('geo_fail_native_none')
+    expect(geoFailKey('timeout', true, false)).toBe('geo_fail_native_none')
+    expect(geoFailKey('denied', true, false)).toBe('geo_fail_native_denied')
+    expect(geoFailKey('unavailable', true, false)).toBe('geo_fail_unavailable')
+  })
+  it('web: unchanged guidance', () => {
+    expect(geoFailKey('deadline', false, true)).toBe('geo_fail_deadline')
+    expect(geoFailKey('denied', false, false)).toBe('geo_fail_denied')
+    expect(geoFailKey('unavailable', false, false)).toBe('geo_fail_unavailable')
   })
 })

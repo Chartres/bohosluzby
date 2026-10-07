@@ -28,6 +28,14 @@ export const cs = {
     'Prohlížeč nedostal odpověď na dialog o povolení polohy — možná se nezobrazil. Zkontrolujte, zda smí prohlížeč používat polohu v nastavení telefonu, a klepněte na ',
   geo_fail_denied:
     'Pokud jste ji dříve zablokovali, klepněte na ikonu zámku vedle adresy stránky → Oprávnění → Poloha → Povolit, a pak na ',
+  // native shell: no address bar, lock icon or browser dialog (App geoFailKey)
+  no_geo_title_slow: 'Poloha se ještě načítá',
+  geo_fail_native_slow:
+    'Telefon zatím neposlal polohu — jakmile dorazí, seznam se ukáže sám. Můžete také klepnout na ',
+  geo_fail_native_none:
+    'Telefon nedokázal určit polohu. Zkontrolujte, že jsou zapnuté polohové služby, a klepněte na ',
+  geo_fail_native_denied:
+    'Aplikace nemá povolený přístup k poloze. Povolte ho v nastavení telefonu u aplikace Kam na mši (Poloha) a pak klepněte na ',
   retry: 'zkusit znovu',
   geo_fail_tail: '. Nebo vyhledejte obec či kostel:',
   picking_title: 'Jiná obec nebo kostel',
@@ -234,6 +242,13 @@ export const en: Record<Key, string> = {
     'The browser never got a response to the location permission dialog — it may not have appeared. Check that the browser is allowed to use location in your phone settings, then tap ',
   geo_fail_denied:
     'If you blocked it earlier, tap the lock icon next to the address bar → Permissions → Location → Allow, then tap ',
+  no_geo_title_slow: 'Still getting your location',
+  geo_fail_native_slow:
+    "Your phone hasn't sent a location yet — the list will appear on its own when it does. You can also tap ",
+  geo_fail_native_none:
+    "Your phone couldn't determine a location. Check that location services are on, then tap ",
+  geo_fail_native_denied:
+    "The app isn't allowed to use your location. Allow it in your phone settings under Kam na mši (Location), then tap ",
   retry: 'try again',
   geo_fail_tail: '. Or search for a town or church:',
   picking_title: 'A different town or church',

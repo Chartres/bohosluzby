@@ -1,5 +1,5 @@
 import { isNative } from './native'
-import { logError } from '../analytics'
+import { logError, track } from '../analytics'
 
 export type Coords = { lat: number; lng: number }
 export type GeoPermission = 'granted' | 'denied' | 'prompt' | 'unknown'
@@ -41,14 +41,31 @@ export async function getPermissionState(): Promise<GeoPermission> {
  * starts counting once the permission prompt is answered — a dismissed prompt
  * never calls back at all. `deadlineMs` is caller-tunable: a pending prompt
  * deserves a longer wait than a granted-but-slow fix.
+ *
+ * The deadline bounds the UI wait, not the read: a fix that lands later (iOS
+ * often needs 10–12 s for a coarse fix) is handed to `onLate` instead of being
+ * thrown away. `onLate` fires at most once — with the late result, or with a
+ * final `deadline` when nothing has answered by `lateWindowMs`.
  */
 export async function getCurrentPosition(
-  opts: { timeout?: number; maximumAge?: number; deadlineMs?: number } = {},
+  opts: {
+    timeout?: number
+    maximumAge?: number
+    deadlineMs?: number
+    lateWindowMs?: number
+    onLate?: (r: GeoResult) => void
+  } = {},
 ): Promise<GeoResult> {
+  const started = Date.now()
+  const reading = read(opts)
+  let timedOut = false
   const deadline = new Promise<GeoResult>((resolve) =>
-    setTimeout(() => resolve({ coords: null, error: 'deadline' }), opts.deadlineMs ?? 10_000),
+    setTimeout(() => {
+      timedOut = true
+      resolve({ coords: null, error: 'deadline' })
+    }, opts.deadlineMs ?? 10_000),
   )
-  const result = await Promise.race([deadline, read(opts)])
+  const result = await Promise.race([deadline, reading])
   if (result.error) {
     // fire-and-forget telemetry: which failure class do real devices hit?
     try {
@@ -57,13 +74,41 @@ export async function getCurrentPosition(
       /* analytics unavailable — never break the flow */
     }
   }
+  if (timedOut && opts.onLate) {
+    const onLate = opts.onLate
+    let settled = false
+    const settle = (r: GeoResult) => {
+      if (settled) return
+      settled = true
+      onLate(r)
+    }
+    const closeLate = setTimeout(
+      () => settle({ coords: null, error: 'deadline' }),
+      Math.max(0, (opts.lateWindowMs ?? 60_000) - (Date.now() - started)),
+    )
+    reading
+      .then((late) => {
+        if (settled) return
+        clearTimeout(closeLate)
+        if (late.coords) {
+          try {
+            track('key_action', { action: 'geo_late', ms: Date.now() - started, native: isNative })
+          } catch {
+            /* analytics unavailable */
+          }
+        }
+        settle(late)
+      })
+      .catch(() => settle({ coords: null, error: 'timeout' }))
+  }
   return result
 }
 
 async function read(
   opts: { timeout?: number; maximumAge?: number } = {},
 ): Promise<GeoResult> {
-  const { timeout = 12_000, maximumAge = 300_000 } = opts
+  // longer than any UI deadline: a slow fix still has room to land (onLate)
+  const { timeout = 25_000, maximumAge = 300_000 } = opts
 
   if (isNative) {
     try {

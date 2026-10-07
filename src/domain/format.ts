@@ -42,16 +42,6 @@ export function withReferral(url: string): string {
   return `${base}${base.includes('?') ? '&' : '?'}${utm}${frag}`
 }
 
-/** Registry entry older than 18 months → the schedule is a verify-before-you-go
- * warning, not a promise (shared by the list rows and the detail). */
-export function isStale(iso: string, now = new Date()): boolean {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
-  if (!m) return false
-  const cutoff = new Date(now)
-  cutoff.setMonth(cutoff.getMonth() - 18)
-  return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) < cutoff
-}
-
 export function fmtDistance(km: number): string {
   if (lang() !== 'cs') {
     if (km < 0.1) return 'within 100 m'
@@ -90,31 +80,9 @@ function cachedFmt(kind: string, opts: Intl.DateTimeFormatOptions): Intl.DateTim
 const weekdayFmt = () =>
   cachedFmt('weekday', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'numeric' })
 
-/** Registry language values are inconsistent endonyms ("Latine", "po polsku",
- * "deutsch"…); normalize to Czech lowercase adverbs so chips and filters read
- * like one voice. Applied once at shard decode. */
-const LANG_MAP: Record<string, string> = {
-  '': 'česky',
-  'česky': 'česky',
-  'čeština': 'česky',
-  latine: 'latinsky',
-  latina: 'latinsky',
-  'latinsky (trident)': 'latinsky (tridentská)',
-  english: 'anglicky',
-  italiana: 'italsky',
-  'en español': 'španělsky',
-  'en français': 'francouzsky',
-  filipino: 'filipínsky',
-  magyarul: 'maďarsky',
-  'po polsku': 'polsky',
-  'viet nam': 'vietnamsky',
-  deutsch: 'německy',
-}
-
-export function normalizeLang(raw: string): string {
-  const key = raw.trim().toLowerCase()
-  return LANG_MAP[key] ?? key
-}
+// normalizeLang and isStale moved to ./registry (import-free, so the Node
+// prerender can share them); re-exported so existing imports keep working.
+export { normalizeLang, isStale } from './registry'
 
 const dateFmt = () => cachedFmt('date', { timeZone: TZ, day: 'numeric', month: 'numeric', year: 'numeric' })
 
