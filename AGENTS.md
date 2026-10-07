@@ -14,15 +14,23 @@ This repo's visual contract lives in `docs/DESIGN-BRIEF.md` — binding, read it
 ```bash
 npm ci
 npm run build   # tsc + vite build + scripts/prerender.mjs (city pages, sitemap, 404.html)
+PRERENDER_CHURCHES=1 npm run build && node scripts/check-prerender.mjs   # web deploy (ci.yml)
 ```
-`prerender.mjs` imports `src/domain/cities.ts` directly — node ≥22.6 with type stripping
-(the script is invoked with `--experimental-strip-types`; a no-op on node ≥23).
+`prerender.mjs` imports `src/domain/cities.ts` and `src/domain/churchPage.ts` directly — node
+≥22.6 with type stripping (invoked with `--experimental-strip-types`; a no-op on node ≥23), so
+those modules use explicit `.ts` specifiers and import-free helpers (`src/domain/registry.ts`).
+`PRERENDER_CHURCHES=1` adds one static page per church (`/kostel/<id>/`, ~4 000) — the web
+deploy only: GitHub Pages answers a missing path with status 404, which broke every shared and
+.ics church link for crawlers and unfurlers. Native builds leave it off (dist/ is the app bundle).
+No regex lookbehind anywhere (`src/compat.test.ts`, CI bundle scan): the iOS target is 15.0 and
+WebKit < 16.4 can't parse it — one literal blanks the whole app.
 
 ## Test (TDD required; persona-journey test per primary journey)
 ```bash
 npm run typecheck
 npm test              # Vitest (domain logic + RTL journeys)
-npx playwright test   # e2e journeys (Chromium); run locally, not in CI
+npx playwright test   # e2e journeys (Chromium); run locally, not in CI — the map specs need
+                      # tile network access (sandboxes without it: run the non-map specs)
 ```
 Gate: typecheck · test · build must pass (CI: `.github/workflows/ci.yml` runs these three on
 push + PR). Block only on these. Playwright is a local pre-push check — the persona journeys

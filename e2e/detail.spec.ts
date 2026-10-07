@@ -75,7 +75,7 @@ test.describe('ICS + share', () => {
     await page.getByRole('button', { name: 'sdílet' }).click()
     await expect(page.getByText('odkaz zkopírován')).toBeVisible()
     const copied = await page.evaluate(() => navigator.clipboard.readText())
-    expect(copied).toBe('http://localhost:4173/kostel/4/')
+    expect(copied).toBe('https://bohosluzby.dravec.org/kostel/4/') // the public URL, never the app origin
     await shot(page, 'detail-share-copied')
   })
 })

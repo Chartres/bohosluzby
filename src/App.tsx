@@ -28,6 +28,8 @@ import { dueCards, markAnswered, neverAsk, type LedgerEntry } from './lib/feedba
 import { WITNESS_ENABLED } from './lib/flags'
 import { track, conversion, logError } from './analytics'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
+import { isNative, platform } from './lib/native'
+import { pageViewContext } from './lib/telemetry'
 import { loadData, refreshData, activeAsOf } from './lib/dataStore'
 import {
   lang,
@@ -40,6 +42,7 @@ import {
   withinKmLabel,
   nothingNearbyBody,
   verifyBanner,
+  type Key,
 } from './i18n'
 
 const NEARBY_KM = 30
@@ -209,6 +212,18 @@ export function dayOptions(now: Date): { key: DayChoice; label: string; lit: Lit
 
 // Minimal history routing (GH Pages serves 404.html = the app for deep links).
 type Route = { view: 'home' } | { view: 'church'; id: string } | { view: 'city'; slug: string }
+
+/** Which guidance a failed geolocation gets. Each failure has ITS OWN way out —
+ * and the native shell has no address bar, lock icon or browser dialog, so the
+ * web wording is wrong advice there. `waiting`: a late fix can still land. */
+export function geoFailKey(fail: GeoFailure | null, native: boolean, waiting: boolean): Key {
+  if (fail === 'unavailable') return 'geo_fail_unavailable'
+  if (native) {
+    if (fail === 'denied') return 'geo_fail_native_denied'
+    return waiting && fail === 'deadline' ? 'geo_fail_native_slow' : 'geo_fail_native_none'
+  }
+  return fail === 'deadline' ? 'geo_fail_deadline' : 'geo_fail_denied'
+}
 
 export function parseRoute(path: string): Route {
   const kostel = /^\/kostel\/([^/]+)\/?$/.exec(path)
@@ -395,7 +410,24 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.style.setProperty('--season', SEASON_VAR[season.color])
-    track('page_view', { season: season.season })
+    let standalone = false
+    try {
+      standalone = window.matchMedia('(display-mode: standalone)').matches
+    } catch {
+      // no matchMedia (tests, very old WebViews)
+    }
+    track('page_view', {
+      season: season.season,
+      ...pageViewContext({
+        pathname: location.pathname,
+        search: location.search,
+        referrer: document.referrer,
+        host: location.host,
+        lang: lang(),
+        platform,
+        standalone,
+      }),
+    })
   }, [season])
 
   useEffect(() => {
@@ -445,11 +477,29 @@ export default function App() {
       }
       setGeoPrompting(perm === 'prompt')
       // an unanswered permission dialog deserves a longer leash than a slow fix
-      getCurrentPosition({ deadlineMs: perm === 'prompt' ? 30_000 : 10_000 }).then((r) => {
-        setLocating(false)
+      getCurrentPosition({
+        deadlineMs: perm === 'prompt' ? 30_000 : 10_000,
+        // The deadline only ends the WAIT. A fix that lands later (iOS often
+        // takes 10–12 s) still becomes the origin — unless the user has chosen
+        // something themselves in the meantime (a city, a church, the picker).
+        onLate: (late) => {
+          setLocating(false)
+          if (!late.coords) return
+          const cur = originRef.current
+          if ((cur && cur.source !== 'last') || pickingRef.current) return
+          setOrigin({ lat: late.coords.lat, lng: late.coords.lng, source: 'geo' })
+          setGeoFail(null)
+          setGeoDenied(false)
+        },
+      }).then((r) => {
         setGeoPrompting(false)
-        if (r.coords) setOrigin({ lat: r.coords.lat, lng: r.coords.lng, source: 'geo' })
-        else fallback(r.error ?? 'timeout')
+        if (r.coords) {
+          setLocating(false)
+          setOrigin({ lat: r.coords.lat, lng: r.coords.lng, source: 'geo' })
+        } else {
+          if (r.error !== 'deadline') setLocating(false) // a deadline keeps listening (onLate)
+          fallback(r.error ?? 'timeout')
+        }
       })
     })
   }
@@ -481,6 +531,8 @@ export default function App() {
   const citySlug = route.view === 'city' ? route.slug : null
   const originRef = useRef(origin)
   originRef.current = origin
+  const pickingRef = useRef(picking)
+  pickingRef.current = picking
   useEffect(() => {
     if (!index) return
     if (citySlug) {
@@ -806,16 +858,14 @@ export default function App() {
 
         {!dataError && !loading && !origin && geoDenied && index && (
           <section className="mt-10">
-            <h2 className="font-display text-xl font-semibold">{t('no_geo_title')}</h2>
+            <h2 className="font-display text-xl font-semibold">
+              {isNative && geoFail === 'deadline' && locating ? t('no_geo_title_slow') : t('no_geo_title')}
+            </h2>
             <p className="mt-2 max-w-prose text-ink-faded">{t('no_geo_body')}</p>
             <p className="mt-2 max-w-prose text-ink-faded">
               {/* each failure gets ITS OWN way out — "unblock in the browser" is
                   wrong advice when the phone's location services are off */}
-              {geoFail === 'unavailable'
-                ? t('geo_fail_unavailable')
-                : geoFail === 'deadline'
-                  ? t('geo_fail_deadline')
-                  : t('geo_fail_denied')}
+              {t(geoFailKey(geoFail, isNative, locating))}
               <button
                 type="button"
                 className="-my-2 inline-block px-1 py-2 underline decoration-hairline underline-offset-2 hover:text-ink"

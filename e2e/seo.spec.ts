@@ -70,3 +70,26 @@ test('head carries the share-card block and WebApplication JSON-LD', async ({ pa
   expect(ld.url).toBe('https://bohosluzby.dravec.org/')
   expect(ld.isAccessibleForFree).toBe(true)
 })
+
+test('a church link is a real page: its own title, canonical, ordo and Church JSON-LD', async ({ request }) => {
+  // GitHub Pages answered /kostel/<id>/ with 404.html + status 404 before the
+  // church pages were prerendered — every shared and .ics link was a 404 to
+  // crawlers and link unfurlers. (vite preview's SPA fallback would answer 200
+  // for anything, so assert the CONTENT is the church's, not just the status.)
+  const res = await request.get('/kostel/10001/')
+  expect(res.ok()).toBe(true)
+  const html = await res.text()
+  expect(html).toMatch(/<title>katedrála sv\. Víta[^<]*— pořad bohoslužeb \| Kam na mši<\/title>/)
+  expect(html).toContain('<link rel="canonical" href="https://bohosluzby.dravec.org/kostel/10001/" />')
+  expect(html).toContain('<h2>Pořad bohoslužeb</h2>')
+  expect(html).toContain('"@type":"Church"')
+
+  const sitemap = await (await request.get('/sitemap.xml')).text()
+  expect(sitemap).toContain('<loc>https://bohosluzby.dravec.org/kostel/10001/</loc>')
+})
+
+test('the app boots on a prerendered church page and shows that church', async ({ page }) => {
+  await page.goto('/kostel/10001/')
+  await expect(page.getByRole('heading', { name: /katedrála sv\. Víta/ }).first()).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Pořad bohoslužeb' })).toBeVisible()
+})

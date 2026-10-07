@@ -265,9 +265,12 @@ export function parseNote(note: string): NoteRule {
   if (hit) return hit
 
   // split sentences (". " before an uppercase letter) and comma/semicolon segments;
-  // the lookbehind spares ordinals ("1. sobotu") and abbreviations ("posl. týden")
+  // requiring 3 lowercase letters before the dot spares ordinals ("1. sobotu")
+  // and abbreviations ("posl. týden"). No lookbehind: iOS 15 WebKit (the app's
+  // deployment target) can't parse one, and a lookbehind literal blanks the app.
   const segs = trimmed
-    .split(/(?<=\p{Ll}{3})\.\s+(?=\p{Lu})/u)
+    .replace(/(\p{Ll}{3})\.\s+(?=\p{Lu})/gu, '$1\u0000')
+    .split('\u0000')
     .flatMap((s) => s.split(/\s*[,;]\s*/))
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean)

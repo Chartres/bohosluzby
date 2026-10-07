@@ -3,6 +3,7 @@
 // every client agrees across DST.
 import type { Church, ExtraService, Service } from './data'
 import { nextOccurrences, pragueToday } from './occurrences'
+import { churchUrl } from './site'
 
 const BYDAY: Record<string, string> = { 1: 'MO', 2: 'TU', 3: 'WE', 4: 'TH', 5: 'FR', 6: 'SA', 7: 'SU' }
 
@@ -46,7 +47,7 @@ export function buildICS(church: Church, service: Service | ExtraService, now: D
   const dtstart = `${w.y}${pad(w.m)}${pad(w.d)}T${pad(hh)}${pad(mm)}00`
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`
-  const url = `https://bohosluzby.dravec.org/kostel/${church.id}/`
+  const url = churchUrl(church.id)
   const uid = `${church.id}-${'days' in service ? service.days : service.date}-${service.time}@bohosluzby.dravec.org`
 
   const lines = [

@@ -32,6 +32,22 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          # one static page per church (/kostel/<id>/) — web deploy only; the
+          # native builds (android job, release-*, fastlane) leave it off so the
+          # app bundle doesn't carry ~4 000 SEO pages
+          PRERENDER_CHURCHES: '1'
+      # read back what we publish (Standard rule 15): a church link must be a
+      # real page with its own title, not the 404 fallback
+      - name: Church pages exist
+        run: node scripts/check-prerender.mjs
+      # iOS 15 WebKit (the app's deployment target) can't parse regex lookbehind;
+      # one literal anywhere in a bundle — ours or a dependency's — blanks the app
+      - name: No regex lookbehind in the bundle
+        run: |
+          if grep -l '(?<[=!]' dist/assets/*.js; then
+            echo "::error::regex lookbehind in the bundle — breaks iOS < 16.4"
+            exit 1
+          fi
       # workflow_dispatch deploys too — the refresh-data workflow pushes with
       # GITHUB_TOKEN (which can't fire the push trigger) and then dispatches this
       - uses: actions/upload-pages-artifact@v3

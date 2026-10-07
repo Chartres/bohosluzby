@@ -23,6 +23,7 @@ import { WITNESS_ENABLED } from './lib/flags'
 import { massKey, occurrenceOf, oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
 import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
+import { churchUrl } from './domain/site'
 import { churchWitnessIntro, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
 
 // A church viewed within this window after a Mass started seeds the after-Mass
@@ -175,7 +176,7 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
 function ShareLink({ church, linkClassName = linkCls }: { church: Church; linkClassName?: string }) {
   const [copied, setCopied] = useState(false)
   const share = async () => {
-    const url = `${location.origin}/kostel/${church.id}/`
+    const url = churchUrl(church.id) // never location.origin — capacitor://localhost in the shell
     track('key_action', { action: 'share', church: church.id })
     try {
       if (isNative) {
