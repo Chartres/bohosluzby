@@ -170,8 +170,9 @@ describe('church photo', () => {
     help.click()
     expect(onBack).toHaveBeenCalled()
     expect(onHelp).toHaveBeenCalled()
-    // the shell is told a hero is up so it can drop its masthead
-    expect(onHeroChange).toHaveBeenCalledWith(true)
+    // the shell is told a hero is up so it can drop its masthead — from a passive
+    // effect, which can flush after the image is found (flaked in CI 2026-10-07)
+    await vi.waitFor(() => expect(onHeroChange).toHaveBeenCalledWith(true))
   })
 
   it('tidies the photo credit — drops duplicate wiki markup, keeps licence + source', async () => {
