@@ -14,6 +14,9 @@ free block limit refused them on 2026-10-07). Newest batch first.
 - [ ] **ČBK email**: review the Gmail draft "Kvalita dat v rejstříku bohoslužeb" (to
       bohosluzby@cirkev.cz), attach or link `docs/registry-quality.md` + the CSV, send if
       you agree. Nothing was sent.
+- [ ] **Parish embed test**: offer the two-line snippet (`docs/EMBED.md`) to 3 parishes,
+      for example your own and two whose websites are alive. First test: 3 embeds, then
+      clicks with `utm_source=embed`.
 - [ ] **Gate decision** for the overdue 2026-09-03 kill criterion: ITERATE to 2026-12-31 or
       MAINTAIN (recommendation in `docs/EVOLVE.md`).
 

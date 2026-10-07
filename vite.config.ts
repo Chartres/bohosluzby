@@ -45,7 +45,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,woff2,json,png}'],
         // SEO-only copies of the shell (prerendered city + church pages, 404
         // fallback): the SPA handles those routes; don't precache duplicates.
-        globIgnores: ['mesto/**', 'kostel/**', '404.html'],
+        globIgnores: ['mesto/**', 'kostel/**', 'embed/**', 'embed.js', '404.html'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
         // Fonts are self-hosted (Fontsource) and precached via globPatterns

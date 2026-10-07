@@ -155,6 +155,16 @@ describe('advent', () => {
     expect(runs('kromě adventu', '2026-12-06')).toBe(false)
     expect(runs('kromě adventu', '2026-07-06')).toBe(true)
   })
+  it('pouze / jen / během / v době adventní — the cathedral\'s rorate showed every October Sunday', () => {
+    for (const n of ['pouze v adventu', 'jen v adventu', 'během adventu', 'v době adventní', 'pouze v době adventní']) {
+      expect(runs(n, '2026-12-06'), n).toBe(true)
+      expect(runs(n, '2026-10-11'), n).toBe(false)
+    }
+    for (const n of ['pouze v postní době', 'jen v době postní', 'během postu']) {
+      expect(runs(n, '2027-03-07'), n).toBe(true) // Lent 2027: 10 Feb – 27 Mar
+      expect(runs(n, '2026-10-11'), n).toBe(false)
+    }
+  })
   it('compound: kromě adventu a letních prázdnin', () => {
     expect(runs('kromě adventu a letních prázdnin', '2026-07-06')).toBe(false)
     expect(runs('kromě adventu a letních prázdnin', '2026-12-06')).toBe(false)

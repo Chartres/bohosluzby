@@ -7,9 +7,6 @@ sprint (1–3) → shipped; parked holds `persona:?` asks and explicit no's, eac
 
 ## candidates
 
-- **Parish embed** (evolve #5, Pavol: yes): `embed.js` + prerendered `embed/<id>.json`, next 3
-  services, utm-tagged link. Views unlogged; clicks arrive as page_view `utm_source=embed`.
-  Infra math in docs/EVOLVE.md. First test: 3 parishes embed it.
 - **Christmas pages** (`/vanoce/`, per-city půlnoční lists): build by 15 Nov, filled by the
   15 Dec refresh + one extra ~20 Dec. Kill: 21–27 Dec week < 100 visitors.
 - **Travel mode** (evolve #8, Pavol: yes): "jedu v neděli Praha → Brno" → masses at arrival.
@@ -29,6 +26,12 @@ sprint (1–3) → shipped; parked holds `persona:?` asks and explicit no's, eac
   Second signal (a real tourist stuck) promotes it. (2026-07-09)
 
 ## shipped
+
+- 2026-10-07 · Parish embed (evolve #5): `embed.js` + 4 000 prerendered `embed/<id>.json`
+  with 60-day run masks from the app's note parser; parish guide in `docs/EMBED.md`. Also
+  fixed the parser for "pouze/jen v adventu", "během adventu", "v době adventní",
+  "pouze v postní době": these were listed every week, flagged as uncertain (the
+  cathedral's Advent-only Rorate masses showed on October Sundays).
 
 - 2026-10-07 · Evolve picks: one-tap city chips without location; Moje kostely (☆ on the
   detail, section above the list, no notifications); quiet holy-day line on the eve/day of a
