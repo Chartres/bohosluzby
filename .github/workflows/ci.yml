@@ -11,9 +11,12 @@ permissions:
   pages: write
   id-token: write
 
+# One lane per ref: a PR push supersedes its own older run, never main's. (A
+# single shared 'pages' group with cancel-in-progress let a PR run and a main
+# deploy cancel or queue behind each other.) The deploy job keeps its own lane.
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
@@ -88,6 +91,9 @@ jobs:
     needs: test
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    concurrency:
+      group: pages
+      cancel-in-progress: false # never kill a deploy halfway
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
