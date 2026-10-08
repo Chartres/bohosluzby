@@ -1,1 +1,1 @@
-Nový název „Kam na mši". Novinky: fotografie kostelů, časy svátosti smíření (zpovědi) u vybraných pražských kostelů, plynulejší mapa a přehlednější detail kostela s velkou fotografií. Data z rejstříku ČBK.
+Opravy: aplikace se na některých starších iPhonech (iOS 15–16.3) nezobrazovala — nyní funguje. Sdílený odkaz na kostel teď vede na web, poloha se načte i při pomalejším GPS. Novinky: Moje kostely — uložte si kostely hvězdičkou a uvidíte jejich nejbližší bohoslužbu; bez polohy stačí klepnout na město; tichá připomínka slavností. Data z rejstříku ČBK.
