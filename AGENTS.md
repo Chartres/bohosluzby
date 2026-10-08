@@ -10,6 +10,10 @@ This repo's visual contract lives in `docs/DESIGN-BRIEF.md` — binding, read it
 > Stack/template: Vite + React 19 + TS PWA (autoskola-kviz clone)  ·  Track: community  ·
 > Portfolio record: `flywheel/data/products/bohosluzby.json`
 
+**Picking this up?** Read `docs/ROADMAP.md` first: where things stand, what's in flight,
+and the handoff conventions. Then `BACKLOG.md`, `docs/EVOLVE.md` and `docs/OWNER-TASKS.md`.
+`CHANGELOG.md` + `VERSION` record what shipped (Flywheel Standard §1).
+
 ## Build
 ```bash
 npm ci
