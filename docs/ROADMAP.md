@@ -28,9 +28,13 @@ Update the **Now** section at the end of every session; it is the handoff.
     Submit for Review.
   - **Hosted-Mac releases**: `.github/workflows/release-ios.yml` passes its gate on
     `macos-15`.
-    - It needs 5 secrets. A mini session is provisioning them (2026-10-08).
-    - Check with `gh secret list -R Chartres/bohosluzby`.
-    - Then: Actions → Release iOS → lane `beta` or `release`.
+    - All 5 secrets are set (2026-10-08). The first lane-`build` run passed the gate, the
+      secrets check and the keychain import. It stopped at the first App Store Connect call:
+      an Apple agreement is missing or has expired (an owner task in `docs/OWNER-TASKS.md`).
+      That blocks the mini too.
+    - Next: once Pavol accepts the agreement, re-run lane `build`. When it's green, add the
+      pattern to the Flywheel Standard (`ios-app.md` §11a′, drafted on the flywheel branch).
+      After that, lane `beta` or `release` for real uploads, never alongside a mini upload.
 - **Android**: built and signed in CI (`release-android.yml`), not yet on Play.
   - Owner steps 1–6 in `docs/OWNER-TASKS.md`.
   - A new personal Play account needs a closed test with 12 testers for 14 days before

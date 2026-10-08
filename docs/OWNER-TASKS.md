@@ -3,6 +3,16 @@
 The steps only Pavol can do. Tick them here, or paste them into your task list (Notion's
 free block limit refused them on 2026-10-07). Newest batch first.
 
+## Blocking every iOS upload (found 2026-10-08)
+
+- [ ] **Accept Apple's updated agreement.** Sign in at developer.apple.com/account, accept the
+      banner. Then check App Store Connect → Business (formerly Agreements, Tax, and Banking).
+      Until then the ASC API refuses every call ("A required agreement is missing or has
+      expired"), whether it comes from the mini or the hosted Mac. The hosted run (Actions →
+      Release iOS, lane `build`, run 37745048939) passed the gate, the secrets check and the
+      keychain import, then stopped at the first ASC call. After accepting, re-run lane `build`
+      to finish the test.
+
 ## Ship what merged on 2026-10-07
 
 - [ ] **iOS build**: `fastlane ios beta` on the mini, then submit. It carries the iOS 15
