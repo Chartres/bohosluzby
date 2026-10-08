@@ -1,5 +1,6 @@
 # iOS release on GitHub's hosted Macs — no Mac mini needed (free on a public repo).
-#   Actions → Release iOS → Run workflow (lane: beta = TestFlight, release = upload
+#   Actions → Release iOS → Run workflow (lane: build = signed .ipa only, nothing
+#   uploaded — the safe test; beta = TestFlight, release = upload
 #   binary + metadata + screenshots, NOT submitted), or push a tag `ios-vX.Y.Z` (beta).
 # Runs the same lanes as a laptop (ios/App/fastlane/Fastfile). Never submits for
 # review: Pavol taps Submit after testing the TestFlight build on his phone.
@@ -20,10 +21,10 @@ on:
   workflow_dispatch:
     inputs:
       lane:
-        description: 'beta = TestFlight · release = upload + metadata (no submit)'
+        description: 'build = sign + build only, uploads nothing (test) · beta = TestFlight · release = upload + metadata (no submit)'
         type: choice
         default: beta
-        options: [beta, release]
+        options: [build, beta, release]
 
 concurrency:
   group: release-ios
