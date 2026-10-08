@@ -67,7 +67,10 @@ offline. Language values are normalized to Czech lowercase at decode (`normalize
   build_type=workflow, cname set via API; DNS CNAME managed outside this repo).
   Build reads `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` from repo secrets
   (set; shared flywheel-core project); the app works fully without them.
-- **iOS** → App Store via Capacitor 8 (`ios/`), `fastlane ios release` from `ios/App/`;
+- **iOS** → App Store via Capacitor 8 (`ios/`). On GitHub's hosted Macs: Actions → *Release iOS*
+  (`.github/workflows/release-ios.yml`, lane `beta` = TestFlight or `release` = upload + metadata,
+  never submits) or tag `ios-vX.Y.Z`; secrets listed in the workflow header. Locally on a Mac:
+  `fastlane ios release` from `ios/App/`;
   listing + privacy answers in `docs/store/ios-metadata.md`, human steps in
   `docs/store/asc-submission-checklist.md`.
 - **Android** → Google Play via the same Capacitor shell (`android/`, committed; icons/splash

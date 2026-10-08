@@ -1,0 +1,114 @@
+# iOS release on GitHub's hosted Macs — no Mac mini needed (free on a public repo).
+#   Actions → Release iOS → Run workflow (lane: beta = TestFlight, release = upload
+#   binary + metadata + screenshots, NOT submitted), or push a tag `ios-vX.Y.Z` (beta).
+# Runs the same lanes as a laptop (ios/App/fastlane/Fastfile). Never submits for
+# review: Pavol taps Submit after testing the TestFlight build on his phone.
+#
+# One-time secrets (Settings → Secrets and variables → Actions):
+#   ASC_KEY_ID, ASC_ISSUER_ID   — App Store Connect API key ids (fastlane/.env on the mini)
+#   ASC_KEY_P8                  — contents of AuthKey_<ASC_KEY_ID>.p8
+#   IOS_DIST_P12_BASE64         — base64 of the Apple Distribution identity (.p12)
+#   IOS_DIST_P12_PASSWORD       — its export password (may be empty)
+# The cert must be the one already registered in the portal: with its private key
+# in the runner's keychain, fastlane `cert` reuses it instead of minting a new one
+# (Apple caps distribution certificates).
+name: Release iOS
+
+on:
+  push:
+    tags: ['ios-v*']
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: 'beta = TestFlight · release = upload + metadata (no submit)'
+        type: choice
+        default: beta
+        options: [beta, release]
+
+concurrency:
+  group: release-ios
+  cancel-in-progress: false # never kill an upload halfway
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    if: github.repository == 'Chartres/bohosluzby'
+    runs-on: macos-15
+    timeout-minutes: 75
+    env:
+      LANE: ${{ inputs.lane || 'beta' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the Fastfile resolves the repo root via git
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Gate — typecheck + tests
+        run: npm run typecheck && npm test
+
+      - name: Secrets present
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          P12: ${{ secrets.IOS_DIST_P12_BASE64 }}
+        run: |
+          missing=""
+          for v in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 P12; do [ -n "${!v}" ] || missing="$missing $v"; done
+          if [ -n "$missing" ]; then
+            echo "::error::missing secrets:$missing (see the header of .github/workflows/release-ios.yml)"
+            exit 1
+          fi
+
+      - name: App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s\n' "$ASC_KEY_P8" > ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
+          printf 'ASC_KEY_ID=%s\nASC_ISSUER_ID=%s\nASC_APPLE_ID=pavol@dravecky.sk\n' "$ASC_KEY_ID" "$ASC_ISSUER_ID" > ios/App/fastlane/.env
+          echo "ASC_KEY_ID=$ASC_KEY_ID" >> "$GITHUB_ENV"
+          echo "ASC_ISSUER_ID=$ASC_ISSUER_ID" >> "$GITHUB_ENV"
+
+      - name: Distribution certificate → temporary keychain
+        env:
+          P12: ${{ secrets.IOS_DIST_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_DIST_P12_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/release.keychain-db"
+          KP="$(uuidgen)"
+          security create-keychain -p "$KP" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KP" "$KEYCHAIN"
+          printf '%s' "$P12" | base64 --decode > "$RUNNER_TEMP/dist.p12"
+          security import "$RUNNER_TEMP/dist.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          rm "$RUNNER_TEMP/dist.p12"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KP" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | sed 's/"//g')
+          security find-identity -v -p codesigning "$KEYCHAIN" | grep -q "Apple Distribution" \
+            || { echo "::error::no Apple Distribution identity in IOS_DIST_P12_BASE64"; exit 1; }
+
+      - name: fastlane ios ${{ env.LANE }}
+        working-directory: ios/App
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          FASTLANE_SKIP_UPDATE_CHECK: '1'
+          FASTLANE_HIDE_CHANGELOG: '1'
+        run: |
+          command -v fastlane >/dev/null || sudo gem install fastlane --no-document
+          fastlane ios "$LANE"
+
+      - name: Remove keychain and key
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/release.keychain-db" 2>/dev/null || true
+          rm -rf ~/.appstoreconnect ios/App/fastlane/.env
