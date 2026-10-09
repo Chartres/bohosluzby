@@ -123,16 +123,21 @@ async function fetchText(url: string, ms = 8000): Promise<string> {
  */
 export async function refreshData(onDownloading?: () => void): Promise<RefreshResult> {
   let asOf = activeAsOf()
+  let bundledV: DataVersion | null = null
   if (!asOf) {
-    const bundled = await loadData<DataVersion>('version.json').catch(() => null)
-    asOf = bundled?.generated ?? null
+    bundledV = await loadData<DataVersion>('version.json').catch(() => null)
+    asOf = bundledV?.generated ?? null
     if (asOf) setAsOf(asOf)
   }
 
   if (!isNative) {
-    const v = await fetch('/data/version.json')
-      .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
-      .catch(() => null)
+    // Reuse the already-fetched bundledV if available to avoid a second fetch on
+    // first visit (web serves fresh data so the bundled file IS the version).
+    const v =
+      bundledV ??
+      (await fetch('/data/version.json')
+        .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
+        .catch(() => null))
     return { asOf: v?.generated ?? asOf, updated: false }
   }
 
