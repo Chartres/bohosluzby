@@ -608,12 +608,19 @@ export default function App() {
     }
   }, [data])
 
+  // Tick every minute so the row list and countdowns advance while the app is open.
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000)
+    return () => clearInterval(id)
+  }, [])
+
   // one shared selector with the map — the seznam and the mapa never disagree.
   // The witness filter is applied on top (over the aggregates, not the service
   // data): keep only Masses carrying ALL selected tags at slot- or church-tier.
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
-    const all = selectUpcoming(new Date(), origin, data.nearby, data.byId, filters, cas, day, {
+    const all = selectUpcoming(now, origin, data.nearby, data.byId, filters, cas, day, {
       limit: witnessTags.length ? Infinity : listLimit,
     })
     if (witnessTags.length === 0) return all
@@ -621,7 +628,7 @@ export default function App() {
       .filter((u) => churchHasTags(u.church.id, massKey(u.church.id, u.service, u.start), witnessTags))
       .slice(0, listLimit)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
-  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick])
+  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, now])
 
   // the no-location path: the six towns with the most churches, one tap each
   const popularCities = useMemo(() => (index ? aggregateCities(index).slice(0, 6) : []), [index])
