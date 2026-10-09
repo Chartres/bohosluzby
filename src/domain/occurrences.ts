@@ -60,7 +60,10 @@ export function pragueMinutes(now: Date): number {
 
 const parseTime = (time: string): [number, number] | null => {
   const m = /^(\d{1,2}):(\d{2})/.exec(time.trim())
-  return m ? [Number(m[1]), Number(m[2])] : null
+  if (!m) return null
+  const hh = Number(m[1])
+  const mm = Number(m[2])
+  return hh < 24 && mm < 60 ? [hh, mm] : null
 }
 
 /**
