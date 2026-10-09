@@ -98,8 +98,11 @@ export function fmtDateCz(iso: string): string {
 export function dayLabel(now: Date, start: Date): string {
   const key = dateKeyFmt.format(start)
   if (key === dateKeyFmt.format(now)) return lang() === 'cs' ? 'dnes' : 'today'
-  if (key === dateKeyFmt.format(new Date(now.getTime() + 86_400_000)))
-    return lang() === 'cs' ? 'zítra' : 'tomorrow'
+  // Add 1 day to the Prague calendar date of `now` (avoids the 24h shortcut
+  // breaking during DST transitions when a Prague day is 23 or 25 hours long).
+  const [yr, mo, dy] = dateKeyFmt.format(now).split('-').map(Number)
+  const tomorrowNoon = new Date(Date.UTC(yr, mo - 1, dy + 1, 12))
+  if (key === dateKeyFmt.format(tomorrowNoon)) return lang() === 'cs' ? 'zítra' : 'tomorrow'
   return weekdayFmt().format(start).toLowerCase()
 }
 
