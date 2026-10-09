@@ -14,7 +14,7 @@ import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
-import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
+import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
@@ -150,7 +150,7 @@ function loadSticky<T>(key: string, opts: { sameDay?: boolean } = {}): T | null 
     if (typeof parsed.savedAt !== 'number' || Date.now() - parsed.savedAt > STICKY_TTL_MS) return null
     // time-of-day prefs (kolem 18:00) mean nothing tomorrow morning — the 12h
     // TTL alone let 23:30's pick survive to 08:00 and open an empty list
-    if (opts.sameDay && parsed.savedAt < new Date().setHours(0, 0, 0, 0)) return null
+    if (opts.sameDay && !samePragueDay(new Date(parsed.savedAt), new Date())) return null
     return parsed.value ?? null
   } catch {
     return null // private mode, or a pre-TTL value written by an older build
