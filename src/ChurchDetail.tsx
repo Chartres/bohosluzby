@@ -349,8 +349,9 @@ export function ChurchDetail({
     let cancelled = false
     setSvc(null)
     setFailed(false)
-    fetch(`/data/services/${church.cell}.json`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`shard ${r.status}`))))
+    // Use loadData (not raw fetch) so native/OTA-refreshed registry is used and
+    // the shared shard cache is hit on repeat opens. (MapView does the same.)
+    loadData<Parameters<typeof decodeShard>[0]>(`services/${church.cell}.json`)
       .then((shard) => {
         if (cancelled) return
         const s = decodeShard(shard).get(church.id)
