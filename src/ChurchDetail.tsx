@@ -104,9 +104,12 @@ const linkCls = 'underline decoration-hairline underline-offset-2 hover:text-ink
 const heroLinkCls = 'underline decoration-paper/40 underline-offset-2 hover:decoration-paper'
 
 function contactHref(type: string, value: string): string | null {
-  if (type === 'www') return value
+  if (type === 'www') return /^https?:\/\//i.test(value) ? value : `https://${value}`
   if (type === 'email') return `mailto:${value}`
-  if (type === 'phone') return `tel:+420${value.replace(/\s/g, '')}`
+  if (type === 'phone') {
+    const digits = value.replace(/\s/g, '')
+    return `tel:${digits.startsWith('+') ? digits : `+420${digits}`}`
+  }
   return null
 }
 
