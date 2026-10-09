@@ -330,7 +330,9 @@ export default function App() {
   const [filters, setFilters] = useState<Filters>(loadFilters)
   const [picking, setPicking] = useState(false) // "změnit": search panel over the list, origin kept
   const [navTarget, setNavTarget] = useState<NavTarget | null>(null) // "trasa" chooser sheet
-  const season = useMemo(() => currentLiturgicalDay(), [])
+  // Tick every minute so time-sensitive memos (season, holy, rows) stay current.
+  const [now, setNow] = useState(() => new Date())
+  const season = useMemo(() => currentLiturgicalDay(now), [now])
   const convertedRef = useRef(false)
   const [dueEntry, setDueEntry] = useState<LedgerEntry | null>(null)
   const [previewDismissed, setPreviewDismissed] = useState(false)
@@ -608,8 +610,6 @@ export default function App() {
     }
   }, [data])
 
-  // Tick every minute so the row list and countdowns advance while the app is open.
-  const [now, setNow] = useState(() => new Date())
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000)
     return () => clearInterval(id)
@@ -632,7 +632,7 @@ export default function App() {
 
   // the no-location path: the six towns with the most churches, one tap each
   const popularCities = useMemo(() => (index ? aggregateCities(index).slice(0, 6) : []), [index])
-  const holy = useMemo(() => holyDayLine(new Date()), [])
+  const holy = useMemo(() => holyDayLine(now), [now])
 
   // list_ready — the aha that needs no click: a list of times stood on screen.
   // Once per visit; how long it took and how the origin was found.
@@ -1025,6 +1025,7 @@ export default function App() {
                 onChange={updateFilters}
                 langs={langs}
                 onReset={resetAll}
+                now={now}
               />
               {/* not on a live fix (offline / last-known / picked city): search is the
                   main CTA — a visible input-shaped button, not a buried "změnit" link */}
@@ -1043,7 +1044,7 @@ export default function App() {
                   "times often change NOW, verify" is a signal the reader can
                   act on; a provenance year wasn't. Not in map mode: chrome
                   budget, the map is a page. */}
-              {!mapMode && <VerifyBanner />}
+              {!mapMode && <VerifyBanner now={now} />}
             </div>
             {view === 'mapa' ? (
               online ? (
@@ -1173,8 +1174,8 @@ export default function App() {
 
 // The day rubric of the ordo, as a picker: which page are you reading?
 // Active day is set in rubric red — day labels are rubrics in a missal.
-function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice) => void }) {
-  const options = useMemo(() => dayOptions(new Date()), [])
+function DayPicker({ day, onChange, now = new Date() }: { day: DayChoice; onChange: (d: DayChoice) => void; now?: Date }) {
+  const options = useMemo(() => dayOptions(now), [now])
   // a bookmarked ?den= must not hide its own chip off-screen
   const activeRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
@@ -1302,8 +1303,8 @@ function GlobeIcon() {
 /** One-line season advisory ("times often change now — verify"), shown only in
  * the windows when parishes actually shuffle schedules (summer, Advent,
  * Christmas, Lent, Easter octave). Missal-quiet: hairline rule, season color. */
-function VerifyBanner() {
-  const season = useMemo(() => verifySeason(new Date()), [])
+function VerifyBanner({ now = new Date() }: { now?: Date } = {}) {
+  const season = useMemo(() => verifySeason(now), [now])
   if (!season) return null
   return (
     <p
@@ -1496,6 +1497,7 @@ function OrdoControls({
   onChange,
   langs,
   onReset,
+  now = new Date(),
 }: {
   day: DayChoice
   onDay: (d: DayChoice) => void
@@ -1505,6 +1507,7 @@ function OrdoControls({
   onChange: (f: Filters) => void
   langs: string[]
   onReset: () => void
+  now?: Date
 }) {
   const [open, setOpen] = useState(false)
   const narrow = useNarrow()
@@ -1574,7 +1577,7 @@ function OrdoControls({
       }
     >
       <p className="rubric mt-2 text-ink-faded">{t('day_group').toLowerCase()}</p>
-      <DayPicker day={day} onChange={onDay} />
+      <DayPicker day={day} onChange={onDay} now={now} />
       <p className="rubric mt-2 text-ink-faded">{t('rubric_when')}</p>
       <div
         role="group"
