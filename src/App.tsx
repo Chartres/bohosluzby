@@ -717,7 +717,7 @@ export default function App() {
     if (feedbackParam) setParam('feedback', null)
   }
   const onCardSubmit = (s: MassFeedback) => {
-    submitFeedback(s)
+    if (!isPreview) submitFeedback(s) // demo card must never write to production
     markAnswered(s.massKey)
   }
   const onCardDismiss = () => {
