@@ -19,6 +19,8 @@ export interface LedgerEntry extends Occurrence {
 
 const LEDGER_KEY = 'bohosluzby:massLedger'
 const NEVER_ASK_KEY = 'bohosluzby:massNeverAsk'
+/** Answered entries older than this are dropped on every write. */
+const PRUNE_AFTER_MS = 7 * 86_400_000
 
 function read(): LedgerEntry[] {
   try {
@@ -31,8 +33,11 @@ function read(): LedgerEntry[] {
 }
 
 function write(list: LedgerEntry[]): void {
+  // Prune answered entries older than PRUNE_AFTER_MS to bound ledger growth.
+  const cutoff = Date.now() - PRUNE_AFTER_MS
+  const pruned = list.filter((e) => !e.answered || new Date(e.startISO).getTime() > cutoff)
   try {
-    localStorage.setItem(LEDGER_KEY, JSON.stringify(list))
+    localStorage.setItem(LEDGER_KEY, JSON.stringify(pruned))
   } catch {
     // private mode — the card just won't reappear, no crash
   }
