@@ -7,11 +7,10 @@ import { WITNESS_CHIPS, type Aggregate, type MassFeedback } from '../domain/feed
 import { supabase } from './supabase'
 import { resolveIds } from '../platform/flywheel-client'
 
-// A tag appears on the detail page only after this many independent witnesses.
-// Prod value is 3 (a single device publishes nothing). Local prototype uses 1
-// so the owner sees their own submissions while toying.
-// TODO(prod): set CORROBORATION_MIN = 3
-export const CORROBORATION_MIN = 1
+// A tag appears on the detail page only after this many independent witnesses
+// (row count across masses for a church; one row per device per mass).
+// 3 ensures a single device cannot surface chips on its own.
+export const CORROBORATION_MIN = 3
 
 const STORE_KEY = 'bohosluzby:massFeedback'
 const SUGGEST_KEY = 'bohosluzby:tagSuggestions'

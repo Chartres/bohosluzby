@@ -27,26 +27,53 @@ const aggAfterLoad = async (churchId: string) => {
   return aggregateFor(churchId).slots
 }
 
+// Bypass resolveIds() to write rows with explicit deviceIds — lets tests meet
+// CORROBORATION_MIN (3 distinct devices) without needing a real multi-device env.
+const STORE_KEY = 'bohosluzby:massFeedback'
+const subAs = (deviceId: string, massKey: string, chips: string[]) => {
+  const list = JSON.parse(localStorage.getItem(STORE_KEY) ?? '[]') as Array<{
+    churchId: string; massKey: string; deviceId: string; chips: string[]
+  }>
+  const i = list.findIndex((r) => r.churchId === 'c1' && r.massKey === massKey && r.deviceId === deviceId)
+  const row = { churchId: 'c1', massKey, deviceId, chips }
+  if (i >= 0) list[i] = row; else list.push(row)
+  localStorage.setItem(STORE_KEY, JSON.stringify(list))
+}
+
 describe('aggregateFor', () => {
-  it('counts a witness and surfaces its chosen chips', async () => {
-    sub('c1|w7|09:30', ['hluboky_prozitek', 'krasny_zpev'])
+  it('counts witnesses and surfaces chips once corroboration threshold met', async () => {
+    // Three distinct devices must select a chip before it surfaces (CORROBORATION_MIN=3).
+    subAs('d1', 'c1|w7|09:30', ['hluboky_prozitek', 'krasny_zpev'])
+    subAs('d2', 'c1|w7|09:30', ['hluboky_prozitek', 'krasny_zpev'])
+    subAs('d3', 'c1|w7|09:30', ['hluboky_prozitek', 'krasny_zpev'])
     const agg = (await aggAfterLoad('c1')).get('c1|w7|09:30')!
-    expect(agg.witnesses).toBe(1)
+    expect(agg.witnesses).toBe(3)
     expect(agg.chips.map((c) => c.id)).toEqual(['hluboky_prozitek', 'krasny_zpev'])
   })
 
+  it('single witness is counted but chips are below threshold', async () => {
+    sub('c1|w7|09:30', ['hluboky_prozitek'])
+    const agg = (await aggAfterLoad('c1')).get('c1|w7|09:30')!
+    expect(agg.witnesses).toBe(1)
+    expect(agg.chips).toHaveLength(0) // count=1 < CORROBORATION_MIN=3
+  })
+
   it('returns chips in the locked display order, not selection order', async () => {
-    sub('c1|w7|09:30', ['krasny_zpev', 'hluboky_prozitek'])
+    subAs('d1', 'c1|w7|09:30', ['krasny_zpev', 'hluboky_prozitek'])
+    subAs('d2', 'c1|w7|09:30', ['krasny_zpev', 'hluboky_prozitek'])
+    subAs('d3', 'c1|w7|09:30', ['krasny_zpev', 'hluboky_prozitek'])
     const agg = (await aggAfterLoad('c1')).get('c1|w7|09:30')!
     expect(agg.chips.map((c) => c.id)).toEqual(['hluboky_prozitek', 'krasny_zpev'])
   })
 
   it('hides chips below the corroboration threshold', async () => {
     // an unselected chip has count 0 < CORROBORATION_MIN → never shown
-    sub('c1|w7|09:30', ['hluboky_prozitek'])
+    subAs('d1', 'c1|w7|09:30', ['hluboky_prozitek'])
+    subAs('d2', 'c1|w7|09:30', ['hluboky_prozitek'])
+    subAs('d3', 'c1|w7|09:30', ['hluboky_prozitek'])
     const agg = (await aggAfterLoad('c1')).get('c1|w7|09:30')!
     expect(agg.chips.some((c) => c.id === 'krasny_zpev')).toBe(false)
-    expect(CORROBORATION_MIN).toBe(1) // local prototype value
+    expect(CORROBORATION_MIN).toBe(3) // single device cannot publish chips
   })
 
   it('keeps masses and churches separate; ignores other churches', async () => {
@@ -61,8 +88,9 @@ describe('aggregateFor', () => {
     sub('c1|w7|09:30', ['hluboky_prozitek'])
     sub('c1|w7|09:30', ['hluboky_prozitek', 'krasny_zpev']) // same device, revised
     const agg = (await aggAfterLoad('c1')).get('c1|w7|09:30')!
-    expect(agg.witnesses).toBe(1)
-    expect(agg.chips.map((c) => c.id)).toEqual(['hluboky_prozitek', 'krasny_zpev'])
+    expect(agg.witnesses).toBe(1) // one device still counts as one witness
+    // chips are below threshold (1 device < CORROBORATION_MIN=3) — that is expected
+    expect(agg.chips).toHaveLength(0)
   })
 })
 
@@ -113,15 +141,17 @@ describe('rankDistinctive', () => {
 
 describe('rankChurchTags', () => {
   it('ranks the church-wide tier and caps it at three', async () => {
-    // one church, four distinct tags across its Masses → top 3 by count
-    sub('c1|w7|09:30', ['hluboky_prozitek'])
-    sub('c1|w1|18:00', ['hluboky_prozitek', 'krasny_zpev'])
-    sub('c1|w2|18:00', ['hluboky_prozitek', 'krasny_zpev', 'vrele_prijeti'])
-    sub('c1|w3|18:00', ['rodinna_atmosfera'])
+    // Multiple devices across masses: counts are church-wide (across all mass keys).
+    // hluboky: 4, krasny: 3, vrele: 3, rodinna: 1 → top 3 after cap, hluboky first.
+    subAs('d1', 'c1|w7|09:30', ['hluboky_prozitek', 'krasny_zpev', 'vrele_prijeti'])
+    subAs('d2', 'c1|w7|09:30', ['hluboky_prozitek', 'krasny_zpev', 'vrele_prijeti'])
+    subAs('d3', 'c1|w7|09:30', ['hluboky_prozitek', 'krasny_zpev', 'vrele_prijeti'])
+    subAs('d4', 'c1|w7|09:30', ['hluboky_prozitek'])
+    subAs('d5', 'c1|w1|18:00', ['rodinna_atmosfera'])
     await loadAggregates(['c1'])
     const tags = rankChurchTags('c1')
     expect(tags).toHaveLength(3)
-    expect(tags[0].id).toBe('hluboky_prozitek') // count 3, the loudest
+    expect(tags[0].id).toBe('hluboky_prozitek') // count 4, the loudest
   })
 })
 
