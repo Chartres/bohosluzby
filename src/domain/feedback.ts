@@ -69,7 +69,7 @@ export type MassRef = { time: string; lang: string; greek: boolean; days?: strin
 /** Byzantine if Greek-Catholic; Latin if the language is Latin (incl. the
  * tridentská variant); ordinary form otherwise. */
 export const riteOf = (s: { greek: boolean; lang: string }): Rite =>
-  s.greek ? 'byz' : /^latin/i.test(s.lang) || s.lang === 'Latine' ? 'lat' : 'ord'
+  s.greek ? 'byz' : /^latin/i.test(s.lang) ? 'lat' : 'ord'
 
 export const slotKey = (
   churchId: string,
