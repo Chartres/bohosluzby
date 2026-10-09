@@ -3,6 +3,7 @@
 // docs/PILGRIM-WITNESS-PLAN.md keeps the cohort on-device, no location check.
 
 import type { Occurrence } from '../domain/feedback'
+import { readList, writeJson } from './storage'
 
 /** How long after a Mass starts before we ask "were you there?". */
 export const DUE_AFTER_MIN = 60
@@ -22,25 +23,15 @@ const NEVER_ASK_KEY = 'bohosluzby:massNeverAsk'
 /** Answered entries older than this are dropped on every write. */
 const PRUNE_AFTER_MS = 7 * 86_400_000
 
-function read(): LedgerEntry[] {
-  try {
-    const raw = localStorage.getItem(LEDGER_KEY)
-    const list = raw ? (JSON.parse(raw) as unknown) : []
-    return Array.isArray(list) ? (list as LedgerEntry[]) : []
-  } catch {
-    return []
-  }
-}
+const read = (): LedgerEntry[] => readList<LedgerEntry>(LEDGER_KEY)
 
 function write(list: LedgerEntry[]): void {
   // Prune answered entries older than PRUNE_AFTER_MS to bound ledger growth.
   const cutoff = Date.now() - PRUNE_AFTER_MS
-  const pruned = list.filter((e) => !e.answered || new Date(e.startISO).getTime() > cutoff)
-  try {
-    localStorage.setItem(LEDGER_KEY, JSON.stringify(pruned))
-  } catch {
-    // private mode — the card just won't reappear, no crash
-  }
+  writeJson(
+    LEDGER_KEY,
+    list.filter((e) => !e.answered || new Date(e.startISO).getTime() > cutoff),
+  )
 }
 
 /** Record one expected attendance. One entry per massKey — a mass already in the

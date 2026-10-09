@@ -6,6 +6,7 @@
 import { WITNESS_CHIPS, type Aggregate, type MassFeedback } from '../domain/feedback'
 import { supabase } from './supabase'
 import { resolveIds } from '../platform/flywheel-client'
+import { readList, writeJson } from './storage'
 
 // A tag appears on the detail page only after this many independent witnesses
 // (row count across masses for a church; one row per device per mass).
@@ -27,23 +28,8 @@ function deviceId(): string {
   return resolveIds().visitor_id
 }
 
-function read(): Row[] {
-  try {
-    const raw = localStorage.getItem(STORE_KEY)
-    const list = raw ? (JSON.parse(raw) as unknown) : []
-    return Array.isArray(list) ? (list as Row[]) : []
-  } catch {
-    return []
-  }
-}
-
-function write(list: Row[]): void {
-  try {
-    localStorage.setItem(STORE_KEY, JSON.stringify(list))
-  } catch {
-    /* private mode */
-  }
-}
+const read = (): Row[] => readList<Row>(STORE_KEY)
+const write = (list: Row[]): void => writeJson(STORE_KEY, list)
 
 /** Two directness tiers for one church: the per-Mass slot aggregates (specific)
  * and one church-wide aggregate folding every Mass (ambient). */
