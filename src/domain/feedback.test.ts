@@ -89,4 +89,14 @@ describe('occurrenceOf — write-path fields', () => {
     const occ = occurrenceOf({ date: '2026-08-15', time: '10:00', lang: 'česky', greek: false }, sun)
     expect(occ.massDate).toBe('2026-08-15')
   })
+  it('derives one-off weekday from service.date, not attendedDate', () => {
+    // 2026-08-15 is Saturday (ISO weekday 6); attendedDate is Sunday (7)
+    const occ = occurrenceOf({ date: '2026-08-15', time: '10:00', lang: 'česky', greek: false }, sun)
+    expect(occ.weekday).toBe(6)
+  })
+  it('one-off weekday survives a suffixed time like "10:00 pouze"', () => {
+    // Before fix: new Date('2026-08-15T10:00 pouze') → Invalid Date → NaN weekday
+    const occ = occurrenceOf({ date: '2026-08-15', time: '10:00 pouze', lang: 'česky', greek: false }, sun)
+    expect(occ.weekday).toBe(6)
+  })
 })
