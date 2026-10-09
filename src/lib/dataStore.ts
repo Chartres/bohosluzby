@@ -134,9 +134,13 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
     if (current && churches.length < 0.9 * current) return { asOf, updated: false }
 
     const cells = [...new Set(churches.map((r) => r[6] as string))]
+    if (cells.some((c) => !c)) return { asOf, updated: false } // guard r[6] undefined
     const shards = await Promise.all(
       cells.map(async (c) => [c, await fetchText(`${REMOTE}/data/services/${c}.json`)] as const),
     )
+    // Invalidate the in-memory flag before writes begin so concurrent loadData
+    // calls see bundled data instead of a mixed old/new shard state.
+    cacheReady = false
     for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
     await writeCache('churches.json', churchesText)
     await writeCache('version.json', JSON.stringify(remote)) // marker, written last
