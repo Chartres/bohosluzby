@@ -448,6 +448,8 @@ export function ChurchDetail({
     for (const s of svc.regular) {
       const start = recentOccurrence({ days: s.days, time: s.time }, now, RECENT_VIEW_MIN)
       if (!start) continue
+      const { y, m, d } = pragueToday(start)
+      if (!parseNote(s.note).runsOn(y, m, d)) continue
       recordExpectedAttendance({
         churchId: church.id,
         massKey: massKey(church.id, s, start),
