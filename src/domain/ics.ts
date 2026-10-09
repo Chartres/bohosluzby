@@ -2,7 +2,8 @@
 // an RRULE; times are Prague wall clock via TZID + an explicit VTIMEZONE so
 // every client agrees across DST.
 import type { Church, ExtraService, Service } from './data'
-import { nextOccurrences, pragueToday } from './occurrences'
+import { nextOccurrences, pragueToday, pragueMinutes } from './occurrences'
+import { parseNote } from './notes'
 import { churchUrl } from './site'
 
 const BYDAY: Record<string, string> = { 1: 'MO', 2: 'TU', 3: 'WE', 4: 'TH', 5: 'FR', 6: 'SA', 7: 'SU' }
@@ -39,11 +40,21 @@ const pad = (n: number) => String(n).padStart(2, '0')
 export function buildICS(church: Church, service: Service | ExtraService, now: Date): string | null {
   const spec =
     'days' in service ? { days: service.days, time: service.time } : { date: service.date, time: service.time }
-  const first = nextOccurrences(spec, now, 8)[0]
+  // M-2: filter by note's runsOn so DTSTART lands on a valid occurrence.
+  // Horizon 70 days covers the worst case (skip July+August from late June).
+  const note = parseNote(service.note ?? '')
+  const first = nextOccurrences(spec, now, 70).find((occ) => {
+    const { y, m, d } = pragueToday(occ)
+    return note.runsOn(y, m, d)
+  })
   if (!first) return null
 
   const w = pragueToday(first)
-  const [hh, mm] = service.time.split(':').map(Number)
+  // M-3: derive hh/mm from the occurrence instant, not service.time string, to
+  // avoid NaN when the registry stores times with a suffix ("10:00 pouze").
+  const totalMin = pragueMinutes(first)
+  const hh = Math.floor(totalMin / 60)
+  const mm = totalMin % 60
   const dtstart = `${w.y}${pad(w.m)}${pad(w.d)}T${pad(hh)}${pad(mm)}00`
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`
