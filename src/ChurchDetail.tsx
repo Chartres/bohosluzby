@@ -9,7 +9,7 @@ import {
   type ExtraService,
   type Service,
 } from './domain/data'
-import { nextOccurrences, pragueToday, recentOccurrence } from './domain/occurrences'
+import { nextOccurrences, pragueIsoDate, pragueToday, recentOccurrence } from './domain/occurrences'
 import { noteUncertain, parseNote } from './domain/notes'
 import { parseConfessionFromNote } from './domain/confession'
 import { fmtDateCz, isStale, withReferral } from './domain/format'
@@ -111,11 +111,6 @@ function contactHref(type: string, value: string): string | null {
     return `tel:${digits.startsWith('+') ? digits : `+420${digits}`}`
   }
   return null
-}
-
-const isoToday = (): string => {
-  const { y, m, d } = pragueToday(new Date())
-  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
 /** Per-service actions: add to calendar (native share sheet / web download) and,
@@ -461,7 +456,7 @@ export function ChurchDetail({
     }
   }, [svc, church])
 
-  const extras = svc ? svc.extra.filter((x) => x.date >= isoToday()) : []
+  const extras = svc ? svc.extra.filter((x) => x.date >= pragueIsoDate(new Date())) : []
 
   // Confession coverage: the ~6 churches with a typed "svátost smíření" row PLUS
   // times mined from Mass notes for the ~37 that only mention confession in free
