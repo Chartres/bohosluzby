@@ -74,7 +74,8 @@ function rowText(time: string, lang: string, greek: 0 | 1, type: string, note: s
 
 function byDay(rows: Row[], text: (r: Row) => string): string {
   return DAY_ORDER.map((day) => {
-    const items = rows.filter((r) => r[0].includes(day)).sort((a, b) => a[1].localeCompare(b[1]))
+    const toMin = (t: string) => { const m = /^(\d{1,2}):(\d{2})/.exec(t); return m ? +m[1] * 60 + +m[2] : 0 }
+    const items = rows.filter((r) => r[0].includes(day)).sort((a, b) => toMin(a[1]) - toMin(b[1]))
     if (items.length === 0) return ''
     return `<h3>${DAY_NAME[day]}</h3>\n<ul>${items.map((r) => `<li>${esc(text(r))}</li>`).join('')}</ul>`
   }).join('\n')

@@ -58,6 +58,17 @@ describe('summer holidays and school year', () => {
     expect(runs('školní rok', '2026-09-06')).toBe(true)
     expect(runs('ve školním roce pro děti', '2026-07-06')).toBe(false)
   })
+  it('mimo/kromě školní rok = July/August only', () => {
+    expect(runs('mimo školní rok', '2026-10-06')).toBe(false) // Oct = school year → excluded
+    expect(runs('mimo školní rok', '2026-07-06')).toBe(true)  // Jul = not school year → runs
+    expect(runs('kromě školního roku', '2026-10-06')).toBe(false)
+    expect(runs('kromě školního roku', '2026-07-06')).toBe(true)
+    expect(noteUncertain('mimo školní rok')).toBe(false)
+  })
+  it('ve školním roce se nekoná = summer-only', () => {
+    expect(runs('ve školním roce se nekoná', '2026-10-06')).toBe(false)
+    expect(runs('ve školním roce se nekoná', '2026-07-06')).toBe(true)
+  })
   it('pouze o letních prázdninách runs only in July/August', () => {
     expect(runs('pouze o letních prázdninách', '2026-07-06')).toBe(true)
     expect(runs('pouze o letních prázdninách', '2026-09-06')).toBe(false)

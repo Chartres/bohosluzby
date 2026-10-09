@@ -5,6 +5,7 @@ import { vi } from 'vitest'
 // Force supabase null so a local .env.local can't make witness aggregates hit the
 // live DB (CI has no env). The app + witness store fall back to localStorage.
 vi.mock('./lib/supabase', () => ({ supabase: null }))
+import { clearAggregateCache } from './lib/feedbackStore'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App, { dayOptions, geoFailKey } from './App'
@@ -127,6 +128,7 @@ afterEach(() => {
   vi.useRealTimers()
   vi.unstubAllGlobals()
   Object.defineProperty(navigator, 'onLine', { value: true, configurable: true }) // reset offline overrides
+  clearAggregateCache() // prevent loadedIds leaking across tests
 })
 
 describe('Marie finds the nearest mass', () => {
@@ -551,9 +553,14 @@ describe('Marie finds the nearest mass', () => {
   })
 
   it('list rows carry a quiet witness mark only where testimony is corroborated', async () => {
+    // Three distinct devices are required to reach CORROBORATION_MIN=3.
     localStorage.setItem(
       'bohosluzby:massFeedback',
-      JSON.stringify([{ churchId: '1', massKey: 'm1', deviceId: 'd1', chips: ['krasny_zpev'] }]),
+      JSON.stringify([
+        { churchId: '1', massKey: 'm1', deviceId: 'd1', chips: ['krasny_zpev'] },
+        { churchId: '1', massKey: 'm1', deviceId: 'd2', chips: ['krasny_zpev'] },
+        { churchId: '1', massKey: 'm1', deviceId: 'd3', chips: ['krasny_zpev'] },
+      ]),
     )
     stubGeolocation('granted')
     render(<App />)

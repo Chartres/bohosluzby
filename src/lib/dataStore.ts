@@ -54,8 +54,26 @@ async function writeCache(path: string, text: string): Promise<void> {
 
 async function ready(): Promise<boolean> {
   if (!isNative) return false
-  if (cacheReady === null) cacheReady = (await readCache('version.json')) !== null
-  return cacheReady
+  if (cacheReady !== null) return cacheReady
+  const cached = await readCache('version.json')
+  if (!cached) { cacheReady = false; return false }
+  // After an app update the bundled registry may be newer than the cache.
+  // Compare dates: if bundled is newer, discard the stale cache so loadData
+  // falls through to the fresh bundled version.
+  try {
+    const bundledV = await fetch('/data/version.json')
+      .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
+      .catch(() => null)
+    const cachedGenerated = (JSON.parse(cached) as Partial<DataVersion>).generated ?? ''
+    if (bundledV?.generated && cachedGenerated < bundledV.generated) {
+      cacheReady = false
+      return false
+    }
+  } catch {
+    // Parse/network error: assume cache is fine, proceed normally
+  }
+  cacheReady = true
+  return true
 }
 
 /** Load a /data/<path> JSON from the freshest available source: cache → bundled. */
@@ -105,16 +123,21 @@ async function fetchText(url: string, ms = 8000): Promise<string> {
  */
 export async function refreshData(onDownloading?: () => void): Promise<RefreshResult> {
   let asOf = activeAsOf()
+  let bundledV: DataVersion | null = null
   if (!asOf) {
-    const bundled = await loadData<DataVersion>('version.json').catch(() => null)
-    asOf = bundled?.generated ?? null
+    bundledV = await loadData<DataVersion>('version.json').catch(() => null)
+    asOf = bundledV?.generated ?? null
     if (asOf) setAsOf(asOf)
   }
 
   if (!isNative) {
-    const v = await fetch('/data/version.json')
-      .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
-      .catch(() => null)
+    // Reuse the already-fetched bundledV if available to avoid a second fetch on
+    // first visit (web serves fresh data so the bundled file IS the version).
+    const v =
+      bundledV ??
+      (await fetch('/data/version.json')
+        .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
+        .catch(() => null))
     return { asOf: v?.generated ?? asOf, updated: false }
   }
 
@@ -134,9 +157,13 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
     if (current && churches.length < 0.9 * current) return { asOf, updated: false }
 
     const cells = [...new Set(churches.map((r) => r[6] as string))]
+    if (cells.some((c) => !c)) return { asOf, updated: false } // guard r[6] undefined
     const shards = await Promise.all(
       cells.map(async (c) => [c, await fetchText(`${REMOTE}/data/services/${c}.json`)] as const),
     )
+    // Invalidate the in-memory flag before writes begin so concurrent loadData
+    // calls see bundled data instead of a mixed old/new shard state.
+    cacheReady = false
     for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
     await writeCache('churches.json', churchesText)
     await writeCache('version.json', JSON.stringify(remote)) // marker, written last

@@ -11,7 +11,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { ChurchDetail } from './ChurchDetail'
 import App from './App'
 import MapView from './MapView'
-import { aggregateFor, loadAggregates } from './lib/feedbackStore'
+import { aggregateFor, clearAggregateCache, loadAggregates } from './lib/feedbackStore'
 import type { Church, IndexRow } from './domain/data'
 
 const NO_FILTERS = {
@@ -67,16 +67,20 @@ function stubDetailFetch() {
 describe('witness gate OFF — church detail', () => {
   beforeEach(() => {
     localStorage.clear()
-    // Seed real witness testimony for church "1": with the feature ON this would
-    // paint the "V tomto kostele poutníci často zmiňují" block. The gate must
-    // suppress it even though the data is present in the store.
+    // Seed real witness testimony for church "1" with 3 devices (≥ CORROBORATION_MIN):
+    // with the feature ON this would paint the "V tomto kostele poutníci často zmiňují"
+    // block. The gate must suppress it even though the data is present in the store.
     localStorage.setItem(
       'bohosluzby:massFeedback',
-      JSON.stringify([{ churchId: '1', massKey: 'm1', deviceId: 'd1', chips: ['krasny_zpev'] }]),
+      JSON.stringify([
+        { churchId: '1', massKey: 'm1', deviceId: 'd1', chips: ['krasny_zpev'] },
+        { churchId: '1', massKey: 'm1', deviceId: 'd2', chips: ['krasny_zpev'] },
+        { churchId: '1', massKey: 'm1', deviceId: 'd3', chips: ['krasny_zpev'] },
+      ]),
     )
     stubDetailFetch()
   })
-  afterEach(() => vi.unstubAllGlobals())
+  afterEach(() => { vi.unstubAllGlobals(); clearAggregateCache() })
 
   it('hides every witness surface while confession, photo, and schedule stay', async () => {
     await loadAggregates(['1']) // fold the seeded mirror into the shared cache
@@ -132,6 +136,7 @@ describe('witness gate OFF — filter sheet', () => {
   afterEach(() => {
     vi.useRealTimers()
     vi.unstubAllGlobals()
+    clearAggregateCache()
   })
 
   it('has no "Ohlasy poutníků" section in the filters', async () => {

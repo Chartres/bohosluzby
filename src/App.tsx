@@ -12,9 +12,9 @@ import {
 import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
-import { pragueToday } from './domain/occurrences'
+import { pragueIsoDate, pragueToday } from './domain/occurrences'
 import { currentLiturgicalDay, liturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
-import { fmtDistance, fmtTime, fmtUntil, dayLabel } from './domain/format'
+import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
@@ -150,7 +150,7 @@ function loadSticky<T>(key: string, opts: { sameDay?: boolean } = {}): T | null 
     if (typeof parsed.savedAt !== 'number' || Date.now() - parsed.savedAt > STICKY_TTL_MS) return null
     // time-of-day prefs (kolem 18:00) mean nothing tomorrow morning — the 12h
     // TTL alone let 23:30's pick survive to 08:00 and open an empty list
-    if (opts.sameDay && parsed.savedAt < new Date().setHours(0, 0, 0, 0)) return null
+    if (opts.sameDay && !samePragueDay(new Date(parsed.savedAt), new Date())) return null
     return parsed.value ?? null
   } catch {
     return null // private mode, or a pre-TTL value written by an older build
@@ -299,7 +299,6 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
     const svc = data.byId.get(c.id)?.regular[0]
     if (!svc) continue
     const weekday = Number(svc.days[0])
-    const { y, m, d } = pragueToday(new Date())
     return {
       churchId: c.id,
       massKey: slotKey(c.id, weekday, svc.time, riteOf(svc), svc.lang),
@@ -309,7 +308,7 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
       time: svc.time,
       rite: riteOf(svc),
       lang: svc.lang,
-      massDate: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      massDate: pragueIsoDate(new Date()),
     }
   }
   return null
@@ -330,7 +329,9 @@ export default function App() {
   const [filters, setFilters] = useState<Filters>(loadFilters)
   const [picking, setPicking] = useState(false) // "změnit": search panel over the list, origin kept
   const [navTarget, setNavTarget] = useState<NavTarget | null>(null) // "trasa" chooser sheet
-  const season = useMemo(() => currentLiturgicalDay(), [])
+  // Tick every minute so time-sensitive memos (season, holy, rows) stay current.
+  const [now, setNow] = useState(() => new Date())
+  const season = useMemo(() => currentLiturgicalDay(now), [now])
   const convertedRef = useRef(false)
   const [dueEntry, setDueEntry] = useState<LedgerEntry | null>(null)
   const [previewDismissed, setPreviewDismissed] = useState(false)
@@ -565,13 +566,18 @@ export default function App() {
     const cells = [...new Set(nearby.map((c) => c.cell))]
     Promise.all(
       cells.map((cell) =>
-        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch(() => ({})),
+        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch((err: unknown) => {
+          logError(err, { where: 'load-shard', cell })
+          return null
+        }),
       ),
     )
       .then((shards) => {
         if (cancelled) return
         const byId = new Map<string, ChurchServices>()
-        for (const shard of shards) for (const [id, s] of decodeShard(shard)) byId.set(id, s)
+        for (const shard of shards) {
+          if (shard) for (const [id, s] of decodeShard(shard)) byId.set(id, s)
+        }
         setData({ nearby, byId })
       })
       .catch((err) => {
@@ -608,12 +614,17 @@ export default function App() {
     }
   }, [data])
 
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000)
+    return () => clearInterval(id)
+  }, [])
+
   // one shared selector with the map — the seznam and the mapa never disagree.
   // The witness filter is applied on top (over the aggregates, not the service
   // data): keep only Masses carrying ALL selected tags at slot- or church-tier.
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
-    const all = selectUpcoming(new Date(), origin, data.nearby, data.byId, filters, cas, day, {
+    const all = selectUpcoming(now, origin, data.nearby, data.byId, filters, cas, day, {
       limit: witnessTags.length ? Infinity : listLimit,
     })
     if (witnessTags.length === 0) return all
@@ -621,11 +632,11 @@ export default function App() {
       .filter((u) => churchHasTags(u.church.id, massKey(u.church.id, u.service, u.start), witnessTags))
       .slice(0, listLimit)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
-  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick])
+  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, now])
 
   // the no-location path: the six towns with the most churches, one tap each
   const popularCities = useMemo(() => (index ? aggregateCities(index).slice(0, 6) : []), [index])
-  const holy = useMemo(() => holyDayLine(new Date()), [])
+  const holy = useMemo(() => holyDayLine(now), [now])
 
   // list_ready — the aha that needs no click: a list of times stood on screen.
   // Once per visit; how long it took and how the origin was found.
@@ -710,8 +721,13 @@ export default function App() {
     if (feedbackParam) setParam('feedback', null)
   }
   const onCardSubmit = (s: MassFeedback) => {
-    submitFeedback(s)
-    markAnswered(s.massKey)
+    if (isPreview) {
+      markAnswered(s.massKey) // preview never writes to production; always dismiss
+    } else {
+      // Only mark answered when the server write succeeds; on error the user
+      // will be prompted again on next visit so they can retry.
+      void submitFeedback(s).then((ok) => { if (ok) markAnswered(s.massKey) })
+    }
   }
   const onCardDismiss = () => {
     if (isPreview) {
@@ -1013,6 +1029,7 @@ export default function App() {
                 onChange={updateFilters}
                 langs={langs}
                 onReset={resetAll}
+                now={now}
               />
               {/* not on a live fix (offline / last-known / picked city): search is the
                   main CTA — a visible input-shaped button, not a buried "změnit" link */}
@@ -1031,7 +1048,7 @@ export default function App() {
                   "times often change NOW, verify" is a signal the reader can
                   act on; a provenance year wasn't. Not in map mode: chrome
                   budget, the map is a page. */}
-              {!mapMode && <VerifyBanner />}
+              {!mapMode && <VerifyBanner now={now} />}
             </div>
             {view === 'mapa' ? (
               online ? (
@@ -1161,8 +1178,8 @@ export default function App() {
 
 // The day rubric of the ordo, as a picker: which page are you reading?
 // Active day is set in rubric red — day labels are rubrics in a missal.
-function DayPicker({ day, onChange }: { day: DayChoice; onChange: (d: DayChoice) => void }) {
-  const options = useMemo(() => dayOptions(new Date()), [])
+function DayPicker({ day, onChange, now = new Date() }: { day: DayChoice; onChange: (d: DayChoice) => void; now?: Date }) {
+  const options = useMemo(() => dayOptions(now), [now])
   // a bookmarked ?den= must not hide its own chip off-screen
   const activeRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
@@ -1290,8 +1307,8 @@ function GlobeIcon() {
 /** One-line season advisory ("times often change now — verify"), shown only in
  * the windows when parishes actually shuffle schedules (summer, Advent,
  * Christmas, Lent, Easter octave). Missal-quiet: hairline rule, season color. */
-function VerifyBanner() {
-  const season = useMemo(() => verifySeason(new Date()), [])
+function VerifyBanner({ now = new Date() }: { now?: Date } = {}) {
+  const season = useMemo(() => verifySeason(now), [now])
   if (!season) return null
   return (
     <p
@@ -1484,6 +1501,7 @@ function OrdoControls({
   onChange,
   langs,
   onReset,
+  now = new Date(),
 }: {
   day: DayChoice
   onDay: (d: DayChoice) => void
@@ -1493,6 +1511,7 @@ function OrdoControls({
   onChange: (f: Filters) => void
   langs: string[]
   onReset: () => void
+  now?: Date
 }) {
   const [open, setOpen] = useState(false)
   const narrow = useNarrow()
@@ -1562,7 +1581,7 @@ function OrdoControls({
       }
     >
       <p className="rubric mt-2 text-ink-faded">{t('day_group').toLowerCase()}</p>
-      <DayPicker day={day} onChange={onDay} />
+      <DayPicker day={day} onChange={onDay} now={now} />
       <p className="rubric mt-2 text-ink-faded">{t('rubric_when')}</p>
       <div
         role="group"
