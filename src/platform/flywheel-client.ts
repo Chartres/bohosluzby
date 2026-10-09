@@ -62,9 +62,18 @@ export interface FeedbackRow {
   created_at: string
 }
 
+// Per-key ephemeral fallbacks when storage is unavailable — unique per session,
+// not shared across devices the way a static 'anon' string would be.
+const _fallbacks = new Map<string, string>()
+const fallback = (key: string): string => {
+  let v = _fallbacks.get(key)
+  if (!v) { v = crypto.randomUUID(); _fallbacks.set(key, v) }
+  return v
+}
+
 function readId(storage: Storage | undefined, key: string): string {
   try {
-    if (!storage) return 'anon'
+    if (!storage) return fallback(key)
     let v = storage.getItem(key)
     if (!v) {
       v = crypto.randomUUID()
@@ -72,7 +81,7 @@ function readId(storage: Storage | undefined, key: string): string {
     }
     return v
   } catch {
-    return 'anon'
+    return fallback(key)
   }
 }
 
