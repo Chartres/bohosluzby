@@ -567,13 +567,18 @@ export default function App() {
     const cells = [...new Set(nearby.map((c) => c.cell))]
     Promise.all(
       cells.map((cell) =>
-        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch(() => ({})),
+        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch((err: unknown) => {
+          logError(err, { where: 'load-shard', cell })
+          return null
+        }),
       ),
     )
       .then((shards) => {
         if (cancelled) return
         const byId = new Map<string, ChurchServices>()
-        for (const shard of shards) for (const [id, s] of decodeShard(shard)) byId.set(id, s)
+        for (const shard of shards) {
+          if (shard) for (const [id, s] of decodeShard(shard)) byId.set(id, s)
+        }
         setData({ nearby, byId })
       })
       .catch((err) => {
