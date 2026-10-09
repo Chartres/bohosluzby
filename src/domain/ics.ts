@@ -31,7 +31,26 @@ const VTIMEZONE = [
 ]
 
 const escapeText = (s: string): string =>
-  s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
+  s
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r\n/g, '\\n')
+    .replace(/\r/g, '\\n')
+    .replace(/\n/g, '\\n')
+
+/** RFC 5545 §3.1 line folding: split at 75 octets, continuation lines start
+ * with a space. Octets, not chars — ASCII-only content here so char = octet. */
+const foldLine = (line: string): string => {
+  if (line.length <= 75) return line
+  const parts: string[] = [line.slice(0, 75)]
+  let i = 75
+  while (i < line.length) {
+    parts.push('\r\n ' + line.slice(i, i + 74))
+    i += 74
+  }
+  return parts.join('')
+}
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -81,5 +100,5 @@ export function buildICS(church: Church, service: Service | ExtraService, now: D
     'END:VEVENT',
     'END:VCALENDAR',
   ]
-  return lines.join('\r\n') + '\r\n'
+  return lines.map(foldLine).join('\r\n') + '\r\n'
 }
