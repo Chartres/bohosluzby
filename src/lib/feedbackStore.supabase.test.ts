@@ -37,13 +37,14 @@ vi.mock('../platform/flywheel-client', () => ({
   resolveIds: () => ({ visitor_id: 'device-under-test' }),
 }))
 
-import { aggregateFor, churchHasTags, loadAggregates, submitFeedback } from './feedbackStore'
+import { aggregateFor, churchHasTags, clearAggregateCache, loadAggregates, submitFeedback } from './feedbackStore'
 
 beforeEach(() => {
   h.rows = []
   h.query = null
   h.invoked = null
   localStorage.clear()
+  clearAggregateCache()
 })
 
 describe('loadAggregates (supabase stub)', () => {

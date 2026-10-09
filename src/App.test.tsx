@@ -5,6 +5,7 @@ import { vi } from 'vitest'
 // Force supabase null so a local .env.local can't make witness aggregates hit the
 // live DB (CI has no env). The app + witness store fall back to localStorage.
 vi.mock('./lib/supabase', () => ({ supabase: null }))
+import { clearAggregateCache } from './lib/feedbackStore'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App, { dayOptions, geoFailKey } from './App'
@@ -127,6 +128,7 @@ afterEach(() => {
   vi.useRealTimers()
   vi.unstubAllGlobals()
   Object.defineProperty(navigator, 'onLine', { value: true, configurable: true }) // reset offline overrides
+  clearAggregateCache() // prevent loadedIds leaking across tests
 })
 
 describe('Marie finds the nearest mass', () => {

@@ -55,6 +55,9 @@ export interface ChurchAggregate {
 // In-memory rollup cache, filled by loadAggregates(), read synchronously by
 // aggregateFor(). Empty until a load resolves for that church.
 const cache = new Map<string, ChurchAggregate>()
+// IDs already fetched this session — skip on repeat pans to avoid unbounded
+// Supabase .in() lists and per-pan round-trips.
+const loadedIds = new Set<string>()
 
 interface Tally {
   devices: Set<string>
@@ -102,10 +105,18 @@ function aggregate(rows: Row[]): Map<string, ChurchAggregate> {
   return out
 }
 
+/** Reset the in-memory cache and the per-session loaded-id tracker.
+ * Call in test afterEach to prevent state leaking between tests. */
+export function clearAggregateCache(): void {
+  cache.clear()
+  loadedIds.clear()
+}
+
 /** Fetch visible witness rows for the given churches and refresh the cache.
- * Supabase when configured; localStorage mirror otherwise (offline / tests). */
+ * Supabase when configured; localStorage mirror otherwise (offline / tests).
+ * IDs already loaded this session are skipped to avoid per-pan round-trips. */
 export async function loadAggregates(churchIds: string[]): Promise<void> {
-  const ids = [...new Set(churchIds)].filter(Boolean)
+  const ids = [...new Set(churchIds)].filter(Boolean).filter((id) => !loadedIds.has(id))
   if (ids.length === 0) return
   let rows: Row[]
   if (supabase) {
@@ -126,7 +137,10 @@ export async function loadAggregates(churchIds: string[]): Promise<void> {
   }
   const rolled = aggregate(rows)
   // Set every requested church (default empty) so aggregateFor never returns stale data.
-  for (const id of ids) cache.set(id, rolled.get(id) ?? emptyChurchAggregate(id))
+  for (const id of ids) {
+    cache.set(id, rolled.get(id) ?? emptyChurchAggregate(id))
+    loadedIds.add(id)
+  }
 }
 
 const emptyChurchAggregate = (churchId: string): ChurchAggregate => ({
@@ -169,9 +183,11 @@ export async function submitFeedback(submission: MassFeedback): Promise<boolean>
       },
     })
     if (error) return false
-    void loadAggregates([row.churchId]) // refresh the church after a submit
+    loadedIds.delete(row.churchId) // invalidate cache so the refresh re-fetches
+    void loadAggregates([row.churchId])
     return true
   }
+  loadedIds.delete(row.churchId)
   void loadAggregates([row.churchId])
   return true
 }

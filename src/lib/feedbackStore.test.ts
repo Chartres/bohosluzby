@@ -7,6 +7,7 @@ vi.mock('./supabase', () => ({ supabase: null }))
 import {
   CORROBORATION_MIN,
   aggregateFor,
+  clearAggregateCache,
   divergentChips,
   loadAggregates,
   rankChurchTags,
@@ -15,7 +16,10 @@ import {
   suggestTag,
 } from './feedbackStore'
 
-afterEach(() => localStorage.clear())
+afterEach(() => {
+  localStorage.clear()
+  clearAggregateCache()
+})
 
 // occurrence fields are irrelevant to the localStorage aggregation path (it
 // folds churchId/massKey/deviceId/chips) — pass placeholders to satisfy the type

@@ -11,7 +11,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { ChurchDetail } from './ChurchDetail'
 import App from './App'
 import MapView from './MapView'
-import { aggregateFor, loadAggregates } from './lib/feedbackStore'
+import { aggregateFor, clearAggregateCache, loadAggregates } from './lib/feedbackStore'
 import type { Church, IndexRow } from './domain/data'
 
 const NO_FILTERS = {
@@ -80,7 +80,7 @@ describe('witness gate OFF — church detail', () => {
     )
     stubDetailFetch()
   })
-  afterEach(() => vi.unstubAllGlobals())
+  afterEach(() => { vi.unstubAllGlobals(); clearAggregateCache() })
 
   it('hides every witness surface while confession, photo, and schedule stay', async () => {
     await loadAggregates(['1']) // fold the seeded mirror into the shared cache
@@ -136,6 +136,7 @@ describe('witness gate OFF — filter sheet', () => {
   afterEach(() => {
     vi.useRealTimers()
     vi.unstubAllGlobals()
+    clearAggregateCache()
   })
 
   it('has no "Ohlasy poutníků" section in the filters', async () => {
