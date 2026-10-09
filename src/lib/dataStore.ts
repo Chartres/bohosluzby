@@ -54,8 +54,26 @@ async function writeCache(path: string, text: string): Promise<void> {
 
 async function ready(): Promise<boolean> {
   if (!isNative) return false
-  if (cacheReady === null) cacheReady = (await readCache('version.json')) !== null
-  return cacheReady
+  if (cacheReady !== null) return cacheReady
+  const cached = await readCache('version.json')
+  if (!cached) { cacheReady = false; return false }
+  // After an app update the bundled registry may be newer than the cache.
+  // Compare dates: if bundled is newer, discard the stale cache so loadData
+  // falls through to the fresh bundled version.
+  try {
+    const bundledV = await fetch('/data/version.json')
+      .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
+      .catch(() => null)
+    const cachedGenerated = (JSON.parse(cached) as Partial<DataVersion>).generated ?? ''
+    if (bundledV?.generated && cachedGenerated < bundledV.generated) {
+      cacheReady = false
+      return false
+    }
+  } catch {
+    // Parse/network error: assume cache is fine, proceed normally
+  }
+  cacheReady = true
+  return true
 }
 
 /** Load a /data/<path> JSON from the freshest available source: cache → bundled. */
