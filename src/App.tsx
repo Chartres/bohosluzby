@@ -717,8 +717,13 @@ export default function App() {
     if (feedbackParam) setParam('feedback', null)
   }
   const onCardSubmit = (s: MassFeedback) => {
-    if (!isPreview) submitFeedback(s) // demo card must never write to production
-    markAnswered(s.massKey)
+    if (isPreview) {
+      markAnswered(s.massKey) // preview never writes to production; always dismiss
+    } else {
+      // Only mark answered when the server write succeeds; on error the user
+      // will be prompted again on next visit so they can retry.
+      void submitFeedback(s).then((ok) => { if (ok) markAnswered(s.massKey) })
+    }
   }
   const onCardDismiss = () => {
     if (isPreview) {

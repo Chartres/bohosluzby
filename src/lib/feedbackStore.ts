@@ -137,8 +137,10 @@ const emptyChurchAggregate = (churchId: string): ChurchAggregate => ({
 /** Persist one Mass submission. One row per device per massKey.
  * Writes the localStorage mirror always (offline/dedup); when Supabase is
  * configured the write goes through the submit-feedback Edge Function — the only
- * anon-writable path (direct table INSERT/UPDATE is revoked). */
-export function submitFeedback(submission: MassFeedback): void {
+ * anon-writable path (direct table INSERT/UPDATE is revoked).
+ * Returns true when the server write succeeds (or when running locally), false
+ * on edge function error so the caller can decide whether to mark answered. */
+export async function submitFeedback(submission: MassFeedback): Promise<boolean> {
   const device = deviceId()
   const row: Row = {
     churchId: submission.churchId,
@@ -153,27 +155,25 @@ export function submitFeedback(submission: MassFeedback): void {
   write(list)
 
   if (supabase) {
-    supabase.functions
-      .invoke('submit-feedback', {
-        body: {
-          church_id: submission.churchId,
-          mass_key: submission.massKey,
-          device_id: device,
-          chips: submission.chips,
-          weekday: submission.weekday,
-          mass_time: submission.time,
-          rite: submission.rite,
-          lang: submission.lang,
-          mass_date: submission.massDate,
-        },
-      })
-      .then(
-        () => void loadAggregates([row.churchId]), // refresh the church after a submit
-        () => {},
-      )
-  } else {
-    void loadAggregates([row.churchId])
+    const { error } = await supabase.functions.invoke('submit-feedback', {
+      body: {
+        church_id: submission.churchId,
+        mass_key: submission.massKey,
+        device_id: device,
+        chips: submission.chips,
+        weekday: submission.weekday,
+        mass_time: submission.time,
+        rite: submission.rite,
+        lang: submission.lang,
+        mass_date: submission.massDate,
+      },
+    })
+    if (error) return false
+    void loadAggregates([row.churchId]) // refresh the church after a submit
+    return true
   }
+  void loadAggregates([row.churchId])
+  return true
 }
 
 /** Both directness tiers for one church, read synchronously from the cache
