@@ -1,5 +1,6 @@
-// "Where can I make it": for every church, its next upcoming service, then
-// one ordering — never a cutoff, the radius and the list stay whole:
+// "Where can I make it": for every church, its best upcoming service by the
+// ordering below, then rows grouped by Prague day (one list heading per day)
+// and ordered within the day — never a cutoff, the radius and the list stay whole:
 //  1. reachable before unreachable: a service you can't get to by its start
 //     even at ~30 km/h (2 min per km) sinks to the end (an 08:40 adoration
 //     7.5 km away at 08:30);
@@ -46,36 +47,40 @@ export function rankUpcoming(
   servicesById: ReadonlyMap<string, ChurchServices>,
   { horizonDays = 8, limit = 20 }: RankOptions = {},
 ): Upcoming[] {
-  const out: Upcoming[] = []
+  const reachable = (start: Date, km: number) => start.getTime() - now.getTime() >= REACH_MIN_PER_KM * km * 60_000
+  const key = (start: Date, service: Service | ExtraService, km: number): number =>
+    (reachable(start, km) ? 0 : 2e6) +
+    (isMass(service.type) ? 0 : 1e6) +
+    (start.getTime() - now.getTime()) / 60_000 +
+    MIN_PER_KM * km
+  const out: (Upcoming & { key: number; day: number })[] = []
   for (const church of churches) {
     const svc = servicesById.get(church.id)
     if (!svc) continue
     const distanceKm = haversineKm(origin.lat, origin.lng, church.lat, church.lng)
 
-    let best: Upcoming | null = null
+    // The church's row is its best-keyed service, not its earliest: an
+    // adorace at 08:35 must not hide the Mass at 09:00.
+    let best: (typeof out)[number] | null = null
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
       for (const start of nextOccurrences(spec, now, horizonDays)) {
         if (!runsOn(service, start)) continue // "kromě července a srpna" — don't lie in July
-        if (!best || start < best.start)
-          best = { church, distanceKm, start, service, updated: svc.updated }
-        break // occurrences are sorted; the first running one is this service's best
+        const k = key(start, service, distanceKm)
+        if (!best || k < best.key) {
+          const w = pragueToday(start)
+          best = { church, distanceKm, start, service, updated: svc.updated, key: k, day: Date.UTC(w.y, w.m - 1, w.d) }
+        }
+        if (reachable(start, distanceKm)) break // later occurrences only score worse
       }
     }
     for (const s of svc.regular) consider(s, { days: s.days, time: s.time })
     for (const x of svc.extra) consider(x, { date: x.date, time: x.time })
     if (best) out.push(best)
   }
-  const key = (u: Upcoming): number => {
-    const min = (u.start.getTime() - now.getTime()) / 60_000
-    return (
-      (min < REACH_MIN_PER_KM * u.distanceKm ? 2e6 : 0) +
-      (isMass(u.service.type) ? 0 : 1e6) +
-      min +
-      MIN_PER_KM * u.distanceKm
-    )
-  }
-  out.sort((a, b) => key(a) - key(b) || a.distanceKm - b.distanceKm)
-  return out.slice(0, limit)
+  // Prague day first: the list prints a heading per day change, so the tiers
+  // may only reorder rows within a day.
+  out.sort((a, b) => a.day - b.day || a.key - b.key || a.distanceKm - b.distanceKm)
+  return out.slice(0, limit).map(({ key: _k, day: _d, ...u }) => u)
 }
 
 /** ~30 km/h door to door: slower than this and the start is already gone. */
