@@ -59,13 +59,15 @@ export async function getCurrentPosition(
   const started = Date.now()
   const reading = read(opts)
   let timedOut = false
-  const deadline = new Promise<GeoResult>((resolve) =>
-    setTimeout(() => {
+  let deadlineTimer!: ReturnType<typeof setTimeout>
+  const deadline = new Promise<GeoResult>((resolve) => {
+    deadlineTimer = setTimeout(() => {
       timedOut = true
       resolve({ coords: null, error: 'deadline' })
-    }, opts.deadlineMs ?? 10_000),
-  )
+    }, opts.deadlineMs ?? 10_000)
+  })
   const result = await Promise.race([deadline, reading])
+  clearTimeout(deadlineTimer) // no-op if deadline already fired; avoids dangling timer
   if (result.error) {
     // fire-and-forget telemetry: which failure class do real devices hit?
     try {

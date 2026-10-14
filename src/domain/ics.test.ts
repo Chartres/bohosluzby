@@ -43,4 +43,23 @@ describe('buildICS', () => {
     const past: ExtraService = { date: '2026-01-06', time: '18:00', lang: 'česky', greek: false, type: 'mše sv.', note: '' }
     expect(buildICS(church, past, now)).toBeNull()
   })
+
+  it('M-2: DTSTART skips excluded dates (kromě července a srpna)', () => {
+    // now = 3 Jul 2026; note excludes July+August → first valid DTSTART should be Sep
+    const summerSkip: Service = { days: '7', time: '10:00', lang: 'česky', greek: false, type: 'mše sv.', note: 'kromě července a srpna' }
+    const ics = buildICS(church, summerSkip, now)!
+    expect(ics).not.toBeNull()
+    // DTSTART must be in September or later, not July or August
+    const dtstart = ics.match(/DTSTART;TZID=Europe\/Prague:(\d{8})/)?.[1] ?? ''
+    const month = parseInt(dtstart.slice(4, 6), 10)
+    expect(month).toBeGreaterThanOrEqual(9)
+  })
+
+  it('M-3: suffixed time ("10:00 pouze") does not produce NaN in DTSTART', () => {
+    const suffixed: Service = { days: '7', time: '10:00 pouze', lang: 'česky', greek: false, type: 'mše sv.', note: '' }
+    const ics = buildICS(church, suffixed, now)!
+    expect(ics).not.toBeNull()
+    expect(ics).not.toContain('NaN')
+    expect(ics).toContain('T100000')
+  })
 })

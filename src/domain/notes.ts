@@ -129,6 +129,7 @@ function parseInclusion(s: string): Pred | null {
   if (/^(?:období\s+|dobu\s+|doby\s+)?(?:letní(?:ch)?\s+|hlavní(?:ch)?\s+)?prázdnin(?:y|ách)?$/.test(s)) return julyAugust
   if (/^adventu?$/.test(s)) return advent
   if (/^(?:dobu\s+|doby\s+|období\s+)?postní(?:\s+dob[uy])?$/.test(s) || s === 'postu') return lent
+  if (/^školní(?:ho|m)?\s+ro[ck](?:e[mk]?|u)?$/.test(s)) return schoolYear
   const nth = new RegExp(`^(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
   if (nth) {
     const ords = parseOrdinals(nth[1])
@@ -167,7 +168,9 @@ function parseSegment(seg: string): Pred | 'none' | null {
   if (/^(?:pouze\s+|jen\s+)?(?:v\s+)?(?:období\s+|době\s+)?zimní(?:ho|m)?\s+(?:čas[eu]?|období)$/.test(s)) return not(summerTime)
 
   // school year / holidays
-  if (/školní(?:m|ho)?\s+ro[ck]/.test(s)) return schoolYear
+  // Guard against "mimo/kromě školní rok" — the except handler below resolves those.
+  if (/školní(?:m|ho)?\s+ro[ck]/.test(s) && !/^(?:kromě|mimo|vyjma|s výjimkou)/.test(s))
+    return NEGATION.test(s) ? not(schoolYear) : schoolYear
   if (/^(?:pouze\s+|jen\s+)?(?:o|v|během)\s+(?:době\s+|období\s+)?(?:letních\s+)?prázdnin(?:ách)?$/.test(s)) return julyAugust
 
   // advent ("v adventu rorátní" = a rorate mass — advent-only by definition)

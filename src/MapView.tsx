@@ -108,8 +108,12 @@ export default function MapView({
     if (!p) {
       // via dataStore, not raw fetch — the map must see an OTA-refreshed registry too
       p = loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`)
-        .catch(() => ({}))
         .then(decodeShard)
+        .catch(() => {
+          // Remove from cache so the next map open can retry the fetch.
+          shardCache.current.delete(cell)
+          return new Map<string, ChurchServices>()
+        })
       shardCache.current.set(cell, p)
     }
     return p

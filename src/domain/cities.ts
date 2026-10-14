@@ -56,8 +56,15 @@ export function aggregateCities(index: Church[]): City[] {
   return out
 }
 
+const _cityCache = new WeakMap<Church[], City[]>()
+function cachedCities(index: Church[]): City[] {
+  let c = _cityCache.get(index)
+  if (!c) { c = aggregateCities(index); _cityCache.set(index, c) }
+  return c
+}
+
 export const findCity = (index: Church[], slug: string): City | undefined =>
-  aggregateCities(index).find((c) => c.slug === slug)
+  cachedCities(index).find((c) => c.slug === slug)
 
 export type SearchResult =
   | { kind: 'city'; name: string; city: City }

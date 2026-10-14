@@ -9,7 +9,7 @@ import {
   type ExtraService,
   type Service,
 } from './domain/data'
-import { nextOccurrences, pragueToday, recentOccurrence } from './domain/occurrences'
+import { nextOccurrences, pragueIsoDate, pragueToday, recentOccurrence } from './domain/occurrences'
 import { noteUncertain, parseNote } from './domain/notes'
 import { parseConfessionFromNote } from './domain/confession'
 import { fmtDateCz, isStale, withReferral } from './domain/format'
@@ -104,15 +104,13 @@ const linkCls = 'underline decoration-hairline underline-offset-2 hover:text-ink
 const heroLinkCls = 'underline decoration-paper/40 underline-offset-2 hover:decoration-paper'
 
 function contactHref(type: string, value: string): string | null {
-  if (type === 'www') return value
+  if (type === 'www') return /^https?:\/\//i.test(value) ? value : `https://${value}`
   if (type === 'email') return `mailto:${value}`
-  if (type === 'phone') return `tel:+420${value.replace(/\s/g, '')}`
+  if (type === 'phone') {
+    const digits = value.replace(/\s/g, '')
+    return `tel:${digits.startsWith('+') ? digits : `+420${digits}`}`
+  }
   return null
-}
-
-const isoToday = (): string => {
-  const { y, m, d } = pragueToday(new Date())
-  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
 /** Per-service actions: add to calendar (native share sheet / web download) and,
@@ -349,8 +347,9 @@ export function ChurchDetail({
     let cancelled = false
     setSvc(null)
     setFailed(false)
-    fetch(`/data/services/${church.cell}.json`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`shard ${r.status}`))))
+    // Use loadData (not raw fetch) so native/OTA-refreshed registry is used and
+    // the shared shard cache is hit on repeat opens. (MapView does the same.)
+    loadData<Parameters<typeof decodeShard>[0]>(`services/${church.cell}.json`)
       .then((shard) => {
         if (cancelled) return
         const s = decodeShard(shard).get(church.id)
@@ -444,6 +443,8 @@ export function ChurchDetail({
     for (const s of svc.regular) {
       const start = recentOccurrence({ days: s.days, time: s.time }, now, RECENT_VIEW_MIN)
       if (!start) continue
+      const { y, m, d } = pragueToday(start)
+      if (!parseNote(s.note).runsOn(y, m, d)) continue
       recordExpectedAttendance({
         churchId: church.id,
         massKey: massKey(church.id, s, start),
@@ -455,7 +456,7 @@ export function ChurchDetail({
     }
   }, [svc, church])
 
-  const extras = svc ? svc.extra.filter((x) => x.date >= isoToday()) : []
+  const extras = svc ? svc.extra.filter((x) => x.date >= pragueIsoDate(new Date())) : []
 
   // Confession coverage: the ~6 churches with a typed "svátost smíření" row PLUS
   // times mined from Mass notes for the ~37 that only mention confession in free

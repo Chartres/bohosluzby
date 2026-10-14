@@ -40,6 +40,7 @@ export function isStale(iso: string, now = new Date()): boolean {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
   if (!m) return false
   const cutoff = new Date(now)
+  cutoff.setDate(1) // avoid day-29-31 overflow when setMonth lands in a shorter month
   cutoff.setMonth(cutoff.getMonth() - 18)
   return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) < cutoff
 }

@@ -2,7 +2,7 @@
 // aggregates by Mass. docs/PILGRIM-WITNESS-PLAN.md: positive-only witness chips,
 // no scale, no opposite — a wall with no way to say anything unkind.
 
-import { pragueToday } from './occurrences'
+import { pragueIsoDate, pragueToday, pragueInstant } from './occurrences'
 
 export interface Chip {
   /** Stable ascii id (stored, aggregated). */
@@ -69,7 +69,7 @@ export type MassRef = { time: string; lang: string; greek: boolean; days?: strin
 /** Byzantine if Greek-Catholic; Latin if the language is Latin (incl. the
  * tridentská variant); ordinary form otherwise. */
 export const riteOf = (s: { greek: boolean; lang: string }): Rite =>
-  s.greek ? 'byz' : /^latin/i.test(s.lang) || s.lang === 'Latine' ? 'lat' : 'ord'
+  s.greek ? 'byz' : /^latin/i.test(s.lang) ? 'lat' : 'ord'
 
 export const slotKey = (
   churchId: string,
@@ -94,12 +94,6 @@ function pragueIsoWeekday(when: Date): number {
   return dow === 0 ? 7 : dow
 }
 
-/** ISO date ("YYYY-MM-DD") of an instant on the Prague wall clock. */
-function pragueIsoDate(when: Date): string {
-  const { y, m, d } = pragueToday(when)
-  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-}
-
 /**
  * Stable grouping key for a Mass. Regular masses group by weekday+time+rite+lang
  * slot (so every Sunday 09:00 ordinary-form Czech is one profile, and a Latin
@@ -112,10 +106,21 @@ export function massKey(churchId: string, service: MassRef, attendedDate: Date):
   return slotKey(churchId, pragueIsoWeekday(attendedDate), service.time, rite, service.lang)
 }
 
+/** Parse a date+time into a Prague-timezone instant, handling suffixed times like
+ * "10:00 pouze". Uses pragueInstant so the result is independent of device TZ. */
+function pragueDateTime(date: string, time: string): Date {
+  const dm = /^(\d{4})-(\d{2})-(\d{2})/.exec(date)
+  const tm = /^(\d{1,2}):(\d{2})/.exec(time)
+  if (!dm || !tm) return new Date(NaN)
+  return pragueInstant(Number(dm[1]), Number(dm[2]), Number(dm[3]), Number(tm[1]), Number(tm[2]))
+}
+
 /** The write-path occurrence fields for a Mass attended on `attendedDate`. */
 export function occurrenceOf(service: MassRef, attendedDate: Date): Occurrence {
   return {
-    weekday: service.date ? pragueIsoWeekday(new Date(`${service.date}T${service.time}`)) : pragueIsoWeekday(attendedDate),
+    weekday: service.date
+      ? pragueIsoWeekday(pragueDateTime(service.date, service.time))
+      : pragueIsoWeekday(attendedDate),
     time: service.time,
     rite: riteOf(service),
     lang: service.lang,

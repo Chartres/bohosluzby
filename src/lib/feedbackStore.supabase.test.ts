@@ -37,13 +37,14 @@ vi.mock('../platform/flywheel-client', () => ({
   resolveIds: () => ({ visitor_id: 'device-under-test' }),
 }))
 
-import { aggregateFor, churchHasTags, loadAggregates, submitFeedback } from './feedbackStore'
+import { aggregateFor, churchHasTags, clearAggregateCache, loadAggregates, submitFeedback } from './feedbackStore'
 
 beforeEach(() => {
   h.rows = []
   h.query = null
   h.invoked = null
   localStorage.clear()
+  clearAggregateCache()
 })
 
 describe('loadAggregates (supabase stub)', () => {
@@ -53,17 +54,21 @@ describe('loadAggregates (supabase stub)', () => {
   })
 
   it('counts distinct devices as witnesses and sums per-chip counts (frequency order)', async () => {
+    // Five devices: hluboky_prozitek=5, krasny_zpev=3 (both ≥ CORROBORATION_MIN=3).
     h.rows = [
       { church_id: 'c1', mass_key: 'm', device_id: 'd1', chips: ['krasny_zpev', 'hluboky_prozitek'] },
-      { church_id: 'c1', mass_key: 'm', device_id: 'd2', chips: ['hluboky_prozitek'] },
+      { church_id: 'c1', mass_key: 'm', device_id: 'd2', chips: ['krasny_zpev', 'hluboky_prozitek'] },
+      { church_id: 'c1', mass_key: 'm', device_id: 'd3', chips: ['krasny_zpev', 'hluboky_prozitek'] },
+      { church_id: 'c1', mass_key: 'm', device_id: 'd4', chips: ['hluboky_prozitek'] },
+      { church_id: 'c1', mass_key: 'm', device_id: 'd5', chips: ['hluboky_prozitek'] },
     ]
     await loadAggregates(['c1'])
     const a = aggregateFor('c1').slots.get('m')!
-    expect(a.witnesses).toBe(2)
-    // hluboky_prozitek chosen twice, krasny_zpev once — most-frequent first
+    expect(a.witnesses).toBe(5)
+    // hluboky_prozitek chosen 5 times, krasny_zpev 3 times — most-frequent first
     expect(a.chips).toEqual([
-      { id: 'hluboky_prozitek', count: 2 },
-      { id: 'krasny_zpev', count: 1 },
+      { id: 'hluboky_prozitek', count: 5 },
+      { id: 'krasny_zpev', count: 3 },
     ])
   })
 
@@ -92,28 +97,39 @@ describe('loadAggregates (supabase stub)', () => {
 
 describe('two-tier aggregation (slot + church)', () => {
   it('folds every Mass into the church-wide tier', async () => {
+    // Three devices per mass key so chips clear CORROBORATION_MIN=3.
+    // m1: krasny_zpev×3; m2: krasny_zpev×3 + vrele_prijeti×3 → church: krasny=6, vrele=3.
     h.rows = [
       { church_id: 'c1', mass_key: 'm1', device_id: 'd1', chips: ['krasny_zpev'] },
-      { church_id: 'c1', mass_key: 'm2', device_id: 'd2', chips: ['krasny_zpev', 'vrele_prijeti'] },
+      { church_id: 'c1', mass_key: 'm1', device_id: 'd2', chips: ['krasny_zpev'] },
+      { church_id: 'c1', mass_key: 'm1', device_id: 'd3', chips: ['krasny_zpev'] },
+      { church_id: 'c1', mass_key: 'm2', device_id: 'd4', chips: ['krasny_zpev', 'vrele_prijeti'] },
+      { church_id: 'c1', mass_key: 'm2', device_id: 'd5', chips: ['krasny_zpev', 'vrele_prijeti'] },
+      { church_id: 'c1', mass_key: 'm2', device_id: 'd6', chips: ['krasny_zpev', 'vrele_prijeti'] },
     ]
     await loadAggregates(['c1'])
     const { slots, church } = aggregateFor('c1')
     // slot tier keeps the two masses apart
     expect([...slots.keys()].sort()).toEqual(['m1', 'm2'])
-    // church tier merges them: 2 devices, krasny_zpev twice (most-frequent first)
-    expect(church.witnesses).toBe(2)
+    // church tier merges them: 6 devices, krasny_zpev 6× (most-frequent first)
+    expect(church.witnesses).toBe(6)
     expect(church.chips).toEqual([
-      { id: 'krasny_zpev', count: 2 },
-      { id: 'vrele_prijeti', count: 1 },
+      { id: 'krasny_zpev', count: 6 },
+      { id: 'vrele_prijeti', count: 3 },
     ])
   })
 })
 
 describe('churchHasTags (witness filter predicate)', () => {
   beforeEach(async () => {
+    // Three devices per slot so each chip clears CORROBORATION_MIN=3.
     h.rows = [
       { church_id: 'c1', mass_key: 'm1', device_id: 'd1', chips: ['krasny_zpev'] },
-      { church_id: 'c1', mass_key: 'm2', device_id: 'd2', chips: ['vrele_prijeti'] },
+      { church_id: 'c1', mass_key: 'm1', device_id: 'd2', chips: ['krasny_zpev'] },
+      { church_id: 'c1', mass_key: 'm1', device_id: 'd3', chips: ['krasny_zpev'] },
+      { church_id: 'c1', mass_key: 'm2', device_id: 'd4', chips: ['vrele_prijeti'] },
+      { church_id: 'c1', mass_key: 'm2', device_id: 'd5', chips: ['vrele_prijeti'] },
+      { church_id: 'c1', mass_key: 'm2', device_id: 'd6', chips: ['vrele_prijeti'] },
     ]
     await loadAggregates(['c1'])
   })

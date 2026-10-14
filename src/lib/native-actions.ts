@@ -58,7 +58,9 @@ export async function addToCalendar(church: Church, service: AnyService): Promis
   a.href = url
   a.download = filename
   a.click()
-  URL.revokeObjectURL(url)
+  // Defer revoke so the browser has time to start the download before the
+  // object URL is freed (synchronous revoke breaks Firefox and Safari).
+  setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
 export type ReminderResult = 'scheduled' | 'denied' | 'no-upcoming' | 'unsupported' | 'failed'

@@ -2,7 +2,8 @@
 // an RRULE; times are Prague wall clock via TZID + an explicit VTIMEZONE so
 // every client agrees across DST.
 import type { Church, ExtraService, Service } from './data'
-import { nextOccurrences, pragueToday } from './occurrences'
+import { nextOccurrences, pragueToday, pragueMinutes } from './occurrences'
+import { parseNote } from './notes'
 import { churchUrl } from './site'
 
 const BYDAY: Record<string, string> = { 1: 'MO', 2: 'TU', 3: 'WE', 4: 'TH', 5: 'FR', 6: 'SA', 7: 'SU' }
@@ -30,7 +31,26 @@ const VTIMEZONE = [
 ]
 
 const escapeText = (s: string): string =>
-  s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
+  s
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r\n/g, '\\n')
+    .replace(/\r/g, '\\n')
+    .replace(/\n/g, '\\n')
+
+/** RFC 5545 §3.1 line folding: split at 75 octets, continuation lines start
+ * with a space. Octets, not chars — ASCII-only content here so char = octet. */
+const foldLine = (line: string): string => {
+  if (line.length <= 75) return line
+  const parts: string[] = [line.slice(0, 75)]
+  let i = 75
+  while (i < line.length) {
+    parts.push('\r\n ' + line.slice(i, i + 74))
+    i += 74
+  }
+  return parts.join('')
+}
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -39,11 +59,21 @@ const pad = (n: number) => String(n).padStart(2, '0')
 export function buildICS(church: Church, service: Service | ExtraService, now: Date): string | null {
   const spec =
     'days' in service ? { days: service.days, time: service.time } : { date: service.date, time: service.time }
-  const first = nextOccurrences(spec, now, 8)[0]
+  // M-2: filter by note's runsOn so DTSTART lands on a valid occurrence.
+  // Horizon 70 days covers the worst case (skip July+August from late June).
+  const note = parseNote(service.note ?? '')
+  const first = nextOccurrences(spec, now, 70).find((occ) => {
+    const { y, m, d } = pragueToday(occ)
+    return note.runsOn(y, m, d)
+  })
   if (!first) return null
 
   const w = pragueToday(first)
-  const [hh, mm] = service.time.split(':').map(Number)
+  // M-3: derive hh/mm from the occurrence instant, not service.time string, to
+  // avoid NaN when the registry stores times with a suffix ("10:00 pouze").
+  const totalMin = pragueMinutes(first)
+  const hh = Math.floor(totalMin / 60)
+  const mm = totalMin % 60
   const dtstart = `${w.y}${pad(w.m)}${pad(w.d)}T${pad(hh)}${pad(mm)}00`
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`
@@ -70,5 +100,5 @@ export function buildICS(church: Church, service: Service | ExtraService, now: D
     'END:VEVENT',
     'END:VCALENDAR',
   ]
-  return lines.join('\r\n') + '\r\n'
+  return lines.map(foldLine).join('\r\n') + '\r\n'
 }

@@ -6,12 +6,12 @@
 import { WITNESS_CHIPS, type Aggregate, type MassFeedback } from '../domain/feedback'
 import { supabase } from './supabase'
 import { resolveIds } from '../platform/flywheel-client'
+import { readList, writeJson } from './storage'
 
-// A tag appears on the detail page only after this many independent witnesses.
-// Prod value is 3 (a single device publishes nothing). Local prototype uses 1
-// so the owner sees their own submissions while toying.
-// TODO(prod): set CORROBORATION_MIN = 3
-export const CORROBORATION_MIN = 1
+// A tag appears on the detail page only after this many independent witnesses
+// (row count across masses for a church; one row per device per mass).
+// 3 ensures a single device cannot surface chips on its own.
+export const CORROBORATION_MIN = 3
 
 const STORE_KEY = 'bohosluzby:massFeedback'
 const SUGGEST_KEY = 'bohosluzby:tagSuggestions'
@@ -28,23 +28,8 @@ function deviceId(): string {
   return resolveIds().visitor_id
 }
 
-function read(): Row[] {
-  try {
-    const raw = localStorage.getItem(STORE_KEY)
-    const list = raw ? (JSON.parse(raw) as unknown) : []
-    return Array.isArray(list) ? (list as Row[]) : []
-  } catch {
-    return []
-  }
-}
-
-function write(list: Row[]): void {
-  try {
-    localStorage.setItem(STORE_KEY, JSON.stringify(list))
-  } catch {
-    /* private mode */
-  }
-}
+const read = (): Row[] => readList<Row>(STORE_KEY)
+const write = (list: Row[]): void => writeJson(STORE_KEY, list)
 
 /** Two directness tiers for one church: the per-Mass slot aggregates (specific)
  * and one church-wide aggregate folding every Mass (ambient). */
@@ -56,6 +41,9 @@ export interface ChurchAggregate {
 // In-memory rollup cache, filled by loadAggregates(), read synchronously by
 // aggregateFor(). Empty until a load resolves for that church.
 const cache = new Map<string, ChurchAggregate>()
+// IDs already fetched this session — skip on repeat pans to avoid unbounded
+// Supabase .in() lists and per-pan round-trips.
+const loadedIds = new Set<string>()
 
 interface Tally {
   devices: Set<string>
@@ -103,10 +91,18 @@ function aggregate(rows: Row[]): Map<string, ChurchAggregate> {
   return out
 }
 
+/** Reset the in-memory cache and the per-session loaded-id tracker.
+ * Call in test afterEach to prevent state leaking between tests. */
+export function clearAggregateCache(): void {
+  cache.clear()
+  loadedIds.clear()
+}
+
 /** Fetch visible witness rows for the given churches and refresh the cache.
- * Supabase when configured; localStorage mirror otherwise (offline / tests). */
+ * Supabase when configured; localStorage mirror otherwise (offline / tests).
+ * IDs already loaded this session are skipped to avoid per-pan round-trips. */
 export async function loadAggregates(churchIds: string[]): Promise<void> {
-  const ids = [...new Set(churchIds)].filter(Boolean)
+  const ids = [...new Set(churchIds)].filter(Boolean).filter((id) => !loadedIds.has(id))
   if (ids.length === 0) return
   let rows: Row[]
   if (supabase) {
@@ -127,7 +123,10 @@ export async function loadAggregates(churchIds: string[]): Promise<void> {
   }
   const rolled = aggregate(rows)
   // Set every requested church (default empty) so aggregateFor never returns stale data.
-  for (const id of ids) cache.set(id, rolled.get(id) ?? emptyChurchAggregate(id))
+  for (const id of ids) {
+    cache.set(id, rolled.get(id) ?? emptyChurchAggregate(id))
+    loadedIds.add(id)
+  }
 }
 
 const emptyChurchAggregate = (churchId: string): ChurchAggregate => ({
@@ -138,8 +137,10 @@ const emptyChurchAggregate = (churchId: string): ChurchAggregate => ({
 /** Persist one Mass submission. One row per device per massKey.
  * Writes the localStorage mirror always (offline/dedup); when Supabase is
  * configured the write goes through the submit-feedback Edge Function — the only
- * anon-writable path (direct table INSERT/UPDATE is revoked). */
-export function submitFeedback(submission: MassFeedback): void {
+ * anon-writable path (direct table INSERT/UPDATE is revoked).
+ * Returns true when the server write succeeds (or when running locally), false
+ * on edge function error so the caller can decide whether to mark answered. */
+export async function submitFeedback(submission: MassFeedback): Promise<boolean> {
   const device = deviceId()
   const row: Row = {
     churchId: submission.churchId,
@@ -154,27 +155,27 @@ export function submitFeedback(submission: MassFeedback): void {
   write(list)
 
   if (supabase) {
-    supabase.functions
-      .invoke('submit-feedback', {
-        body: {
-          church_id: submission.churchId,
-          mass_key: submission.massKey,
-          device_id: device,
-          chips: submission.chips,
-          weekday: submission.weekday,
-          mass_time: submission.time,
-          rite: submission.rite,
-          lang: submission.lang,
-          mass_date: submission.massDate,
-        },
-      })
-      .then(
-        () => void loadAggregates([row.churchId]), // refresh the church after a submit
-        () => {},
-      )
-  } else {
+    const { error } = await supabase.functions.invoke('submit-feedback', {
+      body: {
+        church_id: submission.churchId,
+        mass_key: submission.massKey,
+        device_id: device,
+        chips: submission.chips,
+        weekday: submission.weekday,
+        mass_time: submission.time,
+        rite: submission.rite,
+        lang: submission.lang,
+        mass_date: submission.massDate,
+      },
+    })
+    if (error) return false
+    loadedIds.delete(row.churchId) // invalidate cache so the refresh re-fetches
     void loadAggregates([row.churchId])
+    return true
   }
+  loadedIds.delete(row.churchId)
+  void loadAggregates([row.churchId])
+  return true
 }
 
 /** Both directness tiers for one church, read synchronously from the cache

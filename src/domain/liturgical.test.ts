@@ -58,6 +58,13 @@ describe('liturgicalDay — seasons 2026 (Roman rite, CZ)', () => {
     expect(day(2025, 11, 30)).toMatchObject({ season: 'advent' })
   })
 
+  it('Advent when Dec 25 is a Sunday (2022): starts Nov 27, not Dec 4', () => {
+    // Bug: dow(christmas)=0 → christmas - 0 - 21 = Dec 4 (3rd Sunday).
+    // Fix: (dow||7) → christmas - 7 - 21 = Nov 27 (1st Sunday of Advent).
+    expect(day(2022, 11, 27)).toMatchObject({ season: 'advent' })
+    expect(day(2022, 11, 26)).toMatchObject({ season: 'ordinary' })
+  })
+
   it('CZ solemnities override: sv. Václav (28 Sep) red, Cyril a Metoděj (5 Jul) gold', () => {
     expect(day(2026, 9, 28).color).toBe('red')
     expect(day(2026, 7, 5).color).toBe('gold')
