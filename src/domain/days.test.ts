@@ -18,7 +18,7 @@ describe('dayOptions', () => {
 describe('?den= round-trip', () => {
   // Mon 6 Jul … Sun 12 Jul 2026, 10:00 Prague
   const week = [6, 7, 8, 9, 10, 11, 12].map((d) => new Date(Date.UTC(2026, 6, d, 8)))
-  it.skip('every picker option decodes back to itself, on every weekday', () => {
+  it('every picker option decodes back to itself, on every weekday', () => {
     for (const now of week) {
       for (const { key } of dayOptions(now)) {
         expect([now.toISOString(), dayFromParam(now, dayToParam(now, key))]).toEqual([now.toISOString(), key])

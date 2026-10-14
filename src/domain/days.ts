@@ -42,6 +42,7 @@ export function dayOptions(now: Date): { key: DayChoice; label: string; lit: Lit
 
 // ---- ?den= — the selected day as a bookmarkable query param -----------------
 
+const NEXT_SUNDAY = 'pristi-nedele'
 const DAY_SLUGS = ['nedele', 'pondeli', 'utery', 'streda', 'ctvrtek', 'patek', 'sobota'] // Date.getUTCDay order
 
 /** ?den= value for a picker choice ('now' = no param, 0/1 = dnes/zítra,
@@ -50,6 +51,8 @@ export function dayToParam(now: Date, day: DayChoice): string | null {
   if (day === 'now') return null
   if (day === 0) return 'dnes'
   if (day === 1) return 'zitra'
+  // Sunday's extra chip: 'nedele' would decode to today (a bookmark opened on a Sunday means today)
+  if (day === 7) return NEXT_SUNDAY
   const today = pragueToday(now)
   const dow = new Date(Date.UTC(today.y, today.m - 1, today.d) + day * 86_400_000).getUTCDay()
   return DAY_SLUGS[dow]
@@ -59,11 +62,12 @@ export function dayToParam(now: Date, day: DayChoice): string | null {
 export function dayFromParam(now: Date, param: string | null): DayChoice {
   if (param === 'dnes') return 0
   if (param === 'zitra') return 1
-  const dow = DAY_SLUGS.indexOf(param ?? '')
+  const next = param === NEXT_SUNDAY
+  const dow = next ? 0 : DAY_SLUGS.indexOf(param ?? '')
   if (dow === -1) return 'now'
   const today = pragueToday(now)
   const base = Date.UTC(today.y, today.m - 1, today.d)
-  for (let off = 0; off <= 6; off++) {
+  for (let off = next ? 1 : 0; off <= 7; off++) {
     if (new Date(base + off * 86_400_000).getUTCDay() === dow) return off
   }
   return 'now' // unreachable — every weekday occurs within 7 days
