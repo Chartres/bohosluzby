@@ -241,6 +241,7 @@ describe('Marie finds the nearest mass', () => {
     stubGeolocation('granted')
     render(<App />)
     expect(await screen.findByText(/aktuální k 3\. 7\. 2026/)).toBeInTheDocument()
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('liturgické mezidobí · Data: rejstřík bohosluzby.cirkev.cz')
   })
 
   it('landing view: the map is the default when online (times ON the map, no tap)', async () => {
