@@ -311,9 +311,17 @@ function DetailHeading({
 export function ChurchDetail({
   church,
   onBack,
+  onHelp,
+  onHeroChange,
 }: {
   church: Church
   onBack: () => void
+  // Re-open the intro guide from the hero nav (photo case). Optional so the
+  // detail renders standalone in unit tests without wiring the app shell.
+  onHelp?: () => void
+  // Tells the app shell whether this detail is showing a full-bleed photo hero,
+  // so the shell can drop its masthead and let the image reach the very top.
+  onHeroChange?: (hasHero: boolean) => void
 }) {
   const [svc, setSvc] = useState<ChurchServices | null>(null)
   const [failed, setFailed] = useState(false)
@@ -321,6 +329,8 @@ export function ChurchDetail({
   const [photo, setPhoto] = useState<ChurchPhoto | null>(null)
   const [dioc, setDioc] = useState<DiocesanConfession | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const navEnd = useRef<HTMLDivElement>(null)
+  const [barShown, setBarShown] = useState(false)
 
   useEffect(() => {
     const prev = document.title
@@ -373,6 +383,27 @@ export function ChurchDetail({
       cancelled = true
     }
   }, [church])
+
+  // Show the paper bar once the hero nav row has scrolled above the viewport.
+  // (No IntersectionObserver → never shows; the hero nav still works.)
+  useEffect(() => {
+    const el = navEnd.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => setBarShown(!e.isIntersecting && e.boundingClientRect.top < 0))
+    io.observe(el)
+    return () => {
+      io.disconnect()
+      setBarShown(false)
+    }
+  }, [photo])
+
+  // Report hero presence to the app shell: with a photo, the shell drops its
+  // masthead so the image bleeds full to the top and the nav overlays the hero.
+  // Reset to false on unmount / when the photo goes away.
+  useEffect(() => {
+    onHeroChange?.(Boolean(photo))
+    return () => onHeroChange?.(false)
+  }, [photo, onHeroChange])
 
   // Diocesan confession windows (data/confession.json): same OTA/offline gateway,
   // keyed by church id. Absent map, offline, or no entry → render nothing (the
@@ -491,46 +522,69 @@ export function ChurchDetail({
 
   return (
     <article
-      className="mt-5"
+      className={photo ? '' : 'mt-5'}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-{/* A sticky "‹ zpět na seznam" band under the app masthead, photo or not
-    (paper-backed so scrolled text never shows through; top offset mirrors
-    the header's height). The photo hero used to drop the masthead and
-    overlay back/help on the image: white on a scrim vanished on bright
-    skies and scrolled away with the photo (2026-10-14). */}
-<p
-  className="sticky z-20 -mx-5 bg-paper px-5 py-1 sm:-mx-8 sm:px-8"
-  style={{ top: 'calc(max(0.75rem, env(safe-area-inset-top)) + 2.25rem)' }}
->
-  <button
-    type="button"
-    onClick={onBack}
-    className={`rubric inline-flex min-h-11 items-center ${linkCls}`}
-  >
-    {t('back_to_list')}
-  </button>
-</p>
-{/* Photo present → a full-bleed image under the band, church name + meta
-    row on a BOTTOM scrim. object-top keeps the tower (church photos are
-    tall). No photo → the plain paper header. */}
-{photo ? (
-  // z-0: an explicit stacking level so WebKit can't paint the tall image
-  // over the sticky band on scroll.
-  <figure className="relative z-0 -mx-5 mt-1 overflow-hidden sm:-mx-8">
-    <img
-      src={photo.url}
-      alt={church.name}
-      loading="lazy"
-      decoding="async"
-      className="block h-[46vh] max-h-[26rem] min-h-[15rem] w-full object-cover object-top"
-    />
-    {/* bottom scrim under the title — a warm-ink gradient, not a box-shadow
-        (docs/DESIGN-BRIEF.md) */}
-    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent" />
-          <figcaption className="absolute inset-x-0 bottom-0 px-5 pt-10 pb-3 sm:px-8">
+      {/* No photo → the plain paper header, with a sticky "‹ zpět na seznam" band
+          under the app masthead (paper-backed so scrolled text never shows
+          through; top offset mirrors the header's height). With a photo the back
+          control instead overlays the hero, so this band is suppressed. */}
+      {!photo && (
+        <p
+          className="sticky z-20 -mx-5 bg-paper px-5 py-1 sm:-mx-8 sm:px-8"
+          style={{ top: 'calc(max(0.75rem, env(safe-area-inset-top)) + 2.25rem)' }}
+        >
+          <button
+            type="button"
+            onClick={onBack}
+            className={`rubric inline-flex min-h-11 items-center ${linkCls}`}
+          >
+            {t('back_to_list')}
+          </button>
+        </p>
+      )}
+      {/* Once the hero nav scrolls under the top edge, a paper bar fades in with
+          the same two controls (the Airbnb listing pattern) — back is never
+          lost, and scrolled text never runs under the iOS status bar. */}
+      {photo && barShown && <HeroNav onBack={onBack} onHelp={onHelp} bar />}
+      {/* Photo present → a Booking/Airbnb-style full-bleed HERO: the image is the
+          page header (the app shell drops its masthead), so global chrome — the
+          back control and help — overlays the photo on a TOP scrim, and the
+          church name + meta row sit over a BOTTOM scrim. object-top keeps the
+          tower (church photos are tall). No photo → the plain paper header. */}
+      {photo ? (
+        // Starts at the very top of <main> (the shell masthead is gone in this
+        // case; a stale -mt-5 here pushed it 20px off-screen, nav row into the
+        // status bar); z-0 keeps it an explicit stacking level so WebKit can't
+        // paint the tall image over overlaid chrome on scroll.
+        <figure className="relative z-0 -mx-5 overflow-hidden sm:-mx-8">
+          <img
+            src={photo.url}
+            alt={church.name}
+            loading="lazy"
+            decoding="async"
+            className="block h-[46vh] max-h-[26rem] min-h-[15rem] w-full object-cover object-top"
+          />
+          {/* top scrim: eased, darkest behind the nav row, gone by 7rem below the
+              safe area — the nav text clears ~4.5:1 even on a white sky; bottom
+              scrim under the title. Warm-ink gradients, not box-shadows
+              (docs/DESIGN-BRIEF.md). */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0"
+            style={{ height: 'calc(env(safe-area-inset-top) + 7rem)', background: TOP_SCRIM }}
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent" />
+          {/* 1px marker under the nav row: when it leaves the viewport, the bar shows */}
+          <div
+            ref={navEnd}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 h-px"
+            style={{ top: 'calc(env(safe-area-inset-top) + 3.25rem)' }}
+          />
+          <HeroNav onBack={onBack} onHelp={onHelp} bar={false} />
+          <figcaption className="hero-legible absolute inset-x-0 bottom-0 px-5 pt-10 pb-3 sm:px-8">
             <DetailHeading church={church} headingRef={headingRef} onNavigate={() => setNavOpen(true)} hero />
             {/* attribution: tiny, right-aligned, still legible on the scrim.
                 The author is tidied to the name before any " (…)" wiki markup
@@ -745,6 +799,41 @@ export function ChurchDetail({
         />
       )}
     </article>
+  )
+}
+
+// Eased ink scrim (multi-stop, so no visible band edge): ≥0.6 alpha behind the
+// nav text, then a quick fall-off.
+const TOP_SCRIM =
+  'linear-gradient(to bottom, rgb(26 23 18 / 0.7) 0%, rgb(26 23 18 / 0.62) 55%, rgb(26 23 18 / 0.3) 75%, rgb(26 23 18 / 0.1) 90%, rgb(26 23 18 / 0) 100%)'
+
+/** Back + help for the photo detail, in the masthead's type (small caps,
+ * tracked) and on ONE row so they share a baseline. Over the photo: paper text
+ * with the hero-legible shadow. As the scrolled bar: paper ground, rubric back,
+ * season rule — the masthead's look. */
+function HeroNav({ onBack, onHelp, bar }: { onBack: () => void; onHelp?: () => void; bar: boolean }) {
+  const btn = 'inline-flex min-h-11 items-center text-xs font-semibold tracking-[0.08em] uppercase'
+  return (
+    <div
+      className={bar ? 'fade-in fixed inset-x-0 top-0 z-40 border-b-2 bg-paper' : 'hero-legible absolute inset-x-0 top-0 text-paper'}
+      style={{ paddingTop: 'max(0.25rem, env(safe-area-inset-top))', borderColor: bar ? 'var(--season)' : undefined }}
+    >
+      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-5 sm:px-8">
+        <button type="button" onClick={onBack} className={`${btn} ${bar ? 'text-rubric' : ''}`}>
+          {t('back_to_list')}
+        </button>
+        {onHelp && (
+          <button
+            type="button"
+            onClick={onHelp}
+            aria-label={t('intro_help')}
+            className={`${btn} ${bar ? 'text-ink-faded hover:text-ink' : ''}`}
+          >
+            ? {t('intro_help')}
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 

@@ -98,3 +98,28 @@ html {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+/* Text over the photo hero: a sharp shadow in the scrim's own ink, close to the
+   letter shapes (Smashing Magazine 2023, "Designing accessible text over
+   images") — carries legibility where the scrim alone falls short, e.g. a
+   white sky. Not an elevation shadow; the no-shadows rule is about boxes. */
+.hero-legible {
+  text-shadow:
+    0 1px 2px rgb(26 23 18 / 0.7),
+    0 0 10px rgb(26 23 18 / 0.35);
+}
+
+/* the scrolled photo-detail bar */
+.fade-in {
+  animation: fade-in 160ms ease-out;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-in {
+    animation: none;
+  }
+}

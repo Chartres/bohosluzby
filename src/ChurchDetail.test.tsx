@@ -3,7 +3,7 @@
 // render in their own auxiliary section, range intact.
 import { vi } from 'vitest'
 vi.mock('./lib/supabase', () => ({ supabase: null }))
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import { ChurchDetail } from './ChurchDetail'
 import type { Church } from './domain/data'
 
@@ -162,19 +162,62 @@ describe('church photo', () => {
     expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
   })
 
-  it('a photo detail keeps the sticky paper back band above the photo, nothing overlaid', async () => {
+  it('overlays back + help on the photo hero in one row, and reports the hero', async () => {
     const onBack = vi.fn()
-    render(<ChurchDetail church={church('1', '50-14')} onBack={onBack} />)
+    const onHelp = vi.fn()
+    const onHeroChange = vi.fn()
+    render(
+      <ChurchDetail church={church('1', '50-14')} onBack={onBack} onHelp={onHelp} onHeroChange={onHeroChange} />,
+    )
     const img = await screen.findByRole('img', { name: 'kostel 1' })
     const figure = img.closest('figure')!
-    // 2026-10-14: back/help overlaid on the photo vanished on bright skies and
-    // scrolled away; the band is the same one the no-photo detail uses
-    const back = screen.getByRole('button', { name: '‹ zpět na seznam' })
-    expect(figure).not.toContainElement(back)
-    expect(back.closest('p')!.className).toMatch(/\bsticky\b/)
-    expect(within(figure).queryByRole('button', { name: 'nápověda' })).toBeNull()
+    // both global controls live ON the hero, in one row (shared baseline), with
+    // the legibility text-shadow
+    const back = within(figure).getByRole('button', { name: '‹ zpět na seznam' })
+    const help = within(figure).getByRole('button', { name: 'nápověda' })
+    expect(back.parentElement).toBe(help.parentElement)
+    expect(back.closest('.hero-legible')).not.toBeNull()
     back.click()
+    help.click()
     expect(onBack).toHaveBeenCalled()
+    expect(onHelp).toHaveBeenCalled()
+    // the shell is told a hero is up so it can drop its masthead — from a passive
+    // effect, which can flush after the image is found (flaked in CI 2026-10-07)
+    await vi.waitFor(() => expect(onHeroChange).toHaveBeenCalledWith(true))
+  })
+
+  it('once the hero nav scrolls away, a paper bar with back takes over', async () => {
+    let fire: IntersectionObserverCallback | undefined
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(cb: IntersectionObserverCallback) {
+          fire = cb
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+        takeRecords() {
+          return []
+        }
+      },
+    )
+    const onBack = vi.fn()
+    render(<ChurchDetail church={church('1', '50-14')} onBack={onBack} />)
+    await screen.findByRole('img', { name: 'kostel 1' })
+    await vi.waitFor(() => expect(fire).toBeDefined())
+    expect(screen.getAllByRole('button', { name: '‹ zpět na seznam' })).toHaveLength(1)
+    const scrolled = (top: number, isIntersecting: boolean) =>
+      act(() => fire!([{ isIntersecting, boundingClientRect: { top } } as unknown as IntersectionObserverEntry], {} as IntersectionObserver))
+    scrolled(-4, false)
+    const backs = screen.getAllByRole('button', { name: '‹ zpět na seznam' })
+    expect(backs).toHaveLength(2)
+    const bar = backs.find((b) => !b.closest('figure'))!
+    expect(bar.closest('.fixed')!.className).toMatch(/\bbg-paper\b/)
+    bar.click()
+    expect(onBack).toHaveBeenCalled()
+    scrolled(40, true) // back at the top → bar gone
+    expect(screen.getAllByRole('button', { name: '‹ zpět na seznam' })).toHaveLength(1)
   })
 
   it('tidies the photo credit — drops duplicate wiki markup, keeps licence + source', async () => {
@@ -186,11 +229,14 @@ describe('church photo', () => {
   })
 
   it('renders no image and a plain title when the church has no photo entry', async () => {
-    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    const onHeroChange = vi.fn()
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} onHeroChange={onHeroChange} />)
     const heading = await screen.findByRole('heading', { name: 'kostel 2' })
     expect(screen.queryByRole('img')).toBeNull()
     // plain layout: the title is NOT wrapped in a photo figure
     expect(heading.closest('figure')).toBeNull()
+    // no hero → the shell keeps its masthead (no back/help overlaid)
+    expect(onHeroChange).not.toHaveBeenCalledWith(true)
   })
 
   it('surfaces a confession time parsed from a Mass note, keeping the note on its Mass', async () => {

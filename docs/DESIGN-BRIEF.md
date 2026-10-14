@@ -62,7 +62,10 @@ One-hand use: primary actions in thumb reach, tap targets ≥44px. The app
 OPENS ON THE MAP when online (times shown on the map without a tap are the
 edge; #27, reconfirmed by Pavol 2026-10-14) and on the list when offline;
 the list is one tap away and must stay complete on its own. Don't propose
-flipping the default. Navigation chrome (back, help) lives in the masthead
-and the sticky rubric band on every page — never as boxed buttons floating
-over a photo (tried 2026-10-14: "super ugly, misaligned"). Works at 375px. WCAG-AA contrast, visible keyboard
+flipping the default. A church photo runs full-bleed to the very top
+(Airbnb-listing style, Pavol 2026-10-14). Back + help sit over it as plain
+small-caps text on ONE row, legible via an eased ink scrim + the
+`.hero-legible` text shadow; once they scroll away, a paper bar with the same
+two controls fades in. Never boxed buttons over a photo (tried 2026-10-14:
+"super ugly, misaligned"), never the masthead above the photo. Works at 375px. WCAG-AA contrast, visible keyboard
 focus, real landmarks (header/main/footer).
