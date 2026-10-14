@@ -62,5 +62,7 @@ One-hand use: primary actions in thumb reach, tap targets ≥44px. The app
 OPENS ON THE MAP when online (times shown on the map without a tap are the
 edge; #27, reconfirmed by Pavol 2026-10-14) and on the list when offline;
 the list is one tap away and must stay complete on its own. Don't propose
-flipping the default. Works at 375px. WCAG-AA contrast, visible keyboard
+flipping the default. Navigation chrome (back, help) lives in the masthead
+and the sticky rubric band on every page — never as boxed buttons floating
+over a photo (tried 2026-10-14: "super ugly, misaligned"). Works at 375px. WCAG-AA contrast, visible keyboard
 focus, real landmarks (header/main/footer).
