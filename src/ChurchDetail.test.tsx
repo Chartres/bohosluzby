@@ -3,7 +3,7 @@
 // render in their own auxiliary section, range intact.
 import { vi } from 'vitest'
 vi.mock('./lib/supabase', () => ({ supabase: null }))
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import { ChurchDetail } from './ChurchDetail'
 import type { Church } from './domain/data'
 
@@ -63,6 +63,14 @@ const SHARD = {
     pa: '',
     c: [],
     s: [['7', '09:15', 'česky', 0, 'mše sv.', '']],
+  },
+  // church "6": one Po/St/Pá record whose note is about Friday only (registry church 10009).
+  '6': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['135', '15:00', 'česky', 0, 'mše sv.', 'V červenci, srpnu a září není páteční mše sv.']],
   },
 }
 
@@ -154,7 +162,7 @@ describe('church photo', () => {
     expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
   })
 
-  it('overlays the back control and help on the photo hero, and reports the hero', async () => {
+  it('overlays back + help on the photo hero in one row, and reports the hero', async () => {
     const onBack = vi.fn()
     const onHelp = vi.fn()
     const onHeroChange = vi.fn()
@@ -163,9 +171,12 @@ describe('church photo', () => {
     )
     const img = await screen.findByRole('img', { name: 'kostel 1' })
     const figure = img.closest('figure')!
-    // both global controls live ON the hero (over the photo), not in a separate bar
+    // both global controls live ON the hero, in one row (shared baseline), with
+    // the legibility text-shadow
     const back = within(figure).getByRole('button', { name: '‹ zpět na seznam' })
     const help = within(figure).getByRole('button', { name: 'nápověda' })
+    expect(back.parentElement).toBe(help.parentElement)
+    expect(back.closest('.hero-legible')).not.toBeNull()
     back.click()
     help.click()
     expect(onBack).toHaveBeenCalled()
@@ -173,6 +184,40 @@ describe('church photo', () => {
     // the shell is told a hero is up so it can drop its masthead — from a passive
     // effect, which can flush after the image is found (flaked in CI 2026-10-07)
     await vi.waitFor(() => expect(onHeroChange).toHaveBeenCalledWith(true))
+  })
+
+  it('once the hero nav scrolls away, a paper bar with back takes over', async () => {
+    let fire: IntersectionObserverCallback | undefined
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(cb: IntersectionObserverCallback) {
+          fire = cb
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+        takeRecords() {
+          return []
+        }
+      },
+    )
+    const onBack = vi.fn()
+    render(<ChurchDetail church={church('1', '50-14')} onBack={onBack} />)
+    await screen.findByRole('img', { name: 'kostel 1' })
+    await vi.waitFor(() => expect(fire).toBeDefined())
+    expect(screen.getAllByRole('button', { name: '‹ zpět na seznam' })).toHaveLength(1)
+    const scrolled = (top: number, isIntersecting: boolean) =>
+      act(() => fire!([{ isIntersecting, boundingClientRect: { top } } as unknown as IntersectionObserverEntry], {} as IntersectionObserver))
+    scrolled(-4, false)
+    const backs = screen.getAllByRole('button', { name: '‹ zpět na seznam' })
+    expect(backs).toHaveLength(2)
+    const bar = backs.find((b) => !b.closest('figure'))!
+    expect(bar.closest('.fixed')!.className).toMatch(/\bbg-paper\b/)
+    bar.click()
+    expect(onBack).toHaveBeenCalled()
+    scrolled(40, true) // back at the top → bar gone
+    expect(screen.getAllByRole('button', { name: '‹ zpět na seznam' })).toHaveLength(1)
   })
 
   it('tidies the photo credit — drops duplicate wiki markup, keeps licence + source', async () => {
@@ -234,5 +279,14 @@ describe('Moje kostely star', () => {
     star.click()
     await vi.waitFor(() => expect(star).toHaveAttribute('aria-pressed', 'true'))
     expect(JSON.parse(localStorage.getItem('bohosluzby:favorites')!)).toEqual(['2'])
+  })
+})
+
+describe('weekday-specific notes', () => {
+  it('prints a Friday-only note under Friday, not under Monday and Wednesday', async () => {
+    render(<ChurchDetail church={church('6', '50-14')} onBack={() => {}} />)
+    const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(within(schedule).getAllByText('15:00')).toHaveLength(3)
+    expect(within(schedule).getAllByText('V červenci, srpnu a září není páteční mše sv.')).toHaveLength(1)
   })
 })

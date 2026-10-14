@@ -7,7 +7,7 @@ require 'openssl'; require 'base64'; require 'json'; require 'net/http'
 
 def asc_load_env(envfile)
   env = {}
-  File.readlines(envfile).each do |l|
+  File.readlines(envfile, encoding: 'UTF-8').each do |l| # UTF-8 regardless of shell locale
     next if l.strip.empty? || l.strip.start_with?('#')
     k, v = l.strip.split('=', 2); env[k] = v
   end

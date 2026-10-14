@@ -30,6 +30,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - name: Store screenshot check (fastlane helper self-test)
+        run: ruby ios/App/fastlane/screenshot_ops_test.rb
       - name: Build
         run: npm run build
         env:

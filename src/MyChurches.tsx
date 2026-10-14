@@ -6,7 +6,8 @@ import { decodeShard, type Church, type ChurchServices } from './domain/data'
 import { rankUpcoming } from './domain/ranking'
 import { dayLabel, fmtTime } from './domain/format'
 import { loadData } from './lib/dataStore'
-import { favoritesSnapshot, subscribeFavorites } from './lib/favorites'
+import { favoritesSnapshot, subscribeFavorites, toggleFavorite } from './lib/favorites'
+import { track } from './analytics'
 import { t } from './i18n'
 
 export function MyChurches({
@@ -73,6 +74,19 @@ export function MyChurches({
                 {c.name}
               </button>
               {!u && <span className="text-xs text-ink-faded">{t('mine_none_soon')}</span>}
+{/* the same ★ as "★ uloženo" on the detail: tap to un-save, right here */}
+<button
+  type="button"
+  aria-label={`${t('fav_remove')}: ${c.name}`}
+  title={t('fav_remove')}
+  className="-my-2 inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center self-center text-lg text-ink-faded hover:text-ink"
+  onClick={() => {
+    toggleFavorite(c.id)
+    track('key_action', { action: 'favorite', on: false })
+  }}
+>
+  ★
+</button>
             </li>
           )
         })}

@@ -12,7 +12,8 @@ import {
 import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
-import { pragueIsoDate } from './domain/occurrences'
+import { pragueIsoDate, pragueToday } from './domain/occurrences'
+import { noteShownOnDay } from './domain/notes'
 import { currentLiturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
 import { dayFromParam, dayOptions, dayToParam, litForChoice } from './domain/days'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domain/format'
@@ -154,6 +155,12 @@ function loadFilters(): Filters {
   // selection — drop it so an old build's witnessTags can't silently narrow the list.
   if (!WITNESS_ENABLED) f.witnessTags = []
   return f
+}
+
+// ISO weekday (1=Mon…7=Sun) of an instant, on the Prague calendar.
+const isoDayOf = (at: Date): number => {
+  const w = pragueToday(at)
+  return new Date(Date.UTC(w.y, w.m - 1, w.d)).getUTCDay() || 7
 }
 
 // Minimal history routing (GH Pages serves 404.html = the app for deep links).
@@ -1315,7 +1322,8 @@ function ServiceList({
                   {r.church.city && `${r.church.city} · `}
                   {fmtDistance(r.distanceKm)}
                   {r.service.type && ` · ${r.service.type}`}
-                  <NoteText note={r.service.note} />
+                  {/* a note naming another of the service's weekdays ("…není páteční mše") stays off this day's row */}
+                  <NoteText note={noteShownOnDay(r.service.note, 'days' in r.service ? r.service.days : '', isoDayOf(r.start)) ? r.service.note : ''} />
                   {r.church.barrierFree && (
                     <>
                       {' · '}
