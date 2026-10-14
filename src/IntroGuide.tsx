@@ -72,7 +72,7 @@ export function IntroGuide({ onClose }: { onClose: () => void }) {
           {/* "vítejte" only on the first card; a neutral "průvodce" after, so the
               eyebrow doesn't keep saying WELCOME on card 3 of 4 */}
           <p className="rubric">{i === 0 ? t('intro_rubric') : t('intro_rubric_more')}</p>
-          <button type="button" className={`rubric ${linkCls}`} onClick={onClose}>
+          <button type="button" className={`rubric -my-3 inline-block py-3 ${linkCls}`} onClick={onClose}>
             {t('intro_skip')}
           </button>
         </div>
@@ -86,7 +86,7 @@ export function IntroGuide({ onClose }: { onClose: () => void }) {
           </p>
           <button
             type="button"
-            className={`rubric ${linkCls}`}
+            className={`rubric -my-3 inline-block py-3 ${linkCls}`}
             onClick={() => (last ? onClose() : setI(i + 1))}
           >
             {last ? t('intro_done') : t('intro_next')}

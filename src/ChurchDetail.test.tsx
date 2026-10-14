@@ -150,7 +150,7 @@ describe('church photo', () => {
     expect(figure).not.toBeNull()
     expect(within(figure!).getByRole('heading', { name: 'kostel 1' })).toBeInTheDocument()
     // the meta links sit over the hero too
-    expect(within(figure!).getByRole('link', { name: 'mapa' })).toBeInTheDocument()
+    expect(within(figure!).getByRole('button', { name: 'navigace' })).toBeInTheDocument()
     expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
   })
 

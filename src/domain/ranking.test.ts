@@ -1,4 +1,6 @@
 import { ordoForDay, rankUpcoming } from './ranking'
+import { isMass } from './filters'
+import { dayLabel } from './format'
 import type { Church, ChurchServices } from './data'
 
 const church = (id: string, lat: number, lng: number): Church => ({
@@ -166,5 +168,97 @@ describe('selectUpcoming — okruh (maxKm) filter', () => {
     const { selectUpcoming } = await import('./ranking')
     const rows = selectUpcoming(now, origin, [near, far], byId, f, null, 'now')
     expect(rows.map((r) => r.church.id).sort()).toEqual(['far', 'near'])
+  })
+})
+
+describe('rankUpcoming — where you can make it (UX-1, UX-2)', () => {
+  const typed = (type: string, days: string, time: string) => {
+    const s = services([{ days, time }])
+    return { ...s, regular: s.regular.map((r) => ({ ...r, type })) }
+  }
+
+  it('sinks a service you cannot reach by its start, and a non-Mass below Masses', () => {
+    // Prague Wed 08:30: an 08:40 adoration 7.5 km away came first, the 09:00
+    // Mass 1.2 km away second
+    const wed = new Date('2026-10-14T06:30:00Z')
+    const lhotka = church('lhotka', 50.0205, 14.4213) // ~7.4 km south
+    const victory = church('victory', 50.0983, 14.4213) // ~1.2 km north
+    const praise = church('praise', 50.0884, 14.4213) // ~0.1 km, chvály at 09:00
+    const ranked = rankUpcoming(
+      wed,
+      origin,
+      [lhotka, victory, praise],
+      new Map([
+        [lhotka.id, typed('adorace', '3', '08:40')],
+        [victory.id, typed('mše sv.', '3', '09:00')],
+        [praise.id, typed('chvály', '3', '09:00')],
+      ]),
+    )
+    expect(ranked.map((r) => r.church.id)).toEqual(['victory', 'praise', 'lhotka'])
+  })
+
+  it('FOUNDER-CASE Telč, Sunday 07:00: the parish 09:00 Mass beats 07:30–08:00 Masses 18–28 km out', () => {
+    const sun7 = new Date('2026-10-18T05:00:00Z')
+    const telc = { lat: 49.184, lng: 15.453 }
+    const jakub = church('jakub', 49.1845, 15.4535)
+    const villages = Array.from({ length: 20 }, (_, i) => church(`v${i}`, 49.184 + 0.17 + i * 0.004, 15.453))
+    const byId = new Map([
+      [jakub.id, typed('', '7', '09:00')], // blank type = plain Mass in the registry
+      ...villages.map((v, i) => [v.id, typed('', '7', i % 2 ? '07:30' : '08:00')] as const),
+    ])
+    const ranked = rankUpcoming(sun7, telc, [...villages, jakub], byId)
+    expect(ranked[0].church.id).toBe('jakub')
+  })
+
+  it('a blank registry type is a Mass', () => {
+    expect(isMass('')).toBe(true)
+    expect(isMass('mše sv.')).toBe(true)
+    expect(isMass('adorace')).toBe(false)
+  })
+})
+
+describe('rankUpcoming — per-church pick and day grouping (review of UX-1/UX-2)', () => {
+  const svcs = (list: { type: string; days: string; time: string }[]) => {
+    const s = services(list)
+    return { ...s, regular: s.regular.map((r, i) => ({ ...r, type: list[i].type })) }
+  }
+  const dlat = (km: number) => km / 111.2
+
+  it('a church is represented by its best service, not its earliest (Prague, Sunday 08:25)', () => {
+    const sun = new Date('2026-10-18T06:25:00Z') // Sunday 08:25 Prague
+    const x = church('x', origin.lat + dlat(3), origin.lng) // 08:30 unreachable from 3 km, 10:00 fine
+    const n = church('n', origin.lat + dlat(0.4), origin.lng) // adorace 08:35, Mass 09:00
+    const far = Array.from({ length: 25 }, (_, i) => church(`y${i}`, origin.lat - dlat(4 + i * 0.16), origin.lng))
+    const byId = new Map([
+      [x.id, svcs([{ type: 'mše sv.', days: '7', time: '08:30' }, { type: 'mše sv.', days: '7', time: '10:00' }])],
+      [n.id, svcs([{ type: 'adorace', days: '7', time: '08:35' }, { type: 'mše sv.', days: '7', time: '09:00' }])],
+      ...far.map((c, i) => [c.id, svcs([{ type: 'mše sv.', days: '7', time: i % 2 ? '10:30' : '10:00' }])] as const),
+    ])
+    const ranked = rankUpcoming(sun, origin, [x, ...far, n], byId)
+    expect(ranked.slice(0, 2).map((r) => [r.church.id, r.service.type, r.service.time])).toEqual([
+      ['n', 'mše sv.', '09:00'],
+      ['x', 'mše sv.', '10:00'],
+    ])
+  })
+
+  it('rows stay grouped by Prague day — no repeated day headings (Saturday 17:55)', () => {
+    const sat = new Date('2026-10-17T15:55:00Z')
+    const telc = { lat: 49.184, lng: 15.453 }
+    const at = (id: string, km: number) => church(id, telc.lat + dlat(km), telc.lng)
+    const a = at('a', 5) // 18:00 tonight is out of reach; Sunday 09:00
+    const b = at('b', 2) // 18:30 tonight
+    const c = at('c', 1) // adorace 19:00 tonight only
+    const v = Array.from({ length: 8 }, (_, i) => at(`v${i}`, 3 + i * 2))
+    const byId = new Map([
+      [a.id, svcs([{ type: '', days: '6', time: '18:00' }, { type: '', days: '7', time: '09:00' }])],
+      [b.id, svcs([{ type: '', days: '6', time: '18:30' }])],
+      [c.id, svcs([{ type: 'adorace', days: '6', time: '19:00' }])],
+      ...v.map((x, i) => [x.id, svcs([{ type: '', days: '7', time: i % 2 ? '08:00' : '10:00' }])] as const),
+    ])
+    const ranked = rankUpcoming(sat, telc, [a, b, c, ...v], byId, { limit: 50 })
+    const headings = ranked.map((r) => dayLabel(sat, r.start)).filter((d, i, all) => d !== all[i - 1])
+    expect(headings).toEqual(['dnes', 'zítra'])
+    expect(ranked.slice(0, 2).map((r) => r.church.id)).toEqual(['b', 'c'])
+    expect(ranked.find((r) => r.church.id === 'a')!.service.time).toBe('09:00')
   })
 })

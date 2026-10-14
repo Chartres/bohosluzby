@@ -293,7 +293,7 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getAllByText(/dnes/).length).toBeGreaterThan(0)
     // language chip only for the non-Czech service, normalized to Czech lowercase
     openControls()
-    expect(screen.getByText('latinsky')).toBeInTheDocument()
+    expect(seznam().getByText('latinsky')).toBeInTheDocument()
     expect(screen.queryByText('Latine')).not.toBeInTheDocument()
     // barrier-free icon from the index (aria-labelled, inline — row height unchanged)
     expect(screen.getAllByRole('img', { name: 'bezbariérový přístup' }).length).toBeGreaterThan(0)
@@ -471,11 +471,10 @@ describe('Marie finds the nearest mass', () => {
       'tel:+420222221339',
     )
 
-    // maps link + data freshness (honest about staleness)
-    expect(screen.getByRole('link', { name: 'mapa' })).toHaveAttribute(
-      'href',
-      expect.stringContaining('mapy.cz'),
-    )
+    // one way to the map: navigace (its sheet lists the map apps) — no separate "mapa"
+    expect(screen.queryByRole('link', { name: 'mapa' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'navigace' })).toBeInTheDocument()
+    // data freshness (honest about staleness)
     expect(screen.getByText(/naposledy ověřeno 1\. 6\. 2026/)).toBeInTheDocument()
 
     // "navigace" opens the nav-app chooser (geo: was Android-only and dead on iOS)
@@ -641,17 +640,17 @@ describe('Marie finds the nearest mass', () => {
     expect(window.location.search).not.toContain('den=')
   })
 
-  it('filters: "jen mše svaté" falls back to the church\'s next matching service', async () => {
+  it('hned: a church shows its Mass, not its earlier rosary; "jen mše svaté" keeps that row', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<App />)
-    // Havel's earliest service today is the 19:00 rosary
-    expect(await screen.findByText(/růženec/)).toBeInTheDocument()
+    // Havel today: 19:00 rosary, 19:30 Mass — the row is the Mass
+    expect(await screen.findByText(/sv\. Havla/)).toBeInTheDocument()
+    expect(seznam().getByText('19:30')).toBeInTheDocument()
+    expect(screen.queryByText(/růženec/)).not.toBeInTheDocument()
 
     openControls()
     await user.click(screen.getByRole('button', { name: 'jen mše svaté' }))
-    // …with the mass filter on, Havel shows its 19:30 mass instead of vanishing
-    expect(screen.queryByText(/růženec/)).not.toBeInTheDocument()
     expect(seznam().getByText('19:30')).toBeInTheDocument()
     expect(screen.getByText(/sv\. Havla/)).toBeInTheDocument()
   })

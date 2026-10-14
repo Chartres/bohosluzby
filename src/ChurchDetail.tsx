@@ -264,7 +264,8 @@ function DetailHeading({
   hero: boolean
 }) {
   const text = hero ? 'text-paper' : 'text-ink-faded'
-  const link = hero ? heroLinkCls : linkCls
+  // -my-3 py-3: a 44px hit area without moving the text line
+  const link = `-my-3 inline-block py-3 ${hero ? heroLinkCls : linkCls}`
   return (
     <>
       <h2
@@ -275,17 +276,9 @@ function DetailHeading({
         {church.name}
       </h2>
       {church.city && <p className={`mt-1 text-sm ${text}`}>{church.city}</p>}
-      {/* one meta row of actions under the title — map · navigate · share · web
-          farnosti. Bundled (not a separate block) so the schedule stays primary. */}
+      {/* one meta row of actions under the title — navigate · share · save · web
+          farnosti (navigace opens the map-app chooser, so no separate "mapa"). Bundled (not a separate block) so the schedule stays primary. */}
       <p className={`mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${text}`}>
-        <a
-          className={link}
-          href={`https://mapy.cz/zakladni?q=${church.lat}%2C${church.lng}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t('map_link')}
-        </a>
         {/* geo: is an Android scheme — iOS ignored it; the chooser works everywhere */}
         <button type="button" className={link} onClick={onNavigate}>
           {t('detail_navigate')}
