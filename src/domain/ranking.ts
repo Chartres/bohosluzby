@@ -29,12 +29,9 @@ export interface Upcoming {
   distanceKm: number
   start: Date
   service: Service | ExtraService
-  /** Registry verification date of the church's schedule ("aktualizace"). */
-  updated: string
 }
 
 export interface RankOptions {
-  horizonDays?: number
   limit?: number
 }
 
@@ -43,7 +40,7 @@ export function rankUpcoming(
   origin: { lat: number; lng: number },
   churches: Church[],
   servicesById: ReadonlyMap<string, ChurchServices>,
-  { horizonDays = 8, limit = 20 }: RankOptions = {},
+  { limit = 20 }: RankOptions = {},
 ): Upcoming[] {
   const out: Upcoming[] = []
   for (const church of churches) {
@@ -53,10 +50,10 @@ export function rankUpcoming(
 
     let best: Upcoming | null = null
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
-      for (const start of nextOccurrences(spec, now, horizonDays)) {
+      for (const start of nextOccurrences(spec, now)) {
         if (!runsOn(service, start)) continue // "kromě července a srpna" — don't lie in July
         if (!best || start < best.start)
-          best = { church, distanceKm, start, service, updated: svc.updated }
+          best = { church, distanceKm, start, service }
         break // occurrences are sorted; the first running one is this service's best
       }
     }
@@ -96,7 +93,7 @@ export function ordoForDay(
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
       for (const start of nextOccurrences(spec, now, dayOffset + 1)) {
         if (onTarget(start) && runsOn(service, start))
-          out.push({ church, distanceKm, start, service, updated: svc.updated })
+          out.push({ church, distanceKm, start, service })
       }
     }
     for (const s of svc.regular) consider(s, { days: s.days, time: s.time })

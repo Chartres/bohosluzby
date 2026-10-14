@@ -45,7 +45,6 @@ export interface ChurchServices {
   confession: Service[]
 }
 
-export { isConfession } // moved to ./registry; re-exported for existing imports
 
 /** services/<cell>.json value shape (compact keys). */
 interface ShardEntry {

@@ -15,7 +15,6 @@ export function getFavorites(): string[] {
   }
 }
 
-export const isFavorite = (id: string): boolean => getFavorites().includes(id)
 
 /** Adds or removes `id`; returns whether it is now a favourite. */
 export function toggleFavorite(id: string): boolean {

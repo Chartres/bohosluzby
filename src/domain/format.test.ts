@@ -5,10 +5,10 @@ import {
   fmtWeekdayShort,
   dayLabel,
   fmtDateCz,
-  normalizeLang,
   samePragueDay,
   withReferral,
 } from './format'
+import { normalizeLang } from './registry'
 
 const now = new Date('2026-07-03T08:00:00Z') // Friday 10:00 Prague
 
