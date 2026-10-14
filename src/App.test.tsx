@@ -220,6 +220,17 @@ describe('Marie finds the nearest mass', () => {
     expect(seznam().getByText(/Salvátora/)).toBeInTheDocument()
   })
 
+it('Moje kostely: a saved church is removed right from the list with its ★', async () => {
+  localStorage.setItem('bohosluzby:favorites', JSON.stringify(['3']))
+  stubGeolocation('granted')
+  render(<App />)
+  const mine = await screen.findByRole('region', { name: 'Moje kostely' })
+  await within(mine).findByText('kostel sv. Tomáše')
+  fireEvent.click(within(mine).getByRole('button', { name: 'Odebrat z Mých kostelů: kostel sv. Tomáše' }))
+  expect(screen.queryByRole('region', { name: 'Moje kostely' })).toBeNull()
+  expect(JSON.parse(localStorage.getItem('bohosluzby:favorites') ?? '[]')).toEqual([])
+})
+
   it('no stars, no section', async () => {
     stubGeolocation('granted')
     render(<App />)

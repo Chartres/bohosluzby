@@ -64,6 +64,14 @@ const SHARD = {
     c: [],
     s: [['7', '09:15', 'česky', 0, 'mše sv.', '']],
   },
+  // church "6": one Po/St/Pá record whose note is about Friday only (registry church 10009).
+  '6': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['135', '15:00', 'česky', 0, 'mše sv.', 'V červenci, srpnu a září není páteční mše sv.']],
+  },
 }
 
 // Church "1"/"5" have a photo entry; "2"/"3"/"4" do not.
@@ -154,7 +162,7 @@ describe('church photo', () => {
     expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
   })
 
-  it('overlays the back control and help on the photo hero, and reports the hero', async () => {
+  it('keeps back always visible over a photo hero, help on the hero, and reports the hero', async () => {
     const onBack = vi.fn()
     const onHelp = vi.fn()
     const onHeroChange = vi.fn()
@@ -163,8 +171,12 @@ describe('church photo', () => {
     )
     const img = await screen.findByRole('img', { name: 'kostel 1' })
     const figure = img.closest('figure')!
-    // both global controls live ON the hero (over the photo), not in a separate bar
-    const back = within(figure).getByRole('button', { name: '‹ zpět na seznam' })
+    // back is a FIXED paper button (2026-10-14: white-on-scrim text vanished on
+    // bright photos and scrolled away with the hero); help stays on the hero
+    const back = screen.getByRole('button', { name: '‹ zpět na seznam' })
+    expect(figure).not.toContainElement(back)
+    expect(back.className).toMatch(/\bfixed\b/)
+    expect(back.className).toMatch(/\bbg-paper\b/)
     const help = within(figure).getByRole('button', { name: 'nápověda' })
     back.click()
     help.click()
@@ -234,5 +246,14 @@ describe('Moje kostely star', () => {
     star.click()
     await vi.waitFor(() => expect(star).toHaveAttribute('aria-pressed', 'true'))
     expect(JSON.parse(localStorage.getItem('bohosluzby:favorites')!)).toEqual(['2'])
+  })
+})
+
+describe('weekday-specific notes', () => {
+  it('prints a Friday-only note under Friday, not under Monday and Wednesday', async () => {
+    render(<ChurchDetail church={church('6', '50-14')} onBack={() => {}} />)
+    const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(within(schedule).getAllByText('15:00')).toHaveLength(3)
+    expect(within(schedule).getAllByText('V červenci, srpnu a září není páteční mše sv.')).toHaveLength(1)
   })
 })

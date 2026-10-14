@@ -13,6 +13,7 @@ import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueIsoDate, pragueToday } from './domain/occurrences'
+import { noteShownOnDay } from './domain/notes'
 import { currentLiturgicalDay, liturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domain/format'
 import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
@@ -177,6 +178,11 @@ function loadFilters(): Filters {
 
 export type { DayChoice }
 
+// ISO weekday (1=Mon…7=Sun) of an instant, on the Prague calendar.
+const isoDayOf = (at: Date): number => {
+  const w = pragueToday(at)
+  return new Date(Date.UTC(w.y, w.m - 1, w.d)).getUTCDay() || 7
+}
 const WEEKDAY_SHORT_CS = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'] // Date.getUTCDay order
 const WEEKDAY_SHORT_EN = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 /** Read per call — see seasonLabel above for why this isn't a plain constant. */
@@ -1405,7 +1411,8 @@ function ServiceList({
                   {r.church.city && `${r.church.city} · `}
                   {fmtDistance(r.distanceKm)}
                   {r.service.type && ` · ${r.service.type}`}
-                  <NoteText note={r.service.note} />
+                  {/* a note naming another of the service's weekdays ("…není páteční mše") stays off this day's row */}
+                  <NoteText note={noteShownOnDay(r.service.note, 'days' in r.service ? r.service.days : '', isoDayOf(r.start)) ? r.service.note : ''} />
                   {r.church.barrierFree && (
                     <>
                       {' · '}

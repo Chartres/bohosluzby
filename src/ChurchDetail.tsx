@@ -10,7 +10,7 @@ import {
   type Service,
 } from './domain/data'
 import { nextOccurrences, pragueIsoDate, pragueToday, recentOccurrence } from './domain/occurrences'
-import { noteUncertain, parseNote } from './domain/notes'
+import { noteShownOnDay, noteUncertain, parseNote } from './domain/notes'
 import { parseConfessionFromNote } from './domain/confession'
 import { fmtDateCz, isStale, withReferral } from './domain/format'
 import { logError, track } from './analytics'
@@ -535,6 +535,20 @@ export function ChurchDetail({
           back control and help — overlays the photo on a TOP scrim, and the
           church name + meta row sit over a BOTTOM scrim. object-top keeps the
           tower (church photos are tall). No photo → the plain paper header. */}
+      {/* Over a photo the back control is a FIXED paper button: white text on a
+          scrim vanished on bright skies, and it scrolled away with the photo,
+          leaving no way back but the swipe. Paper + hairline, no shadow
+          (docs/DESIGN-BRIEF.md). */}
+      {photo && (
+        <button
+          type="button"
+          onClick={onBack}
+          className={`fixed left-3 z-40 inline-flex min-h-11 items-center px-3 text-sm font-semibold ${HERO_BUTTON}`}
+          style={{ top: 'max(0.5rem, calc(env(safe-area-inset-top) + 0.25rem))' }}
+        >
+          {t('back_to_list')}
+        </button>
+      )}
       {photo ? (
         // -mt-5 pulls the hero to the very top of <main> (the shell masthead is
         // gone in this case); z-0 keeps it an explicit stacking level so WebKit
@@ -551,24 +565,17 @@ export function ChurchDetail({
               warm-ink gradients, not box-shadows (docs/DESIGN-BRIEF.md) */}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-ink/70 via-ink/20 to-transparent" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent" />
-          {/* hero nav: back (left) + help (right), light on the scrim, ≥44px */}
+          {/* hero help (right); back is the fixed paper button above the figure */}
           <div
-            className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 px-3 sm:px-6"
-            style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
+            className="absolute inset-x-0 top-0 flex items-start justify-end gap-2 px-3 sm:px-6"
+            style={{ paddingTop: 'max(0.5rem, calc(env(safe-area-inset-top) + 0.25rem))' }}
           >
-            <button
-              type="button"
-              onClick={onBack}
-              className="inline-flex min-h-11 items-center text-sm font-semibold text-paper hover:text-paper/80"
-            >
-              {t('back_to_list')}
-            </button>
             {onHelp && (
               <button
                 type="button"
                 onClick={onHelp}
                 aria-label={t('intro_help')}
-                className="inline-flex min-h-11 items-center text-xs font-semibold tracking-[0.08em] text-paper uppercase hover:text-paper/80"
+                className={`inline-flex min-h-11 items-center px-3 text-xs font-semibold tracking-[0.08em] uppercase ${HERO_BUTTON}`}
               >
                 ? {t('intro_help')}
               </button>
@@ -650,6 +657,7 @@ export function ChurchDetail({
                       <li key={i}>
                         <ServiceRow
                           s={s}
+                          day={day}
                           church={church}
                           slot={agg.slots.get(slotKey(church.id, day, s.time, riteOf(s), s.lang))}
                           churchTopIds={churchTopIds}
@@ -684,7 +692,7 @@ export function ChurchDetail({
                             {s.time}
                           </p>
                           <div className="min-w-0 flex-1">
-                            <NoteText note={s.note} />
+                            <NoteText note={noteShownOnDay(s.note, s.days, day) ? s.note : ''} />
                           </div>
                         </li>
                       ))}
@@ -791,13 +799,18 @@ export function ChurchDetail({
   )
 }
 
+// Paper chip for controls over the photo hero: readable on any image.
+const HERO_BUTTON = 'rounded-[2px] border border-hairline bg-paper text-ink hover:bg-hairline/40'
+
 function ServiceRow({
   s,
+  day,
   church,
   slot,
   churchTopIds,
 }: {
   s: Service
+  day: number
   church: Church
   slot?: Aggregate
   churchTopIds: string[]
@@ -832,7 +845,7 @@ function ServiceRow({
           {s.type || t('service_fallback')}
           {pausedNow && <span className="font-semibold text-rubric"> · {t('now_paused')}</span>}
         </p>
-        <NoteText note={s.note} />
+        <NoteText note={noteShownOnDay(s.note, s.days, day) ? s.note : ''} />
         <p className="mt-0.5 space-x-2 text-sm empty:hidden">
           {s.lang !== 'česky' && <Chip label={langLabel(s.lang)} />}
           {s.greek && <Chip label={t('greek_chip')} />}
