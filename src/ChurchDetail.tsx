@@ -561,13 +561,13 @@ export function ChurchDetail({
             decoding="async"
             className="block h-[46vh] max-h-[26rem] min-h-[15rem] w-full object-cover object-top"
           />
-          {/* top scrim: eased, darkest behind the nav row, gone by 7rem below the
-              safe area — the nav text clears ~4.5:1 even on a white sky; bottom
-              scrim under the title. Warm-ink gradients, not box-shadows
-              (docs/DESIGN-BRIEF.md). */}
+          {/* top: a PAPER fade, not a grey band (Pavol 2026-10-14) — the page's own
+              ground bleeding into the photo; ink nav text on it, and the iOS
+              clock (dark status-bar text) stays readable on dark photos too.
+              Bottom: ink scrim under the title. */}
           <div
             className="pointer-events-none absolute inset-x-0 top-0"
-            style={{ height: 'calc(env(safe-area-inset-top) + 7rem)', background: TOP_SCRIM }}
+            style={{ height: 'calc(env(safe-area-inset-top) + 5.5rem)', background: PAPER_FADE }}
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent" />
           {/* 1px marker under the nav row: when it leaves the viewport, the bar shows */}
@@ -796,24 +796,23 @@ export function ChurchDetail({
   )
 }
 
-// Eased ink scrim (multi-stop, so no visible band edge): ≥0.6 alpha behind the
-// nav text, then a quick fall-off.
-const TOP_SCRIM =
-  'linear-gradient(to bottom, rgb(26 23 18 / 0.7) 0%, rgb(26 23 18 / 0.62) 55%, rgb(26 23 18 / 0.3) 75%, rgb(26 23 18 / 0.1) 90%, rgb(26 23 18 / 0) 100%)'
+// Paper (#f6f1e5) fading out: opaque enough behind the nav row for ink text.
+const PAPER_FADE =
+  'linear-gradient(to bottom, rgb(246 241 229 / 0.94) 0%, rgb(246 241 229 / 0.82) 50%, rgb(246 241 229 / 0.35) 78%, rgb(246 241 229 / 0) 100%)'
 
 /** Back + help for the photo detail, in the masthead's type (small caps,
  * tracked) and on ONE row so they share a baseline. Over the photo: paper text
- * with the hero-legible shadow. As the scrolled bar: paper ground, rubric back,
+ * inside a warm-ink halo (.hero-glow), no band behind it. As the scrolled bar: paper ground, rubric back,
  * season rule — the masthead's look. */
 function HeroNav({ onBack, onHelp, bar }: { onBack: () => void; onHelp?: () => void; bar: boolean }) {
   const btn = 'inline-flex min-h-11 items-center text-xs font-semibold tracking-[0.08em] uppercase'
   return (
     <div
-      className={bar ? 'fade-in fixed inset-x-0 top-0 z-40 border-b-2 bg-paper' : 'hero-legible absolute inset-x-0 top-0 text-paper'}
+      className={bar ? 'fade-in fixed inset-x-0 top-0 z-40 border-b-2 bg-paper' : 'absolute inset-x-0 top-0'}
       style={{ paddingTop: 'max(0.25rem, env(safe-area-inset-top))', borderColor: bar ? 'var(--season)' : undefined }}
     >
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-5 sm:px-8">
-        <button type="button" onClick={onBack} className={`${btn} ${bar ? 'text-rubric' : ''}`}>
+        <button type="button" onClick={onBack} className={`${btn} text-rubric`}>
           {t('back_to_list')}
         </button>
         {onHelp && (
@@ -821,7 +820,7 @@ function HeroNav({ onBack, onHelp, bar }: { onBack: () => void; onHelp?: () => v
             type="button"
             onClick={onHelp}
             aria-label={t('intro_help')}
-            className={`${btn} ${bar ? 'text-ink-faded hover:text-ink' : ''}`}
+            className={`${btn} text-ink-faded hover:text-ink`}
           >
             ? {t('intro_help')}
           </button>

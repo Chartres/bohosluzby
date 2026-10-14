@@ -176,7 +176,7 @@ describe('church photo', () => {
     const back = within(figure).getByRole('button', { name: '‹ zpět na seznam' })
     const help = within(figure).getByRole('button', { name: 'nápověda' })
     expect(back.parentElement).toBe(help.parentElement)
-    expect(back.closest('.hero-legible')).not.toBeNull()
+    expect(back.className).toMatch(/\btext-rubric\b/) // ink-on-paper-fade, as in the scrolled bar
     back.click()
     help.click()
     expect(onBack).toHaveBeenCalled()

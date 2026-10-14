@@ -1,7 +1,7 @@
 // Moje kostely (evolve pick #2): the starred churches' next service, above the
 // nearby list and regardless of distance. A glance, not a feed — and no nudge:
 // nothing here ever notifies.
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { decodeShard, type Church, type ChurchServices } from './domain/data'
 import { rankUpcoming } from './domain/ranking'
 import { dayLabel, fmtTime } from './domain/format'
@@ -55,7 +55,14 @@ export function MyChurches({
         {churches.map((c) => {
           const u = next.get(c.id)
           return (
-            <li key={c.id} className="flex items-baseline gap-4 border-b border-hairline py-2">
+            <SwipeRow
+              key={c.id}
+              label={`${t('fav_remove')}: ${c.name}`}
+              onRemove={() => {
+                toggleFavorite(c.id)
+                track('key_action', { action: 'favorite', on: false })
+              }}
+            >
               <p className="w-28 shrink-0 text-sm text-ink-faded">
                 {u ? (
                   <>
@@ -74,23 +81,63 @@ export function MyChurches({
                 {c.name}
               </button>
               {!u && <span className="text-xs text-ink-faded">{t('mine_none_soon')}</span>}
-{/* the same ★ as "★ uloženo" on the detail: tap to un-save, right here */}
-<button
-  type="button"
-  aria-label={`${t('fav_remove')}: ${c.name}`}
-  title={t('fav_remove')}
-  className="-my-2 inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center self-center text-lg text-ink-faded hover:text-ink"
-  onClick={() => {
-    toggleFavorite(c.id)
-    track('key_action', { action: 'favorite', on: false })
-  }}
->
-  ★
-</button>
-            </li>
+            </SwipeRow>
           )
         })}
       </ul>
     </section>
+  )
+}
+
+// Swipe left to reveal "Odebrat" (the iOS Mail/Outlook list gesture); removal
+// needs the tap, so a stray swipe never deletes. The action stays in the DOM
+// for keyboard and screen-reader users and slides the row open when focused.
+const ACTION_PX = 96
+
+function SwipeRow({ label, onRemove, children }: { label: string; onRemove: () => void; children: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  const [drag, setDrag] = useState<number | null>(null) // live offset while the finger is down
+  const start = useRef<{ x: number; y: number; horizontal: boolean | null } | null>(null)
+  const base = open ? -ACTION_PX : 0
+  const x = drag ?? base
+  return (
+    <li className="relative overflow-hidden border-b border-hairline">
+      <button
+        type="button"
+        aria-label={label}
+        onClick={onRemove}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        className="absolute inset-y-0 right-0 bg-rubric text-sm font-semibold text-paper"
+        style={{ width: ACTION_PX }}
+      >
+        {t('fav_remove_short')}
+      </button>
+      <div
+        data-swipe
+        className={`relative flex items-baseline gap-4 bg-paper py-2 ${drag === null ? 'transition-transform duration-150' : ''}`}
+        style={{ transform: `translateX(${x}px)`, touchAction: 'pan-y' }}
+        onTouchStart={(e) => {
+          const p = e.touches[0]
+          start.current = { x: p.clientX, y: p.clientY, horizontal: null }
+        }}
+        onTouchMove={(e) => {
+          const s = start.current
+          if (!s) return
+          const p = e.touches[0]
+          const dx = p.clientX - s.x
+          const dy = p.clientY - s.y
+          if (s.horizontal === null && Math.abs(dx) + Math.abs(dy) > 8) s.horizontal = Math.abs(dx) > Math.abs(dy)
+          if (s.horizontal) setDrag(Math.min(0, Math.max(-ACTION_PX * 1.5, base + dx)))
+        }}
+        onTouchEnd={() => {
+          if (start.current?.horizontal && drag !== null) setOpen(drag < -ACTION_PX / 2)
+          start.current = null
+          setDrag(null)
+        }}
+      >
+        {children}
+      </div>
+    </li>
   )
 }

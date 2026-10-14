@@ -220,16 +220,24 @@ describe('Marie finds the nearest mass', () => {
     expect(seznam().getByText(/Salvátora/)).toBeInTheDocument()
   })
 
-it('Moje kostely: a saved church is removed right from the list with its ★', async () => {
-  localStorage.setItem('bohosluzby:favorites', JSON.stringify(['3']))
-  stubGeolocation('granted')
-  render(<App />)
-  const mine = await screen.findByRole('region', { name: 'Moje kostely' })
-  await within(mine).findByText('kostel sv. Tomáše')
-  fireEvent.click(within(mine).getByRole('button', { name: 'Odebrat z Mých kostelů: kostel sv. Tomáše' }))
-  expect(screen.queryByRole('region', { name: 'Moje kostely' })).toBeNull()
-  expect(JSON.parse(localStorage.getItem('bohosluzby:favorites') ?? '[]')).toEqual([])
-})
+  it('Moje kostely: swipe a saved church left to reveal Odebrat; only the tap removes it', async () => {
+    localStorage.setItem('bohosluzby:favorites', JSON.stringify(['3']))
+    stubGeolocation('granted')
+    render(<App />)
+    const mine = await screen.findByRole('region', { name: 'Moje kostely' })
+    const row = (await within(mine).findByText('kostel sv. Tomáše')).closest('[data-swipe]') as HTMLElement
+    expect(row.style.transform).toBe('translateX(0px)')
+    // swipe left (Outlook/Mail style): the row slides and reveals the action…
+    fireEvent.touchStart(row, { touches: [{ clientX: 300, clientY: 100 }] })
+    fireEvent.touchMove(row, { touches: [{ clientX: 180, clientY: 104 }] })
+    fireEvent.touchEnd(row, { changedTouches: [{ clientX: 180, clientY: 104 }] })
+    expect(row.style.transform).toBe('translateX(-96px)')
+    // …but nothing is removed until the action is tapped
+    expect(JSON.parse(localStorage.getItem('bohosluzby:favorites') ?? '[]')).toEqual(['3'])
+    fireEvent.click(within(mine).getByRole('button', { name: 'Odebrat z Mých kostelů: kostel sv. Tomáše' }))
+    expect(screen.queryByRole('region', { name: 'Moje kostely' })).toBeNull()
+    expect(JSON.parse(localStorage.getItem('bohosluzby:favorites') ?? '[]')).toEqual([])
+  })
 
   it('no stars, no section', async () => {
     stubGeolocation('granted')
