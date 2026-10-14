@@ -162,29 +162,19 @@ describe('church photo', () => {
     expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
   })
 
-  it('keeps back always visible over a photo hero, help on the hero, and reports the hero', async () => {
+  it('a photo detail keeps the sticky paper back band above the photo, nothing overlaid', async () => {
     const onBack = vi.fn()
-    const onHelp = vi.fn()
-    const onHeroChange = vi.fn()
-    render(
-      <ChurchDetail church={church('1', '50-14')} onBack={onBack} onHelp={onHelp} onHeroChange={onHeroChange} />,
-    )
+    render(<ChurchDetail church={church('1', '50-14')} onBack={onBack} />)
     const img = await screen.findByRole('img', { name: 'kostel 1' })
     const figure = img.closest('figure')!
-    // back is a FIXED paper button (2026-10-14: white-on-scrim text vanished on
-    // bright photos and scrolled away with the hero); help stays on the hero
+    // 2026-10-14: back/help overlaid on the photo vanished on bright skies and
+    // scrolled away; the band is the same one the no-photo detail uses
     const back = screen.getByRole('button', { name: '‹ zpět na seznam' })
     expect(figure).not.toContainElement(back)
-    expect(back.className).toMatch(/\bfixed\b/)
-    expect(back.className).toMatch(/\bbg-paper\b/)
-    const help = within(figure).getByRole('button', { name: 'nápověda' })
+    expect(back.closest('p')!.className).toMatch(/\bsticky\b/)
+    expect(within(figure).queryByRole('button', { name: 'nápověda' })).toBeNull()
     back.click()
-    help.click()
     expect(onBack).toHaveBeenCalled()
-    expect(onHelp).toHaveBeenCalled()
-    // the shell is told a hero is up so it can drop its masthead — from a passive
-    // effect, which can flush after the image is found (flaked in CI 2026-10-07)
-    await vi.waitFor(() => expect(onHeroChange).toHaveBeenCalledWith(true))
   })
 
   it('tidies the photo credit — drops duplicate wiki markup, keeps licence + source', async () => {
@@ -196,14 +186,11 @@ describe('church photo', () => {
   })
 
   it('renders no image and a plain title when the church has no photo entry', async () => {
-    const onHeroChange = vi.fn()
-    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} onHeroChange={onHeroChange} />)
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
     const heading = await screen.findByRole('heading', { name: 'kostel 2' })
     expect(screen.queryByRole('img')).toBeNull()
     // plain layout: the title is NOT wrapped in a photo figure
     expect(heading.closest('figure')).toBeNull()
-    // no hero → the shell keeps its masthead (no back/help overlaid)
-    expect(onHeroChange).not.toHaveBeenCalledWith(true)
   })
 
   it('surfaces a confession time parsed from a Mass note, keeping the note on its Mass', async () => {

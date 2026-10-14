@@ -98,17 +98,3 @@ html {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-
-/* iOS runs the WebView under the status bar (contentInset: never). A paper strip
-   the height of the safe area keeps scrolled text off the clock — it collided
-   on the church detail, which drops the sticky masthead. 0 tall on the web.
-   Above Leaflet's panes/controls (≤1000), below the sheets (1200+). */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: env(safe-area-inset-top, 0px);
-  background: var(--color-paper);
-  z-index: 1100;
-  pointer-events: none;
-}
