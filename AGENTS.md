@@ -78,6 +78,13 @@ offline. Language values are normalized to Czech lowercase at decode (`normalize
   `fastlane ios release` from `ios/App/`;
   listing + privacy answers in `docs/store/ios-metadata.md`, human steps in
   `docs/store/asc-submission-checklist.md`.
+  **Visual change in a release candidate → show Pavol the after-shots (photo detail
+  at 393×852, list, the changed screen) and get his OK BEFORE cutting the store
+  build.** 2026-10-14: two builds (boxed buttons, then masthead above the photo)
+  went to TestFlight and were expired within minutes on his first look. Replace an
+  expired build by attaching the new one to the version and expiring the old.
+  Locale: run fastlane with `LC_ALL=en_US.UTF-8` (fastlane needs it; the helpers no
+  longer do). Local e2e: `PW_CHANNEL=chrome` if the pinned headless shell is missing.
 - **Android** → Google Play via the same Capacitor shell (`android/`, committed; icons/splash
   from `resources/` via `npx capacitor-assets generate --android`). Release =
   `git tag android-vX.Y.Z && git push origin android-vX.Y.Z` → `.github/workflows/release-android.yml`
