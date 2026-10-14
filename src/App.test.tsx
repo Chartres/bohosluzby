@@ -8,7 +8,7 @@ vi.mock('./lib/supabase', () => ({ supabase: null }))
 import { clearAggregateCache } from './lib/feedbackStore'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import App, { dayOptions, geoFailKey } from './App'
+import App, { geoFailKey } from './App'
 import type { IndexRow } from './domain/data'
 
 // Friday 3 Jul 2026 17:00 Prague. Vitest fake timers pin "now".
@@ -241,6 +241,7 @@ describe('Marie finds the nearest mass', () => {
     stubGeolocation('granted')
     render(<App />)
     expect(await screen.findByText(/aktuální k 3\. 7\. 2026/)).toBeInTheDocument()
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('liturgické mezidobí · Data: rejstřík bohosluzby.cirkev.cz')
   })
 
   it('landing view: the map is the default when online (times ON the map, no tap)', async () => {
@@ -932,20 +933,6 @@ describe('Marie finds the nearest mass', () => {
     render(<App />)
     expect(await screen.findByText('V okolí nic nenacházím')).toBeInTheDocument()
     expect(screen.getByLabelText('Kostel nebo obec')).toBeInTheDocument()
-  })
-})
-
-describe('dayOptions', () => {
-  it('on a Sunday, offers NEXT Sunday (the 0..6 window has no future nedele)', () => {
-    const sunday = new Date('2026-07-05T10:00:00Z')
-    const opts = dayOptions(sunday)
-    expect(opts.at(-1)).toMatchObject({ key: 7, label: 'neděle' })
-  })
-  it('on other days, stops at +6 with one nedele', () => {
-    const friday = new Date('2026-07-03T10:00:00Z')
-    const labels = dayOptions(friday).map((o) => o.label)
-    expect(labels.filter((l) => l === 'neděle')).toHaveLength(1)
-    expect(dayOptions(friday).at(-1)?.key).toBe(6)
   })
 })
 

@@ -13,9 +13,9 @@ import { fileURLToPath } from 'node:url'
 import { aggregateCities } from '../src/domain/cities.ts'
 import { churchPage } from '../src/domain/churchPage.ts'
 import { embedData } from '../src/domain/embedData.ts'
+import { SITE_ORIGIN as ORIGIN } from '../src/domain/site.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
-const ORIGIN = 'https://bohosluzby.dravec.org'
 const CITY_PAGES = 30
 const MAX_CHURCH_LINKS = 60
 
@@ -112,6 +112,7 @@ if (CHURCH_PAGES) {
     }
     return shards.get(cell)
   }
+  mkdirSync(`${root}dist/embed`, { recursive: true })
   for (const church of index) {
     const page = churchPage({ church, entry: shard(church.cell)[church.id], today, city: cityOf.get(church.id) })
     // replacer functions: registry text may contain "$&"-style patterns
@@ -122,7 +123,6 @@ if (CHURCH_PAGES) {
     writeFileSync(`${root}dist/kostel/${church.id}/index.html`, html)
     churchUrls.push(`/kostel/${church.id}/`)
     // the parish-website widget's data (public/embed.js)
-    mkdirSync(`${root}dist/embed`, { recursive: true })
     writeFileSync(
       `${root}dist/embed/${church.id}.json`,
       JSON.stringify(embedData({ church, entry: shard(church.cell)[church.id], today })),

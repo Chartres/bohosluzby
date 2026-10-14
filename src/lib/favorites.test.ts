@@ -1,13 +1,13 @@
 // Moje kostely: starred churches, on this device only (no account, no sync —
 // the same privacy posture as the rest of the app). No nudges: a list, not a push.
-import { getFavorites, isFavorite, subscribeFavorites, toggleFavorite, FAVORITES_MAX } from './favorites'
+import { getFavorites, subscribeFavorites, toggleFavorite, FAVORITES_MAX } from './favorites'
 
 beforeEach(() => localStorage.clear())
 
 it('toggles a church in and out, persisted on the device', () => {
   expect(getFavorites()).toEqual([])
   expect(toggleFavorite('10001')).toBe(true)
-  expect(isFavorite('10001')).toBe(true)
+  expect(getFavorites().includes('10001')).toBe(true)
   expect(JSON.parse(localStorage.getItem('bohosluzby:favorites')!)).toEqual(['10001'])
   expect(toggleFavorite('10001')).toBe(false)
   expect(getFavorites()).toEqual([])

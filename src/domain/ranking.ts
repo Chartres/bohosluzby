@@ -31,12 +31,9 @@ export interface Upcoming {
   distanceKm: number
   start: Date
   service: Service | ExtraService
-  /** Registry verification date of the church's schedule ("aktualizace"). */
-  updated: string
 }
 
 export interface RankOptions {
-  horizonDays?: number
   limit?: number
 }
 
@@ -45,7 +42,7 @@ export function rankUpcoming(
   origin: { lat: number; lng: number },
   churches: Church[],
   servicesById: ReadonlyMap<string, ChurchServices>,
-  { horizonDays = 8, limit = 20 }: RankOptions = {},
+  { limit = 20 }: RankOptions = {},
 ): Upcoming[] {
   const reachable = (start: Date, km: number) => start.getTime() - now.getTime() >= REACH_MIN_PER_KM * km * 60_000
   const key = (start: Date, service: Service | ExtraService, km: number): number =>
@@ -63,12 +60,12 @@ export function rankUpcoming(
     // adorace at 08:35 must not hide the Mass at 09:00.
     let best: (typeof out)[number] | null = null
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
-      for (const start of nextOccurrences(spec, now, horizonDays)) {
+      for (const start of nextOccurrences(spec, now)) {
         if (!runsOn(service, start)) continue // "kromě července a srpna" — don't lie in July
         const k = key(start, service, distanceKm)
         if (!best || k < best.key) {
           const w = pragueToday(start)
-          best = { church, distanceKm, start, service, updated: svc.updated, key: k, day: Date.UTC(w.y, w.m - 1, w.d) }
+          best = { church, distanceKm, start, service, key: k, day: Date.UTC(w.y, w.m - 1, w.d) }
         }
         if (reachable(start, distanceKm)) break // later occurrences only score worse
       }
@@ -116,7 +113,7 @@ export function ordoForDay(
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
       for (const start of nextOccurrences(spec, now, dayOffset + 1)) {
         if (onTarget(start) && runsOn(service, start))
-          out.push({ church, distanceKm, start, service, updated: svc.updated })
+          out.push({ church, distanceKm, start, service })
       }
     }
     for (const s of svc.regular) consider(s, { days: s.days, time: s.time })

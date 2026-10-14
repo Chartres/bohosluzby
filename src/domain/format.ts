@@ -79,10 +79,6 @@ function cachedFmt(kind: string, opts: Intl.DateTimeFormatOptions): Intl.DateTim
 const weekdayFmt = () =>
   cachedFmt('weekday', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'numeric' })
 
-// normalizeLang and isStale moved to ./registry (import-free, so the Node
-// prerender can share them); re-exported so existing imports keep working.
-export { normalizeLang, isStale } from './registry'
-
 const dateFmt = () => cachedFmt('date', { timeZone: TZ, day: 'numeric', month: 'numeric', year: 'numeric' })
 
 /** "YYYY-MM-DD" → "30. 1. 2026" (cs) / "30/1/2026"-shaped (en), locale-aware.

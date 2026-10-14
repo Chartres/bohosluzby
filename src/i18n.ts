@@ -73,6 +73,7 @@ export const cs = {
   footer_asof_prefix: 'aktuální k',
   footer_free: 'zdarma, bez reklam',
   footer_support: 'Podpořit',
+  footer_data: 'Data: rejstřík',
 
   // ---- liturgical seasons ----
   season_ordinary: 'liturgické mezidobí',
@@ -200,7 +201,6 @@ export const cs = {
   fb_suggest_note: 'Nezveřejní se — pomůže rozšířit nabídku štítků.',
   fb_save: 'Uložit',
   fb_saved: 'Díky. Zapsáno pro další poutníky.',
-  fb_often: 'často zmiňují',
   fb_church_often: 'V tomto kostele poutníci často zmiňují',
   fb_mass_diverges: 'u této mše navíc zmiňují',
   fb_filter_group: 'Ohlasy poutníků',
@@ -292,6 +292,7 @@ export const en: Record<Key, string> = {
   footer_asof_prefix: 'current as of',
   footer_free: 'free, no ads',
   footer_support: 'Support',
+  footer_data: 'Data: registry',
 
   season_ordinary: 'ordinary time',
   season_advent: 'Advent',
@@ -411,7 +412,6 @@ export const en: Record<Key, string> = {
   fb_suggest_note: 'Not published — it helps grow the set of tags.',
   fb_save: 'Save',
   fb_saved: 'Thank you. Recorded for other pilgrims.',
-  fb_often: 'often mentioned',
   fb_church_often: 'Pilgrims here often mention',
   fb_mass_diverges: 'at this Mass, pilgrims also mention',
   fb_filter_group: 'Pilgrim witness',
