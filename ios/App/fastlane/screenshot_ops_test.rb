@@ -22,3 +22,17 @@ Dir.mktmpdir do |dir|
   check 'duplicate remote shot → no match',
         !screenshot_set_matches?([a], [shot['iphone-6.9-1-map.png', md5[a]], shot['iphone-6.9-1-map.png', md5[a]]])
 end
+
+# asc_load_env crashed under a US-ASCII shell locale (LANG unset on the mini)
+# because .env carries a non-ASCII comment.
+Dir.mktmpdir do |dir|
+  envfile = File.join(dir, '.env')
+  File.write(envfile, "# klíč z App Store Connect\nASC_KEY_ID=ABC123\n", encoding: 'UTF-8')
+  saved = Encoding.default_external
+  Encoding.default_external = Encoding::US_ASCII
+  begin
+    check '.env loads under a US-ASCII locale', asc_load_env(envfile)['ASC_KEY_ID'] == 'ABC123'
+  ensure
+    Encoding.default_external = saved
+  end
+end
