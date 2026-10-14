@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kam na mši: návrhy funkcí, 14. 10. 2026</title>
+<style>
+  :root {
+    --paper: #f6f1e5; --ink: #1a1712; --faded: #655c4d; --rubric: #9a2b1e;
+    --hair: #d8d0bd; --season: #3d6b46; --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --sans: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.5 var(--sans); }
+  main { max-width: 64rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  header.top { border-bottom: 2px solid var(--season); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+  h1 { font: 700 2rem/1.15 var(--serif); margin: 0 0 .4rem; }
+  h2 { font: 700 1.4rem/1.2 var(--serif); margin: 2.5rem 0 .75rem; }
+  h3 { font: 700 1.15rem/1.25 var(--serif); margin: 0 0 .35rem; }
+  p { margin: .4rem 0; }
+  a { color: var(--ink); text-decoration-color: var(--hair); text-underline-offset: 2px; }
+  a:hover { text-decoration-color: var(--ink); }
+  .rubric { color: var(--rubric); font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+  .faded { color: var(--faded); }
+  .small { font-size: .85rem; }
+  table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+  th, td { border-bottom: 1px solid var(--hair); padding: .4rem .5rem; text-align: left; vertical-align: top; }
+  th { font-weight: 600; color: var(--faded); }
+  .rank td:first-child { font: 700 1rem var(--serif); width: 2rem; }
+  .tag { display: inline-block; border: 1px solid var(--hair); border-radius: 2px; padding: 0 .4rem; font-size: .75rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+  .tag.go { border-color: var(--season); color: var(--season); }
+  .tag.later { color: var(--faded); }
+  .tag.no { border-color: var(--rubric); color: var(--rubric); }
+  .prop { display: grid; grid-template-columns: 250px 1fr; gap: 1.75rem; border-top: 1px solid var(--hair); padding: 1.5rem 0; }
+  .prop.nomock { grid-template-columns: 1fr; }
+  .meta { display: grid; grid-template-columns: 7.5rem 1fr; gap: .2rem .75rem; margin: .6rem 0; font-size: .92rem; }
+  .meta dt { color: var(--faded); }
+  .meta dd { margin: 0; }
+  .ev { margin: .3rem 0 0; padding-left: 1.1rem; font-size: .88rem; }
+  .ev li { margin: .15rem 0; }
+  .job { font: italic 1.02rem/1.45 var(--serif); margin: .2rem 0 .6rem; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2rem; }
+  .needs li { margin: .35rem 0; }
+  .matrix td, .matrix th { text-align: center; }
+  .matrix td:first-child, .matrix th:first-child { text-align: left; }
+  .matrix th { font-size: .78rem; line-height: 1.2; }
+  .matrix .own { background: color-mix(in srgb, var(--season) 8%, transparent); }
+  @media (max-width: 720px) {
+    .prop { grid-template-columns: 1fr; }
+    .cols { grid-template-columns: 1fr; }
+    .matrix-wrap { overflow-x: auto; }
+  }
+
+  /* ---- phone mockups: the app's real tokens, scaled down ---- */
+  .phone { width: 240px; border: 7px solid var(--ink); border-radius: 26px; background: var(--paper); overflow: hidden; font-size: 10px; line-height: 1.35; }
+  .phone .sb { height: 14px; }
+  .phone .hd { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 12px 7px; border-bottom: 1.5px solid var(--season); }
+  .phone .hd b { font: 700 15px var(--serif); }
+  .phone .hd span, .phone .pills span { font-size: 7px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--faded); }
+  .phone .body { padding: 8px 12px 12px; }
+  .phone .pills { display: flex; gap: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--hair); margin-bottom: 7px; }
+  .phone .pills .on { color: var(--season); border-bottom: 1px solid var(--season); }
+  .phone .rub { color: var(--rubric); font-size: 7.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 6px 0 3px; border-bottom: 1px solid var(--hair); }
+  .phone .row { display: grid; grid-template-columns: 40px 1fr 38px; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--hair); align-items: start; }
+  .phone .t { font: 700 15px/1 var(--serif); }
+  .phone .t small { display: block; font: 600 6.5px var(--sans); color: var(--faded); margin-top: 2px; }
+  .phone .n { font: 600 9.5px/1.25 var(--serif); text-decoration: underline; text-decoration-color: var(--hair); }
+  .phone .m { color: var(--faded); font-size: 7.5px; margin-top: 1px; }
+  .phone .b { border: 1px solid var(--hair); font-size: 6px; font-weight: 600; letter-spacing: .06em; text-align: center; padding: 5px 0; color: var(--faded); }
+  .phone .ord { display: grid; grid-template-columns: 34px 1fr; gap: 6px; padding: 4px 0; border-bottom: 1px solid var(--hair); align-items: baseline; }
+  .phone .ord .t { font-size: 12px; }
+  .phone .lnk { text-decoration: underline; text-decoration-color: var(--hair); }
+  .phone .new { outline: 1.5px dashed var(--rubric); outline-offset: 2px; }
+  .phone textarea { width: 100%; height: 34px; border: 1px solid var(--season); background: #faf7ef; font: 8px var(--sans); padding: 3px; resize: none; }
+  .phone .send { display: flex; justify-content: flex-end; gap: 8px; align-items: center; margin-top: 4px; font-size: 7.5px; }
+  .phone .send b { border: 1px solid var(--ink); padding: 3px 7px; }
+  .phone .bubble { background: #e9e3d4; border-radius: 10px 10px 10px 2px; padding: 7px 9px; font-size: 8.5px; line-height: 1.45; margin: 6px 18px 6px 0; white-space: pre-line; }
+  .phone .chat { background: #fff; padding: 8px 10px 10px; }
+  .phone .chat .who { text-align: center; font-size: 7px; color: var(--faded); margin-bottom: 3px; }
+  .phone.web .hd b { font-size: 12px; }
+  .cap { font-size: .75rem; color: var(--faded); margin-top: .4rem; max-width: 240px; }
+</style>
+</head>
+<body>
+<main>
+
+<header class="top">
+  <p class="rubric">Kam na mši · výzkum · 14. 10. 2026</p>
+  <h1>Co přidat, aby aplikace zůstala čistá</h1>
+  <p>Deset návrhů z rešerše 17 aplikací a potřeb sedmi skupin uživatelů. Čtyři doporučuji postavit, dva odložit a čtyři odmítám. Žádný z doporučených nepřidává obrazovku ani tlačítko v hlavním seznamu.</p>
+  <p class="faded small">Nenavrhuji nic, co je v BACKLOG, ROADMAP nebo EVOLVE hotové či zamítnuté (Moje kostely, sobotní připomínka, Vánoční stránky, travel mode, Siri, widget, zpověď poblíž). Nepřekrývá se ani s UX-1 až UX-10 z paralelní větve.</p>
+</header>
+
+<h2>Pořadí</h2>
+<table class="rank">
+  <thead><tr><th>#</th><th>Návrh</th><th>Persona</th><th>UI navíc</th><th>Práce</th><th>Verdikt</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><a href="#p1">„Čas nesedí?“ u kostela</a></td><td>P6 Věra</td><td>1 textový odkaz</td><td>S</td><td><span class="tag go">postavit</span></td></tr>
+    <tr><td>2</td><td><a href="#p2">Sobota večer v nedělním pořadu</a></td><td>P2 James, nedělní farník</td><td>1 sbalený řádek</td><td>S</td><td><span class="tag go">postavit</span></td></tr>
+    <tr><td>3</td><td><a href="#p3">Sdílet posílá časy, ne jen odkaz</a></td><td>P4 Novákovi, senior přes příbuzné</td><td>nic</td><td>S</td><td><span class="tag go">postavit</span></td></tr>
+    <tr><td>4</td><td><a href="#p4">Stránky „mše v mém jazyce“</a></td><td>P2 James</td><td>nic v aplikaci</td><td>S</td><td><span class="tag go">postavit</span></td></tr>
+    <tr><td>5</td><td><a href="#p5">Dušičky v řádku svátků</a></td><td>P5 Ludmila</td><td>stávající řádek</td><td>S</td><td><span class="tag later">později</span></td></tr>
+    <tr><td>6</td><td><a href="#p6">Telefon farnosti u starého rozpisu</a></td><td>P6 Věra, senior</td><td>1 odkaz</td><td>S</td><td><span class="tag later">později</span></td></tr>
+    <tr><td>7</td><td><a href="#n1">Modlitby, čtení, audio, zprávy</a></td><td>–</td><td>nová záložka</td><td>L</td><td><span class="tag no">ne</span></td></tr>
+    <tr><td>8</td><td><a href="#n2">Účet a „moje farnost“ s odpočtem</a></td><td>–</td><td>přihlášení, nástěnka</td><td>M</td><td><span class="tag no">ne</span></td></tr>
+    <tr><td>9</td><td><a href="#n3">Další filtry (čas od–do, dětské mše)</a></td><td>–</td><td>ovládací prvky</td><td>S</td><td><span class="tag no">ne</span></td></tr>
+    <tr><td>10</td><td><a href="#n4">Přehled online přenosů</a></td><td>–</td><td>nový seznam</td><td>M</td><td><span class="tag no">ne</span></td></tr>
+  </tbody>
+</table>
+
+<h2>Postavit</h2>
+<p class="faded small">Makety používají skutečné barvy a písma aplikace (DESIGN-BRIEF). Čárkovaně je nový prvek. Data v maketách 1 a 2 jsou ilustrační, v maketě 3 jsou skutečný řádek registru 100011, v maketě 4 zdrojované časy.</p>
+
+<!-- 1 -->
+<section class="prop" id="p1">
+  <div>
+    <div class="phone" aria-label="Maketa: detail kostela s odkazem Čas nesedí">
+      <div class="sb"></div>
+      <div class="hd"><b style="font-size:11px">‹ zpět na seznam</b><span>nápověda</span></div>
+      <div class="body">
+        <div class="rub">Neděle</div>
+        <div class="ord"><span class="t">08:00</span><span>mše sv.</span></div>
+        <div class="ord"><span class="t">10:30</span><span>mše sv.</span></div>
+        <div class="rub">Farnost</div>
+        <p class="m" style="font-size:8px;margin:4px 0">Římskokatolická farnost Volary, naposledy ověřeno 17. 9. 2025 · <span class="lnk new" style="color:var(--ink)">čas nesedí?</span></p>
+        <div style="border-top:1px solid var(--hair);margin-top:8px;padding-top:6px">
+          <p style="font-size:8px;margin:0 0 4px">Co nesedí u <b>ne 10:30</b>? Pošleme to farnosti a evidenci bohoslužeb.</p>
+          <textarea readonly>v zimě je mše až v 11:00</textarea>
+          <div class="send"><span class="lnk faded">Zavřít</span><b>Odeslat</b></div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">Odkaz otevře stávající kartu zpětné vazby přímo na místě, s kostelem předvyplněným.</p>
+  </div>
+  <div>
+    <p class="rubric">1 · postavit · S</p>
+    <h3>„Čas nesedí?“ přímo u kostela</h3>
+    <p class="job">Když čas na stránce nesouhlasí s cedulí na dveřích, chci to jedním klepnutím nahlásit, aby další člověk nešel ke zamčenému kostelu.</p>
+    <dl class="meta">
+      <dt>Persona</dt><dd>P6 Věra (krok 3: komu věřit), P5 Ludmila (krok 4: stará data nebo nevyhlášeno?)</dd>
+      <dt>UI</dt><dd>Jeden textový odkaz na konci řádku „naposledy ověřeno“. Otevře <code>FeedbackCard</code>, která už přijímá <code>context</code> (src/FeedbackCard.tsx:15); kontext bude <code>kostel:&lt;id&gt;</code>. Potvrzení už existuje: „Opravu rozpisu předáváme farnosti a evidenci bohoslužeb.“</dd>
+      <dt>Cena v UI</dt><dd>1 odkaz, 0 obrazovek. Patička zůstává pro obecnou zpětnou vazbu.</dd>
+      <dt>Napájí</dt><dd>Měsíční report kvality dat pro ČBK (EVOLVE #10): opravy budou mít id kostela.</dd>
+    </dl>
+    <p class="rubric">Důkazy</p>
+    <ul class="ev">
+      <li>Špatné nebo staré časy jsou nejčastější stížnost všude. Uživatelé odměňují viditelnou opravu: „I submitted the correct information and it was updated extremely quick“ (<a href="https://apps.apple.com/us/app/-/id789923520">Catholic Mass Times</a>), „submitted the correct information and it was corrected“ (<a href="https://itunes.apple.com/us/rss/customerreviews/page=1/id=825001975/sortby=mostrecent/json">Mass Times for Travel, srpen 2026</a>).</li>
+      <li>Opačný případ: „I cannot find a means of submitting the information for update“ (<a href="https://apps.apple.com/us/app/mass-time-find-catholic-mass/id1438037116">Mass Time, 3 hvězdy, říjen 2026</a>).</li>
+      <li>DoKostola, 1000 Kirchen, Find Mass Times i Catholic Mass Times hlášení chyb u kostela mají (<a href="https://apps.apple.com/sk/app/dokostola/id1589411662?l=sk">DoKostola</a>, <a href="https://apps.apple.com/at/app/1000-kirchen/id1274509920">1000 Kirchen</a>).</li>
+      <li>Vlastní data: 2 382 ze 4 000 záznamů bylo naposledy ověřeno před víc než 18 měsíci (public/data/services, 14. 10. 2026).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="prop" id="p2">
+  <div>
+    <div class="phone" aria-label="Maketa: nedělní pořad s řádkem sobota večer">
+      <div class="sb"></div>
+      <div class="hd"><b>Kam na mši</b><span>? nápověda</span></div>
+      <div class="body">
+        <div class="pills"><span class="on">neděle ▾</span><span>kdykoli ▾</span><span>okolí ▾</span><span>filtry ▾</span></div>
+        <div class="rub new" style="display:flex;justify-content:space-between"><span>Sobota večer · 14 mší</span><span>▾</span></div>
+        <div class="row"><div class="t">17:00<small>za 3 h</small></div><div><div class="n">kostel sv. Ludmily</div><div class="m">Praha 2 · 900 m · mše sv.</div></div><div class="b">TRASA</div></div>
+        <div class="row"><div class="t">18:00<small>za 4 h</small></div><div><div class="n">kostel sv. Havla</div><div class="m">Praha 1 · 1,2 km · mše sv.</div></div><div class="b">TRASA</div></div>
+        <div class="rub">Neděle 18. 10.</div>
+        <div class="row"><div class="t">07:00</div><div><div class="n">farní kostel Neposkvrněného Početí P. M.</div><div class="m">Praha 10 · 5,6 km · mše sv.</div></div><div class="b">TRASA</div></div>
+        <div class="row" style="border:0"><div class="t">07:30</div><div><div class="n">farní kostel sv. Apolináře</div><div class="m">Praha 2 · 1,8 km · mše sv.</div></div><div class="b">TRASA</div></div>
+      </div>
+    </div>
+    <p class="cap">Řádek je sbalený, rozbalí se na místě. Zobrazí se jen v pohledu neděle a jen dokud sobotní večer neskončil.</p>
+  </div>
+  <div>
+    <p class="rubric">2 · postavit · S</p>
+    <h3>Sobota večer v nedělním pořadu</h3>
+    <p class="job">Když v sobotu odpoledne plánuji neděli, chci vidět i dnešní večerní mše, abych mohl jít už dnes, kdyby neděle nevyšla.</p>
+    <dl class="meta">
+      <dt>Persona</dt><dd>P2 James (spouštěč: „Saturday evening, planning tomorrow“), pravidelný nedělní farník</dd>
+      <dt>UI</dt><dd>Jeden sbalený rubrikový řádek nad nedělním pořadem: „sobota večer · N mší ▾“. Řádky uvnitř jsou stávající řádky seznamu. Žádný nový filtr ani přepínač.</dd>
+      <dt>Cena v UI</dt><dd>1 řádek, jen v pohledu neděle, jen do soboty 24:00.</dd>
+      <dt>Text</dt><dd>„sobota večer“, ne „nedělní mše“: registr neoznačuje, které sobotní mše mají nedělní liturgii. Hranice 16:00 je pracovní volba (<code>ponytail:</code> komentář, upravit podle ohlasu).</dd>
+    </dl>
+    <p class="rubric">Důkazy</p>
+    <ul class="ev">
+      <li>Kán. 1248 §1: povinnost splní i mše večer předchozího dne (<a href="https://www.catholic.com/qa/how-early-can-the-saturday-vigil-be">Catholic Answers</a>).</li>
+      <li>1 000 z 1 636 sobotních bohoslužeb v registru začíná v 16:00 nebo později (vlastní součet). V src/ není žádné ošetření předvečera; pohled neděle ukazuje jen nedělní řádky.</li>
+      <li>Nejlépe hodnocený minimalistický konkurent řadí podle času: „Sorting the Masses by Time = Perfect“ (<a href="https://itunes.apple.com/us/rss/customerreviews/page=1/id=825001975/sortby=mostrecent/json">Mass Times for Travel, 5 hvězd, červen 2026</a>). Sobotní večer je ve stejném čase jen o den dřív.</li>
+      <li>Asi 375 tisíc pravidelných nedělních účastníků (ČBK 2019, citováno v <a href="https://www.dltm.cz/file/129973/zivot-katolicke-cirkve-web.pdf">materiálu ČBK</a>, odkaz dnes vrací 404).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="prop" id="p3">
+  <div>
+    <div class="phone" aria-label="Maketa: sdílená zpráva s časy bohoslužeb">
+      <div class="sb"></div>
+      <div class="chat">
+        <div class="who">Zpráva · mamka</div>
+        <div class="bubble">kostel Panny Marie Vítězné, Praha 1 (Karmelitská)
+ne 10:00, 12:00 anglicky, 18:00 italsky, 19:00
+po–so 9:00
+čt 18:00 anglicky
+so 18:00 španělsky
+ověřeno 6. 9. 2016
+bohosluzby.dravec.org/kostel/100011/</div>
+      </div>
+      <div class="body" style="border-top:1px solid var(--hair)">
+        <p class="m" style="font-size:8px">mapa · navigace · <span class="lnk" style="color:var(--ink)">sdílet</span> · ☆ uložit</p>
+        <p class="m" style="font-size:7.5px">Stejné tlačítko. Mění se jen obsah zprávy.</p>
+      </div>
+    </div>
+    <p class="cap">Skutečný řádek registru 100011. Odpovídá rozpisu na pragjesu.cz, přestože byl ověřen v roce 2016.</p>
+  </div>
+  <div>
+    <p class="rubric">3 · postavit · S</p>
+    <h3>Sdílet posílá časy, ne jen odkaz</h3>
+    <p class="job">Když hledám mši pro mámu, chci jí poslat časy na celý týden jako obyčejný text, aby si je přečetla v SMS bez otevírání čehokoli.</p>
+    <dl class="meta">
+      <dt>Persona</dt><dd>P4 Novákovi (krok 4: sdílet do rodinného chatu), senior bez chytrého telefonu přes dítě nebo souseda</dd>
+      <dt>UI</dt><dd>Žádné nové. Stávající „sdílet“ pošle <code>text</code> + <code>url</code> (Capacitor Share i Web Share to umí); záloha do schránky zkopíruje totéž.</dd>
+      <dt>Cena v UI</dt><dd>0 prvků.</dd>
+      <dt>Podmínka</dt><dd>Text se skládá z týdenního pořadu detailu už prohnaného parserem poznámek, aby se neposlaly řádky „nyní se nekoná“. Datum ověření jede s ním.</dd>
+    </dl>
+    <p class="rubric">Důkazy</p>
+    <ul class="ev">
+      <li>Dnes sdílení posílá jen název a odkaz (src/ChurchDetail.tsx:203 a 207). Příjemce bez aplikace a dat nevidí žádný čas.</li>
+      <li>Chytrý telefon má 35 % lidí nad 75 let a 67 % ve věku 65–74 (<a href="https://csu.gov.cz/ict-v-domacnostech-a-uzivatele-ict">ČSÚ, ICT 2025</a>). Ve sčítání 2011 bylo 44 % katolíků starších 60 let (<a href="https://cbk.cirkev.cz/public/uploads/cp/18166_sldb2021-komentar-web.pdf">komentář ČBK k SLDB 2021</a>).</li>
+      <li>Catholic Mass Times přidal sdílení ve verzi 8.2. Mass Times for Travel ani aplikace ČBK ho nemají (<a href="https://apps.apple.com/cz/app/bohoslu%C5%BEby-c%C3%ADrkev-cz/id6770868090">ČBK v App Store</a>).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="prop" id="p4">
+  <div>
+    <div class="phone web" aria-label="Maketa: statická stránka mše v angličtině">
+      <div class="sb"></div>
+      <div class="hd"><b>bohosluzby.dravec.org/jazyk/anglicky/</b></div>
+      <div class="body">
+        <p style="font:700 14px/1.2 var(--serif);margin:2px 0 4px">Mass in English, Czech Republic</p>
+        <p class="m" style="font-size:7.5px">From the bishops' registry bohosluzby.cirkev.cz · updated 14 Oct 2026</p>
+        <div class="rub">Saturday</div>
+        <div class="ord"><span class="t">18:00</span><span><span class="n">St Thomas</span><br><span class="m">Josefská 8, Praha 1</span></span></div>
+        <div class="rub">Sunday</div>
+        <div class="ord"><span class="t">11:00</span><span><span class="n">St Thomas</span><br><span class="m">Josefská 8, Praha 1</span></span></div>
+        <div class="ord"><span class="t">12:00</span><span><span class="n">Our Lady Victorious</span><br><span class="m">Karmelitská 9, Praha 1 · verified 6 Sep 2016</span></span></div>
+        <div class="rub">Thursday</div>
+        <div class="ord" style="border:0"><span class="t">18:00</span><span><span class="n">Our Lady Victorious</span><br><span class="m">Karmelitská 9, Praha 1</span></span></div>
+        <p class="m" style="font-size:7.5px;margin-top:6px">Open the app for the nearest one now ›</p>
+      </div>
+    </div>
+    <p class="cap">Statická stránka jako /mesto/praha/, generuje ji prerender.mjs. V aplikaci se nic nemění.</p>
+  </div>
+  <div>
+    <p class="rubric">4 · postavit · S</p>
+    <h3>Stránky „mše v mém jazyce“</h3>
+    <p class="job">Když z hotelu hledám „English Mass Prague“, chci datovaný seznam mší v mém jazyce, abych se nespoléhal na průvodce z roku 2008.</p>
+    <dl class="meta">
+      <dt>Persona</dt><dd>P2 James (turista, neděle ve vlastním jazyce); ukrajinsky a vietnamsky mluvící v Praze</dd>
+      <dt>UI</dt><dd>Žádné v aplikaci. Předgenerované stránky <code>/jazyk/&lt;jazyk&gt;/</code> podle vzoru městských stránek, v sitemapě, s odkazem do aplikace. Jen jazyky, které v registru existují.</dd>
+      <dt>Cena v UI</dt><dd>0 prvků v aplikaci.</dd>
+      <dt>Test</dt><dd>Zobrazení <code>/jazyk/*</code> v Search Console; přidat k testu 18. 11. (EVOLVE #1). Vazba na úzké hrdlo EVOLVE: dosah.</dd>
+    </dl>
+    <p class="rubric">Důkazy</p>
+    <ul class="ev">
+      <li>Turisté přicházejí přes vyhledávač. Expatský průvodce bohoslužbami pořád vyhledávání vede a je z roku 2008 (<a href="https://www.expats.cz/czech-news/article/religious-services-guide">expats.cz</a>).</li>
+      <li>Data v registru sedí: řádek 100011 přesně odpovídá rozpisu kostela (<a href="https://pragjesu.cz/en/bohosluzby-copy/services-schedule/">pragjesu.cz</a>); sv. Tomáš so 18:00 a ne 11:00 anglicky (<a href="https://prague.eu/en/objevujte/church-of-st-thomas-kostel-sv-tomase/">prague.eu</a>).</li>
+      <li>Arcidiecéze vydávala samostatné cizojazyčné přehledy na Vánoce a Velikonoce (<a href="https://www.cirkev.cz/en/archiv/121218-cizojazycne-bohosluzby-v-praze-o-vanocich-2012">cirkev.cz 2012</a>, <a href="https://cirkev.cz/en/archiv/100330-cizojazycne-bohosluzby-behem-svateho-tydne-v-praze">2010</a>).</li>
+      <li>Recenzenti 1000 Kirchen chtějí hledat mše v angličtině a latině (<a href="https://apps.apple.com/at/app/1000-kirchen/id1274509920">App Store AT</a>).</li>
+      <li>Registr: 5 řádků anglicky, 16 latinsky, 8 slovansky, 7 slovensky, 5 ukrajinsky, po 2 italsky, španělsky, německy a vietnamsky (vlastní součet). Filtr jazyka v aplikaci použilo 0 návštěvníků za 60 dní (EVOLVE D4). Kdo hledá jazyk, nepřichází přes aplikaci.</li>
+    </ul>
+  </div>
+</section>
+
+<h2>Později</h2>
+
+<section class="prop nomock" id="p5">
+  <div>
+    <p class="rubric">5 · později · S</p>
+    <h3>Dušičky v řádku svátků</h3>
+    <p class="job">Když se blíží Dušičky, chci jedním řádkem vědět, že 2. 11. bývá víc mší a že je dobrý čas na zpověď.</p>
+    <dl class="meta">
+      <dt>Persona</dt><dd>P5 Ludmila (týden řízený kalendářem)</dd>
+      <dt>UI</dt><dd>Stávající tichý řádek svátku, rozšířený o 2. 11. Nic nového.</dd>
+      <dt>Proč později</dt><dd>Mimořádné mše 2. 11. (kněz smí sloužit tři) jsou většinou jednorázové a v registru chybí. Řádek by vedl na obyčejné pondělí. Zpovědní data pokrývají asi 50 kostelů. Vrátit se k tomu se sběrem jednorázových bohoslužeb před Vánoci.</dd>
+    </dl>
+    <ul class="ev">
+      <li>src/domain/holyday.ts má 1. 11., ne 2. 11. V roce 2026 připadá 1. 11. na neděli, takže řádek pro všední slavnost se letos neukáže vůbec.</li>
+      <li>Podmínky odpustku 1.–8. 11. a tři mše 2. 11. (<a href="https://mzv.gov.cz/public/92/56/24/2209069_1633467_Zpravodaj10_2016_web_vysl.pdf">Zpravodaj 10/2016</a>).</li>
+    </ul>
+  </div>
+</section>
+
+<section class="prop nomock" id="p6">
+  <div>
+    <p class="rubric">6 · později · S, ale chybí data</p>
+    <h3>Telefon farnosti u starého rozpisu</h3>
+    <p class="job">Když je rozpis z roku 2016, chci farnosti rovnou zavolat, abych si čas ověřil hlasem.</p>
+    <dl class="meta">
+      <dt>Persona</dt><dd>P6 Věra, senior</dd>
+      <dt>Proč později</dt><dd>Rešerše počítala s tím, že telefony v datech jsou. Nejsou: registr má telefon u 3 ze 4 000 kostelů, web u 3 160. U 463 z 2 382 starých záznamů není ani web. Odkaz „zavolat“ by skoro nikde nebyl. Nejdřív zdroj (katalogy diecézí), pak jeden <code>tel:</code> odkaz ve varování o stáří.</dd>
+    </dl>
+  </div>
+</section>
+
+<h2>Neděláme</h2>
+
+<section class="prop nomock" id="n1">
+  <div>
+    <p class="rubric">7 · ne</p>
+    <h3>Modlitby, denní čtení, audio, zprávy</h3>
+    <p>Rozšíření obsahu je v recenzích nejčastější cesta ke ztrátě důvěry. Laudate sbírá stížnosti na „AI slop“ a souhlasový banner přes čtvrtinu obrazovky (<a href="https://itunes.apple.com/us/rss/customerreviews/page=1/id=499428207/sortby=mostrecent/json">recenze</a>). iBreviary se načítá 30–50 s (<a href="https://apps.apple.com/cz/app/ibreviary-ts-plus/id422601705">App Store</a>). Find Mass Times má kvůli růženci a Bibli 70 MB (<a href="https://apps.apple.com/us/app/id6802941520">App Store</a>). Mass Time dostává 1 hvězdu za zpravodajství (<a href="https://apps.apple.com/us/app/mass-time-find-catholic-mass/id1438037116">App Store</a>). DoKostola přidala články v prosinci 2024. Odkaz na denní čtení je hraniční; i ten vynechávám, protože každý řádek navíc v detailu odsouvá rozpis.</p>
+  </div>
+</section>
+
+<section class="prop nomock" id="n2">
+  <div>
+    <p class="rubric">8 · ne</p>
+    <h3>Účet a „moje farnost“ s odpočtem</h3>
+    <p>Mass Time má domovskou farnost s odpočtem a placené úrovně. Drogowskaz má přihlášení přes Apple a recenzenti nemohou účet smazat (<a href="https://itunes.apple.com/pl/rss/customerreviews/page=1/id=1296661940/sortby=mostrecent/json">recenze</a>). U Hallow jdou stížnosti na nečekané platby (<a href="https://help.hallow.com/en/articles/3949390-overview-of-the-church-tab">Church tab</a>). Moje kostely v zařízení dělají totéž bez účtu. Synchronizace mezi zařízeními by vyžadovala identitu a znovu by otevřela rozhodnutí „bez notifikací“.</p>
+  </div>
+</section>
+
+<section class="prop nomock" id="n3">
+  <div>
+    <p class="rubric">9 · ne</p>
+    <h3>Další filtry: čas od–do, dětské mše, ritus v hlavní řadě</h3>
+    <p>Catholic Mass Times má za filtry 2 hvězdy: „not intuitive“, dlouhý seznam neřazený podle času (<a href="https://itunes.apple.com/us/rss/customerreviews/page=1/id=789923520/sortby=mostrecent/json">recenze, květen 2026</a>). Vlastní telemetrie za 60 dní: kdy 11, okruh 6, jazyk 0, ritus 0, bezbariérové 0 (EVOLVE D4). Dětské mše jsou v poznámkách u 116 řádků (1,4 %) a parser je už ukazuje. Platí EVOLVE #4: nepoužívané filtry do jednoho listu „více“, nic nového.</p>
+  </div>
+</section>
+
+<section class="prop nomock" id="n4">
+  <div>
+    <p class="rubric">10 · ne</p>
+    <h3>Přehled online přenosů</h3>
+    <p>Catholic Mass Times je přidal v říjnu 2026 (8.7.15), v Česku je má AudioKostel. Je to jiná úloha než „kam dojít“; žádná persona ji nemá. Odkazy na přenosy se mění týdně a bez údržby rychle zastarají, což je přesně stížnost, kterou bod 1 řeší.</p>
+  </div>
+</section>
+
+<h2>Konkurence</h2>
+<p class="faded small">● má · ◐ částečně · ○ výslovně chybí nebo kritizováno · – nedoloženo. Zdroj: popisy v obchodech a recenze, viz odkazy výše.</p>
+<div class="matrix-wrap">
+<table class="matrix">
+  <thead>
+    <tr><th>Funkce</th><th class="own">Kam na mši</th><th>ČBK Bohoslužby</th><th>Catholic Mass Times</th><th>Mass Times for Travel</th><th>Find Mass Times</th><th>Mass Time (Waltsoft)</th><th>1000 Kirchen</th><th>DoKostola</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Seznam „co stihnu“ podle času</td><td class="own">●</td><td>○</td><td>○</td><td>●</td><td>●</td><td>–</td><td>●</td><td>●</td></tr>
+    <tr><td>Oblíbené kostely</td><td class="own">●</td><td>○</td><td>●</td><td>○</td><td>–</td><td>●</td><td>●</td><td>●</td></tr>
+    <tr><td>Sdílení</td><td class="own">◐ jen odkaz</td><td>○</td><td>●</td><td>○</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+    <tr><td>Export do kalendáře</td><td class="own">●</td><td>○</td><td>–</td><td>○</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+    <tr><td>Nahlásit chybu u kostela</td><td class="own">◐ jen patička</td><td>–</td><td>●</td><td>●</td><td>●</td><td>◐ nejde najít</td><td>●</td><td>●</td></tr>
+    <tr><td>Datum ověření u kostela</td><td class="own">●</td><td>–</td><td>–</td><td>●</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+    <tr><td>Filtr jazyka</td><td class="own">●</td><td>●</td><td>●</td><td>–</td><td>–</td><td>●</td><td>○</td><td>–</td></tr>
+    <tr><td>Zpověď</td><td class="own">◐ v detailu</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td><td>–</td><td>●</td></tr>
+    <tr><td>Mapa jako hlavní plocha</td><td class="own">○</td><td>●</td><td>–</td><td>◐</td><td>–</td><td>–</td><td>◐</td><td>–</td></tr>
+    <tr><td>Modlitby, čtení, zprávy</td><td class="own">○</td><td>–</td><td>–</td><td>–</td><td>●</td><td>●</td><td>–</td><td>●</td></tr>
+    <tr><td>Reklamy nebo účet</td><td class="own">○</td><td>–</td><td>–</td><td>● reklamy</td><td>○</td><td>● reklamy, IAP</td><td>–</td><td>–</td></tr>
+    <tr><td>Android</td><td class="own">◐ podepsáno, ne na Play</td><td>○</td><td>●</td><td>–</td><td>–</td><td>–</td><td>–</td><td>●</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="small faded">Mimo tabulku: Glauben.Leben (AT) přidává bohoslužbu do kalendáře; Katholische Kirchen (DE) barví špendlíky podle toho, zda je mše do hodiny; Drogowskaz (PL) a msze.info ukazují datum aktualizace. Nikdo z prověřených nezobrazuje sobotní večer v nedělním pohledu, ale u většiny to z popisu nejde ověřit.</p>
+
+<h2>Co potřebují</h2>
+<div class="cols">
+<ul class="needs">
+  <li><b>Pravdivý čas.</b> Stížnost na špatné nebo staré časy se opakuje u šesti aplikací (Mass Times for Travel, Catholic Mass Times, Mass Time, Katholische Kirchen, 1000 Kirchen, Drogowskaz). 2 382 ze 4 000 našich záznamů je starších 18 měsíců, ale „staré“ neznamená „špatné“: Panna Marie Vítězná ověřená 2016 sedí na minutu.</li>
+  <li><b>Neděle začíná v sobotu večer.</b> 1 000 sobotních bohoslužeb po 16:00; aplikace je v pohledu neděle nevidí.</li>
+  <li><b>Kdo hledá, často nejde.</b> Nad 75 let má chytrý telefon 35 %. Čas putuje SMS nebo hlasem, takže sdílení musí nést text.</li>
+  <li><b>Telefon farnosti v datech není.</b> 3 ze 4 000. Potřeba „ověřit hlasem“ zatím nemá na čem stát.</li>
+</ul>
+<ul class="needs">
+  <li><b>Turista přichází z vyhledávače.</b> Registr má anglické řádky správně, chybí stránka, kterou najde Google.</li>
+  <li><b>Ukrajinci a řeckokatolíci: díra v datech, ne v UI.</b> 397 tisíc lidí s dočasnou ochranou, v registru 5 ukrajinských řádků a 25 byzantských liturgií. Ukrajinské UI až s daty exarchátu.</li>
+  <li><b>Sezónní špičky:</b> Dušičky 1.–8. 11., advent od 29. 11., Vánoce, Triduum (Velikonoce 2027: 28. 3.). Jednorázové bohoslužby registr nenese; Vánoční stránky už jsou v plánu.</li>
+  <li><b>Recenze trestají objem.</b> Obsah, účty a reklamy přinášejí stížnosti na důvěru a výkon. Současné „zdarma, bez reklam, bez registrace“ v popisu obchodu stačí.</li>
+</ul>
+</div>
+
+<p class="small faded" style="margin-top:2.5rem;border-top:1px solid var(--hair);padding-top:.75rem">Vlastní součty: public/data/services/*.json na origin/main, 14. 10. 2026. Hranice stáří 18 měsíců je <code>isStale</code> ze src/domain/registry.ts. Ledger: docs/EVOLVE.md, oddíl 2026-10-14.</p>
+
+</main>
+</body>
+</html>

@@ -3,6 +3,30 @@
 Dated sections, newest first. Each run starts by scoring the previous run's picks against
 their signal, then proposes new ones. Corrections stay visible; they are part of the record.
 
+## 2026-10-14 — feature proposals from the competitor + niche-needs research
+
+Page with mockups, evidence links and a competitor matrix:
+`docs/research/2026-10-14-feature-proposals.html`. Nothing here repeats an item above, in
+BACKLOG or ROADMAP, or the UX-1…UX-10 walkthrough fixes.
+
+**Correction to the research input.** It assumed parish phone numbers were in the data
+("phone visible, to confirm by voice"). The registry has a phone for 3 of 4,000 churches and
+a website for 3,160; 463 of the 2,382 entries older than 18 months have neither. #18 below is
+parked on that.
+
+| # | Idea | Kind | Persona | Signal | Eff | Verdict | Status |
+|---|---|---|---|---|---|---|---|
+| 13 | **"Čas nesedí?" on the church page**: one text link at the end of the freshness line opens the existing FeedbackCard with `context` = church id | adjacent | P6 Věra, P5 Ludmila | wrong times = top complaint in 6 apps; 2,382/4,000 entries >18 months old | S | build-next | proposed |
+| 14 | **Saturday evening in the neděle view**: one collapsed rubric line "sobota večer · N mší" above the Sunday ordo, expands in place; copy never says "nedělní" | adjacent | P2 James, Sunday regulars | canon 1248 §1; 1,000 of 1,636 Saturday rows start ≥16:00; no vigil handling in src/ | S | build-next | proposed |
+| 15 | **Share sends the week's times as text** (+ link, + verified date), built from the parser-filtered ordo; same button | adjacent | P4 Novákovi, senior via a relative | share sends title+URL only (ChurchDetail.tsx:203/207); 35% of over-75s own a smartphone (ČSÚ 2025) | S | build-next | proposed |
+| 16 | **`/jazyk/<lang>/` prerendered pages** ("Mass in English, Czech Republic"), sitemap, link into the app; zero in-app UI | adjacent · reach | P2 James | expats.cz guide from 2008 still ranks; registry rows correct (100011 = pragjesu.cz); language filter used by 0 in-app | S | build-next | proposed |
+| 17 | **2 Nov (Dušičky) in the existing holy-day line** | adjacent | P5 Ludmila | holyday.ts has 1 Nov only, and 1 Nov 2026 is a Sunday | S | later: 2 Nov one-offs aren't in the registry; revisit with the Christmas one-off harvest | proposed |
+| 18 | **`tel:` link in the stale-schedule warning** | adjacent | P6 Věra, senior | ČSÚ age data; walkthrough F3 | S | later: phone in data for 3/4,000 churches; needs a diocesan-catalogue source first | proposed |
+| 19 | Prayers, daily readings, audio, news feed | — | none | Laudate, iBreviary, Find Mass Times (70 MB), Mass Time reviews punish bloat | L | no: clutter and trust cost | proposed |
+| 20 | Accounts / synced favourites / home-parish countdown | — | none | Drogowskaz account-deletion and Hallow billing complaints; Moje kostely covers it on-device | M | no | proposed |
+| 21 | More filters (time range, children's Mass, rite on the main row) | — | none | Catholic Mass Times 2★ "filters not intuitive"; own telemetry: language/rite/barrier-free 0; children's notes = 1.4% of rows | S | no: EVOLVE #4 already folds filters away | proposed |
+| 22 | Online Mass stream listings | — | none | Catholic Mass Times 8.7.15, AudioKostel | M | no: different job, links need weekly upkeep | proposed |
+
 ## 2026-10-07 — first run (revised the same day after a visitor-level pass)
 
 ### Corrections to the first pass
