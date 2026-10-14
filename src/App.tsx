@@ -786,6 +786,9 @@ export default function App() {
   // map mode: the map IS the page — a viewport-locked column, slim chrome, no
   // footer; everything else keeps the scrolling missal-page layout
   const mapMode = view === 'mapa' && route.view !== 'church' && !picking && !dataError
+  // the map column is full-bleed, so any text block shown in map mode needs the
+  // page gutter back (no-location, nothing-nearby, holy-day line)
+  const gutter = mapMode ? 'mx-auto w-full max-w-2xl px-5 sm:px-8' : ''
 
   return (
     <div
@@ -893,7 +896,7 @@ export default function App() {
         )}
 
         {!dataError && !loading && !origin && geoDenied && index && (
-          <section className="mt-10">
+          <section className={`mt-10 ${gutter}`}>
             <h2 className="font-display text-xl font-semibold">
               {isNative && geoFail === 'deadline' && locating ? t('no_geo_title_slow') : t('no_geo_title')}
             </h2>
@@ -944,7 +947,7 @@ export default function App() {
         )}
 
         {!dataError && !picking && !loading && origin && rows && rows.length === 0 && !anyFilter && index && (
-          <section className="mt-10">
+          <section className={`mt-10 ${gutter}`}>
             <h2 className="font-display text-xl font-semibold">{t('nothing_nearby_title')}</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
               {nothingNearbyBody(NEARBY_KM, origin.label ?? null)}
@@ -957,7 +960,7 @@ export default function App() {
           <MyChurches index={index} origin={origin} onOpen={openChurch} />
         )}
         {!dataError && !picking && !loading && origin && holy && !(holy.when === 'tomorrow' && day === 1) && (
-          <p className="mt-4 text-sm text-ink-faded">
+          <p className={`mt-4 text-sm text-ink-faded ${gutter}`}>
             {holy.when === 'tomorrow' ? t('holy_tomorrow') : t('holy_today')} {holy.feast}
             {holy.when === 'tomorrow' && (
               <>
@@ -1139,7 +1142,7 @@ export default function App() {
           {' · '}
           {lang() === 'cs' ? 'Data: rejstřík' : 'Data: registry'}{' '}
           <a
-            className="underline decoration-hairline underline-offset-2 hover:text-ink"
+            className="-my-3 inline-block py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
             href="https://bohosluzby.cirkev.cz"
           >
             bohosluzby.cirkev.cz
@@ -1154,21 +1157,13 @@ export default function App() {
           {t('footer_free')}
           {' · '}
           <a
-            className="underline decoration-hairline underline-offset-2 hover:text-ink"
+            className="-my-3 inline-block py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
             href="https://github.com/sponsors/Chartres"
             target="_blank"
             rel="noreferrer"
           >
             {t('footer_support')}
           </a>
-          {' · '}
-          <button
-            type="button"
-            className="underline decoration-hairline underline-offset-2 hover:text-ink"
-            onClick={() => setIntroOpen(true)}
-          >
-            {t('intro_help')}
-          </button>
         </p>
       </footer>
       )}
@@ -1556,7 +1551,7 @@ function OrdoControls({
       type="button"
       aria-expanded={open}
       aria-label={`${group}: ${label}`}
-      className={`-my-2 flex items-baseline gap-1 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] whitespace-nowrap ${
+      className={`-my-2 flex items-baseline gap-1 px-1 py-3.5 text-sm font-semibold uppercase tracking-[0.06em] whitespace-nowrap ${
         active ? 'underline decoration-2 underline-offset-4' : 'text-ink-faded hover:text-ink'
       }`}
       style={toggleStyle(active)}
@@ -1762,7 +1757,7 @@ function OrdoControls({
       {narrow && (
         <button
           type="button"
-          className="rubric mt-4 w-full border-t border-hairline pt-3 pb-1 text-center"
+          className="rubric mt-4 min-h-11 w-full border-t border-hairline pt-3 pb-1 text-center"
           onClick={() => setOpen(false)}
         >
           {t('done')}

@@ -7,26 +7,25 @@ import { lang, locale } from '../i18n'
 
 const TZ = 'Europe/Prague'
 
+/** Past an hour the minutes are noise next to the big start time — and "za 7 h 15
+ * min" wrapped an orphan "min" under it. Half hours up to 3 h, whole hours after. */
+const hoursLabel = (min: number): string => {
+  const h = min < 180 ? Math.round(min / 30) / 2 : Math.round(min / 60)
+  return Number.isInteger(h) ? `${h}` : `${Math.floor(h)}½`
+}
+
 export function fmtUntil(now: Date, start: Date): string {
   const min = Math.floor((start.getTime() - now.getTime()) / 60_000)
   if (lang() !== 'cs') {
     if (min < 1) return 'starting now'
     if (min < 60) return `in ${min} min`
-    if (min < 24 * 60) {
-      const h = Math.floor(min / 60)
-      const m = min % 60
-      return m === 0 ? `in ${h} h` : `in ${h} h ${m} min`
-    }
+    if (min < 24 * 60) return `in ${hoursLabel(min)} h`
     const days = Math.round(min / (24 * 60))
     return `in ${days} day${days === 1 ? '' : 's'}`
   }
   if (min < 1) return 'právě začíná'
   if (min < 60) return `za ${min} min`
-  if (min < 24 * 60) {
-    const h = Math.floor(min / 60)
-    const m = min % 60
-    return m === 0 ? `za ${h} h` : `za ${h} h ${m} min`
-  }
+  if (min < 24 * 60) return `za ${hoursLabel(min)} h`
   const days = Math.round(min / (24 * 60))
   return `za ${days} ${days === 1 ? 'den' : days >= 5 ? 'dní' : 'dny'}`
 }

@@ -1,4 +1,5 @@
 import { ordoForDay, rankUpcoming } from './ranking'
+import { isMass } from './filters'
 import type { Church, ChurchServices } from './data'
 
 const church = (id: string, lat: number, lng: number): Church => ({
@@ -166,5 +167,51 @@ describe('selectUpcoming — okruh (maxKm) filter', () => {
     const { selectUpcoming } = await import('./ranking')
     const rows = selectUpcoming(now, origin, [near, far], byId, f, null, 'now')
     expect(rows.map((r) => r.church.id).sort()).toEqual(['far', 'near'])
+  })
+})
+
+describe('rankUpcoming — where you can make it (UX-1, UX-2)', () => {
+  const typed = (type: string, days: string, time: string) => {
+    const s = services([{ days, time }])
+    return { ...s, regular: s.regular.map((r) => ({ ...r, type })) }
+  }
+
+  it('sinks a service you cannot reach by its start, and a non-Mass below Masses', () => {
+    // Prague Wed 08:30: an 08:40 adoration 7.5 km away came first, the 09:00
+    // Mass 1.2 km away second
+    const wed = new Date('2026-10-14T06:30:00Z')
+    const lhotka = church('lhotka', 50.0205, 14.4213) // ~7.4 km south
+    const victory = church('victory', 50.0983, 14.4213) // ~1.2 km north
+    const praise = church('praise', 50.0884, 14.4213) // ~0.1 km, chvály at 09:00
+    const ranked = rankUpcoming(
+      wed,
+      origin,
+      [lhotka, victory, praise],
+      new Map([
+        [lhotka.id, typed('adorace', '3', '08:40')],
+        [victory.id, typed('mše sv.', '3', '09:00')],
+        [praise.id, typed('chvály', '3', '09:00')],
+      ]),
+    )
+    expect(ranked.map((r) => r.church.id)).toEqual(['victory', 'praise', 'lhotka'])
+  })
+
+  it('FOUNDER-CASE Telč, Sunday 07:00: the parish 09:00 Mass beats 07:30–08:00 Masses 18–28 km out', () => {
+    const sun7 = new Date('2026-10-18T05:00:00Z')
+    const telc = { lat: 49.184, lng: 15.453 }
+    const jakub = church('jakub', 49.1845, 15.4535)
+    const villages = Array.from({ length: 20 }, (_, i) => church(`v${i}`, 49.184 + 0.17 + i * 0.004, 15.453))
+    const byId = new Map([
+      [jakub.id, typed('', '7', '09:00')], // blank type = plain Mass in the registry
+      ...villages.map((v, i) => [v.id, typed('', '7', i % 2 ? '07:30' : '08:00')] as const),
+    ])
+    const ranked = rankUpcoming(sun7, telc, [...villages, jakub], byId)
+    expect(ranked[0].church.id).toBe('jakub')
+  })
+
+  it('a blank registry type is a Mass', () => {
+    expect(isMass('')).toBe(true)
+    expect(isMass('mše sv.')).toBe(true)
+    expect(isMass('adorace')).toBe(false)
   })
 })

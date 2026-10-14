@@ -28,8 +28,9 @@ export const NO_FILTERS: Filters = {
 /** The okruh choices — walking, cycling, driving radii. */
 export const MAX_KM_OPTIONS = [2, 5, 10] as const
 
-// ponytail: registry types are free text; "mass" = anything named mše/liturgie.
-const isMass = (type: string) => /mše|liturgi/i.test(type)
+// ponytail: registry types are free text; "mass" = anything named mše/liturgie,
+// and a blank type — the registry leaves it empty for a plain Mass (Telč, most villages).
+export const isMass = (type: string) => !type.trim() || /mše|liturgi/i.test(type)
 
 export const serviceMatches =
   (f: Filters, cas: string | null = null) =>

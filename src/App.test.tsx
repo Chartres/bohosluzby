@@ -471,11 +471,10 @@ describe('Marie finds the nearest mass', () => {
       'tel:+420222221339',
     )
 
-    // maps link + data freshness (honest about staleness)
-    expect(screen.getByRole('link', { name: 'mapa' })).toHaveAttribute(
-      'href',
-      expect.stringContaining('mapy.cz'),
-    )
+    // one way to the map: navigace (its sheet lists the map apps) — no separate "mapa"
+    expect(screen.queryByRole('link', { name: 'mapa' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'navigace' })).toBeInTheDocument()
+    // data freshness (honest about staleness)
     expect(screen.getByText(/naposledy ověřeno 1\. 6\. 2026/)).toBeInTheDocument()
 
     // "navigace" opens the nav-app chooser (geo: was Android-only and dead on iOS)

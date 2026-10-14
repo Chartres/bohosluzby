@@ -59,5 +59,9 @@ Timetables are set like a printed schedule (ordo):
 ## Mobile-first
 
 One-hand use: primary actions in thumb reach, tap targets ≥44px, list over
-map as the primary surface. Works at 375px. WCAG-AA contrast, visible
+map as the primary surface.
+
+Deviation (owner call, v1.1 "the map leads"): the app LANDS on the map when
+online — times printed on the map pins without a tap are the edge; the list is
+one tap away (seznam), wins offline, and an explicit `?zobrazeni` round-trips. Works at 375px. WCAG-AA contrast, visible
 keyboard focus, real landmarks (header/main/footer).
