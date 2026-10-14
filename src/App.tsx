@@ -13,13 +13,16 @@ import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueIsoDate, pragueToday } from './domain/occurrences'
-import { currentLiturgicalDay, liturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
+import { noteShownOnDay } from './domain/notes'
+import { currentLiturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
+import { dayFromParam, dayOptions, dayToParam, litForChoice } from './domain/days'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domain/format'
-import { aggregateCities, findCity, searchPlaces, type City } from './domain/cities'
+import { aggregateCities, findCity, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
 import { IntroGuide } from './IntroGuide'
+import { SearchPicker } from './SearchPicker'
 import { MyChurches } from './MyChurches'
 import { holyDayLine } from './domain/holyday'
 import { FeedbackCard } from './FeedbackCard'
@@ -38,7 +41,6 @@ import {
   locale,
   t,
   langLabel,
-  churchCount,
   filtersLabel,
   aroundLabel,
   withinKmLabel,
@@ -76,24 +78,6 @@ const fmtDataDate = (iso: string) => {
 // Leaflet + tiles code-split behind the "mapa" toggle — the list path pays nothing.
 const MapView = lazy(() => import('./MapView'))
 
-const SEASON_LABEL_CS: Record<LiturgicalDay['season'], string> = {
-  ordinary: 'liturgické mezidobí',
-  advent: 'doba adventní',
-  christmas: 'doba vánoční',
-  lent: 'doba postní',
-  easter: 'doba velikonoční',
-}
-const SEASON_LABEL_EN: Record<LiturgicalDay['season'], string> = {
-  ordinary: 'ordinary time',
-  advent: 'Advent',
-  christmas: 'Christmas season',
-  lent: 'Lent',
-  easter: 'Easter season',
-}
-// Read per call (not a module-level constant) — a test flipping
-// navigator.language must see the new language on the next render.
-const seasonLabel = (s: LiturgicalDay['season']): string =>
-  (lang() === 'cs' ? SEASON_LABEL_CS : SEASON_LABEL_EN)[s]
 const SEASON_VAR: Record<LiturgicalDay['color'], string> = {
   green: 'var(--color-season-green)',
   violet: 'var(--color-season-violet)',
@@ -173,43 +157,10 @@ function loadFilters(): Filters {
   return f
 }
 
-// ---- Day picker: 'now' = soonest you can make; 0–6 = the day's full ordo ----
-
-export type { DayChoice }
-
-const WEEKDAY_SHORT_CS = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'] // Date.getUTCDay order
-const WEEKDAY_SHORT_EN = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-/** Read per call — see seasonLabel above for why this isn't a plain constant. */
-const weekdayShort = (dow: number): string => (lang() === 'cs' ? WEEKDAY_SHORT_CS : WEEKDAY_SHORT_EN)[dow]
-
-/** The liturgical day for a day-picker choice ('now' = today). */
-export function litForChoice(now: Date, day: DayChoice): LiturgicalDay {
-  const today = pragueToday(now)
-  const t = new Date(Date.UTC(today.y, today.m - 1, today.d) + (day === 'now' ? 0 : day) * 86_400_000)
-  return liturgicalDay(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate())
-}
-
-/** Picker options for the next week: hned · dnes · zítra · short weekday names
- * (Sunday spelled out — "kdy je v neděli mše?" is the planning question).
- * Feast days carry their name + color for the quiet picker highlight. */
-export function dayOptions(now: Date): { key: DayChoice; label: string; lit: LiturgicalDay }[] {
-  const today = pragueToday(now)
-  const base = Date.UTC(today.y, today.m - 1, today.d)
-  const out: { key: DayChoice; label: string; lit: LiturgicalDay }[] = [
-    { key: 'now', label: t('day_now'), lit: litForChoice(now, 'now') },
-    { key: 0, label: t('day_today'), lit: litForChoice(now, 0) },
-    { key: 1, label: t('day_tomorrow'), lit: litForChoice(now, 1) },
-  ]
-  for (let off = 2; off <= 6; off++) {
-    const dow = new Date(base + off * 86_400_000).getUTCDay()
-    out.push({ key: off, label: dow === 0 ? t('day_sunday_full') : weekdayShort(dow), lit: litForChoice(now, off) })
-  }
-  // ON a Sunday the 0..6 window holds no future neděle — but Sunday evening IS
-  // when next week gets planned. Offer next Sunday explicitly (audit finding).
-  if (new Date(base).getUTCDay() === 0) {
-    out.push({ key: 7, label: t('day_sunday_full'), lit: litForChoice(now, 7) })
-  }
-  return out
+// ISO weekday (1=Mon…7=Sun) of an instant, on the Prague calendar.
+const isoDayOf = (at: Date): number => {
+  const w = pragueToday(at)
+  return new Date(Date.UTC(w.y, w.m - 1, w.d)).getUTCDay() || 7
 }
 
 // Minimal history routing (GH Pages serves 404.html = the app for deep links).
@@ -255,35 +206,6 @@ function useRoute() {
   const path = q === -1 ? url : url.slice(0, q)
   const search = q === -1 ? '' : url.slice(q)
   return { route: parseRoute(path), path, search, navigate }
-}
-
-// ---- ?den= — the selected day as a bookmarkable query param -----------------
-
-const DAY_SLUGS = ['nedele', 'pondeli', 'utery', 'streda', 'ctvrtek', 'patek', 'sobota'] // Date.getUTCDay order
-
-/** ?den= value for a picker choice ('now' = no param, 0/1 = dnes/zítra,
- * farther days by weekday name so a bookmark means "next neděle", any week). */
-export function dayToParam(now: Date, day: DayChoice): string | null {
-  if (day === 'now') return null
-  if (day === 0) return 'dnes'
-  if (day === 1) return 'zitra'
-  const today = pragueToday(now)
-  const dow = new Date(Date.UTC(today.y, today.m - 1, today.d) + day * 86_400_000).getUTCDay()
-  return DAY_SLUGS[dow]
-}
-
-/** Decode ?den= back to a picker choice; unknown/absent → 'now'. */
-export function dayFromParam(now: Date, param: string | null): DayChoice {
-  if (param === 'dnes') return 0
-  if (param === 'zitra') return 1
-  const dow = DAY_SLUGS.indexOf(param ?? '')
-  if (dow === -1) return 'now'
-  const today = pragueToday(now)
-  const base = Date.UTC(today.y, today.m - 1, today.d)
-  for (let off = 0; off <= 6; off++) {
-    if (new Date(base + off * 86_400_000).getUTCDay() === dow) return off
-  }
-  return 'now' // unreachable — every weekday occurs within 7 days
 }
 
 // Prototype flag (TestFlight builds only, never production): force-shows the
@@ -786,6 +708,9 @@ export default function App() {
   // map mode: the map IS the page — a viewport-locked column, slim chrome, no
   // footer; everything else keeps the scrolling missal-page layout
   const mapMode = view === 'mapa' && route.view !== 'church' && !picking && !dataError
+  // the map column is full-bleed, so any text block shown in map mode needs the
+  // page gutter back (no-location, nothing-nearby, holy-day line)
+  const gutter = mapMode ? 'mx-auto w-full max-w-2xl px-5 sm:px-8' : ''
 
   return (
     <div
@@ -893,7 +818,7 @@ export default function App() {
         )}
 
         {!dataError && !loading && !origin && geoDenied && index && (
-          <section className="mt-10">
+          <section className={`mt-10 ${gutter}`}>
             <h2 className="font-display text-xl font-semibold">
               {isNative && geoFail === 'deadline' && locating ? t('no_geo_title_slow') : t('no_geo_title')}
             </h2>
@@ -944,7 +869,7 @@ export default function App() {
         )}
 
         {!dataError && !picking && !loading && origin && rows && rows.length === 0 && !anyFilter && index && (
-          <section className="mt-10">
+          <section className={`mt-10 ${gutter}`}>
             <h2 className="font-display text-xl font-semibold">{t('nothing_nearby_title')}</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
               {nothingNearbyBody(NEARBY_KM, origin.label ?? null)}
@@ -957,7 +882,7 @@ export default function App() {
           <MyChurches index={index} origin={origin} onOpen={openChurch} />
         )}
         {!dataError && !picking && !loading && origin && holy && !(holy.when === 'tomorrow' && day === 1) && (
-          <p className="mt-4 text-sm text-ink-faded">
+          <p className={`mt-4 text-sm text-ink-faded ${gutter}`}>
             {holy.when === 'tomorrow' ? t('holy_tomorrow') : t('holy_today')} {holy.feast}
             {holy.when === 'tomorrow' && (
               <>
@@ -1134,12 +1059,12 @@ export default function App() {
         <FeedbackCard />
         <p className="mt-1">
           <span className="font-semibold" style={{ color: 'var(--season)' }}>
-            {seasonLabel(season.season)}
+            {t(`season_${season.season}`)}
           </span>
           {' · '}
-          {lang() === 'cs' ? 'Data: rejstřík' : 'Data: registry'}{' '}
+          {t('footer_data')}{' '}
           <a
-            className="underline decoration-hairline underline-offset-2 hover:text-ink"
+            className="-my-3 inline-block py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
             href="https://bohosluzby.cirkev.cz"
           >
             bohosluzby.cirkev.cz
@@ -1154,21 +1079,13 @@ export default function App() {
           {t('footer_free')}
           {' · '}
           <a
-            className="underline decoration-hairline underline-offset-2 hover:text-ink"
+            className="-my-3 inline-block py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
             href="https://github.com/sponsors/Chartres"
             target="_blank"
             rel="noreferrer"
           >
             {t('footer_support')}
           </a>
-          {' · '}
-          <button
-            type="button"
-            className="underline decoration-hairline underline-offset-2 hover:text-ink"
-            onClick={() => setIntroOpen(true)}
-          >
-            {t('intro_help')}
-          </button>
         </p>
       </footer>
       )}
@@ -1405,7 +1322,8 @@ function ServiceList({
                   {r.church.city && `${r.church.city} · `}
                   {fmtDistance(r.distanceKm)}
                   {r.service.type && ` · ${r.service.type}`}
-                  <NoteText note={r.service.note} />
+                  {/* a note naming another of the service's weekdays ("…není páteční mše") stays off this day's row */}
+                  <NoteText note={noteShownOnDay(r.service.note, 'days' in r.service ? r.service.days : '', isoDayOf(r.start)) ? r.service.note : ''} />
                   {r.church.barrierFree && (
                     <>
                       {' · '}
@@ -1556,7 +1474,7 @@ function OrdoControls({
       type="button"
       aria-expanded={open}
       aria-label={`${group}: ${label}`}
-      className={`-my-2 flex items-baseline gap-1 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] whitespace-nowrap ${
+      className={`-my-2 flex items-baseline gap-1 px-1 py-3.5 text-sm font-semibold uppercase tracking-[0.06em] whitespace-nowrap ${
         active ? 'underline decoration-2 underline-offset-4' : 'text-ink-faded hover:text-ink'
       }`}
       style={toggleStyle(active)}
@@ -1762,7 +1680,7 @@ function OrdoControls({
       {narrow && (
         <button
           type="button"
-          className="rubric mt-4 w-full border-t border-hairline pt-3 pb-1 text-center"
+          className="rubric mt-4 min-h-11 w-full border-t border-hairline pt-3 pb-1 text-center"
           onClick={() => setOpen(false)}
         >
           {t('done')}
@@ -1839,108 +1757,4 @@ function DetailRoute({
     )
   }
   return <ChurchDetail church={church} onBack={onBack} onHelp={onHelp} onHeroChange={onHeroChange} />
-}
-
-/** Unified typeahead over every municipality and church, diacritics-insensitive
- * ("ceske" finds České Budějovice, "tyn" finds Matky Boží před Týnem), keyboard
- * navigable (↑/↓/Enter, Escape = zpět). Replaces the <datalist> picker, which
- * Chromium truncates at 512 suggestions — the 3 259-city list ended at "Dubí". */
-function SearchPicker({
-  index,
-  onPickCity,
-  onPickChurch,
-  onClose,
-}: {
-  index: Church[]
-  onPickCity: (city: City) => void
-  onPickChurch: (id: string) => void
-  onClose?: () => void
-}) {
-  const [value, setValue] = useState('')
-  const [hi, setHi] = useState(0)
-  const cities = useMemo(() => aggregateCities(index), [index])
-  const results = useMemo(() => searchPlaces(cities, index, value), [cities, index, value])
-  const clamp = Math.min(hi, Math.max(results.length - 1, 0))
-
-  const pick = (r: (typeof results)[number]) => {
-    if (r.kind === 'city') onPickCity(r.city)
-    else onPickChurch(r.church.id)
-  }
-
-  return (
-    <div className="mt-6 max-w-md">
-      {onClose && (
-        <p className="mb-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rubric underline decoration-hairline underline-offset-2 hover:text-ink"
-          >
-            {t('back_to_list')}
-          </button>
-        </p>
-      )}
-      <label className="rubric block" htmlFor="city">
-        {t('search_label')}
-      </label>
-      <input
-        id="city"
-        role="combobox"
-        aria-expanded={results.length > 0}
-        aria-controls="city-options"
-        aria-activedescendant={results.length > 0 ? `city-option-${clamp}` : undefined}
-        aria-autocomplete="list"
-        value={value}
-        onChange={(e) => {
-          setValue(e.target.value)
-          setHi(0)
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'ArrowDown') {
-            e.preventDefault()
-            setHi(Math.min(clamp + 1, results.length - 1))
-          } else if (e.key === 'ArrowUp') {
-            e.preventDefault()
-            setHi(Math.max(clamp - 1, 0))
-          } else if (e.key === 'Enter') {
-            e.preventDefault()
-            if (results[clamp]) pick(results[clamp])
-          } else if (e.key === 'Escape') {
-            e.preventDefault()
-            if (value) setValue('')
-            else onClose?.()
-          }
-        }}
-        placeholder={t('search_placeholder')}
-        autoComplete="off"
-        autoFocus={Boolean(onClose)} // opened by an explicit "změnit" tap — jump right in
-        className="mt-2 min-h-11 w-full rounded-sm border border-hairline bg-white/60 px-3 text-base"
-      />
-      <ul id="city-options" role="listbox" aria-label={t('search_results_aria')} className="mt-1">
-        {results.map((r, i) => (
-          <li key={r.kind === 'city' ? `c-${r.city.slug}` : `k-${r.church.id}`} role="presentation">
-            <button
-              type="button"
-              id={`city-option-${i}`}
-              role="option"
-              aria-selected={i === clamp}
-              className={`flex w-full items-baseline justify-between gap-3 border-b border-hairline px-1 py-2.5 text-left text-sm ${
-                i === clamp ? 'bg-white/70' : ''
-              }`}
-              onMouseEnter={() => setHi(i)}
-              onClick={() => pick(r)}
-            >
-              <span className="min-w-0 flex-1 truncate font-semibold">{r.name}</span>
-              <span className="shrink-0 text-xs text-ink-faded">
-                {r.kind === 'city' ? `${t('kind_town')} · ${churchCount(r.city.count)}` : r.church.city}
-              </span>
-            </button>
-          </li>
-        ))}
-        {value.trim().length >= 2 && results.length === 0 && (
-          <li className="px-1 py-2.5 text-sm text-ink-faded">{t('search_none')}</li>
-        )}
-      </ul>
-    </div>
-  )
 }

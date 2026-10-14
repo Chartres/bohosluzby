@@ -79,5 +79,8 @@ describe('English UI (device language en-US)', () => {
 
     // countdown to the 18:00 mass, an hour out
     expect(screen.getByText(/in \d+ (h|min)/)).toBeInTheDocument()
+
+    // footer: season label + data source
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('ordinary time · Data: registry bohosluzby.cirkev.cz')
   })
 })

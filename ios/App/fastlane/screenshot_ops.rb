@@ -4,6 +4,7 @@
 # asc_api.rb's raw JWT client, not spaceship — spaceship's newer endpoints
 # bit this repo before (see Fastfile build lane comment re: betaBuildMetrics).
 require_relative 'asc_api'
+require 'digest'
 
 # ponytail: only the two device buckets this repo ships today. Add a row if
 # a new screenshot size shows up in fastlane/screenshots — verify_listing!
@@ -53,11 +54,22 @@ def screenshot_sets(env, localization_id)
   body.fetch('data')
 end
 
-# id + fileName for every screenshot in a set (10 max per Apple's own limit,
-# well under the API's 50 default page size — no pagination needed).
+# id + fileName + MD5 for every screenshot in a set (10 max per Apple's own
+# limit, well under the API's 50 default page size — no pagination needed).
 def screenshots_in_set(env, set_id)
-  _, body = asc_request(env, 'GET', "/v1/appScreenshotSets/#{set_id}/appScreenshots?fields[appScreenshots]=fileName")
+  _, body = asc_request(env, 'GET', "/v1/appScreenshotSets/#{set_id}/appScreenshots?fields[appScreenshots]=fileName,sourceFileChecksum")
   body.fetch('data')
+end
+
+# Do a set's ASC screenshots equal these local files byte for byte — same
+# fileNames AND same MD5s? Names alone missed the v1.3 change: ASC copies
+# the previous version's shots into a new version (same names, old pixels,
+# no sourceFileChecksum), so the release lane skipped the new ☆ shots.
+def screenshot_set_matches?(local_paths, remote)
+  key = ->(pair) { pair.map(&:to_s) }
+  want = local_paths.map { |p| [File.basename(p), Digest::MD5.file(p).hexdigest] }.sort_by(&key)
+  have = remote.map { |s| [s.dig('attributes', 'fileName'), s.dig('attributes', 'sourceFileChecksum')] }.sort_by(&key)
+  want == have
 end
 
 # Local screenshots grouped by device bucket per locale, e.g.
@@ -94,14 +106,18 @@ def verify_listing!(env, app_id, screenshots_dir)
         next
       end
       set_id = remote_by_type[display_type]
-      remote_count = set_id ? screenshots_in_set(env, set_id).size : 0
-      diffs << "#{locale}/#{prefix} (#{display_type}): local #{files.size}, ASC #{remote_count}" if remote_count != files.size
+      remote = set_id ? screenshots_in_set(env, set_id) : []
+      if remote.size != files.size
+        diffs << "#{locale}/#{prefix} (#{display_type}): local #{files.size}, ASC #{remote.size}"
+      elsif !screenshot_set_matches?(files.map { |f| File.join(screenshots_dir, locale, f) }, remote)
+        diffs << "#{locale}/#{prefix} (#{display_type}): same count, different content (MD5) — ASC has stale shots"
+      end
     end
   end
 
-  raise "verify_listing: ASC screenshot counts don't match local:\n  #{diffs.join("\n  ")}" unless diffs.empty?
+  raise "verify_listing: ASC screenshots don't match local:\n  #{diffs.join("\n  ")}" unless diffs.empty?
 
-  puts "verify_listing: OK — ASC screenshot counts match local (version #{version.dig('attributes', 'versionString')})"
+  puts "verify_listing: OK — ASC screenshots match local (count + MD5) (version #{version.dig('attributes', 'versionString')})"
 end
 
 # True when every local screenshot bucket already matches ASC exactly
@@ -123,8 +139,7 @@ def screenshots_unchanged?(env, app_id, screenshots_dir)
       set_id = remote_by_type[DEVICE_DISPLAY_TYPES[prefix]]
       next false unless set_id
 
-      remote_files = screenshots_in_set(env, set_id).map { |s| s.dig('attributes', 'fileName') }.sort
-      remote_files == files.sort
+      screenshot_set_matches?(files.map { |f| File.join(screenshots_dir, locale, f) }, screenshots_in_set(env, set_id))
     end
   end
 end

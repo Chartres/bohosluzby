@@ -307,3 +307,29 @@ export function parseNote(note: string): NoteRule {
 
 /** Should this note be rendered as a warning rubric? */
 export const noteUncertain = (note: string): boolean => parseNote(note).uncertain
+
+// Weekdays a note names, in the forms the registry uses ("páteční", "v úterý",
+// "Každý čtvrtek", "s nedělní platností"). Word-start anchored without
+// lookbehind (iOS 15 WebKit can't parse it): "uprostřed", "čtvrt hodiny" and
+// "pátý" don't count.
+const NAMED_DAYS: [number, RegExp][] = [
+  [1, /(?:^|[^\p{L}])(?:pondělí|pondělk|pondělní)/iu],
+  [2, /(?:^|[^\p{L}])(?:úterý|úterk|úterní)/iu],
+  [3, /(?:^|[^\p{L}])(?:(?:středa|středu|středy|středou|středě)(?!\p{L})|středeční)/iu],
+  [4, /(?:^|[^\p{L}])čtvrt(?:ek|k|eční)/iu],
+  [5, /(?:^|[^\p{L}])pát(?:ek|k|eční)/iu],
+  [6, /(?:^|[^\p{L}])sobot/iu],
+  [7, /(?:^|[^\p{L}])neděl/iu],
+]
+const RESTRICTIVE = /(?:^|[^\p{L}])(?:jen|pouze)(?!\p{L})/iu
+
+/** Should a multi-day service's note print on `day`'s row? A note that names
+ * some of the service's own weekdays belongs on those rows only — "V červenci…
+ * není páteční mše" on Po/St/Pá printed under Monday too. "jen/pouze v sobotu"
+ * restricts the OTHER days, so it stays everywhere; so does a note naming no
+ * weekday, or only days the service doesn't run on ("po nedělní mši"). */
+export function noteShownOnDay(note: string, days: string, day: number | string): boolean {
+  if (!note || RESTRICTIVE.test(note)) return true
+  const own = NAMED_DAYS.filter(([d, re]) => days.includes(String(d)) && re.test(note)).map(([d]) => String(d))
+  return own.length === 0 || own.includes(String(day))
+}

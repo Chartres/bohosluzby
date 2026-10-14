@@ -12,13 +12,19 @@ test('Ohlasy poutníků: default collapsed, a tag narrows the list to matching c
   page,
 }) => {
   await page.clock.install({ time: FIXED_NOW })
-  // seed a witness for kostel sv. Havla (church 3) with "krásný zpěv" before load
+  // seed three witnesses (CORROBORATION_MIN) for kostel sv. Havla (church 3)
+  // with "krásný zpěv" before load — one device alone surfaces nothing
   await page.addInitScript(() => {
     localStorage.setItem(
       'bohosluzby:massFeedback',
-      JSON.stringify([
-        { churchId: '3', massKey: '3|w1|19:30|lat|latinsky', deviceId: 'seed', chips: ['krasny_zpev'] },
-      ]),
+      JSON.stringify(
+        ['seed1', 'seed2', 'seed3'].map((deviceId) => ({
+          churchId: '3',
+          massKey: '3|w1|19:30|lat|latinsky',
+          deviceId,
+          chips: ['krasny_zpev'],
+        })),
+      ),
     )
   })
   await mockData(page)

@@ -3,21 +3,17 @@
 The steps only Pavol can do. Tick them here, or paste them into your task list (Notion's
 free block limit refused them on 2026-10-07). Newest batch first.
 
-## Blocking every iOS upload (found 2026-10-08)
+## iOS 1.3 (2026-10-14)
 
-- [ ] **Accept Apple's updated agreement.** Sign in at developer.apple.com/account, accept the
-      banner. Then check App Store Connect → Business (formerly Agreements, Tax, and Banking).
-      Until then the ASC API refuses every call ("A required agreement is missing or has
-      expired"), whether it comes from the mini or the hosted Mac. The hosted run (Actions →
-      Release iOS, lane `build`, run 37745048939) passed the gate, the secrets check and the
-      keychain import, then stopped at the first ASC call. After accepting, re-run lane `build`
-      to finish the test.
+- [x] Apple agreement accepted (2026-10-14); ASC API answers again.
+- [ ] **TestFlight check**: build 79 (1.3) is in internal testing (77, 78 expired). Install it, check the app opens
+      (ideally on an iOS 15–16.3 device too), ☆ uložit, city chips, share link.
+- [ ] **Submit for Review** in App Store Connect → 1.3 (notes + screenshots
+      uploaded). Build 79 attached. Nothing was submitted.
 
 ## Ship what merged on 2026-10-07
 
-- [ ] **iOS build**: `fastlane ios beta` on the mini, then submit. It carries the iOS 15
-      blank-app fix, the share-link fix and the late-GPS fix. Until then, iOS 15–16.3 users
-      see a blank app.
+- [x] **iOS build**: done as 1.3 build 79 (2026-10-14); see the iOS 1.3 section.
 - [ ] **Search Console + Seznam Webmaster**: submit `https://bohosluzby.dravec.org/sitemap.xml`
       (now 4 031 URLs, all 4 000 church pages). 10 minutes. This is the channel attempt the
       kill criterion asks for.

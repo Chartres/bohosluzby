@@ -8,7 +8,7 @@ vi.mock('./lib/supabase', () => ({ supabase: null }))
 import { clearAggregateCache } from './lib/feedbackStore'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import App, { dayOptions, geoFailKey } from './App'
+import App, { geoFailKey } from './App'
 import type { IndexRow } from './domain/data'
 
 // Friday 3 Jul 2026 17:00 Prague. Vitest fake timers pin "now".
@@ -220,6 +220,17 @@ describe('Marie finds the nearest mass', () => {
     expect(seznam().getByText(/Salvátora/)).toBeInTheDocument()
   })
 
+it('Moje kostely: a saved church is removed right from the list with its ★', async () => {
+  localStorage.setItem('bohosluzby:favorites', JSON.stringify(['3']))
+  stubGeolocation('granted')
+  render(<App />)
+  const mine = await screen.findByRole('region', { name: 'Moje kostely' })
+  await within(mine).findByText('kostel sv. Tomáše')
+  fireEvent.click(within(mine).getByRole('button', { name: 'Odebrat z Mých kostelů: kostel sv. Tomáše' }))
+  expect(screen.queryByRole('region', { name: 'Moje kostely' })).toBeNull()
+  expect(JSON.parse(localStorage.getItem('bohosluzby:favorites') ?? '[]')).toEqual([])
+})
+
   it('no stars, no section', async () => {
     stubGeolocation('granted')
     render(<App />)
@@ -241,6 +252,7 @@ describe('Marie finds the nearest mass', () => {
     stubGeolocation('granted')
     render(<App />)
     expect(await screen.findByText(/aktuální k 3\. 7\. 2026/)).toBeInTheDocument()
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('liturgické mezidobí · Data: rejstřík bohosluzby.cirkev.cz')
   })
 
   it('landing view: the map is the default when online (times ON the map, no tap)', async () => {
@@ -293,7 +305,7 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getAllByText(/dnes/).length).toBeGreaterThan(0)
     // language chip only for the non-Czech service, normalized to Czech lowercase
     openControls()
-    expect(screen.getByText('latinsky')).toBeInTheDocument()
+    expect(seznam().getByText('latinsky')).toBeInTheDocument()
     expect(screen.queryByText('Latine')).not.toBeInTheDocument()
     // barrier-free icon from the index (aria-labelled, inline — row height unchanged)
     expect(screen.getAllByRole('img', { name: 'bezbariérový přístup' }).length).toBeGreaterThan(0)
@@ -471,11 +483,10 @@ describe('Marie finds the nearest mass', () => {
       'tel:+420222221339',
     )
 
-    // maps link + data freshness (honest about staleness)
-    expect(screen.getByRole('link', { name: 'mapa' })).toHaveAttribute(
-      'href',
-      expect.stringContaining('mapy.cz'),
-    )
+    // one way to the map: navigace (its sheet lists the map apps) — no separate "mapa"
+    expect(screen.queryByRole('link', { name: 'mapa' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'navigace' })).toBeInTheDocument()
+    // data freshness (honest about staleness)
     expect(screen.getByText(/naposledy ověřeno 1\. 6\. 2026/)).toBeInTheDocument()
 
     // "navigace" opens the nav-app chooser (geo: was Android-only and dead on iOS)
@@ -641,17 +652,17 @@ describe('Marie finds the nearest mass', () => {
     expect(window.location.search).not.toContain('den=')
   })
 
-  it('filters: "jen mše svaté" falls back to the church\'s next matching service', async () => {
+  it('hned: a church shows its Mass, not its earlier rosary; "jen mše svaté" keeps that row', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     render(<App />)
-    // Havel's earliest service today is the 19:00 rosary
-    expect(await screen.findByText(/růženec/)).toBeInTheDocument()
+    // Havel today: 19:00 rosary, 19:30 Mass — the row is the Mass
+    expect(await screen.findByText(/sv\. Havla/)).toBeInTheDocument()
+    expect(seznam().getByText('19:30')).toBeInTheDocument()
+    expect(screen.queryByText(/růženec/)).not.toBeInTheDocument()
 
     openControls()
     await user.click(screen.getByRole('button', { name: 'jen mše svaté' }))
-    // …with the mass filter on, Havel shows its 19:30 mass instead of vanishing
-    expect(screen.queryByText(/růženec/)).not.toBeInTheDocument()
     expect(seznam().getByText('19:30')).toBeInTheDocument()
     expect(screen.getByText(/sv\. Havla/)).toBeInTheDocument()
   })
@@ -933,20 +944,6 @@ describe('Marie finds the nearest mass', () => {
     render(<App />)
     expect(await screen.findByText('V okolí nic nenacházím')).toBeInTheDocument()
     expect(screen.getByLabelText('Kostel nebo obec')).toBeInTheDocument()
-  })
-})
-
-describe('dayOptions', () => {
-  it('on a Sunday, offers NEXT Sunday (the 0..6 window has no future nedele)', () => {
-    const sunday = new Date('2026-07-05T10:00:00Z')
-    const opts = dayOptions(sunday)
-    expect(opts.at(-1)).toMatchObject({ key: 7, label: 'neděle' })
-  })
-  it('on other days, stops at +6 with one nedele', () => {
-    const friday = new Date('2026-07-03T10:00:00Z')
-    const labels = dayOptions(friday).map((o) => o.label)
-    expect(labels.filter((l) => l === 'neděle')).toHaveLength(1)
-    expect(dayOptions(friday).at(-1)?.key).toBe(6)
   })
 })
 

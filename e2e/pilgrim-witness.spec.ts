@@ -1,6 +1,6 @@
 // Persona journey (pilgrim witness): a pilgrim opens the local preview, confirms
 // she was at the Mass, leaves positive witness chips, and saves — then the
-// church detail shows the corroborated ordo line (threshold=1 locally).
+// church detail shows the corroborated line (3 seeded witnesses = CORROBORATION_MIN).
 import { test, expect } from '@playwright/test'
 import { FIXED_NOW, PRAGUE, mockData, shot } from './fixtures'
 
@@ -26,15 +26,26 @@ test('preview → Ano → witness chips → saved → detail shows the corrobora
   await card.getByRole('button', { name: 'krásný zpěv' }).click()
   await shot(page, 'witness-chips', true)
 
+  // The preview card never writes (App.onCardSubmit), and a tag needs
+  // CORROBORATION_MIN (3) witnesses — so three earlier pilgrims are seeded.
+  await page.evaluate((id) => {
+    const prior = ['p1', 'p2', 'p3'].map((deviceId) => ({
+      churchId: id,
+      massKey: `${id}|earlier`,
+      deviceId,
+      chips: ['hluboky_prozitek'],
+    }))
+    localStorage.setItem('bohosluzby:massFeedback', JSON.stringify(prior))
+  }, churchId!)
+
   await card.getByRole('button', { name: 'Uložit' }).click()
   await expect(page.getByText('Díky. Zapsáno pro další poutníky.')).toBeVisible()
 
   // the detail page now leads with the church-level witness block — the primary
   // testimony across every Mass here — as one sentence with the count folded in
-  // ("V tomto kostele 1 poutník často zmiňuje:") + read-only pills. With a
-  // single Mass attested there is nothing divergent, so no per-Mass note.
+  // ("V tomto kostele 3 poutníci často zmiňují:") + read-only pills.
   await page.goto(`/kostel/${churchId}/`)
-  await expect(page.getByText(/V tomto kostele 1 poutník často zmiňuje/)).toBeVisible()
+  await expect(page.getByText(/V tomto kostele 3 poutníci často zmiňují/)).toBeVisible()
   await expect(page.getByText('hluboký prožitek').first()).toBeVisible()
   // reverent by construction: no stars anywhere near the Mass
   await expect(page.getByText('★')).toHaveCount(0)

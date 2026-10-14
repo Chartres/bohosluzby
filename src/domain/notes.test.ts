@@ -2,7 +2,7 @@
 // provably doesn't run ("mimo červenec a srpen"). Only provable exclusions
 // exclude; unparseable conditional notes stay visible and are flagged uncertain.
 import { describe, expect, it } from 'vitest'
-import { parseNote, noteUncertain } from './notes'
+import { parseNote, noteUncertain, noteShownOnDay } from './notes'
 
 const runs = (note: string, iso: string) => {
   const [y, m, d] = iso.split('-').map(Number)
@@ -246,5 +246,40 @@ describe('uncertain notes: kept, flagged', () => {
     expect(runs(note, '2026-07-06')).toBe(true) // summer 8:00 mass kept, not hidden
     expect(runs(note, '2026-11-06')).toBe(true) // school-year exclusion no longer trusted
     expect(noteUncertain(note)).toBe(true) // flagged loud instead
+  })
+})
+
+// A multi-day service ("135" = Po/St/Pá) expands into one row per day; a note
+// that names one of those days belongs on that row only. Cases are real
+// registry notes (2026-10-14 scan: 14 multi-day services name a weekday).
+describe('noteShownOnDay', () => {
+  it('a note about Friday shows on the Friday row only (church 10009)', () => {
+    const note = 'V červenci, srpnu a září není páteční mše sv.'
+    expect(noteShownOnDay(note, '135', 5)).toBe(true)
+    expect(noteShownOnDay(note, '135', 1)).toBe(false)
+    expect(noteShownOnDay(note, '135', '3')).toBe(false)
+  })
+  it('reads the usual Czech forms', () => {
+    expect(noteShownOnDay('v úterý na mši navazují nešpory', '246', 2)).toBe(true)
+    expect(noteShownOnDay('v úterý na mši navazují nešpory', '246', 4)).toBe(false)
+    expect(noteShownOnDay('Každý čtvrtek po mši sv. je krátká tichá adorace', '123457', 1)).toBe(false)
+    expect(noteShownOnDay('1. pátek v měsíci v 17.30 adorace', '354', 5)).toBe(true)
+    expect(noteShownOnDay('1. pátek v měsíci v 17.30 adorace', '354', 3)).toBe(false)
+    expect(noteShownOnDay('v sobotu mše sv. s nedělní platností', '12456', 6)).toBe(true)
+    expect(noteShownOnDay('v sobotu mše sv. s nedělní platností', '12456', 1)).toBe(false)
+    expect(noteShownOnDay('Úterý bohoslužba slova, středa mše svatá', '23', 3)).toBe(true)
+  })
+  it('"jen/pouze" restricts the other days, so it stays on every row', () => {
+    expect(noteShownOnDay('v době letních prázdnin jsou mše jen v sobotu', '23456', 2)).toBe(true)
+    expect(noteShownOnDay('během letních prázdnin pouze pondělí, středa, pátek', '123456', 2)).toBe(true)
+  })
+  it('stays everywhere when it names no weekday, or only days the service lacks', () => {
+    expect(noteShownOnDay('kromě července a srpna', '135', 1)).toBe(true)
+    expect(noteShownOnDay('po nedělní mši setkání', '135', 1)).toBe(true)
+    expect(noteShownOnDay('', '135', 1)).toBe(true)
+  })
+  it('does not mistake look-alike words for weekdays', () => {
+    expect(noteShownOnDay('uprostřed náměstí, čtvrt hodiny před mší zpověď', '135', 1)).toBe(true)
+    expect(noteShownOnDay('pátý ročník poutě', '135', 1)).toBe(true)
   })
 })

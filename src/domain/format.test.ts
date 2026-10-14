@@ -5,10 +5,10 @@ import {
   fmtWeekdayShort,
   dayLabel,
   fmtDateCz,
-  normalizeLang,
   samePragueDay,
   withReferral,
 } from './format'
+import { normalizeLang } from './registry'
 
 const now = new Date('2026-07-03T08:00:00Z') // Friday 10:00 Prague
 
@@ -20,7 +20,9 @@ describe('fmtUntil', () => {
     expect(fmtUntil(now, new Date('2026-07-03T08:00:30Z'))).toBe('právě začíná')
   })
   it('hours + minutes', () => {
-    expect(fmtUntil(now, new Date('2026-07-03T10:30:00Z'))).toBe('za 2 h 30 min')
+    expect(fmtUntil(now, new Date('2026-07-03T10:30:00Z'))).toBe('za 2½ h')
+    expect(fmtUntil(now, new Date('2026-07-03T09:10:00Z'))).toBe('za 1 h')
+    expect(fmtUntil(now, new Date('2026-07-03T15:15:00Z'))).toBe('za 7 h')
     expect(fmtUntil(now, new Date('2026-07-03T11:00:00Z'))).toBe('za 3 h')
   })
   it('days (Czech plurals)', () => {
