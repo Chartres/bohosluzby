@@ -211,6 +211,7 @@ export const cs = {
   fb_map_legend: 'ohlasy poutníků',
   map_legend_match: 'vyhovuje zadání',
   map_legend_otherday: 'jiný den',
+  map_legend_nonmass: 'není mše (růženec, adorace…)',
   detail_parish_web: 'Web farnosti',
 
   // ---- first-run intro guide ----
@@ -424,6 +425,7 @@ export const en: Record<Key, string> = {
   fb_map_legend: 'pilgrim witness',
   map_legend_match: 'matches your choice',
   map_legend_otherday: 'another day',
+  map_legend_nonmass: 'not a Mass (rosary, adoration…)',
   detail_parish_web: 'Parish website',
 
   intro_rubric: 'welcome',

@@ -20,3 +20,11 @@ export async function initNative(): Promise<void> {
     /* no splash — ignore */
   }
 }
+
+/** Status-bar text colour for what's under it: Style.Dark = LIGHT text (for a
+ * dark background, e.g. the church photo hero), Style.Light = dark text on
+ * parchment. iOS only (Android keeps its own parchment bar). No-op on web. */
+export function setStatusBarOnDark(onDark: boolean): void {
+  if (platform !== 'ios') return
+  StatusBar.setStyle({ style: onDark ? Style.Dark : Style.Light }).catch(() => {})
+}

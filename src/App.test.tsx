@@ -870,7 +870,9 @@ describe('Marie finds the nearest mass', () => {
     // next five weeks is excluded → the row is visibly paused, reason attached
     const paused = screen.getByText('20:00').closest('div[data-paused]')
     expect(paused).not.toBeNull()
-    expect(paused).toHaveClass('opacity-70')
+    // clearly skippable (Pavol 2026-10-16): faded hard, time struck through
+    expect(paused).toHaveClass('opacity-45')
+    expect(screen.getByText('20:00')).toHaveClass('line-through')
     expect(screen.getByText(/nyní se nekoná/)).toBeInTheDocument()
     // the unverifiable "dle ohlášení" row prints loud but is NOT muted
     expect(screen.getByText('21:00').closest('div[data-paused]')).toBeNull()

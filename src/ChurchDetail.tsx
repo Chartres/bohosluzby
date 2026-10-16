@@ -16,6 +16,7 @@ import { fmtDateCz, withReferral } from './domain/format'
 import { isStale } from './domain/registry'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
+import { setStatusBarOnDark } from './lib/native-init'
 import { loadData } from './lib/dataStore'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { aggregateFor, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
@@ -391,6 +392,13 @@ export function ChurchDetail({
     }
   }, [photo])
 
+  // iOS status bar: light text while the dark photo sits under it, dark text
+  // on paper (the scrolled bar, every other page).
+  useEffect(() => {
+    setStatusBarOnDark(Boolean(photo) && !barShown)
+    return () => setStatusBarOnDark(false)
+  }, [photo, barShown])
+
   // Report hero presence to the app shell: with a photo, the shell drops its
   // masthead so the image bleeds full to the top and the nav overlays the hero.
   // Reset to false on unmount / when the photo goes away.
@@ -561,15 +569,11 @@ export function ChurchDetail({
             decoding="async"
             className="block h-[46vh] max-h-[26rem] min-h-[15rem] w-full object-cover object-top"
           />
-          {/* top: a PAPER fade, not a grey band (Pavol 2026-10-14) — the page's own
-              ground bleeding into the photo; ink nav text on it, and the iOS
-              clock (dark status-bar text) stays readable on dark photos too.
-              Bottom: ink scrim under the title. */}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0"
-            style={{ height: 'calc(env(safe-area-inset-top) + 5.5rem)', background: PAPER_FADE }}
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent" />
+          {/* one ink gradient through the whole photo (Pavol 2026-10-16: "the
+              bleed is beautiful — run it through the whole photo, a little
+              lighter"): darker at the top for the nav + iOS clock, lightest
+              mid-photo, darkest under the title. */}
+          <div className="pointer-events-none absolute inset-0" style={{ background: HERO_SCRIM }} />
           {/* 1px marker under the nav row: when it leaves the viewport, the bar shows */}
           <div
             ref={navEnd}
@@ -796,23 +800,23 @@ export function ChurchDetail({
   )
 }
 
-// Paper (#f6f1e5) fading out: opaque enough behind the nav row for ink text.
-const PAPER_FADE =
-  'linear-gradient(to bottom, rgb(246 241 229 / 0.94) 0%, rgb(246 241 229 / 0.82) 50%, rgb(246 241 229 / 0.35) 78%, rgb(246 241 229 / 0) 100%)'
+// Warm ink (#1a1712) at varying alpha, top → bottom.
+const HERO_SCRIM =
+  'linear-gradient(to bottom, rgb(26 23 18 / 0.5) 0%, rgb(26 23 18 / 0.28) 22%, rgb(26 23 18 / 0.12) 45%, rgb(26 23 18 / 0.3) 70%, rgb(26 23 18 / 0.72) 100%)'
 
 /** Back + help for the photo detail, in the masthead's type (small caps,
  * tracked) and on ONE row so they share a baseline. Over the photo: paper text
- * inside a warm-ink halo (.hero-glow), no band behind it. As the scrolled bar: paper ground, rubric back,
+ * in a warm-ink halo (.hero-glow) on the hero gradient. As the scrolled bar: paper ground, rubric back,
  * season rule — the masthead's look. */
 function HeroNav({ onBack, onHelp, bar }: { onBack: () => void; onHelp?: () => void; bar: boolean }) {
   const btn = 'inline-flex min-h-11 items-center text-xs font-semibold tracking-[0.08em] uppercase'
   return (
     <div
-      className={bar ? 'fade-in fixed inset-x-0 top-0 z-40 border-b-2 bg-paper' : 'absolute inset-x-0 top-0'}
+      className={bar ? 'fade-in fixed inset-x-0 top-0 z-40 border-b-2 bg-paper' : 'hero-glow absolute inset-x-0 top-0 text-paper'}
       style={{ paddingTop: 'max(0.25rem, env(safe-area-inset-top))', borderColor: bar ? 'var(--season)' : undefined }}
     >
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-5 sm:px-8">
-        <button type="button" onClick={onBack} className={`${btn} text-rubric`}>
+        <button type="button" onClick={onBack} className={`${btn} ${bar ? 'text-rubric' : ''}`}>
           {t('back_to_list')}
         </button>
         {onHelp && (
@@ -820,7 +824,7 @@ function HeroNav({ onBack, onHelp, bar }: { onBack: () => void; onHelp?: () => v
             type="button"
             onClick={onHelp}
             aria-label={t('intro_help')}
-            className={`${btn} text-ink-faded hover:text-ink`}
+            className={`${btn} ${bar ? 'text-ink-faded hover:text-ink' : ''}`}
           >
             ? {t('intro_help')}
           </button>
@@ -865,9 +869,13 @@ function ServiceRow({
   return (
     <div
       data-paused={pausedNow || undefined}
-      className={`flex items-baseline gap-4 border-b border-hairline py-2 ${pausedNow ? 'opacity-70' : ''}`}
+      className={`flex items-baseline gap-4 border-b border-hairline py-2 ${pausedNow ? 'opacity-45' : ''}`}
     >
-      <p className="font-display w-14 shrink-0 text-xl font-semibold tabular-nums">{s.time}</p>
+      {/* paused: struck through so the eye skips it; still listed (summer
+          schedules come back) */}
+      <p className={`font-display w-14 shrink-0 text-xl font-semibold tabular-nums ${pausedNow ? 'line-through decoration-1' : ''}`}>
+        {s.time}
+      </p>
       <div className="min-w-0 flex-1">
         <p className="text-sm">
           {s.type || t('service_fallback')}
