@@ -220,16 +220,24 @@ describe('Marie finds the nearest mass', () => {
     expect(seznam().getByText(/Salvátora/)).toBeInTheDocument()
   })
 
-it('Moje kostely: a saved church is removed right from the list with its ★', async () => {
-  localStorage.setItem('bohosluzby:favorites', JSON.stringify(['3']))
-  stubGeolocation('granted')
-  render(<App />)
-  const mine = await screen.findByRole('region', { name: 'Moje kostely' })
-  await within(mine).findByText('kostel sv. Tomáše')
-  fireEvent.click(within(mine).getByRole('button', { name: 'Odebrat z Mých kostelů: kostel sv. Tomáše' }))
-  expect(screen.queryByRole('region', { name: 'Moje kostely' })).toBeNull()
-  expect(JSON.parse(localStorage.getItem('bohosluzby:favorites') ?? '[]')).toEqual([])
-})
+  it('Moje kostely: swipe a saved church left to reveal Odebrat; only the tap removes it', async () => {
+    localStorage.setItem('bohosluzby:favorites', JSON.stringify(['3']))
+    stubGeolocation('granted')
+    render(<App />)
+    const mine = await screen.findByRole('region', { name: 'Moje kostely' })
+    const row = (await within(mine).findByText('kostel sv. Tomáše')).closest('[data-swipe]') as HTMLElement
+    expect(row.style.transform).toBe('translateX(0px)')
+    // swipe left (Outlook/Mail style): the row slides and reveals the action…
+    fireEvent.touchStart(row, { touches: [{ clientX: 300, clientY: 100 }] })
+    fireEvent.touchMove(row, { touches: [{ clientX: 180, clientY: 104 }] })
+    fireEvent.touchEnd(row, { changedTouches: [{ clientX: 180, clientY: 104 }] })
+    expect(row.style.transform).toBe('translateX(-96px)')
+    // …but nothing is removed until the action is tapped
+    expect(JSON.parse(localStorage.getItem('bohosluzby:favorites') ?? '[]')).toEqual(['3'])
+    fireEvent.click(within(mine).getByRole('button', { name: 'Odebrat z Mých kostelů: kostel sv. Tomáše' }))
+    expect(screen.queryByRole('region', { name: 'Moje kostely' })).toBeNull()
+    expect(JSON.parse(localStorage.getItem('bohosluzby:favorites') ?? '[]')).toEqual([])
+  })
 
   it('no stars, no section', async () => {
     stubGeolocation('granted')
@@ -851,6 +859,19 @@ it('Moje kostely: a saved church is removed right from the list with its ★', a
     expect(screen.getByText(/studentská/)).not.toHaveClass('text-rubric')
   })
 
+  it('tapping a list row opens the church with that day’s services under the title, the tapped one bold', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    const name = await screen.findByText(/Salvátora/)
+    const row = name.closest('li')!
+    const time = within(row).getAllByText(/^\d{2}:\d{2}$/)[0].textContent!
+    await user.click(name)
+    const line = await screen.findByTestId('day-line')
+    const bold = line.querySelector('.font-semibold')
+    expect(bold?.textContent).toContain(time)
+  })
+
   it('detail: a provably-paused service row is muted with "nyní se nekoná"', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
@@ -862,7 +883,9 @@ it('Moje kostely: a saved church is removed right from the list with its ★', a
     // next five weeks is excluded → the row is visibly paused, reason attached
     const paused = screen.getByText('20:00').closest('div[data-paused]')
     expect(paused).not.toBeNull()
-    expect(paused).toHaveClass('opacity-70')
+    // clearly skippable (Pavol 2026-10-16): faded hard, time struck through
+    expect(paused).toHaveClass('opacity-45')
+    expect(screen.getByText('20:00')).toHaveClass('line-through')
     expect(screen.getByText(/nyní se nekoná/)).toBeInTheDocument()
     // the unverifiable "dle ohlášení" row prints loud but is NOT muted
     expect(screen.getByText('21:00').closest('div[data-paused]')).toBeNull()

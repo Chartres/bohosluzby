@@ -13,7 +13,7 @@ import type { Church, ChurchServices } from './domain/data'
 import { decodeShard } from './domain/data'
 import { loadData } from './lib/dataStore'
 import { gridCluster } from './domain/cluster'
-import { NO_FILTERS, type Filters } from './domain/filters'
+import { isMass, NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
 import { massKey, type Aggregate } from './domain/feedback'
@@ -39,13 +39,15 @@ const hasWitness = (t: { slot?: Aggregate; church: Aggregate }): boolean =>
 
 /** A bare time on a pin reads as TODAY — on "hned" a church's next mass can be
  * days out, so a not-today chip carries its weekday ("út 15:00") and greys. */
-const chipIcon = (label: string, otherDay: boolean, witnessed: boolean) =>
+const chipIcon = (label: string, otherDay: boolean, witnessed: boolean, nonMass: boolean) =>
   L.divIcon({
     className: 'map-chip-wrap',
     // witnessed: a rubric "dog-ear" folded corner on the chip (a CSS ::after on
     // .map-chip--witnessed) — clearly part of the box, not a floating mark that
     // invites a tap. Presence only; the popover carries the testimony.
-    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}${witnessed ? ' map-chip--witnessed' : ''}">${label}</span>`,
+    // nonMass (růženec, adorace, nešpory…): an OUTLINED chip — paper ground,
+    // season rule — so a time that isn't a Mass never reads as one.
+    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}${nonMass ? ' map-chip--nonmass' : ''}${witnessed ? ' map-chip--witnessed' : ''}">${label}</span>`,
     iconSize: [30, 30], // tap target; the chip centers itself and may overflow
   })
 // non-matching: a tiny faded dot; the 30px wrapper keeps it tappable
@@ -79,7 +81,7 @@ export default function MapView({
   filters: Filters
   cas: string | null
   day: DayChoice
-  onOpen: (id: string) => void
+  onOpen: (id: string, at?: Date) => void
   onNavigate: (t: { name: string; lat: number; lng: number }) => void
   /** Map mode: fill the parent column instead of the in-flow plate height. */
   fill?: boolean
@@ -89,6 +91,7 @@ export default function MapView({
   // isn't self-evident — show a discreet key (a matching fold swatch) under the
   // map ONLY while witnessed chips are actually on screen, so it stays low-clutter.
   const [witnessShown, setWitnessShown] = useState(false)
+  const [nonMassShown, setNonMassShown] = useState(false)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
   // Callbacks read through refs so the marker effect does NOT depend on their
@@ -249,7 +252,7 @@ export default function MapView({
       open.setAttribute('aria-label', `${t('map_open').replace(/\s*›\s*$/, '')}: ${church.name}`)
       open.addEventListener('click', (e) => {
         e.preventDefault()
-        onOpenRef.current(church.id)
+        onOpenRef.current(church.id, next?.start)
       })
       const nav = document.createElement('button')
       nav.type = 'button'
@@ -329,6 +332,7 @@ export default function MapView({
       // the effect no longer re-runs on every App render — see the callback refs.)
       layer.clearLayers()
       let anyWitness = false
+      let anyNonMass = false
       for (const cl of gridCluster(pts, CELL_PX)) {
         if (cl.items.length === 1) {
           const church = cl.items[0]
@@ -345,8 +349,10 @@ export default function MapView({
             : ''
           const witnessed = WITNESS_ENABLED && Boolean(next) && hasWitness(witnessTiers(church, next!))
           if (witnessed) anyWitness = true
+          const nonMass = Boolean(next) && !isMass(next!.service.type)
+          if (nonMass) anyNonMass = true
           const marker = L.marker([church.lat, church.lng], {
-            icon: next ? chipIcon(label, otherDay, witnessed) : fadedIcon(),
+            icon: next ? chipIcon(label, otherDay, witnessed, nonMass) : fadedIcon(),
             title: church.name,
             keyboard: false,
           })
@@ -367,6 +373,7 @@ export default function MapView({
             .addTo(layer)
         }
       }
+      setNonMassShown(anyNonMass)
       setWitnessShown(anyWitness) // React bails out if unchanged — deps exclude it, so no re-subscribe
     }
 
@@ -407,6 +414,12 @@ export default function MapView({
           <span className="map-legend-chip map-legend-chip--otherday" aria-hidden="true" />
           {t('map_legend_otherday')}
         </span>
+        {nonMassShown && (
+          <span className="map-legend-row">
+            <span className="map-legend-chip map-legend-chip--nonmass" aria-hidden="true" />
+            {t('map_legend_nonmass')}
+          </span>
+        )}
         {WITNESS_ENABLED && witnessShown && (
           <span className="map-legend-row">
             <span className="map-legend-fold" aria-hidden="true" />

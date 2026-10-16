@@ -150,3 +150,24 @@ export function selectUpcoming(
     ? rankUpcoming(now, origin, cs, filtered, opts)
     : ordoForDay(now, day, origin, cs, filtered)
 }
+
+/** One church's services on the tapped service's day (or, with no tap, the
+ * next day that still has one) — the line under the church-page title, so a
+ * tap on "17:00" lands on "17:00 růženec · 17:30 mše sv." without scrolling.
+ * Already-started services of today drop out, except the tapped one. */
+export function dayLine(now: Date, church: Church, svc: ChurchServices, focus: Date | null): Upcoming[] {
+  const byId = new Map([[church.id, svc]])
+  const here = { lat: church.lat, lng: church.lng }
+  const from = focus ?? now
+  // nextOccurrences is strictly after its `now` — look up from 1 ms before the
+  // tapped start (or now) so a service starting this minute is kept
+  const t0 = new Date(Math.min(from.getTime(), now.getTime()) - 1)
+  const a = pragueToday(t0)
+  const b = pragueToday(from)
+  const first = Math.max(0, Math.round((Date.UTC(b.y, b.m - 1, b.d) - Date.UTC(a.y, a.m - 1, a.d)) / 86_400_000))
+  for (let off = first; off <= first + 7; off++) {
+    const items = ordoForDay(t0, off, here, [church], byId)
+    if (items.length) return items
+  }
+  return []
+}

@@ -1,4 +1,4 @@
-import { ordoForDay, rankUpcoming } from './ranking'
+import { dayLine, ordoForDay, rankUpcoming } from './ranking'
 import { isMass } from './filters'
 import { dayLabel } from './format'
 import type { Church, ChurchServices } from './data'
@@ -260,5 +260,35 @@ describe('rankUpcoming — per-church pick and day grouping (review of UX-1/UX-2
     expect(headings).toEqual(['dnes', 'zítra'])
     expect(ranked.slice(0, 2).map((r) => r.church.id)).toEqual(['b', 'c'])
     expect(ranked.find((r) => r.church.id === 'a')!.service.time).toBe('09:00')
+  })
+})
+
+// The church-page line under the title: the tapped service's day, every
+// service that day, so "17:00 růženec · 17:30 mše sv." reads without scrolling.
+describe('dayLine', () => {
+  const c = church('c', 50.08, 14.4)
+  const svc = (): ChurchServices => {
+    const s = services([
+      { days: '5', time: '07:00' },
+      { days: '5', time: '17:30' },
+      { days: '6', time: '08:00' },
+    ])
+    s.regular.push({ days: '5', time: '17:00', lang: 'česky', greek: false, type: 'růženec', note: '' })
+    return s
+  }
+  it('lists the rest of the tapped day in time order (Fri 3 Jul, 17:00 now)', () => {
+    const line = dayLine(now, c, svc(), new Date('2026-07-03T15:00:00Z'))
+    expect(line.map((u) => `${u.start.toISOString().slice(11, 16)} ${u.service.type}`)).toEqual([
+      '15:00 růženec',
+      '15:30 mše sv.',
+    ])
+  })
+  it('a tap on tomorrow shows tomorrow', () => {
+    const line = dayLine(now, c, svc(), new Date('2026-07-04T06:00:00Z'))
+    expect(line.map((u) => dayLabel(now, u.start))).toEqual(['zítra'])
+  })
+  it('no tap (deep link): the next day that still has something', () => {
+    const late = new Date('2026-07-03T19:00:00Z') // Fri 21:00, nothing left today
+    expect(dayLine(late, c, svc(), null).map((u) => u.start.toISOString())).toEqual(['2026-07-04T06:00:00.000Z'])
   })
 })

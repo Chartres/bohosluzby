@@ -176,7 +176,7 @@ describe('church photo', () => {
     const back = within(figure).getByRole('button', { name: '‹ zpět na seznam' })
     const help = within(figure).getByRole('button', { name: 'nápověda' })
     expect(back.parentElement).toBe(help.parentElement)
-    expect(back.closest('.hero-legible')).not.toBeNull()
+    expect(back.closest('.hero-glow')).not.toBeNull() // paper text in an ink halo on the hero gradient
     back.click()
     help.click()
     expect(onBack).toHaveBeenCalled()

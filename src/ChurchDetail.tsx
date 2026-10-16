@@ -12,10 +12,12 @@ import {
 import { nextOccurrences, pragueIsoDate, pragueToday, recentOccurrence } from './domain/occurrences'
 import { noteShownOnDay, noteUncertain, parseNote } from './domain/notes'
 import { parseConfessionFromNote } from './domain/confession'
-import { fmtDateCz, withReferral } from './domain/format'
+import { dayLabel, fmtDateCz, fmtTime, withReferral } from './domain/format'
+import { dayLine, type Upcoming } from './domain/ranking'
 import { isStale } from './domain/registry'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
+import { setStatusBarOnDark } from './lib/native-init'
 import { loadData } from './lib/dataStore'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { aggregateFor, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
@@ -258,11 +260,15 @@ function DetailHeading({
   headingRef,
   onNavigate,
   hero,
+  line,
+  focus,
 }: {
   church: Church
   headingRef: RefObject<HTMLHeadingElement | null>
   onNavigate: () => void
   hero: boolean
+  line: Upcoming[]
+  focus: Date | null
 }) {
   const text = hero ? 'text-paper' : 'text-ink-faded'
   // -my-3 py-3: a 44px hit area without moving the text line
@@ -277,6 +283,21 @@ function DetailHeading({
         {church.name}
       </h2>
       {church.city && <p className={`mt-1 text-sm ${text}`}>{church.city}</p>}
+      {/* the tapped service's day at a glance — "dnes 17:00 růženec · 17:30 mše
+          sv.", the tapped one bold — so nobody scrolls the ordo to find it */}
+      {line.length > 0 && (
+        <p data-testid="day-line" className={`mt-2 text-sm ${hero ? 'text-paper' : 'text-ink'}`}>
+          <span className={text}>{dayLabel(new Date(), line[0].start)} </span>
+          {line.map((u, i) => (
+            <span key={i}>
+              {i > 0 && <span className={text}> · </span>}
+              <span className={focus && u.start.getTime() === focus.getTime() ? 'font-semibold' : undefined}>
+                {fmtTime(u.start)} {u.service.type || t('service_fallback')}
+              </span>
+            </span>
+          ))}
+        </p>
+      )}
       {/* one meta row of actions under the title — navigate · share · save · web
           farnosti (navigace opens the map-app chooser, so no separate "mapa"). Bundled (not a separate block) so the schedule stays primary. */}
       <p className={`mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${text}`}>
@@ -324,6 +345,12 @@ export function ChurchDetail({
   const [dioc, setDioc] = useState<DiocesanConfession | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const navEnd = useRef<HTMLDivElement>(null)
+  // the service tapped in the list/map (App's openChurch puts it in history.state)
+  const [focus] = useState<Date | null>(() => {
+    const at = (history.state as { at?: unknown } | null)?.at
+    return typeof at === 'string' ? new Date(at) : null
+  })
+  const line = useMemo(() => (svc ? dayLine(new Date(), church, svc, focus).slice(0, 5) : []), [svc, church, focus])
   const [barShown, setBarShown] = useState(false)
 
   useEffect(() => {
@@ -390,6 +417,13 @@ export function ChurchDetail({
       setBarShown(false)
     }
   }, [photo])
+
+  // iOS status bar: light text while the dark photo sits under it, dark text
+  // on paper (the scrolled bar, every other page).
+  useEffect(() => {
+    setStatusBarOnDark(Boolean(photo) && !barShown)
+    return () => setStatusBarOnDark(false)
+  }, [photo, barShown])
 
   // Report hero presence to the app shell: with a photo, the shell drops its
   // masthead so the image bleeds full to the top and the nav overlays the hero.
@@ -561,15 +595,11 @@ export function ChurchDetail({
             decoding="async"
             className="block h-[46vh] max-h-[26rem] min-h-[15rem] w-full object-cover object-top"
           />
-          {/* top scrim: eased, darkest behind the nav row, gone by 7rem below the
-              safe area — the nav text clears ~4.5:1 even on a white sky; bottom
-              scrim under the title. Warm-ink gradients, not box-shadows
-              (docs/DESIGN-BRIEF.md). */}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0"
-            style={{ height: 'calc(env(safe-area-inset-top) + 7rem)', background: TOP_SCRIM }}
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent" />
+          {/* one ink gradient through the whole photo (Pavol 2026-10-16: "the
+              bleed is beautiful — run it through the whole photo, a little
+              lighter"): darker at the top for the nav + iOS clock, lightest
+              mid-photo, darkest under the title. */}
+          <div className="pointer-events-none absolute inset-0" style={{ background: HERO_SCRIM }} />
           {/* 1px marker under the nav row: when it leaves the viewport, the bar shows */}
           <div
             ref={navEnd}
@@ -579,7 +609,7 @@ export function ChurchDetail({
           />
           <HeroNav onBack={onBack} onHelp={onHelp} bar={false} />
           <figcaption className="hero-legible absolute inset-x-0 bottom-0 px-5 pt-10 pb-3 sm:px-8">
-            <DetailHeading church={church} headingRef={headingRef} onNavigate={() => setNavOpen(true)} hero />
+            <DetailHeading church={church} headingRef={headingRef} onNavigate={() => setNavOpen(true)} hero line={line} focus={focus} />
             {/* attribution: tiny, right-aligned, still legible on the scrim.
                 The author is tidied to the name before any " (…)" wiki markup
                 ("ŠJů ( cs:ŠJů )" → "ŠJů"); licence + Wikimedia Commons kept. */}
@@ -597,6 +627,8 @@ export function ChurchDetail({
           headingRef={headingRef}
           onNavigate={() => setNavOpen(true)}
           hero={false}
+          line={line}
+          focus={focus}
         />
       )}
 
@@ -796,20 +828,19 @@ export function ChurchDetail({
   )
 }
 
-// Eased ink scrim (multi-stop, so no visible band edge): ≥0.6 alpha behind the
-// nav text, then a quick fall-off.
-const TOP_SCRIM =
-  'linear-gradient(to bottom, rgb(26 23 18 / 0.7) 0%, rgb(26 23 18 / 0.62) 55%, rgb(26 23 18 / 0.3) 75%, rgb(26 23 18 / 0.1) 90%, rgb(26 23 18 / 0) 100%)'
+// Warm ink (#1a1712) at varying alpha, top → bottom.
+const HERO_SCRIM =
+  'linear-gradient(to bottom, rgb(26 23 18 / 0.5) 0%, rgb(26 23 18 / 0.28) 22%, rgb(26 23 18 / 0.12) 45%, rgb(26 23 18 / 0.3) 70%, rgb(26 23 18 / 0.72) 100%)'
 
 /** Back + help for the photo detail, in the masthead's type (small caps,
  * tracked) and on ONE row so they share a baseline. Over the photo: paper text
- * with the hero-legible shadow. As the scrolled bar: paper ground, rubric back,
+ * in a warm-ink halo (.hero-glow) on the hero gradient. As the scrolled bar: paper ground, rubric back,
  * season rule — the masthead's look. */
 function HeroNav({ onBack, onHelp, bar }: { onBack: () => void; onHelp?: () => void; bar: boolean }) {
   const btn = 'inline-flex min-h-11 items-center text-xs font-semibold tracking-[0.08em] uppercase'
   return (
     <div
-      className={bar ? 'fade-in fixed inset-x-0 top-0 z-40 border-b-2 bg-paper' : 'hero-legible absolute inset-x-0 top-0 text-paper'}
+      className={bar ? 'fade-in fixed inset-x-0 top-0 z-40 border-b-2 bg-paper' : 'hero-glow absolute inset-x-0 top-0 text-paper'}
       style={{ paddingTop: 'max(0.25rem, env(safe-area-inset-top))', borderColor: bar ? 'var(--season)' : undefined }}
     >
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-5 sm:px-8">
@@ -866,9 +897,13 @@ function ServiceRow({
   return (
     <div
       data-paused={pausedNow || undefined}
-      className={`flex items-baseline gap-4 border-b border-hairline py-2 ${pausedNow ? 'opacity-70' : ''}`}
+      className={`flex items-baseline gap-4 border-b border-hairline py-2 ${pausedNow ? 'opacity-45' : ''}`}
     >
-      <p className="font-display w-14 shrink-0 text-xl font-semibold tabular-nums">{s.time}</p>
+      {/* paused: struck through so the eye skips it; still listed (summer
+          schedules come back) */}
+      <p className={`font-display w-14 shrink-0 text-xl font-semibold tabular-nums ${pausedNow ? 'line-through decoration-1' : ''}`}>
+        {s.time}
+      </p>
       <div className="min-w-0 flex-1">
         <p className="text-sm">
           {s.type || t('service_fallback')}
