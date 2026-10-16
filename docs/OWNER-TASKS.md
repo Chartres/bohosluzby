@@ -6,14 +6,14 @@ free block limit refused them on 2026-10-07). Newest batch first.
 ## iOS 1.3 (2026-10-14)
 
 - [x] Apple agreement accepted (2026-10-14); ASC API answers again.
-- [ ] **TestFlight check**: build 79 (1.3) is in internal testing (77, 78 expired). Install it, check the app opens
+- [ ] **TestFlight check**: build 80 (1.3) is in internal testing (77–79 expired). Install it, check the app opens
       (ideally on an iOS 15–16.3 device too), ☆ uložit, city chips, share link.
 - [ ] **Submit for Review** in App Store Connect → 1.3 (notes + screenshots
-      uploaded). Build 79 attached. Nothing was submitted.
+      uploaded). Build 80 attached. Nothing was submitted.
 
 ## Ship what merged on 2026-10-07
 
-- [x] **iOS build**: done as 1.3 build 79 (2026-10-14); see the iOS 1.3 section.
+- [x] **iOS build**: done as 1.3 build 80 (2026-10-14); see the iOS 1.3 section.
 - [ ] **Search Console + Seznam Webmaster**: submit `https://bohosluzby.dravec.org/sitemap.xml`
       (now 4 031 URLs, all 4 000 church pages). 10 minutes. This is the channel attempt the
       kill criterion asks for.
