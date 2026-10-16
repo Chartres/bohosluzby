@@ -12,7 +12,8 @@ import {
 import { nextOccurrences, pragueIsoDate, pragueToday, recentOccurrence } from './domain/occurrences'
 import { noteShownOnDay, noteUncertain, parseNote } from './domain/notes'
 import { parseConfessionFromNote } from './domain/confession'
-import { fmtDateCz, withReferral } from './domain/format'
+import { dayLabel, fmtDateCz, fmtTime, withReferral } from './domain/format'
+import { dayLine, type Upcoming } from './domain/ranking'
 import { isStale } from './domain/registry'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
@@ -259,11 +260,15 @@ function DetailHeading({
   headingRef,
   onNavigate,
   hero,
+  line,
+  focus,
 }: {
   church: Church
   headingRef: RefObject<HTMLHeadingElement | null>
   onNavigate: () => void
   hero: boolean
+  line: Upcoming[]
+  focus: Date | null
 }) {
   const text = hero ? 'text-paper' : 'text-ink-faded'
   // -my-3 py-3: a 44px hit area without moving the text line
@@ -278,6 +283,21 @@ function DetailHeading({
         {church.name}
       </h2>
       {church.city && <p className={`mt-1 text-sm ${text}`}>{church.city}</p>}
+      {/* the tapped service's day at a glance — "dnes 17:00 růženec · 17:30 mše
+          sv.", the tapped one bold — so nobody scrolls the ordo to find it */}
+      {line.length > 0 && (
+        <p data-testid="day-line" className={`mt-2 text-sm ${hero ? 'text-paper' : 'text-ink'}`}>
+          <span className={text}>{dayLabel(new Date(), line[0].start)} </span>
+          {line.map((u, i) => (
+            <span key={i}>
+              {i > 0 && <span className={text}> · </span>}
+              <span className={focus && u.start.getTime() === focus.getTime() ? 'font-semibold' : undefined}>
+                {fmtTime(u.start)} {u.service.type || t('service_fallback')}
+              </span>
+            </span>
+          ))}
+        </p>
+      )}
       {/* one meta row of actions under the title — navigate · share · save · web
           farnosti (navigace opens the map-app chooser, so no separate "mapa"). Bundled (not a separate block) so the schedule stays primary. */}
       <p className={`mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${text}`}>
@@ -325,6 +345,12 @@ export function ChurchDetail({
   const [dioc, setDioc] = useState<DiocesanConfession | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const navEnd = useRef<HTMLDivElement>(null)
+  // the service tapped in the list/map (App's openChurch puts it in history.state)
+  const [focus] = useState<Date | null>(() => {
+    const at = (history.state as { at?: unknown } | null)?.at
+    return typeof at === 'string' ? new Date(at) : null
+  })
+  const line = useMemo(() => (svc ? dayLine(new Date(), church, svc, focus).slice(0, 5) : []), [svc, church, focus])
   const [barShown, setBarShown] = useState(false)
 
   useEffect(() => {
@@ -583,7 +609,7 @@ export function ChurchDetail({
           />
           <HeroNav onBack={onBack} onHelp={onHelp} bar={false} />
           <figcaption className="hero-legible absolute inset-x-0 bottom-0 px-5 pt-10 pb-3 sm:px-8">
-            <DetailHeading church={church} headingRef={headingRef} onNavigate={() => setNavOpen(true)} hero />
+            <DetailHeading church={church} headingRef={headingRef} onNavigate={() => setNavOpen(true)} hero line={line} focus={focus} />
             {/* attribution: tiny, right-aligned, still legible on the scrim.
                 The author is tidied to the name before any " (…)" wiki markup
                 ("ŠJů ( cs:ŠJů )" → "ŠJů"); licence + Wikimedia Commons kept. */}
@@ -601,6 +627,8 @@ export function ChurchDetail({
           headingRef={headingRef}
           onNavigate={() => setNavOpen(true)}
           hero={false}
+          line={line}
+          focus={focus}
         />
       )}
 

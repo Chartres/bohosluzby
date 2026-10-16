@@ -859,6 +859,19 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getByText(/studentská/)).not.toHaveClass('text-rubric')
   })
 
+  it('tapping a list row opens the church with that day’s services under the title, the tapped one bold', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    const name = await screen.findByText(/Salvátora/)
+    const row = name.closest('li')!
+    const time = within(row).getAllByText(/^\d{2}:\d{2}$/)[0].textContent!
+    await user.click(name)
+    const line = await screen.findByTestId('day-line')
+    const bold = line.querySelector('.font-semibold')
+    expect(bold?.textContent).toContain(time)
+  })
+
   it('detail: a provably-paused service row is muted with "nyní se nekoná"', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })

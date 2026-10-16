@@ -81,7 +81,7 @@ export default function MapView({
   filters: Filters
   cas: string | null
   day: DayChoice
-  onOpen: (id: string) => void
+  onOpen: (id: string, at?: Date) => void
   onNavigate: (t: { name: string; lat: number; lng: number }) => void
   /** Map mode: fill the parent column instead of the in-flow plate height. */
   fill?: boolean
@@ -252,7 +252,7 @@ export default function MapView({
       open.setAttribute('aria-label', `${t('map_open').replace(/\s*›\s*$/, '')}: ${church.name}`)
       open.addEventListener('click', (e) => {
         e.preventDefault()
-        onOpenRef.current(church.id)
+        onOpenRef.current(church.id, next?.start)
       })
       const nav = document.createElement('button')
       nav.type = 'button'

@@ -193,11 +193,11 @@ function useRoute() {
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
-  const navigate = (to: string, opts?: { replace?: boolean }) => {
+  const navigate = (to: string, opts?: { replace?: boolean; state?: unknown }) => {
     if (opts?.replace) {
       history.replaceState(null, '', to) // e.g. a day switch — not a history entry
     } else {
-      history.pushState(null, '', to)
+      history.pushState(opts?.state ?? null, '', to)
       window.scrollTo(0, 0)
     }
     setUrl(to)
@@ -697,12 +697,14 @@ export default function App() {
     navigate(`/kostel/${id}/${search}`)
   }
   // shared by the list rows and the map popovers — the aha moment fires once
-  const openChurch = (id: string) => {
+  // `at`: the tapped service's start — the church page leads with that day's
+  // services (history.state, so the URL stays clean and shareable)
+  const openChurch = (id: string, at?: Date) => {
     if (!convertedRef.current) {
       convertedRef.current = true
       conversion({ church: id })
     }
-    navigate(`/kostel/${id}/${search}`) // keep ?den/?cas — back restores the view
+    navigate(`/kostel/${id}/${search}`, { state: at ? { at: at.toISOString() } : null }) // keep ?den/?cas — back restores the view
   }
 
   // map mode: the map IS the page — a viewport-locked column, slim chrome, no
@@ -1275,7 +1277,7 @@ function ServiceList({
   rows: Upcoming[]
   showUntil: boolean
   witnessChurches: Set<string>
-  onOpen: (id: string) => void
+  onOpen: (id: string, at?: Date) => void
   onNavigate: (t: { name: string; lat: number; lng: number }) => void
 }) {
   const now = new Date()
@@ -1311,7 +1313,7 @@ function ServiceList({
                     href={`/kostel/${r.church.id}/`}
                     onClick={(e) => {
                       e.preventDefault()
-                      onOpen(r.church.id)
+                      onOpen(r.church.id, r.start)
                     }}
                     className="underline decoration-hairline underline-offset-3 group-hover:decoration-ink after:absolute after:inset-0"
                   >

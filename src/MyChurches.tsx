@@ -17,7 +17,7 @@ export function MyChurches({
 }: {
   index: Church[]
   origin: { lat: number; lng: number }
-  onOpen: (id: string) => void
+  onOpen: (id: string, at?: Date) => void
 }) {
   const ids = useSyncExternalStore(subscribeFavorites, favoritesSnapshot)
   const churches = useMemo(() => {
@@ -76,7 +76,7 @@ export function MyChurches({
               <button
                 type="button"
                 className="min-w-0 flex-1 text-left underline decoration-hairline underline-offset-2 hover:text-ink"
-                onClick={() => onOpen(c.id)}
+                onClick={() => onOpen(c.id, u?.start)}
               >
                 {c.name}
               </button>
