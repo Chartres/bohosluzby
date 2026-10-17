@@ -67,6 +67,16 @@ describe('OR-combination of same-kind inclusion segments (H2)', () => {
     expect(runs(note, '2026-07-05')).toBe(true)  // Sunday — not governed
     expect(noteUncertain(note)).toBe(false)
   })
+  it('different weekdays AND: "1. sobota…, 3. neděle…" = 1st Saturdays and 3rd Sundays only', () => {
+    // each nth-weekday predicate passes every other weekday, so OR-ing two of
+    // them listed every Saturday and every Sunday
+    const note = '1. sobota v měsíci, 3. neděle v měsíci'
+    expect(runs(note, '2026-07-04')).toBe(true) // 1st Saturday
+    expect(runs(note, '2026-07-19')).toBe(true) // 3rd Sunday
+    expect(runs(note, '2026-07-11')).toBe(false) // 2nd Saturday
+    expect(runs(note, '2026-07-05')).toBe(false) // 1st Sunday
+    expect(noteUncertain(note)).toBe(false)
+  })
   it('cross-kind is still AND: "v červenci, 1. sobota v měsíci" = July AND 1st Sat', () => {
     const note = 'v červenci, 1. sobota v měsíci'
     expect(runs(note, '2026-07-04')).toBe(true)  // 1st Saturday of July

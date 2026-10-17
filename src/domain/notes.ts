@@ -300,7 +300,10 @@ function segKind(seg: string, i: number): string {
   const s = seg.replace(/\.$/, '').trim()
   const onlyMonths = /^(?:pouze\s+|jen\s+)?v(?:e)?\s+(.+)$/.exec(s)
   if (onlyMonths && parseMonthSet(onlyMonths[1])) return 'month'
-  if (new RegExp(WEEKDAY_RE).test(s)) return 'weekday'
+  // keyed by weekday: "1. sobota, 3. sobota" OR; "1. sobota, 3. neděle" must
+  // AND, since each nth predicate passes every other weekday (OR = always true)
+  const wd = new RegExp(WEEKDAY_RE).exec(s)
+  if (wd) return `weekday${WEEKDAY[wd[0]]}`
   if (/^(?:(?:v\s+)?období\s+)?od\s+.+\s+do\s+/.test(s)) return 'range'
   return `other${i}`
 }
