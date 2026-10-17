@@ -395,7 +395,9 @@ export function ChurchDetail({
     setPhoto(null)
     void loadData<Record<string, ChurchPhoto>>('photos.json')
       .then((map) => {
-        if (!cancelled) setPhoto(map[church.id] ?? null)
+        // no credit → no photo: CC licences require the attribution line
+        const p = map[church.id]
+        if (!cancelled) setPhoto(p?.credit ? p : null)
       })
       .catch(() => {
         /* no photos.json / offline — the page just shows no photo */

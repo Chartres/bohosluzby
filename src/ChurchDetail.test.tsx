@@ -64,6 +64,14 @@ const SHARD = {
     c: [],
     s: [['7', '09:15', 'česky', 0, 'mše sv.', '']],
   },
+  // church "8": a plain Mass whose photo entry has no credit.
+  '8': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['7', '11:00', 'česky', 0, 'mše sv.', '']],
+  },
   // church "6": one Po/St/Pá record whose note is about Friday only (registry church 10009).
   '6': {
     u: '2026-06-01',
@@ -74,10 +82,12 @@ const SHARD = {
   },
 }
 
-// Church "1"/"5" have a photo entry; "2"/"3"/"4" do not.
+// Church "1"/"5" have a photo entry; "8" has one without a credit; "2"/"3"/"4" none.
 const PHOTOS = {
   '1': { url: 'https://commons.example/thumb.jpg', credit: 'Jan Novák', license: 'CC BY-SA 4.0' },
   '5': { url: 'https://commons.example/sju.jpg', credit: 'ŠJů ( cs:ŠJů )', license: 'CC BY-SA 3.0' },
+  // registry church 100044 shipped like this: a CC BY photo with no author to credit
+  '8': { url: 'https://commons.example/anon.jpg', credit: '', license: 'CC BY 2.5' },
 }
 
 // Diocesan "stálá zpovědní služba" windows, keyed by church id: verbatim day +
@@ -226,6 +236,15 @@ describe('church photo', () => {
     // "ŠJů ( cs:ŠJů )" → "ŠJů"
     expect(screen.getByText('foto: ŠJů · CC BY-SA 3.0 · Wikimedia Commons')).toBeInTheDocument()
     expect(screen.queryByText(/cs:ŠJů/)).toBeNull()
+  })
+
+  it('drops a photo with an empty credit — CC licences require the attribution line', async () => {
+    const onHeroChange = vi.fn()
+    render(<ChurchDetail church={church('8', '50-14')} onBack={() => {}} onHeroChange={onHeroChange} />)
+    await screen.findByRole('heading', { name: 'kostel 8' })
+    await act(async () => {}) // let photos.json resolve
+    expect(screen.queryByRole('img')).toBeNull()
+    expect(onHeroChange).not.toHaveBeenCalledWith(true)
   })
 
   it('renders no image and a plain title when the church has no photo entry', async () => {
