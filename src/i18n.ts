@@ -52,6 +52,7 @@ export const cs = {
   picking_title: 'Jiná obec nebo kostel',
   nothing_nearby_title: 'V okolí nic nenacházím',
   data_error: 'Data se nepodařilo načíst. Zkuste to prosím znovu.',
+  partial_data: 'Část dat se nepodařilo načíst — seznam nemusí být úplný.',
 
   // ---- the hero list ----
   nearest_services: 'Nejbližší bohoslužby',
@@ -276,6 +277,7 @@ export const en: Record<Key, string> = {
   picking_title: 'A different town or church',
   nothing_nearby_title: 'Nothing nearby',
   data_error: "Couldn't load data. Please try again.",
+  partial_data: "Some data couldn't be loaded — the list may be incomplete.",
 
   nearest_services: 'Nearest services',
   last_known_suffix: 'last known',

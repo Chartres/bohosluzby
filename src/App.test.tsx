@@ -970,6 +970,107 @@ describe('Marie finds the nearest mass', () => {
   })
 })
 
+describe('sweep regressions (consolidated 2026-10-17)', () => {
+  it('a malformed /kostel/ escape explains itself instead of a white screen', async () => {
+    stubGeolocation('denied')
+    window.history.pushState(null, '', '/kostel/%E0%A4%A/')
+    render(<App />)
+    expect(await screen.findByText('Kostel nenalezen')).toBeInTheDocument()
+  })
+
+  it('a failed service shard says the list may be incomplete', async () => {
+    stubGeolocation('granted')
+    const ok = globalThis.fetch
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: RequestInfo | URL) =>
+        String(url).endsWith('/data/services/50-14.json') ? new Response('', { status: 503 }) : ok(url),
+      ),
+    )
+    render(<App />)
+    expect(await screen.findByText('Část dat se nepodařilo načíst — seznam nemusí být úplný.')).toBeInTheDocument()
+  })
+
+  it('an empty area on an ordo day shows one empty state, not two', async () => {
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: (ok: (p: { coords: { latitude: number; longitude: number } }) => void) =>
+          ok({ coords: { latitude: 48.8, longitude: 13.5 } }), // Šumava
+      },
+      configurable: true,
+    })
+    window.history.replaceState(null, '', '/?zobrazeni=seznam&den=nedele')
+    render(<App />)
+    await screen.findByText('V tento den není v okolí žádná bohoslužba.')
+    expect(screen.queryByText('V okolí nic nenacházím')).toBeNull()
+  })
+
+  it('back from a church opened in a city list returns to that city', async () => {
+    Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition: vi.fn() }, configurable: true })
+    window.history.pushState(null, '', '/mesto/praha/?zobrazeni=seznam')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await user.click(await screen.findByText('kostel Nejsvětějšího Salvátora'))
+    expect(window.location.pathname).toBe('/kostel/1/')
+    await user.click(await screen.findByRole('button', { name: '‹ zpět na seznam' }))
+    await vi.waitFor(() => expect(window.location.pathname).toBe('/mesto/praha/'))
+    expect(await screen.findByText('kostel Nejsvětějšího Salvátora')).toBeInTheDocument()
+  })
+
+  it('back from a cold-opened share link goes home, not out of the app', async () => {
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/kostel/2/')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await user.click(await screen.findByRole('button', { name: '‹ zpět na seznam' }))
+    expect(window.location.pathname).toBe('/')
+  })
+
+  it('a fix that lands in time never overrides a city picked while waiting', async () => {
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: vi.fn((ok: (p: { coords: { latitude: number; longitude: number } }) => void) => {
+          setTimeout(() => ok({ coords: { latitude: 50.0875, longitude: 14.4213 } }), 8_000) // inside the 10 s deadline
+        }),
+      },
+      configurable: true,
+    })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'vybrat obec ručně' }))
+    await user.type(await screen.findByLabelText('Kostel nebo obec'), 'brno')
+    await user.click(await screen.findByRole('option', { name: /^Brno/ }))
+    expect(await screen.findByText(/sv\. Tomáše/)).toBeInTheDocument()
+    await act(() => vi.advanceTimersByTimeAsync(8_000)) // the Prague fix lands now
+    expect(screen.getByText(/sv\. Tomáše/)).toBeInTheDocument()
+    expect(screen.queryByText(/Salvátora/)).toBeNull()
+  })
+
+  it('returning to the app refreshes at once: a Mass that started meanwhile is gone', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    expect(seznam().getByText('18:00')).toBeInTheDocument() // Friday 17:00
+    vi.setSystemTime(new Date('2026-07-03T16:05:00Z')) // 18:05 Prague, no interval tick yet
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+    await vi.waitFor(() => expect(seznam().queryByText('18:00')).toBeNull())
+  })
+
+  it('?den=nedele keeps meaning Sunday after the clock crosses midnight', async () => {
+    vi.setSystemTime(new Date('2026-07-04T21:58:00Z')) // Saturday 23:58 Prague
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/?zobrazeni=seznam&den=nedele')
+    render(<App />)
+    await vi.waitFor(() => expect(seznam().getByText('14:00')).toBeInTheDocument()) // Sunday's ordo, "zítra"
+    await act(() => vi.advanceTimersByTimeAsync(3 * 60_000)) // 00:01 — Sunday is now "dnes"
+    expect(seznam().getByText('14:00')).toBeInTheDocument() // still Sunday, not Monday's empty ordo
+    expect(screen.queryByText('V tento den není v okolí žádná bohoslužba.')).toBeNull()
+  })
+})
+
 describe('geoFailKey', () => {
   // The native shell has no address bar, no lock icon and no browser dialog —
   // the web guidance was wrong advice there.

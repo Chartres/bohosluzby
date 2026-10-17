@@ -197,9 +197,10 @@ function useRoute() {
   }, [])
   const navigate = (to: string, opts?: { replace?: boolean; state?: unknown }) => {
     if (opts?.replace) {
-      history.replaceState(null, '', to) // e.g. a day switch — not a history entry
+      history.replaceState(history.state, '', to) // e.g. a day switch — not a history entry
     } else {
-      history.pushState(opts?.state ?? null, '', to)
+      // `app` marks an entry pushed from inside the app: zpět can pop back to it
+      history.pushState({ ...(opts?.state ?? {}), app: true }, '', to)
       window.scrollTo(0, 0)
     }
     setUrl(to)
@@ -241,6 +242,7 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
 export default function App() {
   const [index, setIndex] = useState<Church[] | null>(null)
   const [dataError, setDataError] = useState(false)
+  const [partialData, setPartialData] = useState(false) // a shard failed; the rest still shows
   const [geoDenied, setGeoDenied] = useState(false)
   const [geoPrompting, setGeoPrompting] = useState(false) // browser permission dialog pending
   const [geoFail, setGeoFail] = useState<GeoFailure | null>(null) // why — picks the guidance
@@ -279,7 +281,7 @@ export default function App() {
   const params = new URLSearchParams(search)
   const feedbackParam = params.get('feedback')
   const den = params.get('den')
-  const day = useMemo(() => dayFromParam(new Date(), den), [den])
+  const day = useMemo(() => dayFromParam(now, den), [den, now]) // now ticks → re-resolves after midnight
   const cas = parseCas(params.get('cas'))
   const setParams = (entries: Record<string, string | null>) => {
     const p = new URLSearchParams(search)
@@ -422,7 +424,9 @@ export default function App() {
         setGeoPrompting(false)
         if (r.coords) {
           setLocating(false)
-          setOrigin({ lat: r.coords.lat, lng: r.coords.lng, source: 'geo' })
+          const { lat, lng } = r.coords
+          // a city picked while the fix was pending (up to 30 s) wins over it
+          setOrigin((cur) => (cur?.source === 'city' ? cur : { lat, lng, source: 'geo' }))
         } else {
           if (r.error !== 'deadline') setLocating(false) // a deadline keeps listening (onLate)
           fallback(r.error ?? 'timeout')
@@ -481,6 +485,7 @@ export default function App() {
     if (!index || !origin) return
     let cancelled = false
     setData(null)
+    setPartialData(false)
     const nearby = index
       .map((c) => ({ c, d: haversineKm(origin.lat, origin.lng, c.lat, c.lng) }))
       .filter(({ d }) => d <= NEARBY_KM)
@@ -503,6 +508,8 @@ export default function App() {
           if (shard) for (const [id, s] of decodeShard(shard)) byId.set(id, s)
         }
         setData({ nearby, byId })
+        // a missing cell would read as "no Mass nearby" — say the list is partial
+        setPartialData(shards.includes(null))
       })
       .catch((err) => {
         logError(err, { where: 'load-shards' })
@@ -777,12 +784,19 @@ export default function App() {
             {t('data_error')}
           </p>
         )}
+        {!dataError && partialData && (
+          <p className={`mt-2 text-sm text-ink-faded ${gutter}`} role="status">
+            {t('partial_data')}
+          </p>
+        )}
 
         {!dataError && route.view === 'church' && index && (
           <DetailRoute
             id={route.id}
             index={index}
-            onBack={() => navigate(`/${search}`)}
+            // pop back to where the detail was opened from (a /mesto/<slug>/ list
+            // keeps its city); a shared link opened cold has nothing to pop → home
+            onBack={() => ((history.state as { app?: boolean } | null)?.app ? history.back() : navigate(`/${search}`))}
             onHelp={() => setIntroOpen(true)}
             onHeroChange={setDetailHero}
           />
