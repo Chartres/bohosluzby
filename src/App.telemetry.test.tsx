@@ -4,7 +4,7 @@
 import { vi } from 'vitest'
 vi.mock('./lib/supabase', () => ({ supabase: null }))
 vi.mock('./analytics', () => ({ track: vi.fn(), conversion: vi.fn(), feedback: vi.fn(), logError: vi.fn() }))
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import App from './App'
 import { track } from './analytics'
 import type { IndexRow } from './domain/data'
@@ -60,4 +60,17 @@ it('list_ready fires once per visit, with how the origin was found and how fast'
   const calls = listReady()
   expect(calls[0][1]).toMatchObject({ source: 'geo', rows: 1 })
   expect(typeof calls[0][1]?.ms).toBe('number')
+})
+
+it('page_view fires once per load: not again on a resume or a minute tick', async () => {
+  render(<App />)
+  await screen.findByText(/Salvátora/)
+  Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+  act(() => {
+    document.dispatchEvent(new Event('visibilitychange'))
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  await act(() => vi.advanceTimersByTimeAsync(2 * 60_000))
+  const pageViews = vi.mocked(track).mock.calls.filter(([e]) => e === 'page_view')
+  expect(pageViews).toHaveLength(1)
 })

@@ -339,6 +339,11 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.style.setProperty('--season', SEASON_VAR[season.color])
+  }, [season.color])
+
+  // One page_view per load. `season` is re-memoised on every minute tick and
+  // every resume, so depending on it counted a visit each time (web KPIs).
+  useEffect(() => {
     let standalone = false
     try {
       standalone = window.matchMedia('(display-mode: standalone)').matches
@@ -357,7 +362,8 @@ export default function App() {
         standalone,
       }),
     })
-  }, [season])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
+  }, [])
 
   useEffect(() => {
     loadData<IndexRow[]>('churches.json')
