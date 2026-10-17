@@ -47,41 +47,41 @@ export function aggregateCities(index: Church[]): City[] {
   // Step 2: merge groups with the same name whose centroids are within 0.5° lat × 0.5° lng.
   // ponytail: 0.5° ≈ 55 km — covers any Czech municipality crossing a 1° cell boundary
   // (e.g. Praha straddles 49°N/50°N) while keeping same-named towns in different regions
-  // separate (Jestřebí near Česká Lípa vs Znojmo are ~160 km apart).
+  // separate (Jestřebí near Česká Lípa vs Znojmo are ~160 km apart). Ceiling: two
+  // namesakes under 55 km apart across a cell edge still merge.
   type MGroup = { name: string; cell: string; churches: Church[]; lat: number; lng: number }
-  const groups: MGroup[] = []
+  const byName = new Map<string, MGroup[]>()
   for (const [key, churches] of byKey) {
     const sep = key.lastIndexOf('|')
     const name = key.slice(0, sep)
     const cell = key.slice(sep + 1)
     const lat = churches.reduce((s, c) => s + c.lat, 0) / churches.length
     const lng = churches.reduce((s, c) => s + c.lng, 0) / churches.length
-    const near = groups.find(
-      (g) => g.name === name && Math.abs(g.lat - lat) < 0.5 && Math.abs(g.lng - lng) < 0.5,
-    )
+    const same = byName.get(name) ?? []
+    const near = same.find((g) => Math.abs(g.lat - lat) < 0.5 && Math.abs(g.lng - lng) < 0.5)
     if (near) {
       const prevLen = near.churches.length
       near.churches.push(...churches)
-      // Update centroid and keep cell of the larger sub-group for potential slug disambiguation.
       near.lat = near.churches.reduce((s, c) => s + c.lat, 0) / near.churches.length
       near.lng = near.churches.reduce((s, c) => s + c.lng, 0) / near.churches.length
-      if (churches.length > prevLen) near.cell = cell
+      if (churches.length > prevLen) near.cell = cell // the larger part names the group
     } else {
-      groups.push({ name, cell, churches, lat, lng })
+      same.push({ name, cell, churches, lat, lng })
+      byName.set(name, same)
     }
   }
 
-  // Step 3: slug assignment — cell suffix for same-name groups, then numeric suffix
-  // for distinct municipalities whose names produce the same slug after diacritics strip.
-  const nameCounts = new Map<string, number>()
-  for (const { name } of groups) {
-    nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1)
-  }
+  // Step 3: slugs. Of same-named municipalities the one with the most churches keeps
+  // the bare slug — the URL every existing /mesto/<slug>/ link and sitemap entry
+  // points at (Hranice na Moravě stays /mesto/hranice/) — and the smaller namesakes
+  // get their cell ("hranice-5012"). Ties go to the lower cell, so it's deterministic.
   const out: City[] = []
-  for (const { name, cell, churches, lat, lng } of groups) {
-    const baseSlug = slugify(name)
-    const slug = (nameCounts.get(name) ?? 1) > 1 ? `${baseSlug}-${cell.replace('-', '')}` : baseSlug
-    out.push({ name, slug, count: churches.length, lat, lng, churches })
+  for (const [name, same] of byName) {
+    same.sort((a, b) => b.churches.length - a.churches.length || a.cell.localeCompare(b.cell))
+    same.forEach(({ cell, churches, lat, lng }, i) => {
+      const slug = i === 0 ? slugify(name) : `${slugify(name)}-${cell.replace('-', '')}`
+      out.push({ name, slug, count: churches.length, lat, lng, churches })
+    })
   }
   out.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'cs'))
 

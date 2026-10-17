@@ -34,6 +34,30 @@ describe('aggregateCities / findCity', () => {
     expect(findCity(index, 'brno')?.name).toBe('Brno')
     expect(findCity(index, 'nowhere')).toBeUndefined()
   })
+  it('same-named towns in different regions stay apart; the larger keeps the bare slug', () => {
+    const at = (id: string, city: string, lat: number, lng: number): Church => ({
+      ...church(id, city, lat, lng),
+      cell: `${Math.floor(lat)}-${Math.floor(lng)}`,
+    })
+    const idx = [
+      ...['h1', 'h2', 'h3'].map((id) => at(id, 'Hranice', 49.55, 17.73)), // Hranice na Moravě
+      at('a1', 'Hranice', 50.3, 12.17), // Hranice u Aše, ~400 km west
+    ]
+    const cities = aggregateCities(idx)
+    expect(cities.map((c) => [c.slug, c.count])).toEqual([
+      ['hranice', 3],
+      ['hranice-5012', 1],
+    ])
+    expect(cities[0].lng).toBeCloseTo(17.73) // not a centroid in the middle of Bohemia
+    expect(findCity(idx, 'hranice')?.churches.map((c) => c.id)).toEqual(['h1', 'h2', 'h3'])
+  })
+  it('a town split by a 1° cell edge is still one town', () => {
+    const idx = [
+      { ...church('p1', 'Praha 4', 49.98, 14.45), cell: '49-14' },
+      { ...church('p2', 'Praha 1', 50.08, 14.42), cell: '50-14' },
+    ]
+    expect(aggregateCities(idx).map((c) => [c.slug, c.count])).toEqual([['praha', 2]])
+  })
   it('slug collision resolution is stable regardless of church counts (M11)', () => {
     // "Skřipov" and "Skřípov" both fold to "skripov". Whichever has more churches
     // should not affect the slug assignment — it's name-ordered so it never drifts.
