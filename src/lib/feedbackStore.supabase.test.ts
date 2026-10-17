@@ -132,6 +132,14 @@ describe('two-tier aggregation (slot + church)', () => {
   })
 })
 
+describe('one device cannot corroborate itself', () => {
+  it('the same device tagging three different Masses of a church counts once at church tier', async () => {
+    h.rows = ['m1', 'm2', 'm3'].map((m) => ({ church_id: 'c1', mass_key: m, device_id: 'd1', chips: ['krasny_zpev'] }))
+    await loadAggregates(['c1'])
+    expect(aggregateFor('c1').church.chips).toEqual([]) // 1 device < CORROBORATION_MIN, not 3 rows
+  })
+})
+
 describe('churchHasTags (witness filter predicate)', () => {
   beforeEach(async () => {
     // Three devices per slot so each chip clears CORROBORATION_MIN=3.
