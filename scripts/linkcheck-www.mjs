@@ -153,7 +153,8 @@ async function run() {
   for (const [f, shard] of shards) writeFileSync(`${DATA}/services/${f}`, JSON.stringify(shard))
   if (indexChanged || shardChanged) {
     const version = JSON.parse(readFileSync(`${DATA}/version.json`, 'utf8'))
-    version.generated = new Date().toISOString().slice(0, 10)
+    version.timestamp = new Date().toISOString() // the app's freshness key (dataStore.ts)
+    version.generated = version.timestamp.slice(0, 10)
     writeFileSync(`${DATA}/version.json`, JSON.stringify(version))
   }
 }
