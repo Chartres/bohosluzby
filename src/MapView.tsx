@@ -105,6 +105,11 @@ export default function MapView({
   const onNavigateRef = useRef(onNavigate)
   onNavigateRef.current = onNavigate
   const shardCache = useRef(new Map<string, Promise<Map<string, ChurchServices>>>())
+  // A new index means an OTA refresh landed: drop shards cached from the old
+  // snapshot (declared before the marker effect, so it clears first).
+  useEffect(() => {
+    shardCache.current.clear()
+  }, [churches])
 
   const loadShard = (cell: string) => {
     let p = shardCache.current.get(cell)
