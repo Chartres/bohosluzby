@@ -122,34 +122,56 @@ function parseOrdinals(s: string): (number | 'last')[] | null {
 }
 
 /** Positive-inclusion object after "kromě/mimo/vyjma" or "pouze v": months,
- * prázdniny, advent, nth weekday — or an " a "-joined union of those. */
-function parseInclusion(s: string): Pred | null {
+ * prázdniny, advent, nth weekday — or an " a "-joined union of those.
+ * negated=true is used by the except branch so the correct predicate is built
+ * in one call; notably nthWeekday returns true for non-target weekdays (a
+ * "governs only wd" sentinel) so not(nthWeekday) would wrongly exclude them. */
+function parseInclusion(s: string, negated = false): Pred | null {
   const months = parseMonthSet(s)
-  if (months) return (_y, m) => months.has(m)
-  if (/^(?:období\s+|dobu\s+|doby\s+)?(?:letní(?:ch)?\s+|hlavní(?:ch)?\s+)?prázdnin(?:y|ách)?$/.test(s)) return julyAugust
-  if (/^adventu?$/.test(s)) return advent
-  if (/^(?:dobu\s+|doby\s+|období\s+)?postní(?:\s+dob[uy])?$/.test(s) || s === 'postu') return lent
-  if (/^školní(?:ho|m)?\s+ro[ck](?:e[mk]?|u)?$/.test(s)) return schoolYear
+  if (months) {
+    const pos: Pred = (_y, m) => months.has(m)
+    return negated ? not(pos) : pos
+  }
+  if (/^(?:období\s+|dobu\s+|doby\s+)?(?:letní(?:ch)?\s+|hlavní(?:ch)?\s+)?prázdnin(?:y|ách)?$/.test(s))
+    return negated ? not(julyAugust) : julyAugust
+  if (/^adventu?$/.test(s)) return negated ? not(advent) : advent
+  if (/^(?:dobu\s+|doby\s+|období\s+)?postní(?:\s+dob[uy])?$/.test(s) || s === 'postu')
+    return negated ? not(lent) : lent
+  if (/^školní(?:ho|m)?\s+ro[ck](?:e[mk]?|u)?$/.test(s)) return negated ? not(schoolYear) : schoolYear
   const nth = new RegExp(`^(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
   if (nth) {
     const ords = parseOrdinals(nth[1])
-    if (ords) return nthWeekday(ords, WEEKDAY[nth[2]])
+    const wd = WEEKDAY[nth[2]]
+    if (ords) {
+      if (negated) {
+        // "kromě Nth wd": exclude only that specific occurrence; pass all other days including other weekdays
+        return (y, m, d) => isoDow(y, m, d) !== wd || !ords.some((o) => o === 'last' ? d + 7 > daysInMonth(y, m) : Math.ceil(d / 7) === o)
+      }
+      return nthWeekday(ords, wd)
+    }
   }
-  // union: "adventu a letních prázdnin"
+  // union: "adventu a letních prázdnin" — De Morgan: not(A or B) = not(A) and not(B)
   const parts = s.split(/\s+a\s+/)
   if (parts.length > 1) {
-    const preds = parts.map((p) => parseInclusion(p.trim()))
+    const preds = parts.map((p) => parseInclusion(p.trim(), negated))
     if (preds.every((p): p is Pred => p !== null))
-      return (y, m, d) => preds.some((p) => p(y, m, d))
+      return negated
+        ? (y, m, d) => (preds as Pred[]).every((p) => p(y, m, d))
+        : (y, m, d) => (preds as Pred[]).some((p) => p(y, m, d))
   }
   return null
 }
 
 /** "od X do Y" boundary → [month, day] (day defaults per edge). */
 function parseBound(s: string, edge: 'from' | 'to'): [number, number] | null {
+  const konce = /^kon(?:ce|ec)\s+/.test(s)
   const t = s.replace(/^kon(?:ce|ec)\s+/, '').trim()
   const m = MONTH[t]
-  if (m) return [m, edge === 'from' ? 1 : 31]
+  // For 'to' edge: return 31 — a sentinel always ≥ the real last day, so
+  // Feb 29 in a leap year passes the range check (M2). For 'from' edge with
+  // konce: use daysInMonth with non-leap 2023; all non-Feb months are exact
+  // and Feb 'from' uses day 28 which still includes Feb 29 (k≥228).
+  if (m) return [m, konce && edge === 'from' ? daysInMonth(2023, m) : edge === 'from' ? 1 : 31]
   const dm = /^(\d{1,2})\.\s*(\d{1,2})\.?$/.exec(t)
   if (dm) return [Number(dm[2]), Number(dm[1])]
   return null
@@ -184,10 +206,7 @@ function parseSegment(seg: string): Pred | 'none' | null {
 
   // kromě/mimo/vyjma <inclusion>
   const except = /^(?:kromě|mimo|vyjma|s výjimkou)\s+(.+)$/.exec(s)
-  if (except) {
-    const inc = parseInclusion(except[1])
-    return inc ? not(inc) : null
-  }
+  if (except) return parseInclusion(except[1], true)
 
   // (období) od X do Y
   const range = /^(?:(?:v\s+)?období\s+)?od\s+(.+?)\s+do\s+(.+)$/.exec(s)
@@ -233,7 +252,10 @@ function parseSegment(seg: string): Pred | 'none' | null {
 
   // nth weekday: "1. sobota v měsíci", "2. a 4. neděle v měsíci", "pouze první sobota…",
   // with an optional prose prefix before "pouze" ("Mše sv. je sloužena pouze 1. sobotu v měsíci")
-  const nthRe = new RegExp(`(?:^|^.*\\s)(?:vždy\\s+)?(?:pouze|jen)\\s+(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s) ??
+  // Guard: skip when the prefix prose contains negation ("nekoná se pouze…" means the opposite).
+  const nthRe = (!NEGATION.test(s)
+    ? new RegExp(`(?:^|^.*\\s)(?:vždy\\s+)?(?:pouze|jen)\\s+(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
+    : null) ??
     new RegExp(`^(?:1x\\s+za\\s+měsíc\\s+)?(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})\\s+v\\s+měsíci$`).exec(s)
   if (nthRe) {
     const ords = parseOrdinals(nthRe[1])
@@ -265,6 +287,26 @@ const CONDITIONAL = new RegExp(
 const FREQUENCY = /^(?:1x\s+(?:za\s+měsíc|měsíčně|za\s+14\s+dní|za\s+2\s+týdny)|každých\s+14\s+dní)$/
 
 const cache = new Map<string, NoteRule>()
+// Segments that contribute exclusion predicates — ANDed so each exclusion stacks.
+const EXCL_SEG = /^(?:kromě|mimo|vyjma|s\s+výjimkou)\s+/
+
+// H2: classify an inclusion segment so same-kind segments can be OR'd.
+// "v červenci, v srpnu" → both 'month' → OR → July or August.
+// "ve školním roce, 1. sobota" → 'other' + 'weekday' → AND across kinds.
+// Every other segment is its own kind (`i`): "letní čas, 1. týden v měsíci" and
+// "zimní čas, sudý týden" are two conditions that must both hold, not
+// alternatives — OR-ing them listed those Masses all year (34 registry notes).
+function segKind(seg: string, i: number): string {
+  const s = seg.replace(/\.$/, '').trim()
+  const onlyMonths = /^(?:pouze\s+|jen\s+)?v(?:e)?\s+(.+)$/.exec(s)
+  if (onlyMonths && parseMonthSet(onlyMonths[1])) return 'month'
+  // keyed by weekday: "1. sobota, 3. sobota" OR; "1. sobota, 3. neděle" must
+  // AND, since each nth predicate passes every other weekday (OR = always true)
+  const wd = new RegExp(WEEKDAY_RE).exec(s)
+  if (wd) return `weekday${WEEKDAY[wd[0]]}`
+  if (/^(?:(?:v\s+)?období\s+)?od\s+.+\s+do\s+/.test(s)) return 'range'
+  return `other${i}`
+}
 
 export function parseNote(note: string): NoteRule {
   const trimmed = note.trim()
@@ -276,9 +318,19 @@ export function parseNote(note: string): NoteRule {
   // requiring 3 lowercase letters before the dot spares ordinals ("1. sobotu")
   // and abbreviations ("posl. týden"). No lookbehind: iOS 15 WebKit (the app's
   // deployment target) can't parse one, and a lookbehind literal blanks the app.
+  //
+  // H1: protect "1., 3. sobota v měsíci" style ordinal lists from the generic
+  // comma split — replace internal commas with " a " so the phrase stays one segment.
+  // Anchored at a word start (no lookbehind): "do 31.10., 3. sobota" must not
+  // read the date's last digit as an ordinal and glue the two segments together.
+  const multiNthRe = new RegExp(
+    `(^|\\s)(${ORDINAL_RE}(?:\\s*,\\s*${ORDINAL_RE})+)(\\s+(?:${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?)`,
+    'gi',
+  )
   const segs = trimmed
     .replace(/(\p{Ll}{3})\.\s+(?=\p{Lu})/gu, '$1\u0000')
     .split('\u0000')
+    .map((s) => s.replace(multiNthRe, (_, pre: string, ords: string, wd: string) => pre + ords.replace(/\s*,\s*/g, ' a ') + wd))
     .flatMap((s) => s.split(/\s*[,;]\s*/))
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean)
@@ -297,10 +349,41 @@ export function parseNote(note: string): NoteRule {
   // school-year exclusion but can't read segment 2 — applying the exclusion
   // would hide the real summer mass. Degrade to kept-uncertain (runs, flagged);
   // showing a flagged row beats silently dropping a mass the note half-explains.
-  const rule: NoteRule =
-    preds.length === 0 || uncertain
-      ? { runsOn: ALWAYS.runsOn, uncertain }
-      : { runsOn: (y, m, d) => preds.every((p) => p(y, m, d)), uncertain }
+  let rule: NoteRule
+  if (preds.length === 0 || uncertain) {
+    rule = { runsOn: ALWAYS.runsOn, uncertain }
+  } else {
+    // Exclusion segs (kromě/mimo/vyjma) are ANDed — each exclusion must hold.
+    // Inclusion segs: same-kind segs are OR'd (alternatives), different kinds AND'd (H2).
+    // "v červenci, v srpnu" → OR (both month kind). "ve školním roce, 1. sobota" → AND.
+    const excls: Pred[] = []
+    const incls: Pred[] = []
+    const inclSegs: string[] = []
+    parsed.forEach((p, i) => {
+      if (typeof p !== 'function') return
+      if (EXCL_SEG.test(segs[i])) excls.push(p)
+      else { incls.push(p); inclSegs.push(segs[i]) }
+    })
+    // Group inclusions by kind; OR within group, AND across groups.
+    const kindGroups = new Map<string, Pred[]>()
+    incls.forEach((p, i) => {
+      const k = segKind(inclSegs[i], i)
+      const arr = kindGroups.get(k) ?? []
+      arr.push(p)
+      kindGroups.set(k, arr)
+    })
+    const inclPred: Pred =
+      kindGroups.size === 0
+        ? () => true
+        : (y, m, d) => [...kindGroups.values()].every((group) => group.some((p) => p(y, m, d)))
+    const runsOn: Pred =
+      excls.length === 0
+        ? inclPred
+        : incls.length === 0
+          ? (y, m, d) => excls.every((p) => p(y, m, d))
+          : (y, m, d) => inclPred(y, m, d) && excls.every((p) => p(y, m, d))
+    rule = { runsOn, uncertain }
+  }
   cache.set(trimmed, rule)
   return rule
 }

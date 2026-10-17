@@ -13,6 +13,9 @@ export function IntroGuide({ onClose }: { onClose: () => void }) {
   const [i, setI] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
   const last = i === CARDS.length - 1
+  // Keep a stable ref so the focus-trap effect doesn't re-run on every App render.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   // Focus-trap the modal: focus lands inside on mount, Tab cycles within, Escape
   // closes. Focus returns to whatever was focused before on unmount.
@@ -26,7 +29,7 @@ export function IntroGuide({ onClose }: { onClose: () => void }) {
     node?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose()
+        onCloseRef.current()
         return
       }
       if (e.key !== 'Tab') return
@@ -47,7 +50,7 @@ export function IntroGuide({ onClose }: { onClose: () => void }) {
       window.removeEventListener('keydown', onKey)
       prev?.focus?.()
     }
-  }, [onClose])
+  }, []) // onClose via ref — no re-run on App re-render
 
   const key = CARDS[i]
   const linkCls = 'underline decoration-hairline underline-offset-2 hover:text-ink'

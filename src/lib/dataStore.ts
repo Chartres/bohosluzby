@@ -17,6 +17,9 @@ const ASOF_KEY = 'data_asof'
 export interface DataVersion {
   /** ISO date the registry was scraped, e.g. "2026-07-03". Also the "as of" label. */
   generated: string
+  /** ISO datetime of the publish, so a same-day re-publish still reaches native
+   * clients. Older snapshots lack it; comparisons fall back to `generated`. */
+  timestamp?: string
   /** church count — powers the shrunken-payload sanity gate. */
   churches: number
 }
@@ -27,6 +30,13 @@ export interface RefreshResult {
 }
 
 let cacheReady: boolean | null = null
+/** Held while an OTA refresh writes the cache; loadData waits on it so no read
+ * mixes a bundled index with half-written shards. */
+let refreshLock: Promise<void> | null = null
+
+/** The freshness key: timestamp when present (lexicographic order works for both
+ * an ISO date and an ISO datetime), else the date. */
+const versionKey = (v: Partial<DataVersion> | null | undefined): string => v?.timestamp ?? v?.generated ?? ''
 
 async function readCache(path: string): Promise<string | null> {
   if (!isNative) return null
@@ -57,20 +67,30 @@ async function ready(): Promise<boolean> {
   if (cacheReady !== null) return cacheReady
   const cached = await readCache('version.json')
   if (!cached) { cacheReady = false; return false }
-  // After an app update the bundled registry may be newer than the cache.
-  // Compare dates: if bundled is newer, discard the stale cache so loadData
-  // falls through to the fresh bundled version.
+  // a corrupt marker can't vouch for the snapshot — treat it as absent
+  let cachedKey = ''
   try {
-    const bundledV = await fetch('/data/version.json')
-      .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
-      .catch(() => null)
-    const cachedGenerated = (JSON.parse(cached) as Partial<DataVersion>).generated ?? ''
-    if (bundledV?.generated && cachedGenerated < bundledV.generated) {
-      cacheReady = false
-      return false
-    }
+    cachedKey = versionKey(JSON.parse(cached) as Partial<DataVersion>)
   } catch {
-    // Parse/network error: assume cache is fine, proceed normally
+    /* corrupt */
+  }
+  if (!cachedKey) { cacheReady = false; return false }
+  // After an app update the bundled registry may be newer than the cache: discard
+  // the stale cache so loadData falls through to the fresh bundled version, and
+  // drop the stored as-of so the footer shows the bundled date and refreshData
+  // compares the remote against it, not against the stale cache's.
+  const bundledV = await fetch('/data/version.json')
+    .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
+    .catch(() => null)
+  const bundledKey = versionKey(bundledV)
+  if (bundledKey && cachedKey < bundledKey) {
+    try {
+      localStorage.removeItem(ASOF_KEY)
+    } catch {
+      /* private mode */
+    }
+    cacheReady = false
+    return false
   }
   cacheReady = true
   return true
@@ -78,6 +98,7 @@ async function ready(): Promise<boolean> {
 
 /** Load a /data/<path> JSON from the freshest available source: cache → bundled. */
 export async function loadData<T>(path: string): Promise<T> {
+  if (refreshLock) await refreshLock
   if (await ready()) {
     const cached = await readCache(path)
     if (cached) return JSON.parse(cached) as T
@@ -126,7 +147,7 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
   let bundledV: DataVersion | null = null
   if (!asOf) {
     bundledV = await loadData<DataVersion>('version.json').catch(() => null)
-    asOf = bundledV?.generated ?? null
+    asOf = versionKey(bundledV) || null
     if (asOf) setAsOf(asOf)
   }
 
@@ -144,7 +165,7 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
   const remote = await fetchText(`${REMOTE}/data/version.json`)
     .then((t) => JSON.parse(t) as DataVersion)
     .catch(() => null)
-  if (!remote?.generated || (asOf && remote.generated <= asOf)) return { asOf, updated: false }
+  if (!remote?.generated || (asOf && versionKey(remote) <= asOf)) return { asOf, updated: false }
 
   try {
     onDownloading?.() // a real payload download is starting — light the indicator
@@ -161,14 +182,26 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
     const shards = await Promise.all(
       cells.map(async (c) => [c, await fetchText(`${REMOTE}/data/services/${c}.json`)] as const),
     )
-    // Invalidate the in-memory flag before writes begin so concurrent loadData
-    // calls see bundled data instead of a mixed old/new shard state.
-    cacheReady = false
-    for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
-    await writeCache('churches.json', churchesText)
-    await writeCache('version.json', JSON.stringify(remote)) // marker, written last
-    cacheReady = true
-    setAsOf(remote.generated)
+    let unlock!: () => void
+    refreshLock = new Promise<void>((r) => (unlock = r))
+    try {
+      // Delete the marker BEFORE any shard write: if the app dies mid-write, the
+      // next launch finds no marker and reads bundled, not a mixed old/new cache.
+      try {
+        await Filesystem.deleteFile({ path: `${CACHE}/version.json`, directory: Directory.Data })
+      } catch {
+        /* absent on first refresh */
+      }
+      cacheReady = null // re-checked from disk if the writes below fail
+      for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
+      await writeCache('churches.json', churchesText)
+      await writeCache('version.json', JSON.stringify(remote)) // marker, written last
+      cacheReady = true
+      setAsOf(versionKey(remote))
+    } finally {
+      refreshLock = null
+      unlock()
+    }
     return { asOf: remote.generated, updated: true }
   } catch {
     return { asOf, updated: false } // keep the old snapshot on any failure

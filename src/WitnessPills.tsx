@@ -8,7 +8,7 @@ import { WitnessIcon, witnessIconMarkup } from './domain/witnessIcons'
 /** The one flag check: the TestFlight prototype build (VITE_WITNESS_PREVIEW=1)
  * shows a per-tag count on each pill; production stays qualitative (no numbers,
  * strongest tag rendered slightly stronger). */
-export const witnessShowCounts = (): boolean => import.meta.env.VITE_WITNESS_PREVIEW === '1'
+const witnessShowCounts = (): boolean => import.meta.env.VITE_WITNESS_PREVIEW === '1'
 
 /** Label with the prototype-only per-tag count appended ("krásný zpěv · 3"). */
 const pillLabel = (c: { id: string; count: number }, counts: boolean): string =>

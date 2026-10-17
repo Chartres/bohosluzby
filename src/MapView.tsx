@@ -17,7 +17,7 @@ import { isMass, NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
 import { massKey, type Aggregate } from './domain/feedback'
-import { aggregateFor, churchHasTags, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
+import { aggregateFor, churchHasTags, divergentChips, hasAggregate, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { witnessPillsHtml } from './WitnessPills'
 import { WITNESS_ENABLED } from './lib/flags'
 import { t, churchCount, confirmedByPilgrims } from './i18n'
@@ -105,6 +105,11 @@ export default function MapView({
   const onNavigateRef = useRef(onNavigate)
   onNavigateRef.current = onNavigate
   const shardCache = useRef(new Map<string, Promise<Map<string, ChurchServices>>>())
+  // A new index means an OTA refresh landed: drop shards cached from the old
+  // snapshot (declared before the marker effect, so it clears first).
+  useEffect(() => {
+    shardCache.current.clear()
+  }, [churches])
 
   const loadShard = (cell: string) => {
     let p = shardCache.current.get(cell)
@@ -307,9 +312,12 @@ export default function MapView({
       // only churches carrying ALL of them at slot- or church-tier. Aggregates
       // are loaded for the visible set above, so we cluster over that filtered
       // subset (the pan-invariant whole-index clustering resumes when off).
+      // M8: cluster ONLY over churches whose aggregates have been loaded so
+      // cluster membership is pan-invariant. A failed aggregate load shows
+      // nothing for the unloaded ones (as before), not thousands of markers.
       const wt = WITNESS_ENABLED ? (filters.witnessTags ?? []) : []
       const clusterChurches = wt.length
-        ? visible.filter((c) => churchHasTags(c.id, null, wt))
+        ? churches.filter((c) => hasAggregate(c.id) && churchHasTags(c.id, null, wt))
         : churches
       // Cluster over ALL churches, not just the viewport subset. Bucket
       // membership must not depend on the pan: a grid cell straddling the
@@ -369,7 +377,7 @@ export default function MapView({
             title: churchCount(cl.items.length),
             keyboard: false,
           })
-            .on('click', () => map.setView(latlng, Math.min(zoom + 2, 17)))
+            .on('click', () => map.setView(latlng, Math.max(Math.min(zoom + 2, 18), zoom)))
             .addTo(layer)
         }
       }

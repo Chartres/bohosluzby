@@ -17,6 +17,9 @@ function fsMock() {
         writeFile: vi.fn(async ({ path, data }: { path: string; data: string }) => {
           store.set(path, data)
         }),
+        deleteFile: vi.fn(async ({ path }: { path: string }) => {
+          store.delete(path)
+        }),
       },
     },
   }
@@ -117,4 +120,96 @@ it('native: rejects a shrunken payload (sanity gate)', async () => {
   expect(await ds.refreshData()).toEqual({ asOf: '2026-07-03', updated: false })
   expect(ds.activeAsOf()).toBe('2026-07-03')
   expect(fs.store.has('registry/version.json')).toBe(false)
+})
+
+// a native install that already holds an OTA snapshot from `generated`
+function seedCache(fs: ReturnType<typeof fsMock>, generated: string, n = 100) {
+  fs.store.set('registry/version.json', version(generated))
+  fs.store.set('registry/churches.json', index(n))
+  fs.store.set('registry/services/50-14.json', SHARD)
+}
+
+it('native: a corrupt cached version.json counts as no cache — reads fall back to bundled', async () => {
+  const fs = fsMock()
+  seedCache(fs, '2026-08-01', 7)
+  fs.store.set('registry/version.json', '{not json')
+  stubFetch({ '/data/version.json': version('2026-07-03'), '/data/churches.json': index(100) })
+  const ds = await loadModule(true, fs)
+
+  expect((await ds.loadData<unknown[]>('churches.json')).length).toBe(100)
+})
+
+it('native: a same-day re-publish (newer timestamp, same date) is downloaded', async () => {
+  const fs = fsMock()
+  localStorage.setItem('data_asof', '2026-08-01T04:00:00.000Z')
+  const republished = JSON.stringify({ generated: '2026-08-01', timestamp: '2026-08-01T15:00:00.000Z', churches: 100 })
+  stubFetch({
+    '/data/churches.json': index(100),
+    [`${R}/data/version.json`]: republished,
+    [`${R}/data/churches.json`]: index(100),
+    [`${R}/data/services/50-14.json`]: SHARD,
+  })
+  const ds = await loadModule(true, fs)
+
+  expect(await ds.refreshData()).toEqual({ asOf: '2026-08-01', updated: true })
+  expect(ds.activeAsOf()).toBe('2026-08-01T15:00:00.000Z')
+})
+
+it('native: a refresh that dies mid-write leaves no marker, so the next launch reads bundled', async () => {
+  const fs = fsMock()
+  seedCache(fs, '2026-07-01', 100)
+  localStorage.setItem('data_asof', '2026-07-01')
+  stubFetch({
+    '/data/version.json': version('2026-07-01'),
+    '/data/churches.json': index(95),
+    [`${R}/data/version.json`]: version('2026-08-01'),
+    [`${R}/data/churches.json`]: index(100),
+    [`${R}/data/services/50-14.json`]: SHARD,
+  })
+  fs.module.Filesystem.writeFile.mockImplementationOnce(async () => {
+    throw new Error('disk full') // the first shard write
+  })
+  const ds = await loadModule(true, fs)
+
+  expect(await ds.refreshData()).toEqual({ asOf: '2026-07-01', updated: false })
+  expect(fs.store.has('registry/version.json')).toBe(false)
+  const relaunched = await loadModule(true, fs)
+  expect((await relaunched.loadData<unknown[]>('churches.json')).length).toBe(95) // bundled
+})
+
+it('native: a newer bundled snapshot (app update) wins over the cache and resets the as-of date', async () => {
+  const fs = fsMock()
+  seedCache(fs, '2026-07-01', 7)
+  localStorage.setItem('data_asof', '2026-07-01')
+  stubFetch({ '/data/version.json': version('2026-09-01'), '/data/churches.json': index(100) })
+  const ds = await loadModule(true, fs)
+
+  expect((await ds.loadData<unknown[]>('churches.json')).length).toBe(100)
+  expect(ds.activeAsOf()).toBeNull()
+})
+
+it('native: a read during the OTA write phase waits for the new snapshot', async () => {
+  const fs = fsMock()
+  stubFetch({
+    '/data/version.json': version('2026-07-03'),
+    '/data/churches.json': index(100),
+    [`${R}/data/version.json`]: version('2026-08-01'),
+    [`${R}/data/churches.json`]: index(120),
+    [`${R}/data/services/50-14.json`]: SHARD,
+  })
+  let release!: () => void
+  const gate = new Promise<void>((r) => (release = r))
+  const realWrite = fs.module.Filesystem.writeFile.getMockImplementation()!
+  fs.module.Filesystem.writeFile.mockImplementationOnce(async (arg) => {
+    await gate // hold the first shard write open
+    return realWrite(arg)
+  })
+  const ds = await loadModule(true, fs)
+
+  const refreshing = ds.refreshData()
+  await vi.waitFor(() => expect(fs.module.Filesystem.writeFile).toHaveBeenCalled())
+  const read = ds.loadData<unknown[]>('churches.json') // issued mid-write
+  release()
+  await refreshing
+  expect((await read).length).toBe(120) // the new snapshot, not bundled
 })

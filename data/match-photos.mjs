@@ -179,7 +179,16 @@ async function main() {
   if (args.cell) churches = churches.filter((c) => c.cell.startsWith(args.cell))
   churches = churches.slice(0, args.limit)
 
-  const photos = {}
+  // a partial run (--cell/--limit/--sample) adds to photos.json; a full run rebuilds it
+  const partial = args.cell !== null || args.limit !== Infinity
+  let photos = {}
+  if (partial) {
+    try {
+      photos = JSON.parse(readFileSync(`${root}public/data/photos.json`, 'utf8'))
+    } catch {
+      /* no file yet */
+    }
+  }
   const licenses = {}
   let processed = 0, matched = 0, hadCandidate = 0
   for (const c of churches) {
@@ -206,7 +215,7 @@ async function main() {
         process.stderr.write(`  imageinfo ${title} failed: ${err}\n`)
         continue
       }
-      if (!info?.url || !isReusableLicense(info.license)) continue
+      if (!info?.url || !info.credit || !isReusableLicense(info.license)) continue // CC needs attribution
       photos[c.id] = { url: info.url, credit: info.credit, license: info.license }
       licenses[info.license] = (licenses[info.license] ?? 0) + 1
       matched++

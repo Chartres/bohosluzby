@@ -178,11 +178,13 @@ export function geoFailKey(fail: GeoFailure | null, native: boolean, waiting: bo
   return fail === 'deadline' ? 'geo_fail_deadline' : 'geo_fail_denied'
 }
 
+const safeDecode = (s: string) => { try { return decodeURIComponent(s) } catch { return s } }
+
 export function parseRoute(path: string): Route {
   const kostel = /^\/kostel\/([^/]+)\/?$/.exec(path)
-  if (kostel) return { view: 'church', id: decodeURIComponent(kostel[1]) }
+  if (kostel) return { view: 'church', id: safeDecode(kostel[1]) }
   const mesto = /^\/mesto\/([^/]+)\/?$/.exec(path)
-  if (mesto) return { view: 'city', slug: decodeURIComponent(mesto[1]) }
+  if (mesto) return { view: 'city', slug: safeDecode(mesto[1]) }
   return { view: 'home' }
 }
 
@@ -195,9 +197,10 @@ function useRoute() {
   }, [])
   const navigate = (to: string, opts?: { replace?: boolean; state?: unknown }) => {
     if (opts?.replace) {
-      history.replaceState(null, '', to) // e.g. a day switch — not a history entry
+      history.replaceState(history.state, '', to) // e.g. a day switch — not a history entry
     } else {
-      history.pushState(opts?.state ?? null, '', to)
+      // `app` marks an entry pushed from inside the app: zpět can pop back to it
+      history.pushState({ ...(opts?.state ?? {}), app: true }, '', to)
       window.scrollTo(0, 0)
     }
     setUrl(to)
@@ -239,6 +242,7 @@ function demoMass(data: { nearby: Church[]; byId: Map<string, ChurchServices> })
 export default function App() {
   const [index, setIndex] = useState<Church[] | null>(null)
   const [dataError, setDataError] = useState(false)
+  const [partialData, setPartialData] = useState(false) // a shard failed; the rest still shows
   const [geoDenied, setGeoDenied] = useState(false)
   const [geoPrompting, setGeoPrompting] = useState(false) // browser permission dialog pending
   const [geoFail, setGeoFail] = useState<GeoFailure | null>(null) // why — picks the guidance
@@ -277,7 +281,7 @@ export default function App() {
   const params = new URLSearchParams(search)
   const feedbackParam = params.get('feedback')
   const den = params.get('den')
-  const day = useMemo(() => dayFromParam(new Date(), den), [den])
+  const day = useMemo(() => dayFromParam(now, den), [den, now]) // now ticks → re-resolves after midnight
   const cas = parseCas(params.get('cas'))
   const setParams = (entries: Record<string, string | null>) => {
     const p = new URLSearchParams(search)
@@ -335,6 +339,11 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.style.setProperty('--season', SEASON_VAR[season.color])
+  }, [season.color])
+
+  // One page_view per load. `season` is re-memoised on every minute tick and
+  // every resume, so depending on it counted a visit each time (web KPIs).
+  useEffect(() => {
     let standalone = false
     try {
       standalone = window.matchMedia('(display-mode: standalone)').matches
@@ -353,7 +362,8 @@ export default function App() {
         standalone,
       }),
     })
-  }, [season])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
+  }, [])
 
   useEffect(() => {
     loadData<IndexRow[]>('churches.json')
@@ -420,7 +430,9 @@ export default function App() {
         setGeoPrompting(false)
         if (r.coords) {
           setLocating(false)
-          setOrigin({ lat: r.coords.lat, lng: r.coords.lng, source: 'geo' })
+          const { lat, lng } = r.coords
+          // a city picked while the fix was pending (up to 30 s) wins over it
+          setOrigin((cur) => (cur?.source === 'city' ? cur : { lat, lng, source: 'geo' }))
         } else {
           if (r.error !== 'deadline') setLocating(false) // a deadline keeps listening (onLate)
           fallback(r.error ?? 'timeout')
@@ -479,6 +491,7 @@ export default function App() {
     if (!index || !origin) return
     let cancelled = false
     setData(null)
+    setPartialData(false)
     const nearby = index
       .map((c) => ({ c, d: haversineKm(origin.lat, origin.lng, c.lat, c.lng) }))
       .filter(({ d }) => d <= NEARBY_KM)
@@ -501,6 +514,8 @@ export default function App() {
           if (shard) for (const [id, s] of decodeShard(shard)) byId.set(id, s)
         }
         setData({ nearby, byId })
+        // a missing cell would read as "no Mass nearby" — say the list is partial
+        setPartialData(shards.includes(null))
       })
       .catch((err) => {
         logError(err, { where: 'load-shards' })
@@ -537,8 +552,18 @@ export default function App() {
   }, [data])
 
   useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000)
-    return () => clearInterval(id)
+    const tick = () => setNow(new Date())
+    const id = setInterval(tick, 60_000)
+    // timers sleep while the app is backgrounded — refresh at once on resume,
+    // not up to a minute later with Masses that already started still listed
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') tick()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
 
   // one shared selector with the map — the seznam and the mapa never disagree.
@@ -765,12 +790,19 @@ export default function App() {
             {t('data_error')}
           </p>
         )}
+        {!dataError && partialData && (
+          <p className={`mt-2 text-sm text-ink-faded ${gutter}`} role="status">
+            {t('partial_data')}
+          </p>
+        )}
 
         {!dataError && route.view === 'church' && index && (
           <DetailRoute
             id={route.id}
             index={index}
-            onBack={() => navigate(`/${search}`)}
+            // pop back to where the detail was opened from (a /mesto/<slug>/ list
+            // keeps its city); a shared link opened cold has nothing to pop → home
+            onBack={() => ((history.state as { app?: boolean } | null)?.app ? history.back() : navigate(`/${search}`))}
             onHelp={() => setIntroOpen(true)}
             onHeroChange={setDetailHero}
           />
@@ -870,7 +902,7 @@ export default function App() {
           </section>
         )}
 
-        {!dataError && !picking && !loading && origin && rows && rows.length === 0 && !anyFilter && index && (
+        {!dataError && !picking && !loading && origin && rows && rows.length === 0 && !anyFilter && day === 'now' && index && (
           <section className={`mt-10 ${gutter}`}>
             <h2 className="font-display text-xl font-semibold">{t('nothing_nearby_title')}</h2>
             <p className="mt-2 max-w-prose text-ink-faded">
@@ -1018,7 +1050,7 @@ export default function App() {
                   onNavigate={setNavTarget}
                 />
                 {/* the cap is honest: another page of the ordo instead of "evening ends at 18:00" */}
-                {day === 'now' && rows.length >= listLimit && (
+                {(day === 'now' || witnessTags.length > 0) && rows.length >= listLimit && (
                   <button
                     type="button"
                     className="rubric mt-4 -ml-1 min-h-11 px-1 py-3 underline decoration-hairline underline-offset-4 hover:text-ink"

@@ -47,22 +47,30 @@ const loadedIds = new Set<string>()
 
 interface Tally {
   devices: Set<string>
-  counts: Map<string, number>
+  /** chip id → set of deviceIds that submitted it; deduplicated so one device
+   * can't single-handedly reach CORROBORATION_MIN by submitting repeatedly. */
+  chipDevices: Map<string, Set<string>>
 }
-const emptyTally = (): Tally => ({ devices: new Set<string>(), counts: new Map<string, number>() })
+const emptyTally = (): Tally => ({ devices: new Set<string>(), chipDevices: new Map() })
 const bump = (a: Tally, r: Row) => {
   a.devices.add(r.deviceId)
-  for (const id of r.chips) a.counts.set(id, (a.counts.get(id) ?? 0) + 1)
+  for (const id of r.chips) {
+    const devSet = a.chipDevices.get(id) ?? new Set<string>()
+    devSet.add(r.deviceId)
+    a.chipDevices.set(id, devSet)
+  }
 }
+
+/** Locked display order of the chips — the tie-breaker when counts match. */
+const CHIP_ORDER = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
 
 /** A Tally → Aggregate: chips over the corroboration floor, ordered by frequency
  * (most-mentioned first; ties keep the locked display order for stability). */
 function roll(key: string, a: Tally): Aggregate {
-  const order = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
   const chips = WITNESS_CHIPS.map((c) => c.id)
-    .filter((id) => (a.counts.get(id) ?? 0) >= CORROBORATION_MIN)
-    .map((id) => ({ id, count: a.counts.get(id)! }))
-    .sort((x, y) => y.count - x.count || order.get(x.id)! - order.get(y.id)!)
+    .filter((id) => (a.chipDevices.get(id)?.size ?? 0) >= CORROBORATION_MIN)
+    .map((id) => ({ id, count: a.chipDevices.get(id)!.size }))
+    .sort((x, y) => y.count - x.count || CHIP_ORDER.get(x.id)! - CHIP_ORDER.get(y.id)!)
   return { massKey: key, witnesses: a.devices.size, chips }
 }
 
@@ -101,18 +109,28 @@ export function clearAggregateCache(): void {
 /** Fetch visible witness rows for the given churches and refresh the cache.
  * Supabase when configured; localStorage mirror otherwise (offline / tests).
  * IDs already loaded this session are skipped to avoid per-pan round-trips. */
+const ID_CHUNK = 150
+
 export async function loadAggregates(churchIds: string[]): Promise<void> {
   const ids = [...new Set(churchIds)].filter(Boolean).filter((id) => !loadedIds.has(id))
   if (ids.length === 0) return
   let rows: Row[]
-  if (supabase) {
-    const { data, error } = await supabase
-      .from('mass_feedback')
-      .select('church_id,mass_key,device_id,chips')
-      .eq('status', 'visible')
-      .in('church_id', ids)
-    if (error) return // leave the cache as-is; the UI just shows no line
-    rows = (data ?? []).map((d) => ({
+  const db = supabase
+  if (db) {
+    // ≤ID_CHUNK ids per request: the ids ride in the GET URL, and a country-zoom
+    // map view asks for ~4 000 of them (HTTP 414). Smaller requests also stay
+    // further from PostgREST's 1 000-row response cap.
+    const parts = await Promise.all(
+      Array.from({ length: Math.ceil(ids.length / ID_CHUNK) }, (_, i) =>
+        db
+          .from('mass_feedback')
+          .select('church_id,mass_key,device_id,chips')
+          .eq('status', 'visible')
+          .in('church_id', ids.slice(i * ID_CHUNK, (i + 1) * ID_CHUNK)),
+      ),
+    )
+    if (parts.some((p) => p.error)) return // leave the cache as-is; the UI just shows no line
+    rows = parts.flatMap((p) => p.data ?? []).map((d) => ({
       churchId: d.church_id as string,
       massKey: d.mass_key as string,
       deviceId: d.device_id as string,
@@ -184,6 +202,12 @@ export function aggregateFor(churchId: string): ChurchAggregate {
   return cache.get(churchId) ?? emptyChurchAggregate(churchId)
 }
 
+/** True iff loadAggregates has settled for this church (even if it has no witnesses).
+ * M8: lets the map distinguish "no witnesses loaded yet" from "no witnesses exist". */
+export function hasAggregate(churchId: string): boolean {
+  return cache.has(churchId)
+}
+
 /** Rank a church's chips by corroboration × distinctiveness and keep the top
  * `max`. Distinctiveness down-weights a tag that is common across all currently
  * loaded churches, so "rodinná atmosféra" everywhere counts for less than a tag
@@ -200,10 +224,9 @@ export function rankDistinctive(
   if (corpus.length < 2) return target.slice(0, max)
   const prevalence = new Map<string, number>()
   for (const chips of corpus) for (const c of chips) prevalence.set(c.id, (prevalence.get(c.id) ?? 0) + 1)
-  const order = new Map(WITNESS_CHIPS.map((c, i) => [c.id, i]))
   const weight = (c: { id: string; count: number }) => c.count / (1 + (prevalence.get(c.id) ?? 0))
   return [...target]
-    .sort((a, b) => weight(b) - weight(a) || b.count - a.count || order.get(a.id)! - order.get(b.id)!)
+    .sort((a, b) => weight(b) - weight(a) || b.count - a.count || CHIP_ORDER.get(a.id)! - CHIP_ORDER.get(b.id)!)
     .slice(0, max)
 }
 
