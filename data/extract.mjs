@@ -21,9 +21,11 @@
 // Politeness: <=3 req/s, retry with backoff, honest User-Agent.
 
 import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const root = fileURLToPath(new URL('..', import.meta.url))
+// not new URL('..', import.meta.url): Vite (vitest) rewrites that pattern as an asset URL
+const root = `${dirname(dirname(fileURLToPath(import.meta.url)))}/`
 const CACHE = `${root}data/cache`
 const OUT = `${root}public/data`
 const BASE = 'https://bohosluzby.cirkev.cz/index.php/apiWeb/'
@@ -32,10 +34,6 @@ const UA = 'bohosluzby.dravec.org data sync (pavol+claude@dravecky.sk)'
 // CZ bounding box; ~8 km grid step against the ~10 km response radius.
 const LAT_MIN = 48.5, LAT_MAX = 51.1, LAT_STEP = 0.072 // ~8.0 km
 const LNG_MIN = 12.0, LNG_MAX = 18.9, LNG_STEP = 0.111 // ~8.0 km at 50°N
-
-mkdirSync(`${CACHE}/grid`, { recursive: true })
-mkdirSync(`${CACHE}/detail`, { recursive: true })
-mkdirSync(`${OUT}/services`, { recursive: true })
 
 // --- rate limit + retry -----------------------------------------------------
 let lastRequest = 0
@@ -62,8 +60,9 @@ async function fetchPolite(url, options = {}) {
         signal: AbortSignal.timeout(30_000),
       })
       if (res.ok) return await res.text()
-      if (res.status >= 400 && res.status < 500) throw new Error(`HTTP ${res.status} (permanent) for ${url}`)
-      throw new Error(`HTTP ${res.status}`)
+      const status = res.status
+      if (status >= 400 && status < 500) throw Object.assign(new Error(`HTTP ${status} (permanent) for ${url}`), { status })
+      throw Object.assign(new Error(`HTTP ${status}`), { status })
     } catch (err) {
       if (String(err).includes('permanent') || attempt === 4) throw err
       const backoff = 1000 * 2 ** attempt
@@ -108,26 +107,43 @@ function collectIds() {
 // --- phase 2: per-church detail ----------------------------------------------
 // A few concurrent workers hide server latency; the global MIN_GAP_MS between
 // request *starts* (in fetchPolite) still caps the launch rate at <3 req/s.
-async function details(ids) {
-  const queue = ids.filter((id) => !existsSync(`${CACHE}/detail/${id}.json`))
+//
+// Only a church that is really gone (404/410) or whose body isn't JSON is
+// skipped. Anything else — 5xx/timeouts after fetchPolite's retries, a 429/403
+// from a rate limiter or WAF — aborts the crawl so the committed data stays: a
+// skipped id drops out of churches.json, and the 90% sanity gate downstream
+// would wave ~400 missing churches through. Too many skips abort too.
+export async function details(ids, { fetchText = fetchPolite, dir = `${CACHE}/detail` } = {}) {
+  const queue = ids.filter((id) => !existsSync(`${dir}/${id}.json`))
+  const skipped = []
   let done = 0
   const worker = async () => {
     for (;;) {
       const id = queue.shift()
       if (id === undefined) return
+      let text
       try {
-        const text = await fetchPolite(`${BASE}detail?id=${id}`)
+        text = await fetchText(`${BASE}detail?id=${id}`)
         JSON.parse(text)
-        writeFileSync(`${CACHE}/detail/${id}.json`, text)
       } catch (err) {
-        // M6: log individual 4xx/parse failures without aborting the whole batch
-        process.stderr.write(`  detail ${id}: ${err.message}\n`)
+        if (err.status !== 404 && err.status !== 410 && !(err instanceof SyntaxError)) {
+          queue.length = 0 // stop the other workers; what's cached so far resumes next run
+          throw err
+        }
+        skipped.push(id)
+        process.stderr.write(`  detail ${id} skipped: ${err.message}\n`)
+        continue
       }
+      writeFileSync(`${dir}/${id}.json`, text)
       if (++done % 200 === 0) process.stderr.write(`  detail ${done}/${queue.length + done}\n`)
     }
   }
-  await Promise.allSettled(Array.from({ length: 4 }, worker))
-  process.stderr.write(`details: ${ids.length} churches cached\n`)
+  await Promise.all(Array.from({ length: 4 }, worker))
+  const cap = Math.max(20, Math.ceil(ids.length * 0.01))
+  process.stderr.write(`details: ${ids.length - skipped.length} cached, ${skipped.length} skipped (404/410/not JSON)\n`)
+  if (skipped.length > cap)
+    throw new Error(`details: ${skipped.length} churches skipped (cap ${cap}) — refusing to publish: ${skipped.slice(0, 20).join(', ')}`)
+  return skipped
 }
 
 // --- phase 3: transform -------------------------------------------------------
@@ -242,16 +258,21 @@ function transform() {
 }
 
 // --- main ----------------------------------------------------------------------
-const mode = process.argv[2] ?? 'all'
-if (mode === 'all') {
-  await discover()
-  const ids = collectIds()
-  process.stderr.write(`discovered ${ids.length} unique church ids\n`)
-  await details(ids)
-  transform()
-} else if (mode === 'transform') {
-  transform()
-} else {
-  console.error('usage: node data/extract.mjs [transform]')
-  process.exit(1)
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  mkdirSync(`${CACHE}/grid`, { recursive: true })
+  mkdirSync(`${CACHE}/detail`, { recursive: true })
+  mkdirSync(`${OUT}/services`, { recursive: true })
+  const mode = process.argv[2] ?? 'all'
+  if (mode === 'all') {
+    await discover()
+    const ids = collectIds()
+    process.stderr.write(`discovered ${ids.length} unique church ids\n`)
+    await details(ids)
+    transform()
+  } else if (mode === 'transform') {
+    transform()
+  } else {
+    console.error('usage: node data/extract.mjs [transform]')
+    process.exit(1)
+  }
 }
