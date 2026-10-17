@@ -187,6 +187,15 @@ async function selftest() {
   })
   assert.equal((await checkUrl('https://flaky.example')).drop, false, 'recovers before all rounds fail keeps the link')
 
+  let k = 0
+  mock(async () => {
+    k++
+    // flip-flops between two different failure codes across rounds —
+    // the real-world case that motivated 3 rounds over 2
+    return k % 2 ? { ok: false, status: 401 } : { ok: false, status: 456 }
+  })
+  assert.equal((await checkUrl('https://flip.example')).drop, true, 'alternating failures still drop after 3/3')
+
   let m = 0
   mock(async () => {
     m++
@@ -197,7 +206,7 @@ async function selftest() {
     // [false, true, false].every(isHardFail) === false → keep the link.
     return Math.ceil(m / 2) % 2 !== 0 ? { ok: false, status: 401 } : { ok: false, status: 456 }
   })
-  assert.equal((await checkUrl('https://flip.example')).drop, false, '401/456 flip-flop: 401 is KEEP_STATUS so not all rounds hard-fail → keep')
+  assert.equal((await checkUrl('https://flip2.example')).drop, false, '401/456 flip-flop: 401 is KEEP_STATUS so not all rounds hard-fail → keep')
 
   mock(async () => {
     throw Object.assign(new Error('timeout'), { name: 'TimeoutError' })
@@ -205,7 +214,7 @@ async function selftest() {
   assert.equal((await checkUrl('https://slow.example')).drop, false, 'timeout alone never drops')
 
   global.fetch = realFetch
-  console.log('linkcheck-www selftest: 6/6 ok')
+  console.log('linkcheck-www selftest: 7/7 ok')
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

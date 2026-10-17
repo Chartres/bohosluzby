@@ -313,11 +313,9 @@ export default function MapView({
       // are loaded for the visible set above, so we cluster over that filtered
       // subset (the pan-invariant whole-index clustering resumes when off).
       // M8: cluster ONLY over churches whose aggregates have been loaded so
-      // cluster membership is pan-invariant.  Unloaded churches are rendered
-      // separately at reduced opacity so the user sees "not yet assessed" rather
-      // than "no witnesses" — the distinction is honest and survives panning.
+      // cluster membership is pan-invariant. A failed aggregate load shows
+      // nothing for the unloaded ones (as before), not thousands of markers.
       const wt = WITNESS_ENABLED ? (filters.witnessTags ?? []) : []
-      const unknownChurches = wt.length ? churches.filter((c) => !hasAggregate(c.id)) : []
       const clusterChurches = wt.length
         ? churches.filter((c) => hasAggregate(c.id) && churchHasTags(c.id, null, wt))
         : churches
@@ -382,19 +380,6 @@ export default function MapView({
             .on('click', () => map.setView(latlng, Math.max(Math.min(zoom + 2, 18), zoom)))
             .addTo(layer)
         }
-      }
-      // M8: render not-yet-loaded churches at half opacity so they read as
-      // "unknown / not yet assessed" rather than "confirmed: no witnesses".
-      for (const c of unknownChurches) {
-        if (!bounds.contains([c.lat, c.lng])) continue
-        L.marker([c.lat, c.lng], {
-          icon: fadedIcon(),
-          title: c.name,
-          keyboard: false,
-          opacity: 0.4,
-        })
-          .on('click', () => void openPopover(c))
-          .addTo(layer)
       }
       setNonMassShown(anyNonMass)
       setWitnessShown(anyWitness) // React bails out if unchanged — deps exclude it, so no re-subscribe
