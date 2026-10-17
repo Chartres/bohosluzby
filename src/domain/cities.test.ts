@@ -1,4 +1,4 @@
-import { aggregateCities, findCity, searchPlaces } from './cities'
+import { aggregateCities, cityLabel, findCity, searchPlaces } from './cities'
 import type { Church } from './data'
 
 const church = (id: string, city: string, lat = 50, lng = 14): Church => ({
@@ -70,6 +70,37 @@ describe('aggregateCities / findCity', () => {
     // Slug assignments must be identical regardless of which town has more churches.
     const toMap = (pairs: [string, string][]) => Object.fromEntries(pairs)
     expect(toMap(slugsA as [string,string][])).toEqual(toMap(slugsB as [string,string][]))
+  })
+  it('pins the name-order owner of a folded-slug collision (Desná keeps /mesto/desna/)', () => {
+    const idx = [
+      ...['d1', 'd2'].map((id) => church(id, 'Dešná', 49.0, 15.5)),
+      church('n1', 'Desná', 50.76, 15.3),
+    ]
+    expect(findCity(idx, 'desna')?.name).toBe('Desná')
+    expect(findCity(idx, 'desna-2')?.name).toBe('Dešná')
+  })
+  it('namesakes carry the nearest unique town with 3+ churches; unique names carry none', () => {
+    const at = (id: string, city: string, lat: number, lng: number): Church => ({
+      ...church(id, city, lat, lng),
+      cell: `${Math.floor(lat)}-${Math.floor(lng)}`,
+    })
+    const idx = [
+      ...['o1', 'o2', 'o3'].map((id) => at(id, 'Opava', 49.94, 17.9)),
+      ...['p1', 'p2', 'p3'].map((id) => at(id, 'Příbram', 49.69, 14.01)),
+      ...['x1', 'x2'].map((id) => at(id, 'Kopřivnice', 49.6, 18.14)), // unique but < 3 churches
+      at('e1', 'Petrovice', 50.0, 17.8), // near Opava
+      at('w1', 'Petrovice', 49.55, 14.36), // near Příbram
+    ]
+    const cities = aggregateCities(idx)
+    const labels = Object.fromEntries(
+      cities.filter((c) => c.name === 'Petrovice').map((c) => [c.churches[0].id, cityLabel(c)]),
+    )
+    expect(labels).toEqual({ e1: 'Petrovice (Opava)', w1: 'Petrovice (Příbram)' })
+    const opava = cities.find((c) => c.name === 'Opava')!
+    expect(opava.near).toBeUndefined()
+    expect(cityLabel(opava)).toBe('Opava')
+    const hits = searchPlaces(cities, idx, 'petro').filter((r) => r.kind === 'city')
+    expect(hits.map((r) => r.name).sort()).toEqual(['Petrovice (Opava)', 'Petrovice (Příbram)'])
   })
 })
 

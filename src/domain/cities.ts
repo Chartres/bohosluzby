@@ -2,6 +2,7 @@
 // are "quarter, municipality" or "Praha N" — normalize to the municipality.
 // Imported by the app AND by scripts/prerender.mjs (node runs the .ts directly).
 import type { Church } from './data'
+import { haversineKm } from './distance.ts'
 
 function normalizeCity(raw: string): string {
   const city = raw.includes(',') ? raw.slice(raw.lastIndexOf(',') + 1).trim() : raw.trim()
@@ -29,6 +30,8 @@ export interface City {
   lat: number
   lng: number
   churches: Church[]
+  /** Set only when another municipality shares the name: the nearest unique town. */
+  near?: string
 }
 
 /** All municipalities with their churches and centroid, largest first. */
@@ -102,8 +105,28 @@ export function aggregateCities(index: Church[]): City[] {
       if (i > 0) city.slug = `${city.slug}-${i + 1}`
     })
   }
+
+  // Namesakes look identical in the picker ("Petrovice" ×4), so each one carries the
+  // nearest town with a unique name and 3+ churches: "Petrovice (Příbram)".
+  // ponytail: nominative in brackets, because "u Příbrami" needs a genitive we can't derive.
+  const nameCount = new Map<string, number>()
+  for (const c of out) nameCount.set(c.name, (nameCount.get(c.name) ?? 0) + 1)
+  const anchors = out.filter((c) => c.count >= 3 && nameCount.get(c.name) === 1)
+  for (const c of out) {
+    if (nameCount.get(c.name) === 1) continue
+    let best: City | undefined
+    let bestKm = Infinity
+    for (const a of anchors) {
+      const km = haversineKm(c.lat, c.lng, a.lat, a.lng)
+      if (km < bestKm) [best, bestKm] = [a, km]
+    }
+    if (best) c.near = best.name
+  }
   return out
 }
+
+/** Display name: "Petrovice (Příbram)" for a namesake, the bare name otherwise. */
+export const cityLabel = (c: City): string => (c.near ? `${c.name} (${c.near})` : c.name)
 
 const _cityCache = new WeakMap<Church[], City[]>()
 function cachedCities(index: Church[]): City[] {
@@ -138,7 +161,7 @@ export function searchPlaces(
     .filter((c) => fold(c.name).includes(q))
     .sort((a, b) => starts(b.name) - starts(a.name) || b.count - a.count)
     .slice(0, 4)
-    .map((city): SearchResult => ({ kind: 'city', name: city.name, city }))
+    .map((city): SearchResult => ({ kind: 'city', name: cityLabel(city), city }))
   const inName = (c: Church) => Number(fold(c.name).includes(q))
   const churchHits = churches
     // name + city + website host, so "kcmt" finds http://www.kcmt.cz

@@ -17,7 +17,7 @@ import { noteShownOnDay } from './domain/notes'
 import { currentLiturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
 import { dayFromParam, dayOptions, dayToParam, litForChoice } from './domain/days'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domain/format'
-import { aggregateCities, findCity, type City } from './domain/cities'
+import { aggregateCities, cityLabel, findCity, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
@@ -475,8 +475,8 @@ export default function App() {
     if (citySlug) {
       const city = findCity(index, citySlug)
       if (city) {
-        setOrigin({ lat: city.lat, lng: city.lng, source: 'city', label: city.name })
-        document.title = `Kam na mši — ${city.name} | ${t('city_title_suffix')}`
+        setOrigin({ lat: city.lat, lng: city.lng, source: 'city', label: cityLabel(city) })
+        document.title = `Kam na mši — ${cityLabel(city)} | ${t('city_title_suffix')}`
       } else {
         setGeoDenied(true) // stale link → offer the picker
       }
