@@ -107,18 +107,28 @@ export function clearAggregateCache(): void {
 /** Fetch visible witness rows for the given churches and refresh the cache.
  * Supabase when configured; localStorage mirror otherwise (offline / tests).
  * IDs already loaded this session are skipped to avoid per-pan round-trips. */
+const ID_CHUNK = 150
+
 export async function loadAggregates(churchIds: string[]): Promise<void> {
   const ids = [...new Set(churchIds)].filter(Boolean).filter((id) => !loadedIds.has(id))
   if (ids.length === 0) return
   let rows: Row[]
-  if (supabase) {
-    const { data, error } = await supabase
-      .from('mass_feedback')
-      .select('church_id,mass_key,device_id,chips')
-      .eq('status', 'visible')
-      .in('church_id', ids)
-    if (error) return // leave the cache as-is; the UI just shows no line
-    rows = (data ?? []).map((d) => ({
+  const db = supabase
+  if (db) {
+    // ≤ID_CHUNK ids per request: the ids ride in the GET URL, and a country-zoom
+    // map view asks for ~4 000 of them (HTTP 414). Smaller requests also stay
+    // further from PostgREST's 1 000-row response cap.
+    const parts = await Promise.all(
+      Array.from({ length: Math.ceil(ids.length / ID_CHUNK) }, (_, i) =>
+        db
+          .from('mass_feedback')
+          .select('church_id,mass_key,device_id,chips')
+          .eq('status', 'visible')
+          .in('church_id', ids.slice(i * ID_CHUNK, (i + 1) * ID_CHUNK)),
+      ),
+    )
+    if (parts.some((p) => p.error)) return // leave the cache as-is; the UI just shows no line
+    rows = parts.flatMap((p) => p.data ?? []).map((d) => ({
       churchId: d.church_id as string,
       massKey: d.mass_key as string,
       deviceId: d.device_id as string,

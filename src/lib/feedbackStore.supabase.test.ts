@@ -9,6 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const h = vi.hoisted(() => ({
   rows: [] as { church_id: string; mass_key: string; device_id: string; chips: string[] }[],
   query: null as { table: string; status: string; ids: string[] } | null,
+  queries: [] as string[][],
   invoked: null as { name: string; body: Record<string, unknown> } | null,
 }))
 
@@ -19,7 +20,8 @@ vi.mock('./supabase', () => ({
         eq: (_col: string, status: string) => ({
           in: (_c2: string, ids: string[]) => {
             h.query = { table, status, ids }
-            return Promise.resolve({ data: h.rows, error: null })
+            h.queries.push(ids)
+            return Promise.resolve({ data: h.rows.filter((r) => ids.includes(r.church_id)), error: null })
           },
         }),
       }),
@@ -42,6 +44,7 @@ import { aggregateFor, churchHasTags, clearAggregateCache, loadAggregates, submi
 beforeEach(() => {
   h.rows = []
   h.query = null
+  h.queries = []
   h.invoked = null
   localStorage.clear()
   clearAggregateCache()
@@ -86,6 +89,15 @@ describe('loadAggregates (supabase stub)', () => {
     await loadAggregates(['c1'])
     const a = aggregateFor('c1').slots.get('m')!
     expect(a.chips.some((c) => c.id === 'krasny_zpev')).toBe(false)
+  })
+
+  it('splits a country-zoom request into short queries (a 4 000-id URL is an HTTP 414)', async () => {
+    const ids = Array.from({ length: 400 }, (_, i) => `c${i}`)
+    h.rows = ['d1', 'd2', 'd3'].map((d) => ({ church_id: 'c399', mass_key: 'm', device_id: d, chips: ['krasny_zpev'] }))
+    await loadAggregates(ids)
+    expect(h.queries.map((q) => q.length)).toEqual([150, 150, 100])
+    expect(h.queries.flat()).toEqual(ids)
+    expect(aggregateFor('c399').church.chips).toEqual([{ id: 'krasny_zpev', count: 3 }]) // last chunk folded in
   })
 
   it('caches an empty map for a requested church with no rows', async () => {
