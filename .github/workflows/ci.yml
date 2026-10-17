@@ -93,6 +93,10 @@ jobs:
     needs: test
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # the release tag below
+      pages: write
+      id-token: write
     concurrency:
       group: pages
       cancel-in-progress: false # never kill a deploy halfway
@@ -102,3 +106,17 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+      # FLYWHEEL-STANDARD §5: tag the deployed commit deploy-<yyyy-mm-dd>[-n] (UTC). Same logic as
+      # flywheel scripts/release-tag.sh deploy; never moves a tag, a re-run adds none. A tag pushed
+      # with GITHUB_TOKEN triggers no workflow.
+      - uses: actions/checkout@v4
+      - name: Tag the deployed commit
+        if: github.event_name == 'push' # data-refresh dispatches are not releases
+        run: |
+          remote=$(git ls-remote --tags origin)
+          awk -v s="$GITHUB_SHA" '$1==s && $2 ~ /^refs\/tags\/deploy-/ {f=1} END {exit !f}' <<<"$remote" && exit 0
+          base=deploy-$(date -u +%F)
+          n=$(grep -cE "refs/tags/$base(-[0-9]+)?$" <<<"$remote" || true)
+          name=$base; [ "$n" -gt 0 ] && name=$base-$((n + 1))
+          git push origin "$GITHUB_SHA:refs/tags/$name"
+          echo "tagged $name"
