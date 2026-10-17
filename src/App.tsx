@@ -539,8 +539,18 @@ export default function App() {
   }, [data])
 
   useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000)
-    return () => clearInterval(id)
+    const tick = () => setNow(new Date())
+    const id = setInterval(tick, 60_000)
+    // timers sleep while the app is backgrounded — refresh at once on resume,
+    // not up to a minute later with Masses that already started still listed
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') tick()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
 
   // one shared selector with the map — the seznam and the mapa never disagree.
