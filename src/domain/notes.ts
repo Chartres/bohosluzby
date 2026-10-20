@@ -79,6 +79,8 @@ const ORDINAL: Record<string, number | 'last'> = {
   '4': 4, 'čtvrtá': 4, 'čtvrtou': 4, '5': 5, 'pátá': 5, 'poslední': 'last', 'posl': 'last',
 }
 const ORDINAL_RE = "(?:\\d|první|druh[áoé]u?|třetí|čtvrt[áoé]u?|pát[áé]|posl(?:ední)?)\\.?"
+/** "1." | "1. a 3." | "2., 4." — an ordinal list. */
+const ORDINALS_RE = `${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*`
 
 /** "července a srpna" | "červenec až srpen" | "září" → month set (null = not months). */
 function parseMonthSet(s: string): Set<number> | null {
@@ -103,12 +105,13 @@ function parseMonthSet(s: string): Set<number> | null {
   return out.size > 0 ? out : null
 }
 
+/** Is d the Nth (or last) of its weekday in the month, for any listed N? */
+const nthHit = (ords: (number | 'last')[], y: number, m: number, d: number) =>
+  ords.some((o) => (o === 'last' ? d + 7 > daysInMonth(y, m) : Math.ceil(d / 7) === o))
+
 /** Nth-weekday predicate: governs only dates falling on the named weekday. */
 function nthWeekday(ords: (number | 'last')[], wd: number): Pred {
-  return (y, m, d) =>
-    isoDow(y, m, d) !== wd
-      ? true
-      : ords.some((o) => (o === 'last' ? d + 7 > daysInMonth(y, m) : Math.ceil(d / 7) === o))
+  return (y, m, d) => isoDow(y, m, d) !== wd || nthHit(ords, y, m, d)
 }
 
 function parseOrdinals(s: string): (number | 'last')[] | null {
@@ -138,14 +141,14 @@ function parseInclusion(s: string, negated = false): Pred | null {
   if (/^(?:dobu\s+|doby\s+|období\s+)?postní(?:\s+dob[uy])?$/.test(s) || s === 'postu')
     return negated ? not(lent) : lent
   if (/^školní(?:ho|m)?\s+ro[ck](?:e[mk]?|u)?$/.test(s)) return negated ? not(schoolYear) : schoolYear
-  const nth = new RegExp(`^(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
+  const nth = new RegExp(`^(${ORDINALS_RE})\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
   if (nth) {
     const ords = parseOrdinals(nth[1])
     const wd = WEEKDAY[nth[2]]
     if (ords) {
       if (negated) {
         // "kromě Nth wd": exclude only that specific occurrence; pass all other days including other weekdays
-        return (y, m, d) => isoDow(y, m, d) !== wd || !ords.some((o) => o === 'last' ? d + 7 > daysInMonth(y, m) : Math.ceil(d / 7) === o)
+        return (y, m, d) => isoDow(y, m, d) !== wd || !nthHit(ords, y, m, d)
       }
       return nthWeekday(ords, wd)
     }
@@ -231,7 +234,7 @@ function parseSegment(seg: string): Pred | 'none' | null {
       const rest = inMonths[2].trim()
       if (NEGATION.test(rest)) return (_y, m) => !months.has(m)
       // "vždy pouze první sobota" — restricted inside the months, free outside
-      const cond = new RegExp(`^(?:se\\s+)?(?:vždy\\s+)?(?:pouze|jen)\\s+(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(rest)
+      const cond = new RegExp(`^(?:se\\s+)?(?:vždy\\s+)?(?:pouze|jen)\\s+(${ORDINALS_RE})\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(rest)
       if (cond) {
         const ords = parseOrdinals(cond[1])
         if (ords) {
@@ -254,9 +257,9 @@ function parseSegment(seg: string): Pred | 'none' | null {
   // with an optional prose prefix before "pouze" ("Mše sv. je sloužena pouze 1. sobotu v měsíci")
   // Guard: skip when the prefix prose contains negation ("nekoná se pouze…" means the opposite).
   const nthRe = (!NEGATION.test(s)
-    ? new RegExp(`(?:^|^.*\\s)(?:vždy\\s+)?(?:pouze|jen)\\s+(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
+    ? new RegExp(`(?:^|^.*\\s)(?:vždy\\s+)?(?:pouze|jen)\\s+(${ORDINALS_RE})\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
     : null) ??
-    new RegExp(`^(?:1x\\s+za\\s+měsíc\\s+)?(${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*)\\s+(${WEEKDAY_RE})\\s+v\\s+měsíci$`).exec(s)
+    new RegExp(`^(?:1x\\s+za\\s+měsíc\\s+)?(${ORDINALS_RE})\\s+(${WEEKDAY_RE})\\s+v\\s+měsíci$`).exec(s)
   if (nthRe) {
     const ords = parseOrdinals(nthRe[1])
     if (ords) return nthWeekday(ords, WEEKDAY[nthRe[2]])
