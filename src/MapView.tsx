@@ -196,7 +196,7 @@ export default function MapView({
     const openPopover = async (church: Church) => {
       const svc = (await loadShard(church.cell)).get(church.id)
       if (stale) return
-      const now = new Date()
+      const now = nowRef.current // the clock the chip was drawn with
       const byId = new Map(svc ? [[church.id, svc]] : [])
       const next = selectUpcoming(now, origin, [church], byId, filters, cas, day, { limit: 1 })[0]
       const el = document.createElement('div')

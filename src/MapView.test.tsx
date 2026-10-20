@@ -97,4 +97,14 @@ describe('MapView time-driven rebuilds (K1/K2)', () => {
     mapOf().fire('moveend')
     await waitFor(() => expect(container.querySelector('.map-chip')?.textContent).toBe('ne 18:00'))
   })
+
+  it('the popover reads the same clock as the chip', async () => {
+    vi.setSystemTime(new Date('2026-10-18T15:59:30Z')) // 17:59:30 Prague
+    const { container } = render(<MapView {...props} now={new Date()} />)
+    await waitFor(() => expect(container.querySelector('.map-chip')?.textContent).toBe('18:00'))
+    vi.setSystemTime(new Date('2026-10-18T16:00:30Z')) // 18:00:30, before App's next tick
+    ;(container.querySelector('.leaflet-marker-icon.map-chip-wrap') as HTMLElement).click()
+    await waitFor(() => expect(container.querySelector('.map-pop-line')).not.toBeNull())
+    expect(container.querySelector('.map-pop-line')!.textContent).not.toMatch(/25\. 10\./) // not next week's
+  })
 })
