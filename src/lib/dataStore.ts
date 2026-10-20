@@ -65,6 +65,12 @@ async function writeCache(path: string, text: string): Promise<void> {
   })
 }
 
+/** The version.json served with the app (bundled on native), or null. */
+const fetchBundledVersion = (): Promise<DataVersion | null> =>
+  fetch('/data/version.json')
+    .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
+    .catch(() => null)
+
 async function ready(): Promise<boolean> {
   if (!isNative) return false
   if (cacheReady !== null) return cacheReady
@@ -82,10 +88,7 @@ async function ready(): Promise<boolean> {
   // the stale cache so loadData falls through to the fresh bundled version, and
   // drop the stored as-of so the footer shows the bundled date and refreshData
   // compares the remote against it, not against the stale cache's.
-  const bundledV = await fetch('/data/version.json')
-    .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
-    .catch(() => null)
-  const bundledKey = versionKey(bundledV)
+  const bundledKey = versionKey(await fetchBundledVersion())
   if (bundledKey && cachedKey < bundledKey) {
     removeKey(ASOF_KEY)
     cacheReady = false
@@ -154,11 +157,7 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
   if (!isNative) {
     // Reuse the already-fetched bundledV if available to avoid a second fetch on
     // first visit (web serves fresh data so the bundled file IS the version).
-    const v =
-      bundledV ??
-      (await fetch('/data/version.json')
-        .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
-        .catch(() => null))
+    const v = bundledV ?? (await fetchBundledVersion())
     return { asOf: v?.generated ?? asOf, updated: false }
   }
 
