@@ -1,6 +1,7 @@
 // Dataset types + decoding of the compact JSON written by data/extract.mjs.
 
 import { isConfession, normalizeLang } from './registry'
+import type { RawEntry } from './churchPage'
 
 export interface Church {
   id: string
@@ -46,16 +47,6 @@ export interface ChurchServices {
 }
 
 
-/** services/<cell>.json value shape (compact keys). */
-interface ShardEntry {
-  u: string
-  p: string
-  pa: string
-  c: [string, string][]
-  s: [string, string, string, 0 | 1, string, string][]
-  x?: [string, string, string, 0 | 1, string, string][]
-}
-
 export const decodeIndex = (rows: IndexRow[]): Church[] =>
   rows.map(([id, name, city, lat, lng, bf, cell, www]) => ({
     id,
@@ -68,7 +59,7 @@ export const decodeIndex = (rows: IndexRow[]): Church[] =>
     www: www || undefined,
   }))
 
-export function decodeShard(shard: Record<string, ShardEntry>): Map<string, ChurchServices> {
+export function decodeShard(shard: Record<string, RawEntry>): Map<string, ChurchServices> {
   const out = new Map<string, ChurchServices>()
   for (const [id, e] of Object.entries(shard)) {
     const rows = e.s.map(([days, time, lang, greek, type, note]) => ({
