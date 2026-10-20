@@ -46,3 +46,55 @@ describe('MapView chips follow the clock', () => {
     vi.useRealTimers()
   })
 })
+
+describe('MapView time-driven rebuilds (K1/K2)', () => {
+  const props = {
+    origin: { lat: church.lat, lng: church.lng },
+    churches: [church],
+    filters: NO_FILTERS,
+    cas: null,
+    day: 'now' as const,
+    onOpen: () => {},
+    onNavigate: () => {},
+  }
+  beforeEach(() => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(393)
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600)
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(SHARD), { status: 200 })))
+    window.history.replaceState({}, '', '/?diag')
+    vi.useFakeTimers({ toFake: ['Date'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    window.history.replaceState({}, '', '/')
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+  const tick = () => new Promise((r) => setTimeout(r, 30))
+  const mapOf = () => (window as unknown as { __map: { fire: (e: string) => void } }).__map
+
+  it('a minute tick that changes no chip text keeps the marker nodes', async () => {
+    vi.setSystemTime(new Date('2026-10-18T15:00:00Z'))
+    const { container, rerender } = render(<MapView {...props} now={new Date()} />)
+    await waitFor(() => expect(container.querySelector('.map-chip')?.textContent).toBe('18:00'))
+    const node = container.querySelector('.map-chip')
+    vi.setSystemTime(new Date('2026-10-18T15:01:00Z'))
+    rerender(<MapView {...props} now={new Date()} />)
+    await tick()
+    expect(container.querySelector('.map-chip')).toBe(node)
+  })
+
+  it('a tick mid-gesture waits for moveend, which then shows the fresh time', async () => {
+    vi.setSystemTime(new Date('2026-10-18T15:00:00Z'))
+    const { container, rerender } = render(<MapView {...props} now={new Date()} />)
+    await waitFor(() => expect(container.querySelector('.map-chip')?.textContent).toBe('18:00'))
+    const node = container.querySelector('.map-chip')
+    mapOf().fire('movestart')
+    vi.setSystemTime(new Date('2026-10-18T16:30:00Z'))
+    rerender(<MapView {...props} now={new Date()} />)
+    await tick()
+    expect(container.querySelector('.map-chip')).toBe(node) // untouched mid-gesture
+    mapOf().fire('moveend')
+    await waitFor(() => expect(container.querySelector('.map-chip')?.textContent).toBe('ne 18:00'))
+  })
+})

@@ -107,6 +107,12 @@ export default function MapView({
   onOpenRef.current = onOpen
   const onNavigateRef = useRef(onNavigate)
   onNavigateRef.current = onNavigate
+  // App's clock, read through a ref for the same reason: a minute tick must not
+  // re-run the marker effect. The tick effect below asks for a guarded render
+  // instead — skipped mid-gesture, applied only when some chip would change.
+  const nowRef = useRef(now)
+  nowRef.current = now
+  const tickRef = useRef(() => {})
   const shardCache = useRef(new Map<string, Promise<Map<string, ChurchServices>>>())
   // A new index means an OTA refresh landed: drop shards cached from the old
   // snapshot (declared before the marker effect, so it clears first).
@@ -182,6 +188,10 @@ export default function MapView({
     // shard-load resolves LAST wins — often a stale viewport, repainting markers
     // at old positions (the "dancing" chips). Only the newest render may apply.
     let renderSeq = 0
+    // A gesture (pan/pinch/zoom) runs from movestart to moveend; a tick landing
+    // inside it is dropped — the closing moveend renders with the fresh clock.
+    let moving = false
+    let lastSig = ''
 
     const openPopover = async (church: Church) => {
       const svc = (await loadShard(church.cell)).get(church.id)
@@ -289,7 +299,9 @@ export default function MapView({
         .openOn(map)
     }
 
-    const render = async () => {
+    const render = async (fromTick = false) => {
+      if (fromTick && moving) return
+      const now = nowRef.current
       const seq = ++renderSeq
       const zoom = Math.round(map.getZoom()) // snap any transient fractional zoom so clustering can't jitter
       const bounds = map.getBounds().pad(0.3)
@@ -303,6 +315,7 @@ export default function MapView({
         WITNESS_ENABLED ? loadAggregates(visible.map((c) => c.id)) : Promise.resolve(),
       ])
       if (stale || seq !== renderSeq) return // a newer render superseded this one
+      if (fromTick && moving) return // a gesture began while shards loaded
       const byId = new Map<string, ChurchServices>()
       for (const shard of shards) for (const [id, s] of shard) byId.set(id, s)
       // the SAME selector as the seznam — a chip on the map is a row in the list
@@ -340,7 +353,10 @@ export default function MapView({
       // together in one synchronous pass have neither failure mode, and at a few
       // dozen on-screen markers the cost is nil. (moveend fires once per pan, and
       // the effect no longer re-runs on every App render — see the callback refs.)
-      layer.clearLayers()
+      // Plan first, then apply: a tick-driven render whose plan matches the last
+      // one leaves the marker nodes alone.
+      const sig: string[] = []
+      const adds: (() => void)[] = []
       let anyWitness = false
       let anyNonMass = false
       for (const cl of gridCluster(pts, CELL_PX)) {
@@ -361,42 +377,67 @@ export default function MapView({
           if (witnessed) anyWitness = true
           const nonMass = Boolean(next) && !isMass(next!.service.type)
           if (nonMass) anyNonMass = true
-          const marker = L.marker([church.lat, church.lng], {
-            icon: next ? chipIcon(label, otherDay, witnessed, nonMass) : fadedIcon(),
-            title: church.name,
-            keyboard: false,
+          sig.push(`${church.id}:${next ? `${label}|${otherDay}|${witnessed}|${nonMass}` : ''}`)
+          adds.push(() => {
+            const marker = L.marker([church.lat, church.lng], {
+              icon: next ? chipIcon(label, otherDay, witnessed, nonMass) : fadedIcon(),
+              title: church.name,
+              keyboard: false,
+            })
+              .on('click', () => void openPopover(church))
+              .addTo(layer)
+            // title alone isn't a reliable accessible name on a non-interactive div
+            marker.getElement()?.setAttribute('aria-label', church.name)
           })
-            .on('click', () => void openPopover(church))
-            .addTo(layer)
-          // title alone isn't a reliable accessible name on a non-interactive div
-          marker.getElement()?.setAttribute('aria-label', church.name)
         } else {
           const latlng = map.unproject(L.point(cl.x, cl.y), zoom)
           if (!bounds.contains(latlng)) continue
           const hasMatch = cl.items.some((c) => matched.has(c.id))
-          L.marker(latlng, {
-            icon: clusterIcon(cl.items.length, hasMatch),
-            title: churchCount(cl.items.length),
-            keyboard: false,
+          sig.push(`${cl.x},${cl.y}:${cl.items.length}|${hasMatch}`)
+          adds.push(() => {
+            L.marker(latlng, {
+              icon: clusterIcon(cl.items.length, hasMatch),
+              title: churchCount(cl.items.length),
+              keyboard: false,
+            })
+              .on('click', () => map.setView(latlng, Math.max(Math.min(zoom + 2, 18), zoom)))
+              .addTo(layer)
           })
-            .on('click', () => map.setView(latlng, Math.max(Math.min(zoom + 2, 18), zoom)))
-            .addTo(layer)
         }
       }
+      const key = sig.join(';')
+      if (fromTick && key === lastSig) return
+      lastSig = key
+      layer.clearLayers()
+      for (const add of adds) add()
       setNonMassShown(anyNonMass)
       setWitnessShown(anyWitness) // React bails out if unchanged — deps exclude it, so no re-subscribe
     }
 
-    map.on('moveend', render) // zoom changes end in moveend too
+    const onMoveStart = () => {
+      moving = true
+    }
+    const onMoveEnd = () => {
+      moving = false
+      void render()
+    }
+    map.on('movestart', onMoveStart)
+    map.on('moveend', onMoveEnd) // zoom changes end in moveend too
+    tickRef.current = () => void render(true)
     void render()
     return () => {
       stale = true
-      map.off('moveend', render)
+      tickRef.current = () => {}
+      map.off('movestart', onMoveStart)
+      map.off('moveend', onMoveEnd)
     }
     // onOpen/onNavigate deliberately excluded — read via refs so an unstable
     // callback identity can't re-run this effect off the moveend cycle.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [churches, filters, cas, day, origin, now])
+  }, [churches, filters, cas, day, origin])
+
+  // App's minute tick / resume: refresh the chips without tearing the effect down
+  useEffect(() => tickRef.current(), [now])
 
   return (
     <div className={fill ? 'relative h-full' : 'relative'}>
