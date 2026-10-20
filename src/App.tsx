@@ -553,10 +553,17 @@ export default function App() {
       return JSON.stringify(next) === JSON.stringify(cur) ? cur : next
     })
     const resumed = new Date()
-    if (cas && (resumed.getTime() - hiddenAt > STICKY_TTL_MS || !samePragueDay(new Date(hiddenAt), resumed))) {
-      const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
-      if (saved !== cas) setParam('cas', saved)
+    const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
+    // a saved kdy expires on the same clock as the filters; a URL-only one (shared
+    // link, nothing stored) on time away
+    let expired = false
+    try {
+      expired = saved === null && localStorage.getItem(CAS_KEY) !== null
+    } catch {
+      // private mode — nothing was stored
     }
+    const away = resumed.getTime() - hiddenAt > STICKY_TTL_MS || !samePragueDay(new Date(hiddenAt), resumed)
+    if (cas && saved !== cas && (expired || away)) setParam('cas', saved)
     // ponytail: 15 min away ≈ maybe moved; shorter app switches keep the list as is
     if (origin?.source === 'geo' && !picking && resumed.getTime() - hiddenAt >= 15 * 60_000) locate(true)
   }

@@ -1163,6 +1163,31 @@ describe('sweep regressions (consolidated 2026-10-17)', () => {
     expect(await screen.findByText(/sv\. Havla/)).toBeInTheDocument() // barrier-free filter expired
   })
 
+  it('resumed the same evening: a kdy saved >12 h ago drops with the filters (sweep G4)', async () => {
+    vi.setSystemTime(new Date('2026-07-03T09:00:00Z')) // 11:00 Prague
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    openControls()
+    await user.click(screen.getByRole('button', { name: 'večer' }))
+    expect(qp('cas')).toBe('vecer')
+    background(new Date('2026-07-03T11:00:00Z')) // 13:00 Prague
+    resume(new Date('2026-07-03T21:30:00Z')) // 23:30 Prague — 10.5 h away, same day, kdy 12.5 h old
+    await vi.waitFor(() => expect(qp('cas')).toBeNull())
+  })
+
+  it('a short app switch keeps a kdy that came from a shared link (sweep G4)', async () => {
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/?zobrazeni=seznam&cas=vecer')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    background(new Date('2026-07-03T15:05:00Z'))
+    resume(new Date('2026-07-03T15:10:00Z'))
+    await act(() => vi.advanceTimersByTimeAsync(100))
+    expect(qp('cas')).toBe('vecer')
+  })
+
   it('?den=nedele keeps meaning Sunday after the clock crosses midnight', async () => {
     vi.setSystemTime(new Date('2026-07-04T21:58:00Z')) // Saturday 23:58 Prague
     stubGeolocation('granted')
