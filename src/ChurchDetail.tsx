@@ -371,8 +371,10 @@ export function ChurchDetail({
     let cancelled = false
     setSvc(null)
     setFailed(false)
-    // Use loadData (not raw fetch) so native/OTA-refreshed registry is used and
-    // the shared shard cache is hit on repeat opens. (MapView does the same.)
+    // Use loadData (not raw fetch) so the native/OTA-refreshed registry is used.
+    // (MapView does the same.) ponytail: no in-memory cache — repeat opens
+    // re-read the shard (service-worker or Filesystem hit) and re-parse it; add
+    // a memo in loadData if detail opens ever show up as slow.
     loadData<Parameters<typeof decodeShard>[0]>(`services/${church.cell}.json`)
       .then((shard) => {
         if (cancelled) return
