@@ -51,6 +51,8 @@ const index = (n: number) =>
 const SHARD = JSON.stringify({ '0': { u: '2026-06-01', p: '', pa: '', c: [], s: [] } })
 
 const R = 'https://bohosluzby.dravec.org'
+// the side files every published snapshot carries (the refresh requires them)
+const SIDE = { [`${R}/data/photos.json`]: '{}', [`${R}/data/confession.json`]: '{}' }
 
 beforeEach(() => {
   localStorage.clear()
@@ -74,6 +76,7 @@ it('native: downloads and caches a newer snapshot, then reads from cache', async
     [`${R}/data/version.json`]: version('2026-08-01'),
     [`${R}/data/churches.json`]: index(100),
     [`${R}/data/services/50-14.json`]: SHARD,
+    ...SIDE,
   })
   const ds = await loadModule(true, fs)
 
@@ -148,6 +151,7 @@ it('native: a same-day re-publish (newer timestamp, same date) is downloaded', a
     [`${R}/data/version.json`]: republished,
     [`${R}/data/churches.json`]: index(100),
     [`${R}/data/services/50-14.json`]: SHARD,
+    ...SIDE,
   })
   const ds = await loadModule(true, fs)
 
@@ -165,6 +169,7 @@ it('native: a refresh that dies mid-write leaves no marker, so the next launch r
     [`${R}/data/version.json`]: version('2026-08-01'),
     [`${R}/data/churches.json`]: index(100),
     [`${R}/data/services/50-14.json`]: SHARD,
+    ...SIDE,
   })
   fs.module.Filesystem.writeFile.mockImplementationOnce(async () => {
     throw new Error('disk full') // the first shard write
@@ -196,6 +201,7 @@ it('native: a read during the OTA write phase waits for the new snapshot', async
     [`${R}/data/version.json`]: version('2026-08-01'),
     [`${R}/data/churches.json`]: index(120),
     [`${R}/data/services/50-14.json`]: SHARD,
+    ...SIDE,
   })
   let release!: () => void
   const gate = new Promise<void>((r) => (release = r))
@@ -248,4 +254,23 @@ it('native: the OTA refresh also brings photos.json and confession.json (sweep F
   stubFetch({}) // bundled would 404 → proves the cache is used
   expect(await ds.loadData('photos.json')).toEqual({ '0': { new: true } })
   expect(await ds.loadData('confession.json')).toEqual({ x: 1 })
+})
+
+it('native: a failed side-file fetch aborts the refresh so the next launch retries (sweep K3)', async () => {
+  const fs = fsMock()
+  const routes = {
+    '/data/version.json': version('2026-07-03'),
+    '/data/churches.json': index(100),
+    [`${R}/data/version.json`]: version('2026-08-01'),
+    [`${R}/data/churches.json`]: index(100),
+    [`${R}/data/services/50-14.json`]: SHARD,
+    [`${R}/data/confession.json`]: '{"x":1}',
+  } // photos.json 404s
+  stubFetch(routes)
+  const ds = await loadModule(true, fs)
+
+  expect(await ds.refreshData()).toEqual({ asOf: '2026-07-03', updated: false })
+  stubFetch({ ...routes, [`${R}/data/photos.json`]: '{"0":{"new":true}}' })
+  expect(await ds.refreshData()).toEqual({ asOf: '2026-08-01', updated: true })
+  expect(await ds.loadData('photos.json')).toEqual({ '0': { new: true } })
 })

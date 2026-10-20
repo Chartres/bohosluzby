@@ -185,9 +185,11 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
     const shards = await Promise.all(
       cells.map(async (c) => [c, await fetchText(`${REMOTE}/data/services/${c}.json`)] as const),
     )
-    // side files the detail page reads; optional — a miss falls back to bundled
+    // side files the detail page reads; a miss aborts like a shard miss — marking
+    // the version complete without them would pin the older bundled copy until
+    // the next data publish
     const extras = await Promise.all(
-      EXTRAS.map(async (f) => [f, await fetchText(`${REMOTE}/data/${f}`).catch(() => null)] as const),
+      EXTRAS.map(async (f) => [f, await fetchText(`${REMOTE}/data/${f}`)] as const),
     )
     let unlock!: () => void
     refreshLock = new Promise<void>((r) => (unlock = r))
@@ -201,10 +203,7 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
       }
       cacheReady = null // re-checked from disk if the writes below fail
       for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
-      for (const [f, text] of extras) {
-        if (text !== null) await writeCache(f, text)
-        else await Filesystem.deleteFile({ path: `${CACHE}/${f}`, directory: Directory.Data }).catch(() => {})
-      }
+      for (const [f, text] of extras) await writeCache(f, text)
       await writeCache('churches.json', churchesText)
       await writeCache('version.json', JSON.stringify(remote)) // marker, written last
       cacheReady = true
