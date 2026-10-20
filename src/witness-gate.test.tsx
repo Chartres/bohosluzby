@@ -161,6 +161,7 @@ describe('witness gate OFF — map legend', () => {
         day={'now'}
         onOpen={() => {}}
         onNavigate={() => {}}
+        now={new Date()}
       />,
     )
     const legend = container.querySelector('.map-legend')!

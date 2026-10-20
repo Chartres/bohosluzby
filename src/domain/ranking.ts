@@ -11,20 +11,13 @@
 // ponytail: straight-line km, no routing — tune MIN_PER_KM if real reports disagree.
 
 import { haversineKm } from './distance'
-import { nextOccurrences, pragueToday } from './occurrences'
-import { parseNote } from './notes'
+import { nextOccurrences, pragueDay, pragueToday } from './occurrences'
+import { runsAt } from './notes'
 import { applyFilters, isMass, type Filters } from './filters'
 import type { Church, ChurchServices, Service, ExtraService } from './data'
 
 /** Day-picker choice: 'now' = where you can make it (see the header); 0–6 = today + offset's full ordo. */
 export type DayChoice = 'now' | number
-
-/** Note-aware occurrence check: skip dates the note provably excludes. */
-const runsOn = (service: Service | ExtraService, start: Date): boolean => {
-  if (!service.note) return true
-  const w = pragueToday(start)
-  return parseNote(service.note).runsOn(w.y, w.m, w.d)
-}
 
 export interface Upcoming {
   church: Church
@@ -61,7 +54,7 @@ export function rankUpcoming(
     let best: (typeof out)[number] | null = null
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
       for (const start of nextOccurrences(spec, now)) {
-        if (!runsOn(service, start)) continue // "kromě července a srpna" — don't lie in July
+        if (!runsAt(service.note, start)) continue // "kromě července a srpna" — don't lie in July
         const k = key(start, service, distanceKm)
         if (!best || k < best.key) {
           const w = pragueToday(start)
@@ -97,8 +90,7 @@ export function ordoForDay(
   churches: Church[],
   servicesById: ReadonlyMap<string, ChurchServices>,
 ): Upcoming[] {
-  const today = pragueToday(now)
-  const target = new Date(Date.UTC(today.y, today.m - 1, today.d) + dayOffset * 86_400_000)
+  const target = pragueDay(now, dayOffset)
   const onTarget = (d: Date): boolean => {
     const w = pragueToday(d)
     return (
@@ -112,7 +104,7 @@ export function ordoForDay(
     const distanceKm = haversineKm(origin.lat, origin.lng, church.lat, church.lng)
     const consider = (service: Service | ExtraService, spec: Parameters<typeof nextOccurrences>[0]) => {
       for (const start of nextOccurrences(spec, now, dayOffset + 1)) {
-        if (onTarget(start) && runsOn(service, start))
+        if (onTarget(start) && runsAt(service.note, start))
           out.push({ church, distanceKm, start, service })
       }
     }
@@ -162,9 +154,7 @@ export function dayLine(now: Date, church: Church, svc: ChurchServices, focus: D
   // nextOccurrences is strictly after its `now` — look up from 1 ms before the
   // tapped start (or now) so a service starting this minute is kept
   const t0 = new Date(Math.min(from.getTime(), now.getTime()) - 1)
-  const a = pragueToday(t0)
-  const b = pragueToday(from)
-  const first = Math.max(0, Math.round((Date.UTC(b.y, b.m - 1, b.d) - Date.UTC(a.y, a.m - 1, a.d)) / 86_400_000))
+  const first = Math.max(0, Math.round((pragueDay(from).getTime() - pragueDay(t0).getTime()) / 86_400_000))
   for (let off = first; off <= first + 7; off++) {
     const items = ordoForDay(t0, off, here, [church], byId)
     if (items.length) return items

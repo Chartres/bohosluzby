@@ -138,10 +138,16 @@ jobs:
             `.aab` is the Play Store upload; `.apk` installs directly (sideload / testers).
             Signed: ${{ steps.ks.outputs.signed }}.
 
-      - name: Google Play — upload to ${{ inputs.track || 'internal' }} (only when the service account exists)
-        if: steps.ks.outputs.signed == 'true' && env.PLAY_JSON != ''
+      # A step's own env isn't visible to its `if`, and secrets can't be read
+      # there at all, so probe the secret here and gate on the output.
+      - name: Play service account present?
+        id: play
         env:
           PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: echo "set=$([ -n "$PLAY_JSON" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Google Play — upload to ${{ inputs.track || 'internal' }} (only when the service account exists)
+        if: steps.ks.outputs.signed == 'true' && steps.play.outputs.set == 'true'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
@@ -152,7 +158,5 @@ jobs:
           whatsNewDirectory: store-assets/android/whatsnew
 
       - name: Play upload skipped
-        if: steps.ks.outputs.signed != 'true' || env.PLAY_JSON == ''
-        env:
-          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-        run: echo "::notice::Play upload skipped (signed=${{ steps.ks.outputs.signed }}, PLAY_SERVICE_ACCOUNT_JSON set=$([ -n "$PLAY_JSON" ] && echo yes || echo no)). Upload out/*.aab by hand in Play Console, or add the secret (docs/store/play-metadata.md §API)."
+        if: steps.ks.outputs.signed != 'true' || steps.play.outputs.set != 'true'
+        run: echo "::notice::Play upload skipped (signed=${{ steps.ks.outputs.signed }}, PLAY_SERVICE_ACCOUNT_JSON set=${{ steps.play.outputs.set }}). Upload out/*.aab by hand in Play Console, or add the secret (docs/store/play-metadata.md §API)."

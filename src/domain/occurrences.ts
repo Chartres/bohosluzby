@@ -52,6 +52,13 @@ export function pragueToday(now: Date): { y: number; m: number; d: number } {
   return { y, m, d }
 }
 
+/** The Prague calendar date `off` days after `now`'s, as UTC midnight — read it
+ * back with getUTCFullYear/Month/Date/Day (a neutral axis, no DST). */
+export function pragueDay(now: Date, off = 0): Date {
+  const { y, m, d } = pragueToday(now)
+  return new Date(Date.UTC(y, m - 1, d) + off * 86_400_000)
+}
+
 /** ISO date ("YYYY-MM-DD") of an instant on the Prague wall clock. */
 export function pragueIsoDate(when: Date): string {
   const { y, m, d } = pragueToday(when)

@@ -52,3 +52,14 @@ describe('details', () => {
     await expect(crawl(ids, ids, '<html>challenge</html>').done).rejects.toThrow(/skipped/)
   })
 })
+
+describe('pruneShards (sweep F11)', () => {
+  it('removes shard files for cells that no longer exist, keeps the rest', async () => {
+    const { writeFileSync, readdirSync } = await import('node:fs')
+    const { pruneShards } = await import('./extract.mjs')
+    const dir = mkdtempSync(`${tmpdir()}/extract-shards-`)
+    for (const c of ['50-14', '49-16', '48-13']) writeFileSync(`${dir}/${c}.json`, '{}')
+    pruneShards(dir, new Set(['50-14', '49-16']))
+    expect(readdirSync(dir).sort()).toEqual(['49-16.json', '50-14.json'])
+  })
+})

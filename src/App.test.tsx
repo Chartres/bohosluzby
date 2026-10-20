@@ -991,6 +991,21 @@ describe('sweep regressions (consolidated 2026-10-17)', () => {
     expect(await screen.findByText('Část dat se nepodařilo načíst — seznam nemusí být úplný.')).toBeInTheDocument()
   })
 
+  it('Moje kostely: a starred church whose shard failed says so, not a bare "—" (sweep F10)', async () => {
+    localStorage.setItem('bohosluzby:favorites', JSON.stringify(['3'])) // Brno, shard 49-16
+    stubGeolocation('granted')
+    const ok = globalThis.fetch
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: RequestInfo | URL) =>
+        String(url).endsWith('/data/services/49-16.json') ? new Response('', { status: 503 }) : ok(url),
+      ),
+    )
+    render(<App />)
+    const mine = await screen.findByRole('region', { name: 'Moje kostely' })
+    expect(await within(mine).findByText('Část dat se nepodařilo načíst — seznam nemusí být úplný.')).toBeInTheDocument()
+  })
+
   it('an empty area on an ordo day shows one empty state, not two', async () => {
     Object.defineProperty(navigator, 'geolocation', {
       value: {
@@ -1057,6 +1072,133 @@ describe('sweep regressions (consolidated 2026-10-17)', () => {
       document.dispatchEvent(new Event('visibilitychange'))
     })
     await vi.waitFor(() => expect(seznam().queryByText('18:00')).toBeNull())
+  })
+
+  const background = (when: Date) => {
+    vi.setSystemTime(when)
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+  }
+  const resume = (when: Date) => {
+    vi.setSystemTime(when)
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+  }
+
+  // a resume re-locates only under an already-granted permission (sweep G3)
+  const permission = (state: string) =>
+    Object.defineProperty(navigator, 'permissions', {
+      value: { query: vi.fn(async () => ({ state })) },
+      configurable: true,
+    })
+  afterEach(() => Object.defineProperty(navigator, 'permissions', { value: undefined, configurable: true }))
+
+  it('resumed hours later without a granted permission: no prompt, the list stays (sweep G3)', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    background(new Date('2026-07-03T15:05:00Z'))
+    permission('prompt') // iOS "Allow Once" reads as prompt after background
+    const getCurrentPosition = vi.fn()
+    Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition }, configurable: true })
+    resume(new Date('2026-07-03T18:00:00Z'))
+    await act(() => vi.advanceTimersByTimeAsync(1_000))
+    expect(getCurrentPosition).not.toHaveBeenCalled()
+    expect(screen.getByText(/Salvátora/)).toBeInTheDocument()
+  })
+
+  it('resumed hours later in another town: lists from the new position (sweep F3)', async () => {
+    stubGeolocation('granted')
+    permission('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    background(new Date('2026-07-03T15:05:00Z'))
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: (ok: (p: { coords: { latitude: number; longitude: number } }) => void) =>
+          ok({ coords: { latitude: 49.1986, longitude: 16.6072 } }), // Brno
+      },
+      configurable: true,
+    })
+    resume(new Date('2026-07-03T18:00:00Z'))
+    expect(await screen.findByText(/sv\. Tomáše/)).toBeInTheDocument()
+    expect(screen.queryByText(/Salvátora/)).toBeNull()
+  })
+
+  it('resumed in another town with a slow fix: the late fix still moves the list (sweep G1)', async () => {
+    stubGeolocation('granted')
+    permission('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    background(new Date('2026-07-03T15:05:00Z'))
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: (ok: (p: { coords: { latitude: number; longitude: number } }) => void) =>
+          setTimeout(() => ok({ coords: { latitude: 49.1986, longitude: 16.6072 } }), 12_000), // past the 10 s deadline
+      },
+      configurable: true,
+    })
+    resume(new Date('2026-07-03T18:00:00Z'))
+    await act(() => vi.advanceTimersByTimeAsync(12_000))
+    expect(await screen.findByText(/sv\. Tomáše/)).toBeInTheDocument()
+    expect(screen.queryByText(/Salvátora/)).toBeNull()
+  })
+
+  it('resumed next morning: last night\'s večer and filters are gone (sweep F4)', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    openControls()
+    await user.click(screen.getByRole('button', { name: 'bezbariérové' }))
+    await user.click(screen.getByRole('button', { name: 'večer' }))
+    expect(qp('cas')).toBe('vecer')
+    background(new Date('2026-07-03T19:00:00Z')) // 21:00 Prague
+    resume(new Date('2026-07-04T06:00:00Z')) // 08:00 Prague, next day
+    await vi.waitFor(() => expect(qp('cas')).toBeNull())
+    expect(await screen.findByText(/sv\. Havla/)).toBeInTheDocument() // barrier-free filter expired
+  })
+
+  it('resumed the same evening: a kdy saved >12 h ago drops with the filters (sweep G4)', async () => {
+    vi.setSystemTime(new Date('2026-07-03T09:00:00Z')) // 11:00 Prague
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    openControls()
+    await user.click(screen.getByRole('button', { name: 'večer' }))
+    expect(qp('cas')).toBe('vecer')
+    background(new Date('2026-07-03T11:00:00Z')) // 13:00 Prague
+    resume(new Date('2026-07-03T21:30:00Z')) // 23:30 Prague — 10.5 h away, same day, kdy 12.5 h old
+    await vi.waitFor(() => expect(qp('cas')).toBeNull())
+  })
+
+  it('a short app switch keeps a kdy that came from a shared link (sweep G4)', async () => {
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/?zobrazeni=seznam&cas=vecer')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    background(new Date('2026-07-03T15:05:00Z'))
+    resume(new Date('2026-07-03T15:10:00Z'))
+    await act(() => vi.advanceTimersByTimeAsync(100))
+    expect(qp('cas')).toBe('vecer')
+  })
+
+  it('a shared-link kdy survives a short switch even with a stale stored kdy (sweep H1)', async () => {
+    const stale = Date.parse('2026-07-02T08:00:00Z') // yesterday, >12 h ago
+    localStorage.setItem('bohosluzby:cas', JSON.stringify({ savedAt: stale, value: 'rano' }))
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/?zobrazeni=seznam&cas=vecer')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    background(new Date('2026-07-03T15:05:00Z'))
+    resume(new Date('2026-07-03T15:05:02Z'))
+    await act(() => vi.advanceTimersByTimeAsync(100))
+    expect(qp('cas')).toBe('vecer')
   })
 
   it('?den=nedele keeps meaning Sunday after the clock crosses midnight', async () => {

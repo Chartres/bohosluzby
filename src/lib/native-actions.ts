@@ -1,19 +1,15 @@
 import { isNative } from './native'
 import { reminderTitle, t } from '../i18n'
 import type { Church, ExtraService, Service } from '../domain/data'
-import { buildICS } from '../domain/ics'
-import { nextReminderAt, pragueToday } from '../domain/occurrences'
-import { parseNote } from '../domain/notes'
-import { recordExpectedAttendance } from './feedbackLedger'
-import { massKey, occurrenceOf } from '../domain/feedback'
+import { buildICS, specOf } from '../domain/ics'
+import { nextReminderAt } from '../domain/occurrences'
+import { runsAt } from '../domain/notes'
+import { expectAttendance } from './feedbackLedger'
 
 /** How long before a service the reminder fires. */
 export const REMINDER_LEAD_MIN = 30
 
 type AnyService = Service | ExtraService
-
-const specOf = (s: AnyService) =>
-  'days' in s ? { days: s.days, time: s.time } : { date: s.date, time: s.time }
 
 const icsName = (church: Church, s: AnyService) =>
   `bohosluzby-${church.id}-${s.time.replace(':', '')}.ics`
@@ -33,10 +29,11 @@ function reminderId(church: Church, s: AnyService): number {
  * Add a service to the device calendar. Native: write the .ics to a cache file
  * and hand it to the system share sheet (iOS offers "Add to Calendar"). Web:
  * download the blob (unchanged behaviour). Light haptic on native.
+ * Resolves false when the service has no occurrence to export.
  */
-export async function addToCalendar(church: Church, service: AnyService): Promise<void> {
+export async function addToCalendar(church: Church, service: AnyService): Promise<boolean> {
   const ics = buildICS(church, service, new Date())
-  if (!ics) return
+  if (!ics) return false
   const filename = icsName(church, service)
 
   if (isNative) {
@@ -50,7 +47,7 @@ export async function addToCalendar(church: Church, service: AnyService): Promis
       encoding: Encoding.UTF8,
     })
     await Share.share({ title: church.name, url: written.uri })
-    return
+    return true
   }
 
   const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }))
@@ -61,6 +58,7 @@ export async function addToCalendar(church: Church, service: AnyService): Promis
   // Defer revoke so the browser has time to start the download before the
   // object URL is freed (synchronous revoke breaks Firefox and Safari).
   setTimeout(() => URL.revokeObjectURL(url), 0)
+  return true
 }
 
 export type ReminderResult = 'scheduled' | 'denied' | 'no-upcoming' | 'unsupported' | 'failed'
@@ -72,11 +70,7 @@ export type ReminderResult = 'scheduled' | 'denied' | 'no-upcoming' | 'unsupport
  * scheduling a reminder for a mass that provably doesn't happen.
  */
 export function reminderTimeFor(service: AnyService, now: Date): Date | null {
-  const rule = parseNote(service.note)
-  return nextReminderAt(specOf(service), now, REMINDER_LEAD_MIN, 366, (start) => {
-    const w = pragueToday(start)
-    return rule.runsOn(w.y, w.m, w.d)
-  })
+  return nextReminderAt(specOf(service), now, REMINDER_LEAD_MIN, 366, (start) => runsAt(service.note, start))
 }
 
 /**
@@ -116,15 +110,7 @@ export async function scheduleMassReminder(
     const pending = await LocalNotifications.getPending()
     if (!pending.notifications.some((n) => n.id === id)) return 'failed'
     // seed the after-Mass ledger: `at` is REMINDER_LEAD_MIN before the start
-    const start = new Date(at.getTime() + REMINDER_LEAD_MIN * 60_000)
-    recordExpectedAttendance({
-      churchId: church.id,
-      massKey: massKey(church.id, service, start),
-      startISO: start.toISOString(),
-      churchName: church.name,
-      type,
-      ...occurrenceOf(service, start),
-    })
+    expectAttendance(church, service, new Date(at.getTime() + REMINDER_LEAD_MIN * 60_000), type)
     return 'scheduled'
   } catch {
     return 'failed'

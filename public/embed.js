@@ -43,9 +43,10 @@
     return { y: +p.year, m: +p.month, d: +p.day, min: +p.hour * 60 + +p.minute }
   }
 
+  // leading "HH:MM", like the app's parseTime: "17:30 - 18:00" starts at 17:30
   function minutes(hhmm) {
-    var parts = String(hhmm).split(':')
-    return +parts[0] * 60 + +parts[1]
+    var m = /^(\d{1,2}):(\d{2})/.exec(String(hhmm).trim())
+    return m ? +m[1] * 60 + +m[2] : NaN
   }
 
   /** The next `n` services from now (Prague time), over the coming week. */

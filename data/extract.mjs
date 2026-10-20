@@ -20,7 +20,7 @@
 //
 // Politeness: <=3 req/s, retry with backoff, honest User-Agent.
 
-import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, statSync, rmSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -178,6 +178,12 @@ function svcRow(r) {
   ]
 }
 
+/** Delete <dir>/<cell>.json for cells not in `cells`: a vanished cell's old
+ * shard would otherwise stay committed, precached and bundled. */
+export function pruneShards(dir, cells) {
+  for (const f of readdirSync(dir)) if (f.endsWith('.json') && !cells.has(f.slice(0, -5))) rmSync(`${dir}/${f}`)
+}
+
 function transform() {
   // coordinates come from the grid responses (zoom 15 → real lat/lng per church)
   const coords = new Map()
@@ -245,6 +251,7 @@ function transform() {
     `${OUT}/version.json`,
     JSON.stringify({ generated: now.slice(0, 10), timestamp: now, churches: index.length }),
   )
+  pruneShards(`${OUT}/services`, new Set(Object.keys(shards)))
   let total = statSync(`${OUT}/churches.json`).size
   for (const [cell, data] of Object.entries(shards)) {
     const p = `${OUT}/services/${cell}.json`

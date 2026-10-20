@@ -3,16 +3,20 @@
 // when online, silently pulls a newer registry from the site and caches it in the
 // Filesystem. Reads resolve cache → bundled, so the app is always usable offline.
 //
-// A version change downloads the WHOLE snapshot (churches.json + all shards, ~1.5MB)
+// A version change downloads the WHOLE snapshot (churches.json + all shards + the
+// photo and confession side files, ~1.5MB)
 // once, gated on version.json, so between monthly refreshes only a tiny version
 // check crosses the wire. version.json is written LAST, so its presence marks a
 // complete snapshot — a partial/failed refresh falls back to bundled for everything.
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { isNative } from './native'
+import { removeKey } from './storage'
+import type { RawEntry } from '../domain/churchPage'
 
 const REMOTE = 'https://bohosluzby.dravec.org'
 const CACHE = 'registry' // Filesystem subdir under Directory.Data
 const ASOF_KEY = 'data_asof'
+const EXTRAS = ['photos.json', 'confession.json']
 
 export interface DataVersion {
   /** ISO date the registry was scraped, e.g. "2026-07-03". Also the "as of" label. */
@@ -62,6 +66,12 @@ async function writeCache(path: string, text: string): Promise<void> {
   })
 }
 
+/** The version.json served with the app (bundled on native), or null. */
+const fetchBundledVersion = (): Promise<DataVersion | null> =>
+  fetch('/data/version.json')
+    .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
+    .catch(() => null)
+
 async function ready(): Promise<boolean> {
   if (!isNative) return false
   if (cacheReady !== null) return cacheReady
@@ -79,16 +89,9 @@ async function ready(): Promise<boolean> {
   // the stale cache so loadData falls through to the fresh bundled version, and
   // drop the stored as-of so the footer shows the bundled date and refreshData
   // compares the remote against it, not against the stale cache's.
-  const bundledV = await fetch('/data/version.json')
-    .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
-    .catch(() => null)
-  const bundledKey = versionKey(bundledV)
+  const bundledKey = versionKey(await fetchBundledVersion())
   if (bundledKey && cachedKey < bundledKey) {
-    try {
-      localStorage.removeItem(ASOF_KEY)
-    } catch {
-      /* private mode */
-    }
+    removeKey(ASOF_KEY)
     cacheReady = false
     return false
   }
@@ -107,6 +110,9 @@ export async function loadData<T>(path: string): Promise<T> {
   if (!res.ok) throw new Error(`${path} ${res.status}`)
   return (await res.json()) as T
 }
+
+/** One services/<cell>.json shard, undecoded (callers run decodeShard). */
+export const loadShard = (cell: string) => loadData<Record<string, RawEntry>>(`services/${cell}.json`)
 
 export function activeAsOf(): string | null {
   try {
@@ -143,6 +149,7 @@ async function fetchText(url: string, ms = 8000): Promise<string> {
  *   cache the whole snapshot atomically. Any failure keeps the existing data.
  */
 export async function refreshData(onDownloading?: () => void): Promise<RefreshResult> {
+  await ready() // drops a cache (and its as-of) older than the bundle before we compare
   let asOf = activeAsOf()
   let bundledV: DataVersion | null = null
   if (!asOf) {
@@ -154,11 +161,7 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
   if (!isNative) {
     // Reuse the already-fetched bundledV if available to avoid a second fetch on
     // first visit (web serves fresh data so the bundled file IS the version).
-    const v =
-      bundledV ??
-      (await fetch('/data/version.json')
-        .then((r) => (r.ok ? (r.json() as Promise<DataVersion>) : null))
-        .catch(() => null))
+    const v = bundledV ?? (await fetchBundledVersion())
     return { asOf: v?.generated ?? asOf, updated: false }
   }
 
@@ -182,6 +185,12 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
     const shards = await Promise.all(
       cells.map(async (c) => [c, await fetchText(`${REMOTE}/data/services/${c}.json`)] as const),
     )
+    // side files the detail page reads; a miss aborts like a shard miss — marking
+    // the version complete without them would pin the older bundled copy until
+    // the next data publish
+    const extras = await Promise.all(
+      EXTRAS.map(async (f) => [f, await fetchText(`${REMOTE}/data/${f}`)] as const),
+    )
     let unlock!: () => void
     refreshLock = new Promise<void>((r) => (unlock = r))
     try {
@@ -194,6 +203,7 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
       }
       cacheReady = null // re-checked from disk if the writes below fail
       for (const [c, text] of shards) await writeCache(`services/${c}.json`, text)
+      for (const [f, text] of extras) await writeCache(f, text)
       await writeCache('churches.json', churchesText)
       await writeCache('version.json', JSON.stringify(remote)) // marker, written last
       cacheReady = true

@@ -2,7 +2,7 @@
 // or viewed near Mass time). Seeds the after-Mass card. localStorage only —
 // docs/PILGRIM-WITNESS-PLAN.md keeps the cohort on-device, no location check.
 
-import type { Occurrence } from '../domain/feedback'
+import { massKey, occurrenceOf, type MassRef, type Occurrence } from '../domain/feedback'
 import { readList, writeJson } from './storage'
 
 /** How long after a Mass starts before we ask "were you there?". */
@@ -41,6 +41,18 @@ export function recordExpectedAttendance(entry: Omit<LedgerEntry, 'answered'>): 
   if (list.some((e) => e.massKey === entry.massKey)) return
   list.push({ ...entry })
   write(list)
+}
+
+/** Record that this device is expected at `service`'s occurrence starting at `start`. */
+export function expectAttendance(church: { id: string; name: string }, service: MassRef, start: Date, type: string): void {
+  recordExpectedAttendance({
+    churchId: church.id,
+    massKey: massKey(church.id, service, start),
+    startISO: start.toISOString(),
+    churchName: church.name,
+    type,
+    ...occurrenceOf(service, start),
+  })
 }
 
 function isNeverAsk(): boolean {

@@ -129,3 +129,26 @@ it('the read itself waits longer than the UI deadline, so a slow fix has room to
   const opts = getCurrent.mock.calls[0][2] as PositionOptions
   expect(opts.timeout).toBeGreaterThanOrEqual(25_000)
 })
+
+it('Android "Approximate only" counts as granted: coarse is all a low-accuracy fix needs', async () => {
+  vi.useRealTimers()
+  vi.resetModules()
+  const perm = { location: 'denied', coarseLocation: 'granted' }
+  const Geolocation = {
+    checkPermissions: vi.fn(async () => perm),
+    requestPermissions: vi.fn(async () => perm),
+    getCurrentPosition: vi.fn(async () => ({ coords: { latitude: 49.2, longitude: 16.6 } })),
+  }
+  vi.doMock('./native', () => ({ isNative: true }))
+  vi.doMock('@capacitor/geolocation', () => ({ Geolocation }))
+  try {
+    const geo = await import('./geo')
+    await expect(geo.getPermissionState()).resolves.toBe('granted')
+    await expect(geo.getCurrentPosition()).resolves.toEqual({ coords: { lat: 49.2, lng: 16.6 } })
+    expect(Geolocation.requestPermissions).not.toHaveBeenCalled() // no re-prompt
+  } finally {
+    vi.doUnmock('./native')
+    vi.doUnmock('@capacitor/geolocation')
+    vi.resetModules()
+  }
+})

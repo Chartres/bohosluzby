@@ -272,12 +272,5 @@ export function suggestTag(text: string): void {
   // TODO(prod): route to Pavol (private channel) to grow the vocabulary.
   const t = text.trim()
   if (!t) return
-  try {
-    const raw = localStorage.getItem(SUGGEST_KEY)
-    const list = raw ? (JSON.parse(raw) as unknown[]) : []
-    ;(list as { text: string; at: string }[]).push({ text: t, at: new Date().toISOString() })
-    localStorage.setItem(SUGGEST_KEY, JSON.stringify(list))
-  } catch {
-    /* private mode */
-  }
+  writeJson(SUGGEST_KEY, [...readList(SUGGEST_KEY), { text: t, at: new Date().toISOString() }])
 }

@@ -9,8 +9,8 @@ import {
   type ExtraService,
   type Service,
 } from './domain/data'
-import { nextOccurrences, pragueIsoDate, pragueToday, recentOccurrence } from './domain/occurrences'
-import { noteShownOnDay, noteUncertain, parseNote } from './domain/notes'
+import { nextOccurrences, pragueIsoDate, recentOccurrence } from './domain/occurrences'
+import { noteShownOnDay, noteUncertain, parseNote, runsAt } from './domain/notes'
 import { parseConfessionFromNote } from './domain/confession'
 import { dayLabel, fmtDateCz, fmtTime, withReferral } from './domain/format'
 import { dayLine, type Upcoming } from './domain/ranking'
@@ -18,12 +18,12 @@ import { isStale } from './domain/registry'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { setStatusBarOnDark } from './lib/native-init'
-import { loadData } from './lib/dataStore'
+import { loadData, loadShard } from './lib/dataStore'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { aggregateFor, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
-import { recordExpectedAttendance } from './lib/feedbackLedger'
+import { expectAttendance } from './lib/feedbackLedger'
 import { WITNESS_ENABLED } from './lib/flags'
-import { massKey, occurrenceOf, oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
+import { oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
 import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
 import { churchUrl } from './domain/site'
@@ -126,8 +126,9 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
   }
 
   const onCalendar = () => {
-    track('key_action', { action: 'ics', church: church.id })
-    addToCalendar(church, service).catch((err) => logError(err, { where: 'calendar', id: church.id }))
+    addToCalendar(church, service)
+      .then((ok) => (ok ? track('key_action', { action: 'ics', church: church.id }) : flash(t('remind_none'))))
+      .catch((err) => logError(err, { where: 'calendar', id: church.id }))
   }
 
   const onRemind = async () => {
@@ -370,9 +371,11 @@ export function ChurchDetail({
     let cancelled = false
     setSvc(null)
     setFailed(false)
-    // Use loadData (not raw fetch) so native/OTA-refreshed registry is used and
-    // the shared shard cache is hit on repeat opens. (MapView does the same.)
-    loadData<Parameters<typeof decodeShard>[0]>(`services/${church.cell}.json`)
+    // Use loadData (not raw fetch) so the native/OTA-refreshed registry is used.
+    // (MapView does the same.) ponytail: no in-memory cache — repeat opens
+    // re-read the shard (service-worker or Filesystem hit) and re-parse it; add
+    // a memo in loadData if detail opens ever show up as slow.
+    loadShard(church.cell)
       .then((shard) => {
         if (cancelled) return
         const s = decodeShard(shard).get(church.id)
@@ -488,16 +491,8 @@ export function ChurchDetail({
     for (const s of svc.regular) {
       const start = recentOccurrence({ days: s.days, time: s.time }, now, RECENT_VIEW_MIN)
       if (!start) continue
-      const { y, m, d } = pragueToday(start)
-      if (!parseNote(s.note).runsOn(y, m, d)) continue
-      recordExpectedAttendance({
-        churchId: church.id,
-        massKey: massKey(church.id, s, start),
-        startISO: start.toISOString(),
-        churchName: church.name,
-        type: s.type || t('service_fallback'),
-        ...occurrenceOf(s, start),
-      })
+      if (!runsAt(s.note, start)) continue
+      expectAttendance(church, s, start, s.type || t('service_fallback'))
     }
   }, [svc, church])
 
@@ -890,10 +885,7 @@ function ServiceRow({
     const upcoming = nextOccurrences({ days: s.days, time: s.time }, new Date(), 35)
     return (
       upcoming.length > 0 &&
-      upcoming.every((start) => {
-        const w = pragueToday(start)
-        return !rule.runsOn(w.y, w.m, w.d)
-      })
+      upcoming.every((start) => !runsAt(s.note, start))
     )
   })()
   return (

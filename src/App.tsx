@@ -12,7 +12,7 @@ import {
 import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
-import { pragueIsoDate, pragueToday } from './domain/occurrences'
+import { pragueDay, pragueIsoDate } from './domain/occurrences'
 import { noteShownOnDay } from './domain/notes'
 import { currentLiturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
 import { dayFromParam, dayOptions, dayToParam, litForChoice } from './domain/days'
@@ -35,7 +35,8 @@ import { track, conversion, logError } from './analytics'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
 import { isNative, platform } from './lib/native'
 import { pageViewContext } from './lib/telemetry'
-import { loadData, refreshData, activeAsOf } from './lib/dataStore'
+import { loadData, loadShard, refreshData, activeAsOf } from './lib/dataStore'
+import { removeKey, writeJson } from './lib/storage'
 import {
   lang,
   locale,
@@ -142,11 +143,7 @@ function loadSticky<T>(key: string, opts: { sameDay?: boolean } = {}): T | null 
 }
 
 function saveSticky<T>(key: string, value: T): void {
-  try {
-    localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), value }))
-  } catch {
-    // private mode
-  }
+  writeJson(key, { savedAt: Date.now(), value })
 }
 
 function loadFilters(): Filters {
@@ -158,10 +155,7 @@ function loadFilters(): Filters {
 }
 
 // ISO weekday (1=Mon…7=Sun) of an instant, on the Prague calendar.
-const isoDayOf = (at: Date): number => {
-  const w = pragueToday(at)
-  return new Date(Date.UTC(w.y, w.m - 1, w.d)).getUTCDay() || 7
-}
+const isoDayOf = (at: Date): number => pragueDay(at).getUTCDay() || 7
 
 // Minimal history routing (GH Pages serves 404.html = the app for deep links).
 type Route = { view: 'home' } | { view: 'church'; id: string } | { view: 'city'; slug: string }
@@ -319,11 +313,7 @@ export default function App() {
     if (c) {
       saveSticky(CAS_KEY, c)
     } else {
-      try {
-        localStorage.removeItem(CAS_KEY)
-      } catch {
-        // private mode
-      }
+      removeKey(CAS_KEY)
     }
     track('key_action', { action: 'filter', cas: c })
   }
@@ -331,9 +321,10 @@ export default function App() {
   // sticky like the other filters (within STICKY_TTL_MS): a plain visit
   // re-applies the saved cas
   useEffect(() => {
-    if (parseCas(new URLSearchParams(location.search).get('cas'))) return
     const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
-    if (saved) setParam('cas', saved)
+    // an expired key is dead weight, and the resume check would take it for this kdy's source
+    if (!saved) removeKey(CAS_KEY)
+    else if (!parseCas(new URLSearchParams(location.search).get('cas'))) setParam('cas', saved)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
   }, [])
 
@@ -393,7 +384,9 @@ export default function App() {
   // geolocate → last known position → the picker (also re-run by "moje poloha").
   // Permission-aware: a known "denied" skips the wait entirely, and a pending
   // prompt tells the user to look for the browser dialog instead of a spinner.
-  const locate = () => {
+  // `background`: an automatic re-locate (resume) — runs only under an already
+  // granted permission, so it can never raise a system dialog on its own.
+  const locate = (background = false) => {
     // Never block on a fix we might not get (airplane mode!): the last known
     // position seeds the list IMMEDIATELY — visibly marked as such — while the
     // fresh location is fetched in the background and swapped in on arrival.
@@ -403,8 +396,10 @@ export default function App() {
       setGeoFail(reason)
       if (!last) setGeoDenied(true) // with a seeded origin the list already stands
     }
-    setLocating(true)
+    if (!background) setLocating(true)
     getPermissionState().then((perm) => {
+      if (background && perm !== 'granted') return // stay silent, keep the list
+      if (background) setLocating(true)
       if (perm === 'denied') {
         setLocating(false)
         fallback('denied') // no callback is coming — don't pretend to wait for one
@@ -417,11 +412,11 @@ export default function App() {
         // The deadline only ends the WAIT. A fix that lands later (iOS often
         // takes 10–12 s) still becomes the origin — unless the user has chosen
         // something themselves in the meantime (a city, a church, the picker).
+        // A 'geo' origin is no choice: a resume re-locate replaces the old fix.
         onLate: (late) => {
           setLocating(false)
           if (!late.coords) return
-          const cur = originRef.current
-          if ((cur && cur.source !== 'last') || pickingRef.current) return
+          if (originRef.current?.source === 'city' || pickingRef.current) return
           setOrigin({ lat: late.coords.lat, lng: late.coords.lng, source: 'geo' })
           setGeoFail(null)
           setGeoDenied(false)
@@ -451,14 +446,7 @@ export default function App() {
   // remember the position for the offline / denied fallback
   useEffect(() => {
     if (!origin || origin.source === 'last') return
-    try {
-      localStorage.setItem(
-        LAST_ORIGIN_KEY,
-        JSON.stringify({ lat: origin.lat, lng: origin.lng, label: origin.label }),
-      )
-    } catch {
-      // private mode
-    }
+    writeJson(LAST_ORIGIN_KEY, { lat: origin.lat, lng: origin.lng, label: origin.label })
   }, [origin])
 
 
@@ -501,7 +489,7 @@ export default function App() {
     const cells = [...new Set(nearby.map((c) => c.cell))]
     Promise.all(
       cells.map((cell) =>
-        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch((err: unknown) => {
+        loadShard(cell).catch((err: unknown) => {
           logError(err, { where: 'load-shard', cell })
           return null
         }),
@@ -551,13 +539,47 @@ export default function App() {
     }
   }, [data])
 
+  // Resumed from the background (native, installed PWA, a tab left open): the
+  // sticky expiry and "where am I" were only checked at mount. Re-check them so
+  // a resume behaves like opening the app — last night's "večer" gone, and a
+  // phone carried to another town lists that town.
+  const resumeRef = useRef<(hiddenAt: number) => void>(() => {})
+  resumeRef.current = (hiddenAt) => {
+    setFilters((cur) => {
+      const next = loadFilters()
+      return JSON.stringify(next) === JSON.stringify(cur) ? cur : next
+    })
+    const resumed = new Date()
+    const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
+    // a saved kdy expires on the same clock as the filters; a URL-only one (shared
+    // link, nothing or another value stored) on time away
+    let expired = false
+    try {
+      const stored = JSON.parse(localStorage.getItem(CAS_KEY) ?? 'null') as { value?: unknown } | null
+      expired = saved === null && stored?.value === cas
+    } catch {
+      // private mode — nothing was stored
+    }
+    const away = resumed.getTime() - hiddenAt > STICKY_TTL_MS || !samePragueDay(new Date(hiddenAt), resumed)
+    if (cas && saved !== cas && (expired || away)) setParam('cas', saved)
+    // ponytail: 15 min away ≈ maybe moved; shorter app switches keep the list as is
+    if (origin?.source === 'geo' && !picking && resumed.getTime() - hiddenAt >= 15 * 60_000) locate(true)
+  }
+
   useEffect(() => {
     const tick = () => setNow(new Date())
     const id = setInterval(tick, 60_000)
     // timers sleep while the app is backgrounded — refresh at once on resume,
     // not up to a minute later with Masses that already started still listed
+    let hiddenAt: number | null = null
     const onVisible = () => {
-      if (document.visibilityState === 'visible') tick()
+      if (document.visibilityState !== 'visible') {
+        hiddenAt = Date.now()
+        return
+      }
+      tick()
+      if (hiddenAt !== null) resumeRef.current(hiddenAt)
+      hiddenAt = null
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => {
@@ -640,11 +662,7 @@ export default function App() {
   const resetAll = () => {
     updateFilters({ ...NO_FILTERS })
     setParams({ cas: null, den: null }) // one navigate — setCas+setDay would race on `search`
-    try {
-      localStorage.removeItem(CAS_KEY)
-    } catch {
-      // private mode
-    }
+    removeKey(CAS_KEY)
     track('key_action', { action: 'filters_reset' })
   }
 
@@ -698,11 +716,7 @@ export default function App() {
   // then re-run geolocation — the way back after any manual city pick.
   const useMyLocation = () => {
     track('key_action', { action: 'my_location' })
-    try {
-      localStorage.removeItem(LAST_ORIGIN_KEY)
-    } catch {
-      // private mode
-    }
+    removeKey(LAST_ORIGIN_KEY)
     setPicking(false)
     setGeoDenied(false)
     if (route.view === 'city') navigate(`/${search}`) // back to "/" = my location, day kept
@@ -1029,6 +1043,7 @@ export default function App() {
                       onOpen={openChurch}
                       onNavigate={setNavTarget}
                       fill={mapMode}
+                      now={now}
                     />
                   </Suspense>
                 </div>

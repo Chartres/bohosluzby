@@ -63,3 +63,49 @@ describe('buildICS', () => {
     expect(ics).toContain('T100000')
   })
 })
+
+describe('buildICS — note-restricted weekly services (sweep F1, G2)', () => {
+  const unfold = (ics: string) => ics.replace(/\r\n /g, '')
+  const dtstarts = (ics: string) => [...ics.matchAll(/DTSTART;TZID=Europe\/Prague:(\d{8})T/g)].map((m) => m[1])
+  const exdates = (ics: string) =>
+    (unfold(ics).match(/^EXDATE;TZID=Europe\/Prague:(.*)$/m)?.[1] ?? '').split(',').filter(Boolean).map((d) => d.slice(0, 8))
+
+  it('"1x za měsíc, 1. týden v měsíci" is ONE series: RRULE until a year out, other Saturdays excluded', () => {
+    const monthly: Service = { days: '6', time: '17:00', lang: 'česky', greek: false, type: 'mše sv.', note: '1x za měsíc, 1. týden v měsíci' }
+    const ics = buildICS(church, monthly, now)!
+    expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(1) // deletable as one series
+    expect(dtstarts(ics)).toEqual(['20260704'])
+    expect(ics).toMatch(/RRULE:FREQ=WEEKLY;BYDAY=SA;UNTIL=2027\d{4}T\d{6}Z/)
+    const ex = exdates(ics)
+    expect(ex).toContain('20260711')
+    expect(ex.length).toBeGreaterThan(30)
+    for (const d of ex) expect(Number(d.slice(6))).toBeGreaterThan(7) // never a first-week Saturday
+    expect(ex[0]).toBe('20260711')
+    expect(unfold(ics)).toContain('EXDATE;TZID=Europe/Prague:20260711T170000,')
+  })
+
+  it('"období od 1.6. do 30.9." never lands in winter', () => {
+    const summer: Service = { days: '2', time: '18:00', lang: 'česky', greek: false, type: 'mše sv.', note: 'období od 1.6. do 30.9.' }
+    const ics = buildICS(church, summer, new Date('2026-10-20T10:00:00Z'))!
+    expect(ics).not.toBeNull() // next June is within the export horizon
+    expect(dtstarts(ics)).toEqual(['20270601'])
+    expect(ics).toContain('RRULE:FREQ=WEEKLY;BYDAY=TU;UNTIL=20270928T160000Z') // last Tuesday of September
+    expect(ics).not.toContain('EXDATE')
+  })
+
+  it('a note that excludes nothing keeps the open-ended weekly RRULE', () => {
+    const ics = buildICS(church, { ...weekly, note: 'pro děti' }, now)!
+    expect(ics).toContain('RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR\r\n')
+    expect(ics).not.toContain('EXDATE')
+    expect(dtstarts(ics)).toHaveLength(1)
+  })
+})
+
+it('folds lines at 75 octets, counting UTF-8 bytes, without splitting a character (sweep F7)', () => {
+  const longName: Church = { ...church, name: 'kostel Nejsvětějšího Srdce Páně a Panny Marie Růžencové — Žďár nad Sázavou' }
+  const ics = buildICS(longName, weekly, now)!
+  const enc = new TextEncoder()
+  for (const line of ics.split('\r\n')) expect(enc.encode(line).length).toBeLessThanOrEqual(75)
+  const unfolded = ics.replace(/\r\n /g, '')
+  expect(unfolded).toContain(`SUMMARY:Mše sv. — ${longName.name}`)
+})
