@@ -24,3 +24,6 @@ ios/App/fastlane/README.md
 *.cer
 *.certSigningRequest
 *.p12
+
+# agent tool state
+.omc/
