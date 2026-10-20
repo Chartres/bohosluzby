@@ -75,6 +75,7 @@ export default function MapView({
   onOpen,
   onNavigate,
   fill = false,
+  now,
 }: {
   origin: { lat: number; lng: number }
   churches: Church[] // the whole index — matching is the selector's job
@@ -85,6 +86,8 @@ export default function MapView({
   onNavigate: (t: { name: string; lat: number; lng: number }) => void
   /** Map mode: fill the parent column instead of the in-flow plate height. */
   fill?: boolean
+  /** App's clock (minute tick + resume refresh) — chips re-render on it, not only on pan. */
+  now: Date
 }) {
   const divRef = useRef<HTMLDivElement>(null)
   // The dog-ear fold cue on a chip reads as "something's here" but its meaning
@@ -302,7 +305,6 @@ export default function MapView({
       if (stale || seq !== renderSeq) return // a newer render superseded this one
       const byId = new Map<string, ChurchServices>()
       for (const shard of shards) for (const [id, s] of shard) byId.set(id, s)
-      const now = new Date()
       // the SAME selector as the seznam — a chip on the map is a row in the list
       const matched = new Map<string, Upcoming>()
       for (const u of selectUpcoming(now, origin, visible, byId, filters, cas, day, { limit: Infinity })) {
@@ -394,7 +396,7 @@ export default function MapView({
     // onOpen/onNavigate deliberately excluded — read via refs so an unstable
     // callback identity can't re-run this effect off the moveend cycle.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [churches, filters, cas, day, origin])
+  }, [churches, filters, cas, day, origin, now])
 
   return (
     <div className={fill ? 'relative h-full' : 'relative'}>

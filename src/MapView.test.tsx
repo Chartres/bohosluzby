@@ -1,0 +1,48 @@
+// J1: the map's chips must follow App's clock (minute tick + resume refresh),
+// not freeze at the time of the last pan.
+import { vi } from 'vitest'
+vi.mock('./lib/supabase', () => ({ supabase: null }))
+vi.mock('./lib/flags', () => ({ WITNESS_ENABLED: false }))
+import { render, waitFor } from '@testing-library/react'
+import MapView from './MapView'
+import type { Church } from './domain/data'
+import { NO_FILTERS } from './domain/filters'
+
+const church: Church = { id: '1', name: 'kostel 1', city: 'Praha 1', lat: 50.086, lng: 14.417, barrierFree: false, cell: '50-14' }
+const SHARD = { '1': { u: '2026-06-01', p: '', pa: '', c: [], s: [['7', '18:00', 'česky', 0, 'mše sv.', '']] } }
+
+describe('MapView chips follow the clock', () => {
+  beforeEach(() => {
+    // jsdom lays nothing out — give Leaflet a phone-sized container so bounds aren't a point
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(393)
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600)
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(SHARD), { status: 200 })))
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('re-renders the chip when App’s now moves past the Mass', async () => {
+    const props = {
+      origin: { lat: church.lat, lng: church.lng },
+      churches: [church],
+      filters: NO_FILTERS,
+      cas: null,
+      day: 'now' as const,
+      onOpen: () => {},
+      onNavigate: () => {},
+    }
+    // Sunday 2026-10-18, 17:00 Prague → the 18:00 Mass is next today
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-18T15:00:00Z'))
+    const { container, rerender } = render(<MapView {...props} now={new Date()} />)
+    const chip = () => container.querySelector('.map-chip')?.textContent
+    await waitFor(() => expect(chip()).toBe('18:00'))
+    // backgrounded until 18:30 → resume tick: next is a week out, weekday-prefixed
+    vi.setSystemTime(new Date('2026-10-18T16:30:00Z'))
+    rerender(<MapView {...props} now={new Date()} />)
+    await waitFor(() => expect(chip()).toMatch(/^ne 18:00$/))
+    vi.useRealTimers()
+  })
+})
