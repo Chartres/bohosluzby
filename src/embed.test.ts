@@ -74,3 +74,9 @@ it('honours a run mask: a service its note excludes is skipped', () => {
   }
   expect(api().nextServices(masked, NOW, 3).map((s) => `${s.label} ${s.time}`)).toEqual(['ne 09:00'])
 })
+
+it('a range time ("17:30 - 18:00") is listed by its start, not dropped (sweep F6)', () => {
+  const data = { ...DATA, s: [['5', '17:30 - 18:00', 'česky', 'adorace', '']], x: [] }
+  const next = api().nextServices(data, NOW, 1)
+  expect(next.map((s) => `${s.label} ${s.time} ${s.type}`)).toEqual(['dnes 17:30 - 18:00 adorace'])
+})
