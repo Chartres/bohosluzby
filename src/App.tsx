@@ -411,11 +411,11 @@ export default function App() {
         // The deadline only ends the WAIT. A fix that lands later (iOS often
         // takes 10–12 s) still becomes the origin — unless the user has chosen
         // something themselves in the meantime (a city, a church, the picker).
+        // A 'geo' origin is no choice: a resume re-locate replaces the old fix.
         onLate: (late) => {
           setLocating(false)
           if (!late.coords) return
-          const cur = originRef.current
-          if ((cur && cur.source !== 'last') || pickingRef.current) return
+          if (originRef.current?.source === 'city' || pickingRef.current) return
           setOrigin({ lat: late.coords.lat, lng: late.coords.lng, source: 'geo' })
           setGeoFail(null)
           setGeoDenied(false)

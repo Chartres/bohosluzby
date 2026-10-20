@@ -1106,6 +1106,24 @@ describe('sweep regressions (consolidated 2026-10-17)', () => {
     expect(screen.queryByText(/Salvátora/)).toBeNull()
   })
 
+  it('resumed in another town with a slow fix: the late fix still moves the list (sweep G1)', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    background(new Date('2026-07-03T15:05:00Z'))
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: (ok: (p: { coords: { latitude: number; longitude: number } }) => void) =>
+          setTimeout(() => ok({ coords: { latitude: 49.1986, longitude: 16.6072 } }), 12_000), // past the 10 s deadline
+      },
+      configurable: true,
+    })
+    resume(new Date('2026-07-03T18:00:00Z'))
+    await act(() => vi.advanceTimersByTimeAsync(12_000))
+    expect(await screen.findByText(/sv\. Tomáše/)).toBeInTheDocument()
+    expect(screen.queryByText(/Salvátora/)).toBeNull()
+  })
+
   it('resumed next morning: last night\'s večer and filters are gone (sweep F4)', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
