@@ -11,6 +11,7 @@
 // feedback card surfaces them.
 
 import { liturgicalDay } from './liturgical.ts' // explicit: the Node prerender imports this
+import { pragueToday } from './occurrences.ts'
 
 export interface NoteRule {
   /** true = may run on that Prague calendar date; false = provably does not. */
@@ -389,6 +390,12 @@ export function parseNote(note: string): NoteRule {
   }
   cache.set(trimmed, rule)
   return rule
+}
+
+/** Note-aware occurrence check: false only when the note provably excludes `start`'s Prague date. */
+export function runsAt(note: string | undefined, start: Date): boolean {
+  const { y, m, d } = pragueToday(start)
+  return parseNote(note ?? '').runsOn(y, m, d)
 }
 
 /** Should this note be rendered as a warning rubric? */

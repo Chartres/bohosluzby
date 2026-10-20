@@ -3,7 +3,7 @@
 // via TZID + an explicit VTIMEZONE so every client agrees across DST.
 import type { Church, ExtraService, Service } from './data'
 import { nextOccurrences, pragueToday, pragueMinutes } from './occurrences'
-import { parseNote } from './notes'
+import { runsAt } from './notes'
 import { churchUrl } from './site'
 
 const BYDAY: Record<string, string> = { 1: 'MO', 2: 'TU', 3: 'WE', 4: 'TH', 5: 'FR', 6: 'SA', 7: 'SU' }
@@ -73,12 +73,8 @@ const HORIZON_DAYS = 366
 export function buildICS(church: Church, service: Service | ExtraService, now: Date): string | null {
   const spec =
     'days' in service ? { days: service.days, time: service.time } : { date: service.date, time: service.time }
-  const note = parseNote(service.note ?? '')
   const all = nextOccurrences(spec, now, HORIZON_DAYS)
-  const occs = all.filter((occ) => {
-    const { y, m, d } = pragueToday(occ)
-    return note.runsOn(y, m, d)
-  })
+  const occs = all.filter((occ) => runsAt(service.note, occ))
   if (occs.length === 0) return null
   const restricted = 'days' in service && occs.length < all.length
 

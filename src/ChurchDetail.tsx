@@ -9,8 +9,8 @@ import {
   type ExtraService,
   type Service,
 } from './domain/data'
-import { nextOccurrences, pragueIsoDate, pragueToday, recentOccurrence } from './domain/occurrences'
-import { noteShownOnDay, noteUncertain, parseNote } from './domain/notes'
+import { nextOccurrences, pragueIsoDate, recentOccurrence } from './domain/occurrences'
+import { noteShownOnDay, noteUncertain, parseNote, runsAt } from './domain/notes'
 import { parseConfessionFromNote } from './domain/confession'
 import { dayLabel, fmtDateCz, fmtTime, withReferral } from './domain/format'
 import { dayLine, type Upcoming } from './domain/ranking'
@@ -491,8 +491,7 @@ export function ChurchDetail({
     for (const s of svc.regular) {
       const start = recentOccurrence({ days: s.days, time: s.time }, now, RECENT_VIEW_MIN)
       if (!start) continue
-      const { y, m, d } = pragueToday(start)
-      if (!parseNote(s.note).runsOn(y, m, d)) continue
+      if (!runsAt(s.note, start)) continue
       recordExpectedAttendance({
         churchId: church.id,
         massKey: massKey(church.id, s, start),
@@ -893,10 +892,7 @@ function ServiceRow({
     const upcoming = nextOccurrences({ days: s.days, time: s.time }, new Date(), 35)
     return (
       upcoming.length > 0 &&
-      upcoming.every((start) => {
-        const w = pragueToday(start)
-        return !rule.runsOn(w.y, w.m, w.d)
-      })
+      upcoming.every((start) => !runsAt(s.note, start))
     )
   })()
   return (
