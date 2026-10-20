@@ -1,7 +1,7 @@
 import { isNative } from './native'
 import { reminderTitle, t } from '../i18n'
 import type { Church, ExtraService, Service } from '../domain/data'
-import { buildICS } from '../domain/ics'
+import { buildICS, specOf } from '../domain/ics'
 import { nextReminderAt } from '../domain/occurrences'
 import { runsAt } from '../domain/notes'
 import { expectAttendance } from './feedbackLedger'
@@ -10,9 +10,6 @@ import { expectAttendance } from './feedbackLedger'
 export const REMINDER_LEAD_MIN = 30
 
 type AnyService = Service | ExtraService
-
-const specOf = (s: AnyService) =>
-  'days' in s ? { days: s.days, time: s.time } : { date: s.date, time: s.time }
 
 const icsName = (church: Church, s: AnyService) =>
   `bohosluzby-${church.id}-${s.time.replace(':', '')}.ics`

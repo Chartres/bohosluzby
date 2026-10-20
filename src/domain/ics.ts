@@ -64,6 +64,10 @@ const pad = (n: number) => String(n).padStart(2, '0')
  * the reminder (a June-to-September mass seen in October still exports). */
 const HORIZON_DAYS = 366
 
+/** A weekly or one-off service as the occurrence maths' spec. */
+export const specOf = (s: Service | ExtraService) =>
+  'days' in s ? { days: s.days, time: s.time } : { date: s.date, time: s.time }
+
 /** VCALENDAR text for one service of a church, or null when the service has no
  * occurrence within a year (past one-off, unparsable time, note excludes all).
  * A weekly service whose note excludes some dates ("1. týden v měsíci", "od 1.6.
@@ -71,9 +75,7 @@ const HORIZON_DAYS = 366
  * the last date the app itself lists in the next year, with every other date
  * excluded; an unrestricted one keeps an open-ended weekly RRULE. */
 export function buildICS(church: Church, service: Service | ExtraService, now: Date): string | null {
-  const spec =
-    'days' in service ? { days: service.days, time: service.time } : { date: service.date, time: service.time }
-  const all = nextOccurrences(spec, now, HORIZON_DAYS)
+  const all = nextOccurrences(specOf(service), now, HORIZON_DAYS)
   const occs = all.filter((occ) => runsAt(service.note, occ))
   if (occs.length === 0) return null
   const restricted = 'days' in service && occs.length < all.length
