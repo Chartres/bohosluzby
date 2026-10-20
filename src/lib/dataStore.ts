@@ -10,6 +10,7 @@
 // complete snapshot — a partial/failed refresh falls back to bundled for everything.
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { isNative } from './native'
+import { removeKey } from './storage'
 
 const REMOTE = 'https://bohosluzby.dravec.org'
 const CACHE = 'registry' // Filesystem subdir under Directory.Data
@@ -86,11 +87,7 @@ async function ready(): Promise<boolean> {
     .catch(() => null)
   const bundledKey = versionKey(bundledV)
   if (bundledKey && cachedKey < bundledKey) {
-    try {
-      localStorage.removeItem(ASOF_KEY)
-    } catch {
-      /* private mode */
-    }
+    removeKey(ASOF_KEY)
     cacheReady = false
     return false
   }

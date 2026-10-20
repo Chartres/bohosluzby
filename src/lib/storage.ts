@@ -19,3 +19,12 @@ export function writeJson(key: string, value: unknown): void {
     /* private mode */
   }
 }
+
+/** Removes `key`; a failed remove (private mode) is dropped. */
+export function removeKey(key: string): void {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    /* private mode */
+  }
+}

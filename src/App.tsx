@@ -36,7 +36,7 @@ import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/g
 import { isNative, platform } from './lib/native'
 import { pageViewContext } from './lib/telemetry'
 import { loadData, refreshData, activeAsOf } from './lib/dataStore'
-import { writeJson } from './lib/storage'
+import { removeKey, writeJson } from './lib/storage'
 import {
   lang,
   locale,
@@ -313,11 +313,7 @@ export default function App() {
     if (c) {
       saveSticky(CAS_KEY, c)
     } else {
-      try {
-        localStorage.removeItem(CAS_KEY)
-      } catch {
-        // private mode
-      }
+      removeKey(CAS_KEY)
     }
     track('key_action', { action: 'filter', cas: c })
   }
@@ -664,11 +660,7 @@ export default function App() {
   const resetAll = () => {
     updateFilters({ ...NO_FILTERS })
     setParams({ cas: null, den: null }) // one navigate — setCas+setDay would race on `search`
-    try {
-      localStorage.removeItem(CAS_KEY)
-    } catch {
-      // private mode
-    }
+    removeKey(CAS_KEY)
     track('key_action', { action: 'filters_reset' })
   }
 
@@ -722,11 +714,7 @@ export default function App() {
   // then re-run geolocation — the way back after any manual city pick.
   const useMyLocation = () => {
     track('key_action', { action: 'my_location' })
-    try {
-      localStorage.removeItem(LAST_ORIGIN_KEY)
-    } catch {
-      // private mode
-    }
+    removeKey(LAST_ORIGIN_KEY)
     setPicking(false)
     setGeoDenied(false)
     if (route.view === 'city') navigate(`/${search}`) // back to "/" = my location, day kept
