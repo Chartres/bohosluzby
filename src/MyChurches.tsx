@@ -25,17 +25,19 @@ export function MyChurches({
     return ids.map((id) => byId.get(id)).filter((c): c is Church => Boolean(c))
   }, [ids, index])
   const [services, setServices] = useState<Map<string, ChurchServices> | null>(null)
+  const [partial, setPartial] = useState(false) // a shard failed — "—" may not mean "nothing"
 
   useEffect(() => {
     if (churches.length === 0) return
     let cancelled = false
     const cells = [...new Set(churches.map((c) => c.cell))]
-    Promise.all(cells.map((cell) => loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch(() => ({}))))
+    Promise.all(cells.map((cell) => loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch(() => null)))
       .then((shards) => {
         if (cancelled) return
         const m = new Map<string, ChurchServices>()
-        for (const shard of shards) for (const [id, s] of decodeShard(shard)) m.set(id, s)
+        for (const shard of shards) if (shard) for (const [id, s] of decodeShard(shard)) m.set(id, s)
         setServices(m)
+        setPartial(shards.includes(null))
       })
       .catch(() => {})
     return () => {
@@ -51,6 +53,11 @@ export function MyChurches({
   return (
     <section aria-label={t('mine_title')} className="mt-6">
       <h2 className="rubric border-b border-hairline pb-1">{t('mine_title')}</h2>
+      {partial && (
+        <p className="mt-2 text-sm text-ink-faded" role="status">
+          {t('partial_data')}
+        </p>
+      )}
       <ul>
         {churches.map((c) => {
           const u = next.get(c.id)

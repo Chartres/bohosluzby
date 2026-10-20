@@ -991,6 +991,21 @@ describe('sweep regressions (consolidated 2026-10-17)', () => {
     expect(await screen.findByText('Část dat se nepodařilo načíst — seznam nemusí být úplný.')).toBeInTheDocument()
   })
 
+  it('Moje kostely: a starred church whose shard failed says so, not a bare "—" (sweep F10)', async () => {
+    localStorage.setItem('bohosluzby:favorites', JSON.stringify(['3'])) // Brno, shard 49-16
+    stubGeolocation('granted')
+    const ok = globalThis.fetch
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: RequestInfo | URL) =>
+        String(url).endsWith('/data/services/49-16.json') ? new Response('', { status: 503 }) : ok(url),
+      ),
+    )
+    render(<App />)
+    const mine = await screen.findByRole('region', { name: 'Moje kostely' })
+    expect(await within(mine).findByText('Část dat se nepodařilo načíst — seznam nemusí být úplný.')).toBeInTheDocument()
+  })
+
   it('an empty area on an ordo day shows one empty state, not two', async () => {
     Object.defineProperty(navigator, 'geolocation', {
       value: {
