@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { feedback } from './analytics'
 import { t, type Key } from './i18n'
 
@@ -17,11 +17,13 @@ export function FeedbackCard({ context = 'footer' }: { context?: string }) {
   const [ellis, setEllis] = useState<Ellis | null>(null)
   const [text, setText] = useState('')
   const [sent, setSent] = useState(false)
+  const sentRef = useRef(false) // clicks batched before the re-render must not each send
 
   const canSend = !!ellis || text.trim().length > 0
 
   function submit() {
-    if (!canSend) return
+    if (!canSend || sentRef.current) return
+    sentRef.current = true
     feedback({
       sean_ellis: ellis ?? undefined,
       text: text.trim() ? `[${context}] ${text.trim()}` : undefined,

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FeedbackCard } from './FeedbackCard'
 
@@ -40,5 +40,17 @@ describe('FeedbackCard', () => {
     await user.type(screen.getByRole('textbox'), 'chybí Brno-venkov')
     await user.click(screen.getByRole('button', { name: 'Odeslat' }))
     expect(screen.getByText(/farnosti/)).toBeVisible()
+  })
+
+  it('a burst of clicks sends once (sweep F5)', async () => {
+    const user = userEvent.setup()
+    render(<FeedbackCard />)
+    await user.click(screen.getByRole('button', { name: /Napište nám/ }))
+    await user.click(screen.getByRole('button', { name: 'Hodně by mi chyběla' }))
+    const send = screen.getByRole('button', { name: 'Odeslat' })
+    act(() => {
+      for (let i = 0; i < 12; i++) send.click()
+    })
+    expect(feedback).toHaveBeenCalledTimes(1)
   })
 })
