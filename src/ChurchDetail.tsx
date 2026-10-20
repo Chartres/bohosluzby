@@ -21,9 +21,9 @@ import { setStatusBarOnDark } from './lib/native-init'
 import { loadData, loadShard } from './lib/dataStore'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { aggregateFor, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
-import { recordExpectedAttendance } from './lib/feedbackLedger'
+import { expectAttendance } from './lib/feedbackLedger'
 import { WITNESS_ENABLED } from './lib/flags'
-import { massKey, occurrenceOf, oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
+import { oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
 import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
 import { churchUrl } from './domain/site'
@@ -492,14 +492,7 @@ export function ChurchDetail({
       const start = recentOccurrence({ days: s.days, time: s.time }, now, RECENT_VIEW_MIN)
       if (!start) continue
       if (!runsAt(s.note, start)) continue
-      recordExpectedAttendance({
-        churchId: church.id,
-        massKey: massKey(church.id, s, start),
-        startISO: start.toISOString(),
-        churchName: church.name,
-        type: s.type || t('service_fallback'),
-        ...occurrenceOf(s, start),
-      })
+      expectAttendance(church, s, start, s.type || t('service_fallback'))
     }
   }, [svc, church])
 
