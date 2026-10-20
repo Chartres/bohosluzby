@@ -35,7 +35,7 @@ import { track, conversion, logError } from './analytics'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
 import { isNative, platform } from './lib/native'
 import { pageViewContext } from './lib/telemetry'
-import { loadData, refreshData, activeAsOf } from './lib/dataStore'
+import { loadData, loadShard, refreshData, activeAsOf } from './lib/dataStore'
 import { removeKey, writeJson } from './lib/storage'
 import {
   lang,
@@ -489,7 +489,7 @@ export default function App() {
     const cells = [...new Set(nearby.map((c) => c.cell))]
     Promise.all(
       cells.map((cell) =>
-        loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch((err: unknown) => {
+        loadShard(cell).catch((err: unknown) => {
           logError(err, { where: 'load-shard', cell })
           return null
         }),

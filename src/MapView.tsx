@@ -11,7 +11,7 @@ import 'leaflet/dist/leaflet.css'
 import './mapview.css'
 import type { Church, ChurchServices } from './domain/data'
 import { decodeShard } from './domain/data'
-import { loadData } from './lib/dataStore'
+import { loadShard as readShard } from './lib/dataStore'
 import { gridCluster } from './domain/cluster'
 import { isMass, NO_FILTERS, type Filters } from './domain/filters'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
@@ -115,7 +115,7 @@ export default function MapView({
     let p = shardCache.current.get(cell)
     if (!p) {
       // via dataStore, not raw fetch — the map must see an OTA-refreshed registry too
-      p = loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`)
+      p = readShard(cell)
         .then(decodeShard)
         .catch(() => {
           // Remove from cache so the next map open can retry the fetch.

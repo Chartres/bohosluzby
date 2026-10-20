@@ -11,6 +11,7 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { isNative } from './native'
 import { removeKey } from './storage'
+import type { RawEntry } from '../domain/churchPage'
 
 const REMOTE = 'https://bohosluzby.dravec.org'
 const CACHE = 'registry' // Filesystem subdir under Directory.Data
@@ -109,6 +110,9 @@ export async function loadData<T>(path: string): Promise<T> {
   if (!res.ok) throw new Error(`${path} ${res.status}`)
   return (await res.json()) as T
 }
+
+/** One services/<cell>.json shard, undecoded (callers run decodeShard). */
+export const loadShard = (cell: string) => loadData<Record<string, RawEntry>>(`services/${cell}.json`)
 
 export function activeAsOf(): string | null {
   try {

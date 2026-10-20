@@ -5,7 +5,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalSt
 import { decodeShard, type Church, type ChurchServices } from './domain/data'
 import { rankUpcoming } from './domain/ranking'
 import { dayLabel, fmtTime } from './domain/format'
-import { loadData } from './lib/dataStore'
+import { loadShard } from './lib/dataStore'
 import { favoritesSnapshot, subscribeFavorites, toggleFavorite } from './lib/favorites'
 import { track } from './analytics'
 import { t } from './i18n'
@@ -31,7 +31,7 @@ export function MyChurches({
     if (churches.length === 0) return
     let cancelled = false
     const cells = [...new Set(churches.map((c) => c.cell))]
-    Promise.all(cells.map((cell) => loadData<Parameters<typeof decodeShard>[0]>(`services/${cell}.json`).catch(() => null)))
+    Promise.all(cells.map((cell) => loadShard(cell).catch(() => null)))
       .then((shards) => {
         if (cancelled) return
         const m = new Map<string, ChurchServices>()

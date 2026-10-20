@@ -18,7 +18,7 @@ import { isStale } from './domain/registry'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { setStatusBarOnDark } from './lib/native-init'
-import { loadData } from './lib/dataStore'
+import { loadData, loadShard } from './lib/dataStore'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { aggregateFor, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { recordExpectedAttendance } from './lib/feedbackLedger'
@@ -375,7 +375,7 @@ export function ChurchDetail({
     // (MapView does the same.) ponytail: no in-memory cache — repeat opens
     // re-read the shard (service-worker or Filesystem hit) and re-parse it; add
     // a memo in loadData if detail opens ever show up as slow.
-    loadData<Parameters<typeof decodeShard>[0]>(`services/${church.cell}.json`)
+    loadShard(church.cell)
       .then((shard) => {
         if (cancelled) return
         const s = decodeShard(shard).get(church.id)
