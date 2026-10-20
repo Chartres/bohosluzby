@@ -387,7 +387,9 @@ export default function App() {
   // geolocate → last known position → the picker (also re-run by "moje poloha").
   // Permission-aware: a known "denied" skips the wait entirely, and a pending
   // prompt tells the user to look for the browser dialog instead of a spinner.
-  const locate = () => {
+  // `background`: an automatic re-locate (resume) — runs only under an already
+  // granted permission, so it can never raise a system dialog on its own.
+  const locate = (background = false) => {
     // Never block on a fix we might not get (airplane mode!): the last known
     // position seeds the list IMMEDIATELY — visibly marked as such — while the
     // fresh location is fetched in the background and swapped in on arrival.
@@ -397,8 +399,10 @@ export default function App() {
       setGeoFail(reason)
       if (!last) setGeoDenied(true) // with a seeded origin the list already stands
     }
-    setLocating(true)
+    if (!background) setLocating(true)
     getPermissionState().then((perm) => {
+      if (background && perm !== 'granted') return // stay silent, keep the list
+      if (background) setLocating(true)
       if (perm === 'denied') {
         setLocating(false)
         fallback('denied') // no callback is coming — don't pretend to wait for one
@@ -554,7 +558,7 @@ export default function App() {
       if (saved !== cas) setParam('cas', saved)
     }
     // ponytail: 15 min away ≈ maybe moved; shorter app switches keep the list as is
-    if (origin?.source === 'geo' && !picking && resumed.getTime() - hiddenAt >= 15 * 60_000) locate()
+    if (origin?.source === 'geo' && !picking && resumed.getTime() - hiddenAt >= 15 * 60_000) locate(true)
   }
 
   useEffect(() => {

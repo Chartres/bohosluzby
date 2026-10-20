@@ -1089,8 +1089,31 @@ describe('sweep regressions (consolidated 2026-10-17)', () => {
     })
   }
 
+  // a resume re-locates only under an already-granted permission (sweep G3)
+  const permission = (state: string) =>
+    Object.defineProperty(navigator, 'permissions', {
+      value: { query: vi.fn(async () => ({ state })) },
+      configurable: true,
+    })
+  afterEach(() => Object.defineProperty(navigator, 'permissions', { value: undefined, configurable: true }))
+
+  it('resumed hours later without a granted permission: no prompt, the list stays (sweep G3)', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    background(new Date('2026-07-03T15:05:00Z'))
+    permission('prompt') // iOS "Allow Once" reads as prompt after background
+    const getCurrentPosition = vi.fn()
+    Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition }, configurable: true })
+    resume(new Date('2026-07-03T18:00:00Z'))
+    await act(() => vi.advanceTimersByTimeAsync(1_000))
+    expect(getCurrentPosition).not.toHaveBeenCalled()
+    expect(screen.getByText(/Salvátora/)).toBeInTheDocument()
+  })
+
   it('resumed hours later in another town: lists from the new position (sweep F3)', async () => {
     stubGeolocation('granted')
+    permission('granted')
     render(<App />)
     await screen.findByText(/Salvátora/)
     background(new Date('2026-07-03T15:05:00Z'))
@@ -1108,6 +1131,7 @@ describe('sweep regressions (consolidated 2026-10-17)', () => {
 
   it('resumed in another town with a slow fix: the late fix still moves the list (sweep G1)', async () => {
     stubGeolocation('granted')
+    permission('granted')
     render(<App />)
     await screen.findByText(/Salvátora/)
     background(new Date('2026-07-03T15:05:00Z'))
