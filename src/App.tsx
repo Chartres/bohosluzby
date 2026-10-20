@@ -12,7 +12,7 @@ import {
 import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
-import { pragueIsoDate, pragueToday } from './domain/occurrences'
+import { pragueDay, pragueIsoDate } from './domain/occurrences'
 import { noteShownOnDay } from './domain/notes'
 import { currentLiturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
 import { dayFromParam, dayOptions, dayToParam, litForChoice } from './domain/days'
@@ -155,10 +155,7 @@ function loadFilters(): Filters {
 }
 
 // ISO weekday (1=Mon…7=Sun) of an instant, on the Prague calendar.
-const isoDayOf = (at: Date): number => {
-  const w = pragueToday(at)
-  return new Date(Date.UTC(w.y, w.m - 1, w.d)).getUTCDay() || 7
-}
+const isoDayOf = (at: Date): number => pragueDay(at).getUTCDay() || 7
 
 // Minimal history routing (GH Pages serves 404.html = the app for deep links).
 type Route = { view: 'home' } | { view: 'church'; id: string } | { view: 'city'; slug: string }

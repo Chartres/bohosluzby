@@ -11,7 +11,7 @@
 // ponytail: straight-line km, no routing — tune MIN_PER_KM if real reports disagree.
 
 import { haversineKm } from './distance'
-import { nextOccurrences, pragueToday } from './occurrences'
+import { nextOccurrences, pragueDay, pragueToday } from './occurrences'
 import { parseNote } from './notes'
 import { applyFilters, isMass, type Filters } from './filters'
 import type { Church, ChurchServices, Service, ExtraService } from './data'
@@ -97,8 +97,7 @@ export function ordoForDay(
   churches: Church[],
   servicesById: ReadonlyMap<string, ChurchServices>,
 ): Upcoming[] {
-  const today = pragueToday(now)
-  const target = new Date(Date.UTC(today.y, today.m - 1, today.d) + dayOffset * 86_400_000)
+  const target = pragueDay(now, dayOffset)
   const onTarget = (d: Date): boolean => {
     const w = pragueToday(d)
     return (
@@ -162,9 +161,7 @@ export function dayLine(now: Date, church: Church, svc: ChurchServices, focus: D
   // nextOccurrences is strictly after its `now` — look up from 1 ms before the
   // tapped start (or now) so a service starting this minute is kept
   const t0 = new Date(Math.min(from.getTime(), now.getTime()) - 1)
-  const a = pragueToday(t0)
-  const b = pragueToday(from)
-  const first = Math.max(0, Math.round((Date.UTC(b.y, b.m - 1, b.d) - Date.UTC(a.y, a.m - 1, a.d)) / 86_400_000))
+  const first = Math.max(0, Math.round((pragueDay(from).getTime() - pragueDay(t0).getTime()) / 86_400_000))
   for (let off = first; off <= first + 7; off++) {
     const items = ordoForDay(t0, off, here, [church], byId)
     if (items.length) return items
