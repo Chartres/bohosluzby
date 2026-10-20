@@ -143,6 +143,7 @@ async function fetchText(url: string, ms = 8000): Promise<string> {
  *   cache the whole snapshot atomically. Any failure keeps the existing data.
  */
 export async function refreshData(onDownloading?: () => void): Promise<RefreshResult> {
+  await ready() // drops a cache (and its as-of) older than the bundle before we compare
   let asOf = activeAsOf()
   let bundledV: DataVersion | null = null
   if (!asOf) {

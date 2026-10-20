@@ -213,3 +213,20 @@ it('native: a read during the OTA write phase waits for the new snapshot', async
   await refreshing
   expect((await read).length).toBe(120) // the new snapshot, not bundled
 })
+
+it('native: after an app update, a remote equal to the newer bundle is not re-downloaded (sweep F8)', async () => {
+  const fs = fsMock()
+  seedCache(fs, '2026-07-01', 7)
+  localStorage.setItem('data_asof', '2026-07-01')
+  stubFetch({
+    '/data/version.json': version('2026-09-01'),
+    '/data/churches.json': index(100),
+    [`${R}/data/version.json`]: version('2026-09-01'),
+    [`${R}/data/churches.json`]: index(100),
+    [`${R}/data/services/50-14.json`]: SHARD,
+  })
+  const ds = await loadModule(true, fs)
+
+  expect(await ds.refreshData()).toEqual({ asOf: '2026-09-01', updated: false })
+  expect(fs.module.Filesystem.writeFile).not.toHaveBeenCalled()
+})
