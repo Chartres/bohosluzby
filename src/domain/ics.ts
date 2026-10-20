@@ -1,8 +1,8 @@
 // iCalendar (RFC 5545) export. Unrestricted weekly services carry an RRULE,
-// note-restricted ones one VEVENT per real date. Times are Prague wall clock
+// note-restricted ones a year-long RRULE (UNTIL) minus the dates the note excludes (EXDATE). Times are Prague wall clock
 // via TZID + an explicit VTIMEZONE so every client agrees across DST.
 import type { Church, ExtraService, Service } from './data'
-import { nextOccurrences, pragueIsoDate, pragueToday, pragueMinutes } from './occurrences'
+import { nextOccurrences, pragueToday, pragueMinutes } from './occurrences'
 import { parseNote } from './notes'
 import { churchUrl } from './site'
 
@@ -67,8 +67,9 @@ const HORIZON_DAYS = 366
 /** VCALENDAR text for one service of a church, or null when the service has no
  * occurrence within a year (past one-off, unparsable time, note excludes all).
  * A weekly service whose note excludes some dates ("1. týden v měsíci", "od 1.6.
- * do 30.9.") becomes one dated VEVENT per date the app itself lists in the next
- * year; an unrestricted one keeps an open-ended weekly RRULE. */
+ * do 30.9.") becomes ONE series — deletable as one in the calendar — running to
+ * the last date the app itself lists in the next year, with every other date
+ * excluded; an unrestricted one keeps an open-ended weekly RRULE. */
 export function buildICS(church: Church, service: Service | ExtraService, now: Date): string | null {
   const spec =
     'days' in service ? { days: service.days, time: service.time } : { date: service.date, time: service.time }
@@ -79,41 +80,42 @@ export function buildICS(church: Church, service: Service | ExtraService, now: D
     return note.runsOn(y, m, d)
   })
   if (occs.length === 0) return null
-  const weekly = 'days' in service && occs.length === all.length
+  const restricted = 'days' in service && occs.length < all.length
 
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`
   const url = churchUrl(church.id)
   const uid = `${church.id}-${'days' in service ? service.days : service.date}-${service.time}`
-  const dtstamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z')
+  const utc = (at: Date) => at.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z')
+  const dtstamp = utc(now)
 
-  const event = (start: Date, uidSuffix: string): string[] => {
-    const w = pragueToday(start)
-    // M-3: derive hh/mm from the occurrence instant, not service.time string, to
-    // avoid NaN when the registry stores times with a suffix ("10:00 pouze").
-    const totalMin = pragueMinutes(start)
-    const dtstart = `${w.y}${pad(w.m)}${pad(w.d)}T${pad(Math.floor(totalMin / 60))}${pad(totalMin % 60)}00`
-    return [
-      'BEGIN:VEVENT',
-      `UID:${uid}${uidSuffix}@bohosluzby.dravec.org`,
-      `DTSTAMP:${dtstamp}`,
-      `DTSTART;TZID=Europe/Prague:${dtstart}`,
-      'DURATION:PT1H', // ponytail: the registry has no end times; an hour is the honest default
-      ...(weekly && 'days' in service
-        ? [`RRULE:FREQ=WEEKLY;BYDAY=${[...service.days].map((d) => BYDAY[d]).filter(Boolean).join(',')}`]
-        : []),
-      `SUMMARY:${escapeText(summary)}`,
-      `LOCATION:${escapeText([church.name, church.city].filter(Boolean).join(', '))}`,
-      `DESCRIPTION:${escapeText(`${service.note ? `${service.note}\n` : ''}${url}\nÚdaje z rejstříku ČBK — ověřte ve farnosti.`)}`,
-      `URL:${url}`,
-      'END:VEVENT',
-    ]
+  // M-3: derive hh/mm from the occurrence instant, not service.time string, to
+  // avoid NaN when the registry stores times with a suffix ("10:00 pouze").
+  const local = (at: Date): string => {
+    const w = pragueToday(at)
+    const totalMin = pragueMinutes(at)
+    return `${w.y}${pad(w.m)}${pad(w.d)}T${pad(Math.floor(totalMin / 60))}${pad(totalMin % 60)}00`
   }
-
-  const events =
-    'days' in service && !weekly
-      ? occs.flatMap((occ) => event(occ, `-${pragueIsoDate(occ).replace(/-/g, '')}`))
-      : event(occs[0], '')
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//bohosluzby.dravec.org//CS', ...VTIMEZONE, ...events, 'END:VCALENDAR']
+  const first = occs[0]
+  const last = occs[occs.length - 1]
+  const runs = new Set(occs.map((o) => o.getTime()))
+  const excluded = all.filter((o) => o > first && o < last && !runs.has(o.getTime()))
+  const event = [
+    'BEGIN:VEVENT',
+    `UID:${uid}@bohosluzby.dravec.org`,
+    `DTSTAMP:${dtstamp}`,
+    `DTSTART;TZID=Europe/Prague:${local(first)}`,
+    'DURATION:PT1H', // ponytail: the registry has no end times; an hour is the honest default
+    ...('days' in service
+      ? [`RRULE:FREQ=WEEKLY;BYDAY=${[...service.days].map((d) => BYDAY[d]).filter(Boolean).join(',')}${restricted ? `;UNTIL=${utc(last)}` : ''}`]
+      : []),
+    ...(excluded.length ? [`EXDATE;TZID=Europe/Prague:${excluded.map(local).join(',')}`] : []),
+    `SUMMARY:${escapeText(summary)}`,
+    `LOCATION:${escapeText([church.name, church.city].filter(Boolean).join(', '))}`,
+    `DESCRIPTION:${escapeText(`${service.note ? `${service.note}\n` : ''}${url}\nÚdaje z rejstříku ČBK — ověřte ve farnosti.`)}`,
+    `URL:${url}`,
+    'END:VEVENT',
+  ]
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//bohosluzby.dravec.org//CS', ...VTIMEZONE, ...event, 'END:VCALENDAR']
   return lines.map(foldLine).join('\r\n') + '\r\n'
 }
