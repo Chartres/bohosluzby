@@ -230,3 +230,22 @@ it('native: after an app update, a remote equal to the newer bundle is not re-do
   expect(await ds.refreshData()).toEqual({ asOf: '2026-09-01', updated: false })
   expect(fs.module.Filesystem.writeFile).not.toHaveBeenCalled()
 })
+
+it('native: the OTA refresh also brings photos.json and confession.json (sweep F9)', async () => {
+  const fs = fsMock()
+  stubFetch({
+    '/data/version.json': version('2026-07-03'),
+    '/data/churches.json': index(100),
+    [`${R}/data/version.json`]: version('2026-08-01'),
+    [`${R}/data/churches.json`]: index(100),
+    [`${R}/data/services/50-14.json`]: SHARD,
+    [`${R}/data/photos.json`]: '{"0":{"new":true}}',
+    [`${R}/data/confession.json`]: '{"x":1}',
+  })
+  const ds = await loadModule(true, fs)
+
+  expect(await ds.refreshData()).toEqual({ asOf: '2026-08-01', updated: true })
+  stubFetch({}) // bundled would 404 → proves the cache is used
+  expect(await ds.loadData('photos.json')).toEqual({ '0': { new: true } })
+  expect(await ds.loadData('confession.json')).toEqual({ x: 1 })
+})
