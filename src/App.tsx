@@ -551,13 +551,39 @@ export default function App() {
     }
   }, [data])
 
+  // Resumed from the background (native, installed PWA, a tab left open): the
+  // sticky expiry and "where am I" were only checked at mount. Re-check them so
+  // a resume behaves like opening the app — last night's "večer" gone, and a
+  // phone carried to another town lists that town.
+  const resumeRef = useRef<(hiddenAt: number) => void>(() => {})
+  resumeRef.current = (hiddenAt) => {
+    setFilters((cur) => {
+      const next = loadFilters()
+      return JSON.stringify(next) === JSON.stringify(cur) ? cur : next
+    })
+    const resumed = new Date()
+    if (cas && (resumed.getTime() - hiddenAt > STICKY_TTL_MS || !samePragueDay(new Date(hiddenAt), resumed))) {
+      const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
+      if (saved !== cas) setParam('cas', saved)
+    }
+    // ponytail: 15 min away ≈ maybe moved; shorter app switches keep the list as is
+    if (origin?.source === 'geo' && !picking && resumed.getTime() - hiddenAt >= 15 * 60_000) locate()
+  }
+
   useEffect(() => {
     const tick = () => setNow(new Date())
     const id = setInterval(tick, 60_000)
     // timers sleep while the app is backgrounded — refresh at once on resume,
     // not up to a minute later with Masses that already started still listed
+    let hiddenAt: number | null = null
     const onVisible = () => {
-      if (document.visibilityState === 'visible') tick()
+      if (document.visibilityState !== 'visible') {
+        hiddenAt = Date.now()
+        return
+      }
+      tick()
+      if (hiddenAt !== null) resumeRef.current(hiddenAt)
+      hiddenAt = null
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => {

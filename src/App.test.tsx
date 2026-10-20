@@ -1059,6 +1059,53 @@ describe('sweep regressions (consolidated 2026-10-17)', () => {
     await vi.waitFor(() => expect(seznam().queryByText('18:00')).toBeNull())
   })
 
+  const background = (when: Date) => {
+    vi.setSystemTime(when)
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+  }
+  const resume = (when: Date) => {
+    vi.setSystemTime(when)
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+  }
+
+  it('resumed hours later in another town: lists from the new position (sweep F3)', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    background(new Date('2026-07-03T15:05:00Z'))
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: (ok: (p: { coords: { latitude: number; longitude: number } }) => void) =>
+          ok({ coords: { latitude: 49.1986, longitude: 16.6072 } }), // Brno
+      },
+      configurable: true,
+    })
+    resume(new Date('2026-07-03T18:00:00Z'))
+    expect(await screen.findByText(/sv\. Tomáše/)).toBeInTheDocument()
+    expect(screen.queryByText(/Salvátora/)).toBeNull()
+  })
+
+  it('resumed next morning: last night\'s večer and filters are gone (sweep F4)', async () => {
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    openControls()
+    await user.click(screen.getByRole('button', { name: 'bezbariérové' }))
+    await user.click(screen.getByRole('button', { name: 'večer' }))
+    expect(qp('cas')).toBe('vecer')
+    background(new Date('2026-07-03T19:00:00Z')) // 21:00 Prague
+    resume(new Date('2026-07-04T06:00:00Z')) // 08:00 Prague, next day
+    await vi.waitFor(() => expect(qp('cas')).toBeNull())
+    expect(await screen.findByText(/sv\. Havla/)).toBeInTheDocument() // barrier-free filter expired
+  })
+
   it('?den=nedele keeps meaning Sunday after the clock crosses midnight', async () => {
     vi.setSystemTime(new Date('2026-07-04T21:58:00Z')) // Saturday 23:58 Prague
     stubGeolocation('granted')
