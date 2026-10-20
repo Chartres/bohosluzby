@@ -26,3 +26,12 @@ describe('reminderTimeFor — note-aware', () => {
     expect(pragueToday(at!).m).toBe(7) // still July
   })
 })
+
+describe('addToCalendar (sweep F2)', () => {
+  it('reports false when there is nothing to export, so the tap can say so', async () => {
+    const { addToCalendar } = await import('./native-actions')
+    const church = { id: '42', name: 'kostel', city: 'Praha', lat: 50, lng: 14, barrierFree: false, cell: '50-14' }
+    const past = { date: '2020-01-06', time: '18:00', lang: 'česky', greek: false, type: 'mše sv.', note: '' }
+    await expect(addToCalendar(church, past)).resolves.toBe(false)
+  })
+})

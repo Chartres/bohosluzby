@@ -126,8 +126,9 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
   }
 
   const onCalendar = () => {
-    track('key_action', { action: 'ics', church: church.id })
-    addToCalendar(church, service).catch((err) => logError(err, { where: 'calendar', id: church.id }))
+    addToCalendar(church, service)
+      .then((ok) => (ok ? track('key_action', { action: 'ics', church: church.id }) : flash(t('remind_none'))))
+      .catch((err) => logError(err, { where: 'calendar', id: church.id }))
   }
 
   const onRemind = async () => {

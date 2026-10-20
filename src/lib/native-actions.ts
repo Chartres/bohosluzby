@@ -33,10 +33,11 @@ function reminderId(church: Church, s: AnyService): number {
  * Add a service to the device calendar. Native: write the .ics to a cache file
  * and hand it to the system share sheet (iOS offers "Add to Calendar"). Web:
  * download the blob (unchanged behaviour). Light haptic on native.
+ * Resolves false when the service has no occurrence to export.
  */
-export async function addToCalendar(church: Church, service: AnyService): Promise<void> {
+export async function addToCalendar(church: Church, service: AnyService): Promise<boolean> {
   const ics = buildICS(church, service, new Date())
-  if (!ics) return
+  if (!ics) return false
   const filename = icsName(church, service)
 
   if (isNative) {
@@ -50,7 +51,7 @@ export async function addToCalendar(church: Church, service: AnyService): Promis
       encoding: Encoding.UTF8,
     })
     await Share.share({ title: church.name, url: written.uri })
-    return
+    return true
   }
 
   const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }))
@@ -61,6 +62,7 @@ export async function addToCalendar(church: Church, service: AnyService): Promis
   // Defer revoke so the browser has time to start the download before the
   // object URL is freed (synchronous revoke breaks Firefox and Safari).
   setTimeout(() => URL.revokeObjectURL(url), 0)
+  return true
 }
 
 export type ReminderResult = 'scheduled' | 'denied' | 'no-upcoming' | 'unsupported' | 'failed'
