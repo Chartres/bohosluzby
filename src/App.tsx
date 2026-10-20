@@ -36,6 +36,7 @@ import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/g
 import { isNative, platform } from './lib/native'
 import { pageViewContext } from './lib/telemetry'
 import { loadData, refreshData, activeAsOf } from './lib/dataStore'
+import { writeJson } from './lib/storage'
 import {
   lang,
   locale,
@@ -142,11 +143,7 @@ function loadSticky<T>(key: string, opts: { sameDay?: boolean } = {}): T | null 
 }
 
 function saveSticky<T>(key: string, value: T): void {
-  try {
-    localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), value }))
-  } catch {
-    // private mode
-  }
+  writeJson(key, { savedAt: Date.now(), value })
 }
 
 function loadFilters(): Filters {
@@ -451,14 +448,7 @@ export default function App() {
   // remember the position for the offline / denied fallback
   useEffect(() => {
     if (!origin || origin.source === 'last') return
-    try {
-      localStorage.setItem(
-        LAST_ORIGIN_KEY,
-        JSON.stringify({ lat: origin.lat, lng: origin.lng, label: origin.label }),
-      )
-    } catch {
-      // private mode
-    }
+    writeJson(LAST_ORIGIN_KEY, { lat: origin.lat, lng: origin.lng, label: origin.label })
   }, [origin])
 
 
