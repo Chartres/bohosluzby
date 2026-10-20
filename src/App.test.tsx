@@ -1188,6 +1188,19 @@ describe('sweep regressions (consolidated 2026-10-17)', () => {
     expect(qp('cas')).toBe('vecer')
   })
 
+  it('a shared-link kdy survives a short switch even with a stale stored kdy (sweep H1)', async () => {
+    const stale = Date.parse('2026-07-02T08:00:00Z') // yesterday, >12 h ago
+    localStorage.setItem('bohosluzby:cas', JSON.stringify({ savedAt: stale, value: 'rano' }))
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/?zobrazeni=seznam&cas=vecer')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    background(new Date('2026-07-03T15:05:00Z'))
+    resume(new Date('2026-07-03T15:05:02Z'))
+    await act(() => vi.advanceTimersByTimeAsync(100))
+    expect(qp('cas')).toBe('vecer')
+  })
+
   it('?den=nedele keeps meaning Sunday after the clock crosses midnight', async () => {
     vi.setSystemTime(new Date('2026-07-04T21:58:00Z')) // Saturday 23:58 Prague
     stubGeolocation('granted')

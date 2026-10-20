@@ -321,9 +321,10 @@ export default function App() {
   // sticky like the other filters (within STICKY_TTL_MS): a plain visit
   // re-applies the saved cas
   useEffect(() => {
-    if (parseCas(new URLSearchParams(location.search).get('cas'))) return
     const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
-    if (saved) setParam('cas', saved)
+    // an expired key is dead weight, and the resume check would take it for this kdy's source
+    if (!saved) removeKey(CAS_KEY)
+    else if (!parseCas(new URLSearchParams(location.search).get('cas'))) setParam('cas', saved)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
   }, [])
 
@@ -551,10 +552,11 @@ export default function App() {
     const resumed = new Date()
     const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
     // a saved kdy expires on the same clock as the filters; a URL-only one (shared
-    // link, nothing stored) on time away
+    // link, nothing or another value stored) on time away
     let expired = false
     try {
-      expired = saved === null && localStorage.getItem(CAS_KEY) !== null
+      const stored = JSON.parse(localStorage.getItem(CAS_KEY) ?? 'null') as { value?: unknown } | null
+      expired = saved === null && stored?.value === cas
     } catch {
       // private mode — nothing was stored
     }
