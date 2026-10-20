@@ -39,17 +39,23 @@ const escapeText = (s: string): string =>
     .replace(/\r/g, '\\n')
     .replace(/\n/g, '\\n')
 
-/** RFC 5545 §3.1 line folding: split at 75 octets, continuation lines start
- * with a space. Octets, not chars — ASCII-only content here so char = octet. */
+/** RFC 5545 §3.1 line folding: at most 75 octets per line (UTF-8 — Czech
+ * letters and "—" are multi-byte), continuation lines start with a space, and
+ * a character is never split across lines. */
+const utf8 = new TextEncoder()
 const foldLine = (line: string): string => {
-  if (line.length <= 75) return line
-  const parts: string[] = [line.slice(0, 75)]
-  let i = 75
-  while (i < line.length) {
-    parts.push('\r\n ' + line.slice(i, i + 74))
-    i += 74
+  let out = ''
+  let octets = 0
+  for (const ch of line) {
+    const n = utf8.encode(ch).length
+    if (octets + n > 75) {
+      out += '\r\n '
+      octets = 1
+    }
+    out += ch
+    octets += n
   }
-  return parts.join('')
+  return out
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')

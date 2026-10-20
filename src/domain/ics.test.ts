@@ -96,3 +96,12 @@ describe('buildICS — note-restricted weekly services (sweep F1)', () => {
     expect(dtstarts(ics)).toHaveLength(1)
   })
 })
+
+it('folds lines at 75 octets, counting UTF-8 bytes, without splitting a character (sweep F7)', () => {
+  const longName: Church = { ...church, name: 'kostel Nejsvětějšího Srdce Páně a Panny Marie Růžencové — Žďár nad Sázavou' }
+  const ics = buildICS(longName, weekly, now)!
+  const enc = new TextEncoder()
+  for (const line of ics.split('\r\n')) expect(enc.encode(line).length).toBeLessThanOrEqual(75)
+  const unfolded = ics.replace(/\r\n /g, '')
+  expect(unfolded).toContain(`SUMMARY:Mše sv. — ${longName.name}`)
+})
