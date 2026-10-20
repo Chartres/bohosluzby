@@ -15,8 +15,11 @@ export async function getPermissionState(): Promise<GeoPermission> {
   if (isNative) {
     try {
       const { Geolocation } = await import('@capacitor/geolocation')
-      const p = await Geolocation.checkPermissions()
-      return p.location === 'granted' ? 'granted' : p.location === 'denied' ? 'denied' : 'prompt'
+      // coarseLocation: Android 12+ "Approximate" grants COARSE only, and the
+      // `location` alias needs FINE too. A low-accuracy fix needs only COARSE;
+      // on iOS the two aliases are the same value.
+      const { coarseLocation: c } = await Geolocation.checkPermissions()
+      return c === 'granted' ? 'granted' : c === 'denied' ? 'denied' : 'prompt'
     } catch {
       return 'unknown'
     }
@@ -116,10 +119,11 @@ async function read(
     try {
       const { Geolocation } = await import('@capacitor/geolocation')
       let perm = await Geolocation.checkPermissions()
-      if (perm.location !== 'granted') {
+      // ask for `location` (the user still picks precise or approximate), accept coarse
+      if (perm.coarseLocation !== 'granted') {
         perm = await Geolocation.requestPermissions({ permissions: ['location'] })
       }
-      if (perm.location !== 'granted') return { coords: null, error: 'denied' }
+      if (perm.coarseLocation !== 'granted') return { coords: null, error: 'denied' }
       const pos = await Geolocation.getCurrentPosition({
         enableHighAccuracy: false,
         timeout,
