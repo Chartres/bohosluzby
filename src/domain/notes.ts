@@ -77,7 +77,7 @@ const WEEKDAY_RE = Object.keys(WEEKDAY).sort((a, b) => b.length - a.length).join
 
 const ORDINAL: Record<string, number | 'last'> = {
   '1': 1, 'první': 1, '2': 2, 'druhá': 2, 'druhou': 2, 'druhé': 2, '3': 3, 'třetí': 3,
-  '4': 4, 'čtvrtá': 4, 'čtvrtou': 4, '5': 5, 'pátá': 5, 'poslední': 'last', 'posl': 'last',
+  '4': 4, 'čtvrtá': 4, 'čtvrtou': 4, '5': 5, 'pátá': 5, 'páté': 5, 'poslední': 'last', 'posl': 'last',
 }
 const ORDINAL_RE = "(?:\\d|první|druh[áoé]u?|třetí|čtvrt[áoé]u?|pát[áé]|posl(?:ední)?)\\.?"
 /** "1." | "1. a 3." | "2., 4." — an ordinal list. */
