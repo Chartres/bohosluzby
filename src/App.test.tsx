@@ -274,6 +274,14 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.queryByTestId('seznam')).not.toBeInTheDocument()
   })
 
+  it('map mode keeps the map out of the bottom safe area (the iOS home-indicator swipe must not pan it)', async () => {
+    stubGeolocation('granted')
+    window.history.replaceState(null, '', '/')
+    render(<App />)
+    await screen.findByRole('button', { name: 'mapa' })
+    expect(screen.getByTestId('map-column').className).toMatch(/pb-\[env\(safe-area-inset-bottom\)\]/)
+  })
+
   it('the intro guide is re-openable from the masthead in the default map view', async () => {
     // regression: the footer "nápověda" link is hidden in map mode (the default),
     // so a returning user had no way back into the guide. The masthead help

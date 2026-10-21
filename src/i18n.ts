@@ -142,7 +142,7 @@ export const cs = {
   map_nearest_prefix: ' — nejbližší: ',
   map_none_soon: 'žádná bohoslužba v nejbližších dnech',
   map_open: 'otevřít ›',
-  map_at: 'v',
+  map_more: 'další',
 
   // ---- nav sheet ----
   nav_close_aria: 'Zavřít navigaci',
@@ -360,7 +360,7 @@ export const en: Record<Key, string> = {
   map_nearest_prefix: ' — nearest: ',
   map_none_soon: 'no services in the coming days',
   map_open: 'open ›',
-  map_at: 'at',
+  map_more: 'more',
 
   nav_close_aria: 'close navigation',
   nav_rubric: 'navigate',
