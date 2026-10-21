@@ -94,7 +94,7 @@ export function churchPage(input: {
   const regular = (entry?.s ?? []).filter((r) => !isConfession(r[4]))
   const confession = (entry?.s ?? []).filter((r) => isConfession(r[4]))
   const extras = (entry?.x ?? [])
-    .filter((r) => r[0] >= today)
+    .filter((r) => r[0] >= today && !isConfession(r[4]))
     .sort((a, b) => (a[0] + a[1]).localeCompare(b[0] + b[1]))
     .slice(0, EXTRAS_MAX)
   const updated = dateCz(entry?.u ?? '')

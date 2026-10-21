@@ -106,6 +106,11 @@ export function clearAggregateCache(): void {
   loadedIds.clear()
 }
 
+const emptyChurchAggregate = (churchId: string): ChurchAggregate => ({
+  slots: new Map<string, Aggregate>(),
+  church: { massKey: churchId, witnesses: 0, chips: [] },
+})
+
 /** Fetch visible witness rows for the given churches and refresh the cache.
  * Supabase when configured; localStorage mirror otherwise (offline / tests).
  * IDs already loaded this session are skipped to avoid per-pan round-trips. */
@@ -146,11 +151,6 @@ export async function loadAggregates(churchIds: string[]): Promise<void> {
     loadedIds.add(id)
   }
 }
-
-const emptyChurchAggregate = (churchId: string): ChurchAggregate => ({
-  slots: new Map<string, Aggregate>(),
-  church: { massKey: churchId, witnesses: 0, chips: [] },
-})
 
 /** Persist one Mass submission. One row per device per massKey.
  * Writes the localStorage mirror always (offline/dedup); when Supabase is

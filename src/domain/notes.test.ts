@@ -197,6 +197,12 @@ describe('nth weekday of month', () => {
     expect(runs('kromě 1. soboty v měsíci', '2026-07-11')).toBe(true)
     expect(runs('kromě poslední neděle v měsíci', '2026-07-26')).toBe(false)
   })
+  it('páté (genitive ordinal) parses as 5 without uncertain degradation', () => {
+    // "páté soboty" = "fifth Saturday" in genitive case — must not fall back to uncertain
+    expect(runs('páté soboty v měsíci', '2026-08-29')).toBe(true)  // 5th Saturday
+    expect(runs('páté soboty v měsíci', '2026-08-22')).toBe(false) // 4th Saturday
+    expect(noteUncertain('páté soboty v měsíci')).toBe(false)
+  })
   it('comma-joined ordinals "1., 3. sobota v měsíci" — both treated as one multi-nth predicate (H1)', () => {
     // "1., 3. sobota v měsíci" means 1st OR 3rd Saturday; the comma is an ordinal
     // conjunction, not a segment separator.
