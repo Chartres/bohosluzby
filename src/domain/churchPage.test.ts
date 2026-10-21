@@ -72,6 +72,15 @@ describe('church page', () => {
     expect(page.body).not.toContain('Tři králové')
   })
 
+  it('keeps one-off confessions out of the one-off services', () => {
+    const x: [string, string, string, 0 | 1, string, string][] = [
+      ['2026-07-04', '16:00', 'česky', 0, 'svátost smíření', 'před poutí'],
+    ]
+    const p = churchPage({ church: CHURCH, entry: { ...ENTRY, x }, today: TODAY })
+    expect(p.body).not.toContain('<h2>Mimořádné bohoslužby</h2>')
+    expect(p.body).not.toContain('před poutí')
+  })
+
   it('names its source and date, links the parish site and the city page', () => {
     const b = page.body
     expect(b).toContain('bohosluzby.cirkev.cz')
