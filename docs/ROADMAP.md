@@ -10,31 +10,25 @@ this order:
 
 Update the **Now** section at the end of every session; it is the handoff.
 
-## Now — as of 2026-10-08
+## Now — as of 2026-10-21
 
 - **Stage**: soft-launch.
   - The kill criterion (≥50 weekly visitors by 2026-09-03) is **missed and overdue**.
   - Recommendation in EVOLVE.md: ITERATE to 2026-12-31, with the search channel as the
     channel attempt. Pavol decides (open).
 - **Web**: live, current with `main`. That covers everything in CHANGELOG "Unreleased".
-- **iOS**: 1.2 in the store (last confirmed live 2026-08-23, still to re-confirm).
-  - The next build carries the blank-app fix for iOS 15–16.3. Until it ships, those users
-    see nothing.
-  - **In flight (2026-10-08)**: release run on the Mac mini (Pavol's session there):
-    - version 1.3 if 1.2 is live, otherwise stay on 1.2;
-    - release notes in `ios/App/fastlane/metadata/cs/release_notes.txt`;
-    - work on branch `claude/ios-release-<version>`.
-    It uploads to TestFlight and does not submit. Pavol tests on his phone, then taps
-    Submit for Review.
-  - **Hosted-Mac releases**: `.github/workflows/release-ios.yml` passes its gate on
-    `macos-15`.
-    - All 5 secrets are set (2026-10-08). The first lane-`build` run passed the gate, the
-      secrets check and the keychain import. It stopped at the first App Store Connect call:
-      an Apple agreement is missing or has expired (an owner task in `docs/OWNER-TASKS.md`).
-      That blocks the mini too.
-    - Next: once Pavol accepts the agreement, re-run lane `build`. When it's green, add the
-      pattern to the Flywheel Standard (`ios-app.md` §11a′, drafted on the flywheel branch).
-      After that, lane `beta` or `release` for real uploads, never alongside a mini upload.
+- **Friends' feedback round (from 2026-10-21)**: Pavol shared the app with a group of
+  friends. First batch shipped on web: the popover shows the church's whole day (option 2B),
+  the map keeps its view across a church visit (1A), and the home-indicator swipe no longer
+  pans the map. Collect further reports here, or in BACKLOG.
+- **iOS**: 1.3 build 80 is in TestFlight (2026-10-14) and not yet submitted. Pavol's
+  TestFlight check and Submit are in `docs/OWNER-TASKS.md`.
+  - The feedback fixes above are web-only until the next store build. Any visual change
+    needs Pavol's OK on the after-shots before a store build (AGENTS.md).
+  - **Hosted-Mac releases**: `.github/workflows/release-ios.yml` on `macos-15`, all 5
+    secrets set. The Apple agreement is accepted (2026-10-14). Next: re-run lane `build`;
+    when it's green, merge the Flywheel Standard section (`ios-app.md` §11a′, drafted on the
+    flywheel branch). Never run `beta`/`release` alongside a mini upload.
 - **Android**: built and signed in CI (`release-android.yml`), not yet on Play.
   - Owner steps 1–6 in `docs/OWNER-TASKS.md`.
   - A new personal Play account needs a closed test with 12 testers for 14 days before

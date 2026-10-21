@@ -5,6 +5,14 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **Map popover shows the church's whole day**: one row per service (time, type, language
+  if not Czech), with the shown one bold. Services excluded by your filters stay listed,
+  faded. More than four rows ends in "+N další ›". (friends' feedback, 2026-10-21)
+- **Back from a church lands where you left the map**, with its popover open again. A new
+  location (GPS fix, another city) still recentres. `src/lib/mapMemory.ts`, in memory
+  only. (friends' feedback, 2026-10-21)
+- **Fixed: the iOS home-indicator swipe panned the map.** In map mode the map now stops at
+  the bottom safe area, so the app-switch gesture starts on paper.
 - **Moje kostely**: ☆ on a church saves it on the device. Starred churches show their next
   mass above the nearby list, at any distance. No notifications. (#37)
 - **No location needed**: the six towns with the most churches are one tap away. (#37)

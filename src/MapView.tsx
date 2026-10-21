@@ -13,16 +13,19 @@ import type { Church, ChurchServices } from './domain/data'
 import { decodeShard } from './domain/data'
 import { loadShard as readShard } from './lib/dataStore'
 import { gridCluster } from './domain/cluster'
-import { isMass, NO_FILTERS, type Filters } from './domain/filters'
-import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
+import { isMass, NO_FILTERS, serviceMatches, type Filters } from './domain/filters'
+import { dayLine, selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
+import { clearReopen, recallView, rememberView } from './lib/mapMemory'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
 import { massKey, type Aggregate } from './domain/feedback'
 import { aggregateFor, churchHasTags, divergentChips, hasAggregate, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { witnessPillsHtml } from './WitnessPills'
 import { WITNESS_ENABLED } from './lib/flags'
-import { t, churchCount, confirmedByPilgrims } from './i18n'
+import { t, churchCount, confirmedByPilgrims, langLabel } from './i18n'
 
 const CELL_PX = 64 // cluster grid; ~a finger-width of map
+/** Popover timetable rows; a longer day ends in "+N další ›" to the church page. */
+const POP_ROWS = 4
 
 /** "8:30", not "08:30" — chips are read at a glance, the zero is noise. */
 const chipTime = (d: Date) => fmtTime(d).replace(/^0/, '')
@@ -136,8 +139,10 @@ export default function MapView({
     return p
   }
 
-  // the map itself: created once, centered on the origin
+  // the map itself: created once, centered on the origin — or, back from a
+  // church page (or the seznam), on the view you left (lib/mapMemory)
   useEffect(() => {
+    const saved = recallView(origin)
     // zoomSnap: 0 — a pinch rests at the exact fractional zoom the fingers leave.
     // Leaflet's default (zoomSnap: 1) snaps a fractional pinch to the nearest whole
     // zoom on finger-lift, which reads as a "jump" (zooms in, then settles out ~0.3
@@ -146,9 +151,13 @@ export default function MapView({
     // clusters deterministically. Tiles are CSS-scaled (slightly soft) at a
     // fractional rest, muted by the paper/sepia tile filter.
     const map = L.map(divRef.current!, { zoomControl: true, zoomSnap: 0 }).setView(
-      [origin.lat, origin.lng],
-      13,
+      saved ? saved.center : [origin.lat, origin.lng],
+      saved ? saved.zoom : 13,
     )
+    map.on('moveend', () => {
+      const c = map.getCenter()
+      rememberView(origin, [c.lat, c.lng], map.getZoom())
+    })
     // default prefix carries an emoji flag — design brief: no emoji. Append the
     // build stamp so any screenshot says which TestFlight build it is (this bug
     // went several rounds partly from build-version confusion).
@@ -199,29 +208,75 @@ export default function MapView({
       const now = nowRef.current // the clock the chip was drawn with
       const byId = new Map(svc ? [[church.id, svc]] : [])
       const next = selectUpcoming(now, origin, [church], byId, filters, cas, day, { limit: 1 })[0]
+      // honesty: nothing for the active selection — lead with that, then the
+      // church's real next service (no filters, whenever it is)
+      const focus =
+        next ?? selectUpcoming(now, origin, [church], byId, NO_FILTERS, null, 'now', { limit: 1 })[0]
+      // back from the church page, land here with this popover open (mapMemory)
+      const keepPlace = () => {
+        const c = map.getCenter()
+        rememberView(origin, [c.lat, c.lng], map.getZoom(), church.id)
+      }
       const el = document.createElement('div')
       const name = document.createElement('p')
       name.className = 'map-pop-name'
       name.textContent = church.name
       const line = document.createElement('p')
       line.className = 'map-pop-line'
-      const when = (u: Upcoming) =>
-        `${dayLabel(now, u.start)} ${t('map_at')} ${fmtTime(u.start)}${u.service.type ? ` · ${u.service.type}` : ''}`
-      if (next) {
-        line.textContent = when(next)
+      el.append(name, line)
+      if (!focus || !svc) {
+        line.textContent = t('map_none_soon')
       } else {
-        // honesty: nothing for the active selection — lead with that, then the
-        // church's real next service (no filters, whenever it is)
-        const fallback = selectUpcoming(now, origin, [church], byId, NO_FILTERS, null, 'now', {
-          limit: 1,
-        })[0]
-        if (fallback) {
+        if (!next) {
           const miss = document.createElement('span')
           miss.className = 'map-pop-miss'
           miss.textContent = t('map_no_match')
-          line.append(miss, `${t('map_nearest_prefix')}${when(fallback)}`)
-        } else {
-          line.textContent = t('map_none_soon')
+          line.append(miss, t('map_nearest_prefix'))
+        }
+        line.append(dayLabel(now, focus.start))
+        // the church's whole day, not only its next service (friends' feedback,
+        // 2026-10-21): one row per service, the shown one marked, the ones the
+        // filters exclude dimmed rather than hidden. A long day caps at
+        // POP_ROWS around the marked one and links on to the church page.
+        const all = dayLine(now, church, svc, focus.start)
+        const at = Math.max(
+          0,
+          all.findIndex((u) => u.start.getTime() === focus.start.getTime() && u.service === focus.service),
+        )
+        const from = Math.max(0, Math.min(at - 1, all.length - POP_ROWS))
+        const matches = serviceMatches(filters, cas)
+        const ordo = document.createElement('ul')
+        ordo.className = 'map-pop-ordo'
+        all.slice(from, from + POP_ROWS).forEach((u, i) => {
+          const row = document.createElement('li')
+          row.className =
+            'map-pop-row' +
+            (from + i === at ? ' map-pop-row--next' : '') +
+            (next && matches(u.service) ? '' : ' map-pop-row--off')
+          const time = document.createElement('span')
+          time.className = 'map-pop-time'
+          time.textContent = fmtTime(u.start)
+          const what = document.createElement('span')
+          const s = u.service
+          what.textContent =
+            (s.type || t('service_fallback')) +
+            (s.lang && s.lang !== 'česky' ? ` · ${langLabel(s.lang)}` : '') +
+            (s.greek ? ` · ${t('greek_chip')}` : '')
+          row.append(time, what)
+          ordo.append(row)
+        })
+        el.append(ordo)
+        if (all.length > POP_ROWS) {
+          const more = document.createElement('button')
+          more.type = 'button'
+          more.className = 'map-pop-more'
+          more.textContent = `+${all.length - POP_ROWS} ${t('map_more')} ›`
+          more.setAttribute('aria-label', `${t('map_more')}: ${church.name}`)
+          more.addEventListener('click', () => {
+            keepPlace()
+            onOpenRef.current(church.id, focus.start)
+          })
+          el.append(more)
         }
       }
       // church-level-first witness (docs/PILGRIM-WITNESS-PLAN.md, no stars): the
@@ -253,9 +308,7 @@ export default function MapView({
           dPills.innerHTML = witnessPillsHtml(divergent)
           witness.append(dLabel, dPills)
         }
-        el.append(name, line, witness)
-      } else {
-        el.append(name, line)
+        el.append(witness)
       }
 
       // the popover's verbs mirror a list row: detail · trasa · web — each
@@ -270,6 +323,7 @@ export default function MapView({
       open.setAttribute('aria-label', `${t('map_open').replace(/\s*›\s*$/, '')}: ${church.name}`)
       open.addEventListener('click', (e) => {
         e.preventDefault()
+        keepPlace()
         onOpenRef.current(church.id, next?.start)
       })
       const nav = document.createElement('button')
@@ -412,6 +466,15 @@ export default function MapView({
       for (const add of adds) add()
       setNonMassShown(anyNonMass)
       setWitnessShown(anyWitness) // React bails out if unchanged — deps exclude it, so no re-subscribe
+      // back from a church opened here: reopen its popover once. Cleared only
+      // when acted on, so a StrictMode remount or a not-yet-loaded index
+      // (churches still []) can't swallow it.
+      const back = recallView(origin)?.reopen
+      if (back && churches.length) {
+        clearReopen()
+        const c = churches.find((x) => x.id === back)
+        if (c) void openPopover(c)
+      }
     }
 
     const onMoveStart = () => {

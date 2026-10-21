@@ -81,7 +81,9 @@ test('seznam · mapa toggle: time chips as markers, popover with next mass, otev
   // on main, unrelated to this branch; filed as a UX follow-up, not fixed here.
   await cathedral.click({ position: { x: 5, y: 5 } })
   await expect(page.locator('.map-pop-name')).toHaveText('katedrála sv. Víta, Václava a Vojtěcha')
-  await expect(page.locator('.map-pop-line')).toHaveText(/dnes v 09:30/)
+  // the church's whole day, the shown service marked (friends' feedback, 2026-10-21)
+  await expect(page.locator('.map-pop-line')).toHaveText('dnes')
+  await expect(page.locator('.map-pop-row--next')).toContainText('09:30')
   await shot(page, 'map-popover')
 
   // the popover's verbs mirror a list row: otevřít · trasa · web — each
@@ -109,6 +111,9 @@ test('seznam · mapa toggle: time chips as markers, popover with next mass, otev
   // zpět returns to the map view (?zobrazeni survived the round trip)
   await page.getByRole('button', { name: '‹ zpět na seznam' }).click()
   await expect(page.getByTestId('mapa')).toBeVisible()
+  // …on the view it left, with the church's popover open again — not recentred
+  await expect(page.locator('.map-pop-name')).toHaveText('katedrála sv. Víta, Václava a Vojtěcha')
+  await shot(page, 'map-back-from-church')
 })
 
 test('map matches the seznam: večer fades the cathedral to a dot, keeps the evening chips', async ({ page }) => {
@@ -129,7 +134,8 @@ test('map matches the seznam: večer fades the cathedral to a dot, keeps the eve
   // a tapped faded dot is honest: leads with the miss, then the real next mass
   await cathedral.click()
   await expect(page.locator('.map-pop-miss')).toHaveText('pro váš výběr nic')
-  await expect(page.locator('.map-pop-line')).toHaveText(/nejbližší: dnes v 09:30 · mše sv\./)
+  await expect(page.locator('.map-pop-line')).toHaveText(/nejbližší: dnes$/)
+  await expect(page.locator('.map-pop-row--next')).toHaveText(/09:30\s*mše sv\./)
   await shot(page, 'map-popover-miss')
   await page.keyboard.press('Escape') // close the popover before leaving the map
 
