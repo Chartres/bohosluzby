@@ -13,6 +13,7 @@ import {
   rankChurchTags,
   rankDistinctive,
   submitFeedback,
+  suggestTag,
 } from './feedbackStore'
 
 afterEach(() => {
@@ -180,3 +181,12 @@ describe('divergentChips', () => {
   })
 })
 
+describe('suggestTag', () => {
+  it('stores a trimmed suggestion privately and ignores blank text', () => {
+    suggestTag('  latina s gregoriánským chorálem  ')
+    suggestTag('   ')
+    const list = JSON.parse(localStorage.getItem('bohosluzby:tagSuggestions')!)
+    expect(list).toHaveLength(1)
+    expect(list[0].text).toBe('latina s gregoriánským chorálem')
+  })
+})

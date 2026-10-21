@@ -14,6 +14,7 @@ import { readList, writeJson } from './storage'
 export const CORROBORATION_MIN = 3
 
 const STORE_KEY = 'bohosluzby:massFeedback'
+const SUGGEST_KEY = 'bohosluzby:tagSuggestions'
 
 /** One witness row, in the shape aggregation reads (matches the DB columns). */
 interface Row {
@@ -266,3 +267,10 @@ export function churchHasTags(churchId: string, massKey: string | null, tags: st
   return false
 }
 
+/** A suggested tag — stored privately, never published. */
+export function suggestTag(text: string): void {
+  // TODO(prod): route to Pavol (private channel) to grow the vocabulary.
+  const t = text.trim()
+  if (!t) return
+  writeJson(SUGGEST_KEY, [...readList(SUGGEST_KEY), { text: t, at: new Date().toISOString() }])
+}

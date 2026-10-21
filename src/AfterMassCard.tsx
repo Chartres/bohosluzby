@@ -4,7 +4,7 @@
 // language, and suggest-a-tag are optional.
 import { useState } from 'react'
 import { WITNESS_CHIPS, type MassFeedback, type Occurrence } from './domain/feedback'
-
+import { suggestTag } from './lib/feedbackStore'
 import { t } from './i18n'
 
 export interface CardMass extends Occurrence {
@@ -28,6 +28,9 @@ export function AfterMassCard({
 }) {
   const [phase, setPhase] = useState<'ask' | 'chips' | 'done'>('ask')
   const [chips, setChips] = useState<string[]>([])
+  const [suggestOpen, setSuggestOpen] = useState(false)
+  const [suggestText, setSuggestText] = useState('')
+
   const submit = (over: Partial<MassFeedback> = {}) =>
     onSubmit({
       churchId: entry.churchId,
@@ -47,6 +50,7 @@ export function AfterMassCard({
   }
   const onSave = () => {
     submit()
+    if (suggestText.trim()) suggestTag(suggestText)
     setPhase('done')
   }
   const toggleChip = (id: string) =>
@@ -141,6 +145,30 @@ export function AfterMassCard({
                   )
                 })}
               </div>
+
+              {suggestOpen ? (
+                <div className="mt-4">
+                  <label className="rubric block" htmlFor="fb-suggest">
+                    {t('fb_suggest_link')}
+                  </label>
+                  <input
+                    id="fb-suggest"
+                    value={suggestText}
+                    onChange={(e) => setSuggestText(e.target.value)}
+                    placeholder={t('fb_suggest_placeholder')}
+                    className="mt-2 min-h-11 w-full rounded-sm border border-hairline bg-white/40 px-3 text-base text-ink placeholder:text-ink-faded"
+                  />
+                  <p className="mt-1 text-xs text-ink-faded">{t('fb_suggest_note')}</p>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setSuggestOpen(true)}
+                  className="mt-4 block min-h-11 text-sm text-ink-faded underline decoration-hairline underline-offset-2 hover:text-ink"
+                >
+                  {t('fb_suggest_link')}
+                </button>
+              )}
 
               <div className="mt-4 flex justify-end">
                 <button

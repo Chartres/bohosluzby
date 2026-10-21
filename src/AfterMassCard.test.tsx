@@ -57,6 +57,16 @@ describe('AfterMassCard', () => {
     expect(screen.getByText('Díky. Zapsáno pro další poutníky.')).toBeVisible()
   })
 
+  it('routes a suggested tag privately (never published)', async () => {
+    const { user } = setup()
+    await user.click(screen.getByRole('button', { name: 'Ano, byl/a jsem' }))
+    await user.click(screen.getByRole('button', { name: 'navrhnout štítek' }))
+    await user.type(screen.getByLabelText('navrhnout štítek'), 'tichá adorace po mši')
+    await user.click(screen.getByRole('button', { name: 'Uložit' }))
+    const list = JSON.parse(localStorage.getItem('bohosluzby:tagSuggestions')!)
+    expect(list[0].text).toBe('tichá adorace po mši')
+  })
+
   it('"Teď ne" dismisses and "Neptat se" silences future cards', async () => {
     const { onDismiss, onNeverAsk, user } = setup()
     await user.click(screen.getByRole('button', { name: 'Neptat se' }))
