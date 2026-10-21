@@ -79,14 +79,16 @@ export function decodeShard(shard: Record<string, RawEntry>): Map<string, Church
       // and the countdowns that read `regular` all exclude them for free.
       regular: rows.filter((s) => !isConfession(s.type)),
       confession: rows.filter((s) => isConfession(s.type)),
-      extra: (e.x ?? []).map(([date, time, lang, greek, type, note]) => ({
-        date,
-        time,
-        lang: normalizeLang(lang),
-        greek: greek === 1,
-        type,
-        note,
-      })),
+      extra: (e.x ?? [])
+        .filter(([, , , , type]) => !isConfession(type))
+        .map(([date, time, lang, greek, type, note]) => ({
+          date,
+          time,
+          lang: normalizeLang(lang),
+          greek: greek === 1,
+          type,
+          note,
+        })),
     })
   }
   return out
