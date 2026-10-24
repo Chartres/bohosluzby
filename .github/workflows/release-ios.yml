@@ -100,6 +100,17 @@ jobs:
           # the Fastfile signs from this keychain and never calls `cert` when it's set
           echo "RELEASE_KEYCHAIN=$KEYCHAIN" >> "$GITHUB_ENV"
 
+      # App Store Connect rejects anything built with an SDK older than iOS 26
+      # (2026-10-24: the image's default Xcode built with iOS 18.5 → upload 409).
+      - name: Xcode 26
+        run: |
+          XC=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | grep -vi beta | sort -V | tail -1)
+          if [ -z "$XC" ]; then
+            echo "::error::no Xcode 26 on this runner image"; ls -d /Applications/Xcode*.app; exit 1
+          fi
+          sudo xcode-select -s "$XC/Contents/Developer"
+          xcodebuild -version
+
       - name: fastlane ios ${{ env.LANE }}
         working-directory: ios/App
         timeout-minutes: 40 # a signing prompt hangs forever; a real build takes ~10
