@@ -10,7 +10,7 @@ this order:
 
 Update the **Now** section at the end of every session; it is the handoff.
 
-## Now — as of 2026-10-21
+## Now — as of 2026-10-24
 
 - **Stage**: soft-launch.
   - The kill criterion (≥50 weekly visitors by 2026-09-03) is **missed and overdue**.
@@ -21,14 +21,14 @@ Update the **Now** section at the end of every session; it is the handoff.
   friends. First batch shipped on web: the popover shows the church's whole day (option 2B),
   the map keeps its view across a church visit (1A), and the home-indicator swipe no longer
   pans the map. Collect further reports here, or in BACKLOG.
-- **iOS**: 1.3 build 80 is in TestFlight (2026-10-14) and not yet submitted. Pavol's
-  TestFlight check and Submit are in `docs/OWNER-TASKS.md`.
-  - The feedback fixes above are web-only until the next store build. Any visual change
-    needs Pavol's OK on the after-shots before a store build (AGENTS.md).
-  - **Hosted-Mac releases**: `.github/workflows/release-ios.yml` on `macos-15`, all 5
-    secrets set. The Apple agreement is accepted (2026-10-14). Next: re-run lane `build`;
-    when it's green, merge the Flywheel Standard section (`ios-app.md` §11a′, drafted on the
-    flywheel branch). Never run `beta`/`release` alongside a mini upload.
+- **iOS**: 1.3 is approved (its train is closed). **1.4 build 81** went to TestFlight on
+  2026-10-24 from the hosted Mac (run 40124266787). It carries the friends'-feedback map
+  fixes. Pavol tests it; Submit for Review stays his.
+  - **Hosted-Mac releases work end to end**: Xcode 26.3, signed with the existing
+    certificate KL8QSY327N, about 2 minutes. Every user-facing merge to `main` gets a `beta`
+    run (AGENTS.md Release). In the Flywheel Standard as `ios-app.md` §11a′ (flywheel #71).
+  - Open owner item: revoke certificate NXW2P6X576, minted by a CI run before the fix
+    (`docs/OWNER-TASKS.md`).
 - **Android**: built and signed in CI (`release-android.yml`), not yet on Play.
   - Owner steps 1–6 in `docs/OWNER-TASKS.md`.
   - A new personal Play account needs a closed test with 12 testers for 14 days before
