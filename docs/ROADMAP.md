@@ -66,6 +66,8 @@ Update the **Now** section at the end of every session; it is the handoff.
   - PR to `main`, merge on green CI. Never push to `main` directly.
 - Tests first; `npm run typecheck && npm test` must pass. Web changes:
   `PRERENDER_CHURCHES=1 npm run build && node scripts/check-prerender.mjs`.
+- After every user-facing merge to `main`, also send a TestFlight build: Release iOS, lane
+  `beta` on `main` (hosted Mac). Don't run it alongside a mini upload. See AGENTS.md Release.
 - Never Submit for Review or release to a store without Pavol's go. Outward messages
   (email, posts, parish contact) stop at a draft.
 - Every session updates **Now** above, CHANGELOG "Unreleased", and BACKLOG.

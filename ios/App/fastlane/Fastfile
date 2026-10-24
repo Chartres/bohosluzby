@@ -114,8 +114,27 @@ platform :ios do
     # API key; then force manual distribution signing so the archive never tries
     # to mint a device-bound development profile (the "no devices" failure).
     signing_dir = File.expand_path("~/.appstoreconnect/signing")
-    cert(api_key: key, output_path: signing_dir)
-    prof_name = sigh(api_key: key, app_identifier: APP_ID, output_path: signing_dir) # App Store profile
+    ci_keychain = ENV["RELEASE_KEYCHAIN"]
+    if ci_keychain
+      # Hosted Mac (release-ios.yml): NEVER call `cert`. It searches only the login
+      # keychain, missed the identity imported into the temp keychain, and minted a
+      # new distribution certificate whose key died with the runner (NXW2P6X576,
+      # 2026-10-24; codesign then hung 73 min on a login-keychain prompt). Match the
+      # imported identity to an existing portal certificate instead; no match → stop.
+      pem = sh("security find-certificate -c 'Apple Distribution' -p '#{ci_keychain}'", log: false)
+      der64 = pem.lines.reject { |l| l.start_with?("-----") }.join.gsub(/\s/, "")
+      portal = Spaceship::ConnectAPI::Certificate.all.find do |c|
+        c.certificate_content.to_s.gsub(/\s/, "") == der64
+      end
+      UI.user_error!("IOS_DIST_P12_BASE64 holds no certificate registered in the portal — refusing to create one in CI") unless portal
+      UI.message("CI signing with existing certificate #{portal.id} (#{portal.display_name})")
+      prof_name = sigh(api_key: key, app_identifier: APP_ID, output_path: signing_dir, cert_id: portal.id)
+    else
+      cert(api_key: key, output_path: signing_dir)
+      prof_name = sigh(api_key: key, app_identifier: APP_ID, output_path: signing_dir) # App Store profile
+    end
+    # CI: sign from the temp keychain only, where the key's partition list allows codesign
+    kc_flag = ci_keychain ? " OTHER_CODE_SIGN_FLAGS=\"--keychain #{ci_keychain}\"" : ""
     build_app(
       project: "App.xcodeproj",
       scheme: "App",
@@ -124,7 +143,7 @@ platform :ios do
       output_name: "Bohosluzby.ipa",
       xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=8L39RHYGVY " \
               "PROVISIONING_PROFILE_SPECIFIER=\"#{prof_name}\" " \
-              "CODE_SIGN_IDENTITY=\"Apple Distribution\"",
+              "CODE_SIGN_IDENTITY=\"Apple Distribution\"" + kc_flag,
       export_options: {
         signingStyle: "manual",
         provisioningProfiles: { APP_ID => prof_name },

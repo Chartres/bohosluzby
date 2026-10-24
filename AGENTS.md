@@ -78,6 +78,11 @@ offline. Language values are normalized to Czech lowercase at decode (`normalize
   `fastlane ios release` from `ios/App/`;
   listing + privacy answers in `docs/store/ios-metadata.md`, human steps in
   `docs/store/asc-submission-checklist.md`.
+  **Every user-facing change merged to main also goes to TestFlight** (Pavol,
+  2026-10-24: "always deploy the iOS app as well, let me test"). After the web
+  deploy is green, dispatch Actions → Release iOS, lane `beta`, on `main`. Don't
+  dispatch while a mini upload is running, because both would claim the same build number.
+  Tell Pavol the build number. TestFlight only: Submit for Review stays his.
   **Visual change in a release candidate → show Pavol the after-shots (photo detail
   at 393×852, list, the changed screen) and get his OK BEFORE cutting the store
   build.** 2026-10-14: two builds (boxed buttons, then masthead above the photo)
