@@ -51,7 +51,7 @@ const chipIcon = (label: string, more: number, otherDay: boolean, witnessed: boo
     // invites a tap. Presence only; the popover carries the testimony.
     // nonMass (růženec, adorace, nešpory…): an OUTLINED chip — paper ground,
     // season rule — so a time that isn't a Mass never reads as one.
-    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}${nonMass ? ' map-chip--nonmass' : ''}${witnessed ? ' map-chip--witnessed' : ''}"${more ? ` data-more="+${more}"` : ''}>${label}${more ? `<span class="map-chip-more">+${more}</span>` : ''}</span>`,
+    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}${nonMass ? ' map-chip--nonmass' : ''}${witnessed ? ' map-chip--witnessed' : ''}">${label}${more ? `<span class="map-chip-more">+${more}</span>` : ''}</span>`,
     iconSize: [30, 30], // tap target; the chip centers itself and may overflow
   })
 // non-matching: a tiny faded dot; the 30px wrapper keeps it tappable

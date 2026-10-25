@@ -213,8 +213,8 @@ test('chip "+N" counts sit inside their chip box', async ({ page }) => {
   expect(outside).toEqual([])
 })
 
-// Pavol, 2026-10-25: the time sat left of centre once a "+N" followed it — the
-// time itself (not time+count) is centred in its chip, ±1px.
+// Pavol, 2026-10-25: the time sat left of centre once a "+N" followed it. The
+// time is centred in its own cell (chip left edge → the "+N" rule), ±1px.
 test('chip time is centred in its chip, with or without "+N"', async ({ page }) => {
   await page.goto('/?zobrazeni=mapa')
   await expect(page.locator('.map-chip-more').first()).toBeVisible()
@@ -226,7 +226,9 @@ test('chip time is centred in its chip, with or without "+N"', async ({ page }) 
         r.selectNodeContents(text)
         const t = r.getBoundingClientRect()
         const c = el.getBoundingClientRect()
-        const d = t.left + t.width / 2 - (c.left + c.width / 2)
+        // with a "+N" cell, the time is centred in the space left of its rule
+        const right = el.querySelector('.map-chip-more')?.getBoundingClientRect().left ?? c.right
+        const d = t.left + t.width / 2 - (c.left + right) / 2
         return Math.abs(d) > 1 ? `${el.textContent} off by ${d.toFixed(1)}px` : null
       })
       .filter(Boolean),

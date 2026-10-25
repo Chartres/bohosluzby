@@ -198,20 +198,16 @@
 }
 
 /* "7:30⁺²" — more fitting services that day; a quiet superscript, chip ink */
-.map-chip[data-more]::before {
-  /* an invisible twin of the "+N" on the left, so the TIME stays centred */
-  content: attr(data-more);
-  visibility: hidden;
-  margin-right: 2px;
-  font-size: 0.66em;
-  line-height: 1;
-}
 .map-chip-more {
-  /* a flex item top-aligned inside the chip's padding — a raised <sup> with
-     line-height 0 poked out of the box (Pavol, 2026-10-25; e2e guards it) */
-  margin-left: 2px;
+  /* "+N" in its own cell on the right, behind a thin rule: no blank space, and
+     the time stays centred in its own cell (Pavol, 2026-10-25). Superscript
+     position, but laid out inside the chip's padding (flex item). */
+  align-self: stretch;
+  margin: -4px -7px -1px 6px; /* reach the chip edges: the rule spans full height */
+  padding: 3px 5px 0 5px;
+  border-left: 1px solid color-mix(in srgb, var(--color-paper) 45%, transparent);
   font-size: 0.66em;
-  line-height: 1;
+  line-height: 1.2;
   opacity: 0.9;
 }
 
