@@ -49,7 +49,12 @@
 }
 .map-chip {
   position: relative; /* containing block for the overlaid witness mark */
-  padding: 2px 7px 3px;
+  /* flex, so a "+N" count is a top-aligned item laid out INSIDE the padding */
+  display: inline-flex;
+  align-items: flex-start;
+  /* 4/1, not 2/3: digits have no descenders, so a symmetric box left the
+     time ~2px high (measured on a 3x render, Pavol 2026-10-25) */
+  padding: 4px 7px 1px;
   background: var(--season);
   color: var(--color-paper);
   border: 1.5px solid var(--color-paper);
@@ -190,6 +195,17 @@
 .map-marker:hover .map-dot--faded {
   outline: 1px solid var(--color-ink-faded);
   outline-offset: 1px;
+}
+
+/* "7:30⁺²" — more fitting services that day; a quiet superscript, chip ink */
+.map-chip-more {
+  /* a superscript attached to its time, laid out INSIDE the chip as a flex item
+     (a <sup> rose out of the box). The chip's equal side padding centres
+     "time+count" as one group (Pavol, 2026-10-25). */
+  margin-left: 2px;
+  font-size: 0.66em;
+  line-height: 1;
+  opacity: 0.9;
 }
 
 /* clusters: ink CIRCLES with a count — a different shape AND color from the

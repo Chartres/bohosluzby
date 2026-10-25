@@ -18,8 +18,7 @@
 //   node data/match-photos.mjs --limit 50          # first N churches
 //   node data/match-photos.mjs --ids 123,456         # just these churches
 //   node data/match-photos.mjs --recheck           # re-apply the rules to photos.json, offline
-// TODO(nightly): wire the full run into .github/workflows/refresh-data.yml after
-// data/extract.mjs (it regenerates churches.json first). Not edited here.
+// Nightly: .github/workflows/refresh-photos.yml matches one grid cell per night.
 
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'

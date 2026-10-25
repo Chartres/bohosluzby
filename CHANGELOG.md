@@ -5,6 +5,12 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **seznam · mapa moved to a bottom bar**, in thumb reach, in both views. It fills the old
+  blank strip under the map and owns the bottom safe area. (Pavol 1A, 2026-10-25)
+- **"7:30⁺²" on map chips**: the number of further services that day that the same filters
+  let through. (Pavol 2A, 2026-10-25)
+- **Photos nightly**: `refresh-photos.yml` matches one grid cell per night, so the whole
+  country is covered in about 3 weeks.
 - **Church photos for the Brno area**: photos for 218 more churches (grid cell 49-16, 38%
   of it), 341 in total. Central Brno has 12 of 22. The matcher now rejects photos with
   the right patron but the wrong subject (a view *from* the tower, the rectory) and
