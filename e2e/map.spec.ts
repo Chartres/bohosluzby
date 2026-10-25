@@ -212,3 +212,24 @@ test('chip "+N" counts sit inside their chip box', async ({ page }) => {
   )
   expect(outside).toEqual([])
 })
+
+// Pavol, 2026-10-25: the time sat left of centre once a "+N" followed it — the
+// time itself (not time+count) is centred in its chip, ±1px.
+test('chip time is centred in its chip, with or without "+N"', async ({ page }) => {
+  await page.goto('/?zobrazeni=mapa')
+  await expect(page.locator('.map-chip-more').first()).toBeVisible()
+  const off = await page.locator('.map-chip').evaluateAll((els) =>
+    els
+      .map((el) => {
+        const text = [...el.childNodes].find((n) => n.nodeType === 3)!
+        const r = document.createRange()
+        r.selectNodeContents(text)
+        const t = r.getBoundingClientRect()
+        const c = el.getBoundingClientRect()
+        const d = t.left + t.width / 2 - (c.left + c.width / 2)
+        return Math.abs(d) > 1 ? `${el.textContent} off by ${d.toFixed(1)}px` : null
+      })
+      .filter(Boolean),
+  )
+  expect(off).toEqual([])
+})
