@@ -16,6 +16,7 @@ import { gridCluster } from './domain/cluster'
 import { isMass, NO_FILTERS, serviceMatches, type Filters } from './domain/filters'
 import { dayLine, selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { clearReopen, recallView, rememberView } from './lib/mapMemory'
+import { pragueDay } from './domain/occurrences'
 import { dayLabel, fmtTime, fmtWeekdayShort, samePragueDay } from './domain/format'
 import { massKey, type Aggregate } from './domain/feedback'
 import { aggregateFor, churchHasTags, divergentChips, hasAggregate, loadAggregates, rankChurchTags } from './lib/feedbackStore'
@@ -42,7 +43,7 @@ const hasWitness = (t: { slot?: Aggregate; church: Aggregate }): boolean =>
 
 /** A bare time on a pin reads as TODAY — on "hned" a church's next mass can be
  * days out, so a not-today chip carries its weekday ("út 15:00") and greys. */
-const chipIcon = (label: string, otherDay: boolean, witnessed: boolean, nonMass: boolean) =>
+const chipIcon = (label: string, more: number, otherDay: boolean, witnessed: boolean, nonMass: boolean) =>
   L.divIcon({
     className: 'map-chip-wrap',
     // witnessed: a rubric "dog-ear" folded corner on the chip (a CSS ::after on
@@ -50,7 +51,7 @@ const chipIcon = (label: string, otherDay: boolean, witnessed: boolean, nonMass:
     // invites a tap. Presence only; the popover carries the testimony.
     // nonMass (růženec, adorace, nešpory…): an OUTLINED chip — paper ground,
     // season rule — so a time that isn't a Mass never reads as one.
-    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}${nonMass ? ' map-chip--nonmass' : ''}${witnessed ? ' map-chip--witnessed' : ''}">${label}</span>`,
+    html: `<span class="map-chip${otherDay ? ' map-chip--otherday' : ''}${nonMass ? ' map-chip--nonmass' : ''}${witnessed ? ' map-chip--witnessed' : ''}">${label}${more ? `<sup class="map-chip-more">+${more}</sup>` : ''}</span>`,
     iconSize: [30, 30], // tap target; the chip centers itself and may overflow
   })
 // non-matching: a tiny faded dot; the 30px wrapper keeps it tappable
@@ -427,14 +428,21 @@ export default function MapView({
               ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}`
               : chipTime(next.start)
             : ''
+          // "7:30⁺²": further services that day the same filters let through
+          // (Pavol, 2026-10-25 — the 9:00 and 11:00 hid behind a tap)
+          const more = next
+            ? selectUpcoming(now, origin, [church], byId, filters, cas,
+                Math.round((pragueDay(next.start).getTime() - pragueDay(now).getTime()) / 86_400_000),
+              ).filter((u) => u.start.getTime() > next.start.getTime()).length
+            : 0
           const witnessed = WITNESS_ENABLED && Boolean(next) && hasWitness(witnessTiers(church, next!))
           if (witnessed) anyWitness = true
           const nonMass = Boolean(next) && !isMass(next!.service.type)
           if (nonMass) anyNonMass = true
-          sig.push(`${church.id}:${next ? `${label}|${otherDay}|${witnessed}|${nonMass}` : ''}`)
+          sig.push(`${church.id}:${next ? `${label}|${more}|${otherDay}|${witnessed}|${nonMass}` : ''}`)
           adds.push(() => {
             const marker = L.marker([church.lat, church.lng], {
-              icon: next ? chipIcon(label, otherDay, witnessed, nonMass) : fadedIcon(),
+              icon: next ? chipIcon(label, more, otherDay, witnessed, nonMass) : fadedIcon(),
               title: church.name,
               keyboard: false,
             })

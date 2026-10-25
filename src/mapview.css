@@ -192,6 +192,15 @@
   outline-offset: 1px;
 }
 
+/* "7:30⁺²" — more fitting services that day; a quiet superscript, chip ink */
+.map-chip-more {
+  margin-left: 1px;
+  font-size: 0.66em;
+  line-height: 0;
+  vertical-align: 0.55em;
+  opacity: 0.85;
+}
+
 /* clusters: ink CIRCLES with a count — a different shape AND color from the
    rectangular season-green time chips, so "6" can never read as a mass time */
 .map-cluster {

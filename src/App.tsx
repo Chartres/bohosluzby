@@ -749,6 +749,10 @@ export default function App() {
   // map mode: the map IS the page — a viewport-locked column, slim chrome, no
   // footer; everything else keeps the scrolling missal-page layout
   const mapMode = view === 'mapa' && route.view !== 'church' && !picking && !dataError
+  // the same condition that shows the list/map section
+  const showViewBar =
+    !dataError && !picking && !loading && route.view !== 'church' && Boolean(origin) && Boolean(rows) &&
+    (rows!.length > 0 || anyFilter || day !== 'now')
   // the map column is full-bleed, so any text block shown in map mode needs the
   // page gutter back (no-location, nothing-nearby, holy-day line)
   const gutter = mapMode ? 'mx-auto w-full max-w-2xl px-5 sm:px-8' : ''
@@ -988,7 +992,6 @@ export default function App() {
                     </>
                   )}
                 </p>
-                <ViewToggle view={view} onChange={setView} />
               </div>
               <OrdoControls
                 day={day}
@@ -1027,10 +1030,9 @@ export default function App() {
               online ? (
                 <div
                   data-testid="map-column"
-                  // map mode runs to the screen's bottom edge — stop the map at the
-                  // safe area, so a swipe from the home indicator (switch apps)
-                  // starts on paper, not on the map, and doesn't pan it
-                  className={mapMode ? 'mt-2 min-h-0 flex-1 pb-[env(safe-area-inset-bottom)]' : undefined}
+                  // the map stops above the bottom view bar, which owns the safe area
+                  // — a home-indicator swipe starts on the bar, never pans the map
+                  className={mapMode ? 'mt-2 min-h-0 flex-1' : undefined}
                 >
                   <Suspense
                     fallback={
@@ -1144,6 +1146,11 @@ export default function App() {
         </p>
       </footer>
       )}
+      {/* seznam · mapa lives at the bottom, under the thumb (Pavol, 2026-10-25: the
+          blank strip under the map "should have a switch"). Last child of the
+          column: in map mode it closes the flex column, in the seznam it sticks to
+          the viewport bottom. It owns the bottom safe area. */}
+      {showViewBar && <ViewToggle view={view} onChange={setView} mapMode={mapMode} />}
     </div>
   )
 }
@@ -1193,42 +1200,39 @@ function DayPicker({ day, onChange, now = new Date() }: { day: DayChoice; onChan
   )
 }
 
-// seznam · mapa — a typographic view switch set like the day rubrics.
+// seznam · mapa — the bottom view bar: two halves, each a full-height tap target,
+// set like the day rubrics (rubric + underline marks the active one).
 function ViewToggle({
   view,
   onChange,
+  mapMode,
 }: {
   view: 'seznam' | 'mapa'
   onChange: (v: 'seznam' | 'mapa') => void
+  mapMode: boolean
 }) {
   const cls = (active: boolean) =>
-    `-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
+    `min-h-12 flex-1 text-xs font-semibold uppercase tracking-[0.08em] ${
       active
         ? 'text-rubric underline decoration-rubric decoration-2 underline-offset-4'
         : 'text-ink-faded hover:text-ink'
     }`
   return (
-    <div role="group" aria-label={t('view_group')} className="flex items-baseline gap-x-1">
-      <button
-        type="button"
-        aria-pressed={view === 'seznam'}
-        className={cls(view === 'seznam')}
-        onClick={() => onChange('seznam')}
-      >
-        {t('view_list')}
-      </button>
-      <span className="text-ink-faded" aria-hidden="true">
-        ·
-      </span>
-      <button
-        type="button"
-        aria-pressed={view === 'mapa'}
-        className={cls(view === 'mapa')}
-        onClick={() => onChange('mapa')}
-      >
-        {t('view_map')}
-      </button>
-    </div>
+    <nav
+      data-testid="view-bar"
+      className={`z-30 border-t border-hairline bg-paper pb-[env(safe-area-inset-bottom)] ${
+        mapMode ? 'w-full' : 'sticky bottom-0 -mx-5 sm:-mx-8'
+      }`}
+    >
+      <div role="group" aria-label={t('view_group')} className="mx-auto flex w-full max-w-2xl">
+        <button type="button" aria-pressed={view === 'seznam'} className={cls(view === 'seznam')} onClick={() => onChange('seznam')}>
+          {t('view_list')}
+        </button>
+        <button type="button" aria-pressed={view === 'mapa'} className={cls(view === 'mapa')} onClick={() => onChange('mapa')}>
+          {t('view_map')}
+        </button>
+      </div>
+    </nav>
   )
 }
 
