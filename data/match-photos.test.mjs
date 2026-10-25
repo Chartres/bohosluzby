@@ -8,6 +8,7 @@ import {
   rankFiles,
   isReusableLicense,
   stripHtml,
+  titleFromThumbUrl,
 } from './match-photos.mjs'
 
 describe('dedicationTokens', () => {
@@ -38,6 +39,38 @@ describe('fileQualifies (neighbour-bleed guard)', () => {
   it('REJECTS a street-name coincidence (sv. Josefa vs "Josefská" on a Tomáš file)', () => {
     const josef = dedicationTokens('klášterní kostel sv. Josefa', 'Praha 1')
     expect(fileQualifies('File:Josefská, kostel svatého Tomáše.jpg', josef)).toBe(false)
+  })
+})
+
+// Brno run, 2026-10-25: right dedication, wrong subject — a view taken FROM the tower
+// and the parish house. Geo-near + patron isn't enough when the file isn't of the church.
+describe('fileQualifies (subject guard)', () => {
+  it('REJECTS a view from the church', () => {
+    const t = dedicationTokens('kostel farní sv. Jakuba Brno-město', 'Brno')
+    expect(fileQualifies('File:Žerotínovo náměstí z věže kostela sv. Jakuba asi 1867.png', t)).toBe(false)
+    expect(fileQualifies('File:View from the tower of St. James church Brno.jpg', ['james'])).toBe(false)
+  })
+  it('REJECTS the rectory / parish house', () => {
+    const t = dedicationTokens('kostel rektorátní sv. Maří Magdalény Brno-město', 'Brno')
+    expect(fileQualifies('File:Rectory of church of Saint Mary Magdalene in Brno, Brno-City District.jpg', t)).toBe(false)
+    expect(fileQualifies('File:Fara u kostela sv. Tomáše.jpg', ['tomase'])).toBe(false)
+  })
+  it('REJECTS drawings and scans (png/svg/gif/tif) — the hero is a photo', () => {
+    expect(fileQualifies('File:Kostel svatého Tomáše (Praha).png', ['tomase'])).toBe(false)
+  })
+  it('still ACCEPTS the church itself, square in the name or not', () => {
+    expect(fileQualifies('File:Brno, Moravské náměstí, kostel svatého Tomáše.jpg', ['tomase'])).toBe(true)
+    expect(fileQualifies('File:Kostel sv. Augustina Brno, vstup.jpg', ['augustina'])).toBe(true)
+    // "pohled zleva" = a view of the church from the left, not a view from it
+    expect(fileQualifies('File:Kostel Povýšení svatého Kříže - pohled zleva.jpg', ['povyseni'])).toBe(true)
+  })
+})
+
+describe('titleFromThumbUrl', () => {
+  it('recovers the File: title from a stored Commons thumbnail URL', () => {
+    const u =
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Chr%C3%A1m_svat%C3%A9ho_V%C3%ADta%2C_Praha_-_Hrad%C4%8Dany_03.jpg/500px-Chr%C3%A1m_svat%C3%A9ho_V%C3%ADta%2C_Praha_-_Hrad%C4%8Dany_03.jpg?utm_source=x'
+    expect(titleFromThumbUrl(u)).toBe('File:Chrám svatého Víta, Praha - Hradčany 03.jpg')
   })
 })
 

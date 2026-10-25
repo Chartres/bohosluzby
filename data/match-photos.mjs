@@ -16,6 +16,8 @@
 //   node data/match-photos.mjs --sample            # first ~200 churches
 //   node data/match-photos.mjs --cell 50-14        # one grid cell (Prague)
 //   node data/match-photos.mjs --limit 50          # first N churches
+//   node data/match-photos.mjs --ids 123,456         # just these churches
+//   node data/match-photos.mjs --recheck           # re-apply the rules to photos.json, offline
 // TODO(nightly): wire the full run into .github/workflows/refresh-data.yml after
 // data/extract.mjs (it regenerates churches.json first). Not edited here.
 
@@ -74,6 +76,13 @@ const KEYWORD =
 const INTERIOR =
   /(interier|interior|oltar|altar|varhany|organ|okno|detail|dvere|door|socha|statue|zvon|hrob|kriz|krypta|vitraz|freska|nave|plan|mapa|erb)/
 
+// Right patron, wrong subject (Brno run, 2026-10-25): a view taken FROM the tower
+// ("z věže kostela sv. Jakuba"), the rectory / parish house. And only photos:
+// png/svg/gif/tif are drawings, maps and old scans, never a hero.
+const NOT_THE_CHURCH =
+  /(z\s+veze|from\s+the\s+tower|view\s+from|pohled\s+z\s|vyhled\s+z\s|rectory|presbytery|parish\s+(?:house|office)|\bfar[ay]\b|farni\s+(?:urad|dum|budova))/
+const PHOTO_EXT = /\.jpe?g$/
+
 // Whole-word (not substring) match: a token meets a filename word when they
 // share a stem. Substring matching let "josef" (sv. Josefa) hit the STREET
 // "Josefská" on a neighbouring sv. Tomáše file — the exact bleed to block.
@@ -85,6 +94,7 @@ const wordMatch = (w, t) => w === t || w === stem(t) || stem(w) === t || stem(w)
 export function fileQualifies(title, tokens) {
   const f = fold(title)
   if (!KEYWORD.test(f)) return false
+  if (NOT_THE_CHURCH.test(f) || !PHOTO_EXT.test(f)) return false
   const words = f.split(/[^a-z0-9]+/).filter(Boolean)
   return tokens.some((t) => words.some((w) => wordMatch(w, t)))
 }
@@ -93,6 +103,13 @@ export function fileQualifies(title, tokens) {
 export function rankFiles(titles, tokens) {
   const ok = titles.filter((t) => fileQualifies(t, tokens))
   return ok.sort((a, b) => Number(INTERIOR.test(fold(a))) - Number(INTERIOR.test(fold(b))))
+}
+
+/** The File: title behind a stored thumbnail URL (".../500px-<name>?..."), so
+ * `--recheck` can re-apply the rules to photos.json without the network. */
+export function titleFromThumbUrl(url) {
+  const last = String(url).split('?')[0].split('/').pop() ?? ''
+  return `File:${decodeURIComponent(last.replace(/^\d+px-/, '')).replace(/_/g, ' ')}`
 }
 
 /** Reusable = a CC/PD/GFDL license we can show with attribution. Empty or
@@ -160,11 +177,13 @@ async function imageinfo(title) {
 }
 
 function parseArgs(argv) {
-  const a = { limit: Infinity, cell: null, sample: false }
+  const a = { limit: Infinity, cell: null, sample: false, recheck: false, ids: null }
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--limit') a.limit = Number(argv[++i])
     else if (argv[i] === '--cell') a.cell = argv[++i]
     else if (argv[i] === '--sample') a.sample = true
+    else if (argv[i] === '--recheck') a.recheck = true
+    else if (argv[i] === '--ids') a.ids = new Set(argv[++i].split(','))
   }
   if (a.sample && a.limit === Infinity) a.limit = 200
   return a
@@ -176,11 +195,30 @@ async function main() {
   const rows = JSON.parse(readFileSync(`${root}public/data/churches.json`, 'utf8'))
 
   let churches = rows.map((r) => ({ id: r[0], name: r[1], city: r[2], lat: r[3], lng: r[4], cell: r[6] }))
+
+  // --recheck: re-apply the current rules to photos.json offline; drop what fails
+  if (args.recheck) {
+    const photos = JSON.parse(readFileSync(`${root}public/data/photos.json`, 'utf8'))
+    const byId = new Map(churches.map((c) => [c.id, c]))
+    const dropped = []
+    for (const [id, p] of Object.entries(photos)) {
+      const c = byId.get(id)
+      const title = titleFromThumbUrl(p.url)
+      if (!c || !fileQualifies(title, dedicationTokens(c.name, c.city))) {
+        dropped.push(`${id} ${title}`)
+        delete photos[id]
+      }
+    }
+    writeFileSync(`${root}public/data/photos.json`, JSON.stringify(photos))
+    console.log(`recheck: kept ${Object.keys(photos).length}, dropped ${dropped.length}\n${dropped.join('\n')}`)
+    return
+  }
   if (args.cell) churches = churches.filter((c) => c.cell.startsWith(args.cell))
+  if (args.ids) churches = churches.filter((c) => args.ids.has(c.id))
   churches = churches.slice(0, args.limit)
 
   // a partial run (--cell/--limit/--sample) adds to photos.json; a full run rebuilds it
-  const partial = args.cell !== null || args.limit !== Infinity
+  const partial = args.cell !== null || args.ids !== null || args.limit !== Infinity
   let photos = {}
   if (partial) {
     try {

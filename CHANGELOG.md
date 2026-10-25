@@ -5,6 +5,11 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **Church photos for the Brno area**: photos for 218 more churches (grid cell 49-16, 38%
+  of it), 341 in total. Central Brno has 12 of 22. The matcher now rejects photos with
+  the right patron but the wrong subject (a view *from* the tower, the rectory) and
+  anything that isn't a jpg. `--recheck` re-applies the rules offline and `--ids` re-matches
+  single churches. The other cells (Olomouc/Ostrava, Bohemia) aren't matched yet.
 - **Fixed: monthly services shown every week.** A bare "1. neděle", "2. a 4. sobota" or
   "první pátek" (without "v měsíci") wasn't parsed, so a first-Sunday chapel showed as
   "dnes" on every Sunday. 8 services affected. (Pavol, 2026-10-25)
