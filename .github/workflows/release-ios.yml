@@ -10,9 +10,10 @@
 #   ASC_KEY_P8                  — contents of AuthKey_<ASC_KEY_ID>.p8
 #   IOS_DIST_P12_BASE64         — base64 of the Apple Distribution identity (.p12)
 #   IOS_DIST_P12_PASSWORD       — its export password (may be empty)
-# The cert must be the one already registered in the portal: with its private key
-# in the runner's keychain, fastlane `cert` reuses it instead of minting a new one
-# (Apple caps distribution certificates).
+# The cert must be one already registered in the portal. In CI the Fastfile never
+# calls `cert`: it matches this identity against the portal's certificates and stops
+# if none matches, so CI can't mint a certificate. (On 2026-10-24 `cert` looked only in
+# the login keychain and created one, NXW2P6X576, whose key was lost with the runner.)
 name: Release iOS
 
 on:
@@ -96,9 +97,23 @@ jobs:
           security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | sed 's/"//g')
           security find-identity -v -p codesigning "$KEYCHAIN" | grep -q "Apple Distribution" \
             || { echo "::error::no Apple Distribution identity in IOS_DIST_P12_BASE64"; exit 1; }
+          # the Fastfile signs from this keychain and never calls `cert` when it's set
+          echo "RELEASE_KEYCHAIN=$KEYCHAIN" >> "$GITHUB_ENV"
+
+      # App Store Connect rejects anything built with an SDK older than iOS 26
+      # (2026-10-24: the image's default Xcode built with iOS 18.5 → upload 409).
+      - name: Xcode 26
+        run: |
+          XC=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | grep -vi beta | sort -V | tail -1)
+          if [ -z "$XC" ]; then
+            echo "::error::no Xcode 26 on this runner image"; ls -d /Applications/Xcode*.app; exit 1
+          fi
+          sudo xcode-select -s "$XC/Contents/Developer"
+          xcodebuild -version
 
       - name: fastlane ios ${{ env.LANE }}
         working-directory: ios/App
+        timeout-minutes: 40 # a signing prompt hangs forever; a real build takes ~10
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}

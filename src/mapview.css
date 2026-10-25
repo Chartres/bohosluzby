@@ -208,12 +208,6 @@
   font-weight: 600;
 }
 /* every church in the bucket is irrelevant to the selection → paper, not ink */
-.map-cluster--faded {
-  background: var(--color-paper);
-  color: var(--color-ink-faded);
-  border-color: var(--color-hairline);
-}
-
 /* "you are here": a quiet surveyor's ring in ink */
 .map-origin-wrap {
   display: grid;
@@ -245,6 +239,11 @@
   margin: 10px 12px;
   line-height: 1.35;
 }
+/* leaflet.css gives popup <p> a 1.3em margin, which out-ranks the margin-tops
+   below — the timetable made the popover tall enough for those gaps to matter */
+.ordo-map .leaflet-popup-content p {
+  margin: 0;
+}
 .map-pop-name {
   font-family: var(--font-display);
   font-weight: 600;
@@ -273,6 +272,42 @@
   margin-top: 3px;
   color: var(--color-ink-faded);
 }
+/* the church's day: a small ordo — time column, then type · language. The
+   shown service is semibold; services the filters exclude stay, faded. */
+.map-pop-ordo {
+  margin-top: 3px;
+  font-size: 0.82rem;
+}
+.map-pop-row {
+  display: grid;
+  grid-template-columns: 2.9rem 1fr;
+  column-gap: 6px;
+  padding: 1px 0;
+}
+.map-pop-time {
+  font-variant-numeric: tabular-nums;
+}
+.map-pop-row--next {
+  font-weight: 600;
+}
+.map-pop-row--off {
+  color: var(--color-ink-faded);
+  opacity: 0.7;
+}
+/* "+2 další ›" — a quiet link to the church page, not another verb */
+.map-pop-more {
+  margin-top: 2px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 0.78rem;
+  color: var(--color-ink-faded);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* "pro váš výběr nic" — a rubric, so a miss never reads like a match */
 .map-pop-miss {
   color: var(--color-rubric);

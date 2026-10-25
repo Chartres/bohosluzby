@@ -47,3 +47,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
 }
+
+/// The app's root view controller (Main.storyboard). Turns on WKWebView's edge
+/// swipe through history, so "back from a church page" is the native iOS gesture
+/// with its slide animation. The SPA pushes a history entry per church page, and
+/// the swipe is an ordinary popstate (Pavol, 2026-10-25: "swipe back doesn't work").
+class MainViewController: CAPBridgeViewController {
+    override func capacitorDidLoad() {
+        super.capacitorDidLoad()
+        webView?.allowsBackForwardNavigationGestures = true
+    }
+}

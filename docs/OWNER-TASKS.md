@@ -3,13 +3,22 @@
 The steps only Pavol can do. Tick them here, or paste them into your task list (Notion's
 free block limit refused them on 2026-10-07). Newest batch first.
 
+## Clean-up after the hosted-Mac run (2026-10-24)
+
+- [ ] **Revoke certificate NXW2P6X576**: developer.apple.com → Certificates, the Apple
+      Distribution certificate created 2026-10-24. Fastlane `cert` minted it on a GitHub
+      runner, and its private key was lost with the runner, so nothing can sign with it.
+      Revoking it frees the slot (Apple caps distribution certificates). **Keep
+      KL8QSY327N**, which is the one in use. Also delete the profile "org.dravec.bohosluzby
+      AppStore 1792863723", which is tied to the dead certificate. CI can no longer create
+      certificates (Fastfile, `RELEASE_KEYCHAIN` branch).
+
 ## iOS 1.3 (2026-10-14)
 
 - [x] Apple agreement accepted (2026-10-14); ASC API answers again.
-- [ ] **TestFlight check**: build 80 (1.3) is in internal testing (77–79 expired). Install it, check the app opens
-      (ideally on an iOS 15–16.3 device too), ☆ uložit, city chips, share link.
-- [ ] **Submit for Review** in App Store Connect → 1.3 (notes + screenshots
-      uploaded). Build 80 attached. Nothing was submitted.
+- [x] TestFlight check + Submit: App Store Connect reports 1.3 as **approved** (seen
+      2026-10-24 when an upload was refused because "train 1.3 is closed"). New builds are
+      **1.4**, on TestFlight after every merge to main.
 
 ## Ship what merged on 2026-10-07
 

@@ -1025,7 +1025,13 @@ export default function App() {
             </div>
             {view === 'mapa' ? (
               online ? (
-                <div className={mapMode ? 'mt-2 min-h-0 flex-1' : undefined}>
+                <div
+                  data-testid="map-column"
+                  // map mode runs to the screen's bottom edge — stop the map at the
+                  // safe area, so a swipe from the home indicator (switch apps)
+                  // starts on paper, not on the map, and doesn't pan it
+                  className={mapMode ? 'mt-2 min-h-0 flex-1 pb-[env(safe-area-inset-bottom)]' : undefined}
+                >
                   <Suspense
                     fallback={
                       <p className="mt-8 text-center text-ink-faded" role="status">
