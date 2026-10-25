@@ -49,6 +49,9 @@
 }
 .map-chip {
   position: relative; /* containing block for the overlaid witness mark */
+  /* flex, so a "+N" count is a top-aligned item laid out INSIDE the padding */
+  display: inline-flex;
+  align-items: flex-start;
   padding: 2px 7px 3px;
   background: var(--season);
   color: var(--color-paper);
@@ -194,11 +197,12 @@
 
 /* "7:30⁺²" — more fitting services that day; a quiet superscript, chip ink */
 .map-chip-more {
-  margin-left: 1px;
+  /* a flex item top-aligned inside the chip's padding — a raised <sup> with
+     line-height 0 poked out of the box (Pavol, 2026-10-25; e2e guards it) */
+  margin-left: 2px;
   font-size: 0.66em;
-  line-height: 0;
-  vertical-align: 0.55em;
-  opacity: 0.85;
+  line-height: 1;
+  opacity: 0.9;
 }
 
 /* clusters: ink CIRCLES with a count — a different shape AND color from the

@@ -191,3 +191,24 @@ test('map mode: filter sheet opens ABOVE the map (leaflet z-index regression)', 
   await sheet.getByRole('button', { name: 'hotovo' }).click()
   await expect(sheet).not.toBeVisible()
 })
+
+// Pavol, 2026-10-25: the "+N" superscript rose out of the chip box. Every count mark
+// must sit fully inside its chip.
+test('chip "+N" counts sit inside their chip box', async ({ page }) => {
+  await page.goto('/?zobrazeni=mapa')
+  await expect(page.locator('.map-chip').first()).toBeVisible()
+  const marks = page.locator('.map-chip-more')
+  await expect(marks.first()).toBeVisible()
+  const outside = await marks.evaluateAll((els) =>
+    els
+      .map((el) => {
+        const m = el.getBoundingClientRect()
+        const c = el.parentElement!.getBoundingClientRect()
+        return m.top >= c.top && m.bottom <= c.bottom && m.left >= c.left && m.right <= c.right
+          ? null
+          : `${el.parentElement!.textContent} m=${m.top.toFixed(1)}-${m.bottom.toFixed(1)},${m.left.toFixed(1)}-${m.right.toFixed(1)} c=${c.top.toFixed(1)}-${c.bottom.toFixed(1)},${c.left.toFixed(1)}-${c.right.toFixed(1)}`
+      })
+      .filter(Boolean),
+  )
+  expect(outside).toEqual([])
+})
