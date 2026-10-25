@@ -213,23 +213,20 @@ test('chip "+N" counts sit inside their chip box', async ({ page }) => {
   expect(outside).toEqual([])
 })
 
-// Pavol, 2026-10-25: the time sat left of centre once a "+N" followed it. The
-// time is centred in its own cell (chip left edge → the "+N" rule), ±1px.
-test('chip time is centred in its chip, with or without "+N"', async ({ page }) => {
+// Pavol, 2026-10-25: the text — time plus its attached "+N" superscript — has
+// equal space left and right inside the chip, ±1px.
+test('chip text (time + "+N") is centred in its chip', async ({ page }) => {
   await page.goto('/?zobrazeni=mapa')
   await expect(page.locator('.map-chip-more').first()).toBeVisible()
   const off = await page.locator('.map-chip').evaluateAll((els) =>
     els
       .map((el) => {
-        const text = [...el.childNodes].find((n) => n.nodeType === 3)!
         const r = document.createRange()
-        r.selectNodeContents(text)
+        r.selectNodeContents(el)
         const t = r.getBoundingClientRect()
         const c = el.getBoundingClientRect()
-        // with a "+N" cell, the time is centred in the space left of its rule
-        const right = el.querySelector('.map-chip-more')?.getBoundingClientRect().left ?? c.right
-        const d = t.left + t.width / 2 - (c.left + right) / 2
-        return Math.abs(d) > 1 ? `${el.textContent} off by ${d.toFixed(1)}px` : null
+        const d = t.left - c.left - (c.right - t.right)
+        return Math.abs(d) > 1 ? `${el.textContent} left-right gap differs by ${d.toFixed(1)}px` : null
       })
       .filter(Boolean),
   )

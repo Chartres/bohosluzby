@@ -199,15 +199,12 @@
 
 /* "7:30⁺²" — more fitting services that day; a quiet superscript, chip ink */
 .map-chip-more {
-  /* "+N" in its own cell on the right, behind a thin rule: no blank space, and
-     the time stays centred in its own cell (Pavol, 2026-10-25). Superscript
-     position, but laid out inside the chip's padding (flex item). */
-  align-self: stretch;
-  margin: -4px -7px -1px 6px; /* reach the chip edges: the rule spans full height */
-  padding: 3px 5px 0 5px;
-  border-left: 1px solid color-mix(in srgb, var(--color-paper) 45%, transparent);
+  /* a superscript attached to its time, laid out INSIDE the chip as a flex item
+     (a <sup> rose out of the box). The chip's equal side padding centres
+     "time+count" as one group (Pavol, 2026-10-25). */
+  margin-left: 2px;
   font-size: 0.66em;
-  line-height: 1.2;
+  line-height: 1;
   opacity: 0.9;
 }
 
