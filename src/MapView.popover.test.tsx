@@ -200,3 +200,37 @@ describe('map clusters with no match', () => {
     await waitFor(() => expect(container.querySelector('.map-cluster')?.textContent).toBe('2'))
   })
 })
+
+// Pavol, 2026-10-25 (2A): a church with more fitting services that day says so on
+// the chip — "7:30⁺²" — instead of hiding the 9:00 and 11:00 behind a tap.
+describe('chip count of further matching services that day', () => {
+  beforeEach(() => {
+    resetMapMemory()
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-18T04:00:00Z')) // Sunday 06:00 Prague
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+  const chip = (c: HTMLElement) => c.querySelector('.map-chip') as HTMLElement | null
+  it('shows +N for the day’s later matching services', async () => {
+    setup(SIX)
+    const { container } = render(<MapView {...base} onOpen={() => {}} now={new Date()} />)
+    await waitFor(() => expect(chip(container)?.textContent).toBe('7:00+5'))
+    expect(container.querySelector('.map-chip-more')?.textContent).toBe('+5')
+  })
+  it('counts only what the filters let through', async () => {
+    setup(SIX)
+    const filters: Filters = { ...NO_FILTERS, lang: 'polsky' }
+    const { container } = render(<MapView {...base} filters={filters} onOpen={() => {}} now={new Date()} />)
+    await waitFor(() => expect(chip(container)?.textContent).toBe('11:30'))
+    expect(container.querySelector('.map-chip-more')).toBeNull()
+  })
+  it('on an ordo day (dnes) too — the earliest chip, the rest counted', async () => {
+    setup(THREE)
+    const { container } = render(<MapView {...base} day={0} onOpen={() => {}} now={new Date()} />)
+    await waitFor(() => expect(chip(container)?.textContent).toBe('7:00+2'))
+  })
+})

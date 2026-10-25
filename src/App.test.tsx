@@ -274,12 +274,17 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.queryByTestId('seznam')).not.toBeInTheDocument()
   })
 
-  it('map mode keeps the map out of the bottom safe area (the iOS home-indicator swipe must not pan it)', async () => {
+  it('seznam · mapa sits in a bottom bar that owns the safe area, below the map (home-indicator swipe never pans it)', async () => {
     stubGeolocation('granted')
     window.history.replaceState(null, '', '/')
     render(<App />)
     await screen.findByRole('button', { name: 'mapa' })
-    expect(screen.getByTestId('map-column').className).toMatch(/pb-\[env\(safe-area-inset-bottom\)\]/)
+    const bar = screen.getByTestId('view-bar')
+    expect(bar.className).toMatch(/pb-\[env\(safe-area-inset-bottom\)\]/)
+    expect(bar).toContainElement(screen.getByRole('button', { name: 'mapa' }))
+    expect(screen.getByTestId('map-column')).not.toContainElement(bar)
+    // the column's last child: nothing below it in map mode
+    expect(bar.nextElementSibling).toBeNull()
   })
 
   it('the intro guide is re-openable from the masthead in the default map view', async () => {

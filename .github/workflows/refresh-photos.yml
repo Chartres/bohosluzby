@@ -1,0 +1,75 @@
+# Church photos from Wikimedia Commons, one registry grid cell per night (Pavol,
+# 2026-10-25: photos for the whole country). A full pass is ~6 h of polite API
+# calls (250 ms gaps); the biggest cell is ~600 churches ≈ 1 h, so the 21 cells
+# rotate by day of year and the country is covered in about three weeks, then
+# refreshed on the same cycle. Each run adds/overwrites that cell's photos, then
+# --recheck re-applies the current rules to the whole file. Data only: no store
+# build is triggered (the apps read photos.json like the rest of the registry).
+name: Refresh photos
+
+on:
+  schedule:
+    - cron: '41 1 * * *' # nightly 01:41 UTC
+  workflow_dispatch:
+    inputs:
+      cell:
+        description: 'grid cell to match (e.g. 49-17); empty = tonight’s rotation'
+        required: false
+
+permissions:
+  contents: write
+  actions: write # dispatch ci.yml after the push (GITHUB_TOKEN pushes don't trigger it)
+
+concurrency:
+  group: refresh-data # never alongside the registry refresh: both write public/data
+  cancel-in-progress: false
+
+jobs:
+  photos:
+    if: github.repository == 'Chartres/bohosluzby'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Pick the cell
+        id: cell
+        env:
+          INPUT_CELL: ${{ inputs.cell }}
+        run: |
+          if [ -n "$INPUT_CELL" ]; then CELL="$INPUT_CELL"; else
+            CELL=$(node -e '
+              const rows = require("./public/data/churches.json")
+              const cells = [...new Set(rows.map((r) => r[6]))].sort()
+              const day = Math.floor(Date.now() / 86400000)
+              console.log(cells[day % cells.length])')
+          fi
+          echo "cell=$CELL" >> "$GITHUB_OUTPUT"
+          echo "matching cell $CELL"
+
+      - name: Match photos
+        run: node data/match-photos.mjs --cell "${{ steps.cell.outputs.cell }}"
+
+      - name: Re-apply the rules to every stored photo
+        run: node data/match-photos.mjs --recheck
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/photos.json
+          if git diff --cached --quiet; then
+            echo "photos unchanged"
+          else
+            git commit -m "data: photos for cell ${{ steps.cell.outputs.cell }} ($(date -u +%Y-%m-%d))"
+            git pull --rebase origin main
+            git push
+            curl -sS -X POST \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ci.yml/dispatches" \
+              -d '{"ref":"main"}'
+          fi
