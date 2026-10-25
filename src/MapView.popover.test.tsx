@@ -167,3 +167,36 @@ describe('map memory: back from a church lands where you left (1A)', () => {
     expect(back.container.querySelector('.map-pop-name')).toBeNull()
   })
 })
+
+// Pavol, 2026-10-25: with "řeckokatolické" on, Brno showed grey "3"/"2" circles that
+// turned into near-invisible dots on zoom ("they disappear"). A group with no match
+// must look like what it zooms into: the faded dot, not a count circle.
+describe('map clusters with no match', () => {
+  beforeEach(() => resetMapMemory())
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+  it('render as a faded dot, the same mark their churches show when zoomed in', async () => {
+    const a: Church = { ...church, id: '1' }
+    const b: Church = { ...church, id: '2', name: 'kostel 2', lat: church.lat + 0.0005 }
+    const shard = { ...THREE, '2': THREE['1'] }
+    setup(shard)
+    const filters: Filters = { ...NO_FILTERS, greek: true } // nothing here is Greek-Catholic
+    const { container } = render(
+      <MapView {...base} churches={[a, b]} filters={filters} onOpen={() => {}} now={new Date('2026-10-18T04:00:00Z')} />,
+    )
+    await waitFor(() => expect(container.querySelector('.map-dot--faded')).not.toBeNull())
+    expect(container.querySelector('.map-cluster')).toBeNull()
+    expect(container.querySelectorAll('.map-dot--faded')).toHaveLength(1) // one mark for the pair
+  })
+  it('a group holding a match keeps its count circle', async () => {
+    const a: Church = { ...church, id: '1' }
+    const b: Church = { ...church, id: '2', name: 'kostel 2', lat: church.lat + 0.0005 }
+    setup({ ...THREE, '2': THREE['1'] })
+    const { container } = render(
+      <MapView {...base} churches={[a, b]} onOpen={() => {}} now={new Date('2026-10-18T04:00:00Z')} />,
+    )
+    await waitFor(() => expect(container.querySelector('.map-cluster')?.textContent).toBe('2'))
+  })
+})
