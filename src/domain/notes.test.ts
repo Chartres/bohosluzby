@@ -177,6 +177,22 @@ describe('nth weekday of month', () => {
     expect(runs('1. sobota v měsíci', '2026-07-11')).toBe(false) // 2nd Saturday
     expect(runs('1. sobota v měsíci', '2026-07-05')).toBe(true) // a Sunday — note doesn't govern it
   })
+  // registry form without "v měsíci" (8 services, e.g. the Malá Morava chapel that
+  // showed "dnes 14:00" on the 4th Sunday of October — Pavol, 2026-10-25)
+  it('bare ordinal + weekday segments: "1x za měsíc, 1. neděle", "2. a 4. sobota", "první pátek"', () => {
+    const chapel = 'období od května do října, 1x za měsíc, 1. neděle '
+    expect(runs(chapel, '2026-10-25')).toBe(false) // 4th Sunday
+    expect(runs(chapel, '2026-10-04')).toBe(true) // 1st Sunday, in season
+    expect(runs(chapel, '2026-11-01')).toBe(false) // 1st Sunday, out of season
+    expect(runs('1x za měsíc, 1. pátek', '2026-10-02')).toBe(true)
+    expect(runs('1x za měsíc, 1. pátek', '2026-10-09')).toBe(false)
+    expect(runs('2. a 4. sobota', '2026-10-10')).toBe(true)
+    expect(runs('2. a 4. sobota', '2026-10-17')).toBe(false)
+    expect(runs('první pátek', '2026-11-06')).toBe(true)
+    expect(runs('první pátek', '2026-11-13')).toBe(false)
+    expect(runs('1x za měsíc, poslední čtvrtek', '2026-10-29')).toBe(true)
+    expect(runs('1x za měsíc, poslední čtvrtek', '2026-10-22')).toBe(false)
+  })
   it('první/pouze variants', () => {
     expect(runs('pouze první sobota v měsíci', '2026-07-04')).toBe(true)
     expect(runs('pouze 3. neděle v měsíci', '2026-07-19')).toBe(true)

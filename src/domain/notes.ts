@@ -260,7 +260,9 @@ function parseSegment(seg: string): Pred | 'none' | null {
   const nthRe = (!NEGATION.test(s)
     ? new RegExp(`(?:^|^.*\\s)(?:vždy\\s+)?(?:pouze|jen)\\s+(${ORDINALS_RE})\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
     : null) ??
-    new RegExp(`^(?:1x\\s+za\\s+měsíc\\s+)?(${ORDINALS_RE})\\s+(${WEEKDAY_RE})\\s+v\\s+měsíci$`).exec(s)
+    // "v měsíci" optional: the registry also writes a bare "1. neděle" / "2. a 4. sobota"
+    // segment (after "1x za měsíc,"), which can only mean the nth weekday of the month
+    new RegExp(`^(?:1x\\s+za\\s+měsíc\\s+)?(${ORDINALS_RE})\\s+(${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?$`).exec(s)
   if (nthRe) {
     const ords = parseOrdinals(nthRe[1])
     if (ords) return nthWeekday(ords, WEEKDAY[nthRe[2]])

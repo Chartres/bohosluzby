@@ -208,12 +208,6 @@
   font-weight: 600;
 }
 /* every church in the bucket is irrelevant to the selection → paper, not ink */
-.map-cluster--faded {
-  background: var(--color-paper);
-  color: var(--color-ink-faded);
-  border-color: var(--color-hairline);
-}
-
 /* "you are here": a quiet surveyor's ring in ink */
 .map-origin-wrap {
   display: grid;

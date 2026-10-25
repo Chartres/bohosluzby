@@ -60,9 +60,9 @@ const fadedIcon = () =>
     html: '<span class="map-dot map-dot--faded"></span>',
     iconSize: [30, 30],
   })
-const clusterIcon = (count: number, hasMatch: boolean) =>
+const clusterIcon = (count: number) =>
   L.divIcon({
-    className: hasMatch ? 'map-cluster' : 'map-cluster map-cluster--faded',
+    className: 'map-cluster',
     html: String(count),
     iconSize: [30, 30],
   })
@@ -450,7 +450,10 @@ export default function MapView({
           sig.push(`${cl.x},${cl.y}:${cl.items.length}|${hasMatch}`)
           adds.push(() => {
             L.marker(latlng, {
-              icon: clusterIcon(cl.items.length, hasMatch),
+              // a group with no match draws as the faded dot its churches become
+              // on zoom — a grey "3" that dissolved into dots read as "they
+              // disappear" (řeckokatolické in Brno, 2026-10-25)
+              icon: hasMatch ? clusterIcon(cl.items.length) : fadedIcon(),
               title: churchCount(cl.items.length),
               keyboard: false,
             })

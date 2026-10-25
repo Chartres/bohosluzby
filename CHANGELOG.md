@@ -5,6 +5,14 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **Fixed: monthly services shown every week.** A bare "1. neděle", "2. a 4. sobota" or
+  "první pátek" (without "v měsíci") wasn't parsed, so a first-Sunday chapel showed as
+  "dnes" on every Sunday. 8 services affected. (Pavol, 2026-10-25)
+- **Fixed: filtered-out groups "disappear" on zoom.** With a filter on, a group of churches
+  with no match drew as a grey count circle and then split into tiny dots. It now draws as
+  the same faded dot from the start.
+- **iOS: swipe back from a church page**: the native edge swipe with the slide animation
+  (`allowsBackForwardNavigationGestures`, `MainViewController` in `AppDelegate.swift`).
 - **Map popover shows the church's whole day**: one row per service (time, type, language
   if not Czech), with the shown one bold. Services excluded by your filters stay listed,
   faded. More than four rows ends in "+N další ›". (friends' feedback, 2026-10-21)
