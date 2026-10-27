@@ -1,13 +1,15 @@
 # linkcheck-www report
 
-Run: 2026-10-03T09:27:19.744Z
+Run: 2026-10-27T11:58:24.972Z
 Unique www URLs checked: 1034
-Dropped (hard failure on all 3 rounds): 60
-Inconclusive (logged, kept): 272
+Dropped (hard failure on all 3 rounds): 55
+Inconclusive (logged, kept): 286
 
 ## Dropped
 - http://farnost.hostivice.cz — round1: dns, round2: dns, round3: dns
 - http://www.kolodeje.farnost.cz — round1: dns, round2: dns, round3: dns
+- http://www.farnostbrod.cz — round1: dns, round2: dns, round3: dns
+- http://www.farapribram.cz — round1: dns, round2: dns, round3: dns
 - http://www.nove-straseci.eu — round1: dns, round2: dns, round3: dns
 - http://www.lounovicepodblanikem.cz/farni-urad.php — round1: http 404, round2: http 404, round3: http 404
 - http://froprachtice.sweb.cz/ — round1: dns, round2: dns, round3: dns
@@ -23,28 +25,22 @@ Inconclusive (logged, kept): 272
 - http://www.chotebor.farnost.cz — round1: dns, round2: dns, round3: dns
 - http://www.farnostmladavozice.cz/farnost/sebirov — round1: http 404, round2: http 404, round3: http 404
 - http://www.farnostchotoviny.cz — round1: dns, round2: dns, round3: dns
-- http://www.klaster.cz/farnosti/horni-stropnice — round1: http 404, round2: http 404, round3: http 404
 - http://www.bcb.cz/Katalog/Farnosti/CHELCICE — round1: http 404, round2: http 404, round3: http 404
+- http://farnost.hrabova.net — round1: http 500, round2: http 500, round3: http 500
 - https://www.farnostostravahrusov.cz/ — round1: dns, round2: dns, round3: dns
-- http://www.albel.cz/ — round1: http 503, round2: http 503, round3: http 503
+- http://www.albel.cz/ — round1: dns, round2: dns, round3: dns
 - http://www.farnost-zator.webnode.cz — round1: http 404, round2: http 404, round3: http 404
-- http://farnost.nezamyslice.cz — round1: http 503, round2: http 503, round3: http 503
 - http://farnosthutisko.cz — round1: http 404, round2: http 404, round3: http 404
+- http://vlcnov.farnost.cz — round1: http 500, round2: http 500, round3: http 500
 - http://farnostborsice.cz — round1: dns, round2: dns, round3: dns
-- http://www.farnostrk.webnode.cz — round1: http 404, round2: http 404, round3: http 404
-- http://www.kfarnost.cz — round1: dns, round2: dns, round3: dns
-- http://www.neratov.cz/o-nas/farnost — round1: http 404, round2: http 404, round3: http 404
-- http://farnostkajov.bcb.cz/ — round1: http 404, round2: http 404, round3: http 404
 - http://www.petrini.cz/clanky/komunity/pisek/Mirotice_Radobytce — round1: http 404, round2: http 404, round3: http 404
 - http://www.klaster.cz/farnosti/dobra-voda — round1: http 404, round2: http 404, round3: http 404
 - http://www.petrini.cz/clanky/komunity/pisek/Putim — round1: http 404, round2: http 404, round3: http 404
 - http://www.pelhrimov.farnost.cz — round1: dns, round2: dns, round3: dns
 - http://www.sedlice.farnost.cz — round1: dns, round2: dns, round3: dns
 - http://www.farnostmladavozice.cz/farnost/smilovyhory — round1: http 404, round2: http 404, round3: http 404
-- http://sezusti.webzdarma.cz/index_.html — round1: http 404, round2: http 404, round3: http 404
 - http://www.farnidomov.cz — round1: dns, round2: dns, round3: dns
 - http://www.farnostmladavozice.cz/farnost/novaves — round1: http 404, round2: http 404, round3: http 404
-- http://farnoststeborice.cz — round1: http 503, round2: http 503, round3: http 503
 - http://www.bilovec.dekanat.cz — round1: dns, round2: dns, round3: dns
 - http://www.farnostdoubrava.cz — round1: dns, round2: dns, round3: dns
 - http://farnost-mostyujablunkova.webnode.cz — round1: http 404, round2: http 404, round3: http 404
@@ -55,73 +51,71 @@ Inconclusive (logged, kept): 272
 - http://www.koberice.farnost.cz — round1: dns, round2: dns, round3: dns
 - http://www.farnostkasejovice.cz — round1: dns, round2: dns, round3: dns
 - http://farnostsady.wz.cz — round1: http 404, round2: http 404, round3: http 404
-- http://farnost-francovalhota.cz — round1: dns, round2: dns, round3: dns
 - http://farnost-jakubovice.cz — round1: dns, round2: dns, round3: dns
 - http://farnost-olomouc-slavonin.cz — round1: http 404, round2: http 404, round3: http 404
 - http://farnostnovesady.cz — round1: http 502, round2: http 502, round3: http 502
 - http://farnostprerov.cz/mostenice — round1: http 404, round2: http 404, round3: http 404
-- http://krenov.websnadno.cz — round1: http 404, round2: http 404, round3: http 404
+- http://kyjov.farnost.cz/mistrin — round1: http 404, round2: http 404, round3: http 404
 - http://choryne.farnost.cz — round1: dns, round2: dns, round3: dns
 - http://farnost.postorna.cz/cz/farnost-lednice — round1: http 404, round2: http 404, round3: http 404
 - http://farnostpohorelice.webgarden.cz — round1: http 404, round2: http 404, round3: http 404
-- http://ujezuitu.cz — round1: http 500, round2: http 500, round3: http 500
 - http://www.farnostturany.cz — round1: http 404, round2: http 404, round3: http 404
+- http://www.farnostnikolcice.cz — round1: dns, round2: dns, round3: dns
 
 ## Inconclusive (kept — timeout or ambiguous, never dropped on that alone)
+- http://www.augustiniani.cz — round1: timeout, round2: ok
 - https://farnostcvikov.cz/ — round1: http 403, round2: http 403, round3: http 403
+- http://farnoststrahov.cz — round1: timeout, round2: ok
 - http://www.kostelignac.cz — round1: other, round2: other, round3: other
-- http://www.trs-farnosti.cz — round1: timeout, round2: ok
+- http://www.trs-farnosti.cz — round1: timeout, round2: timeout, round3: ok
 - http://www.farnoststodulky.cz/ — round1: http 403, round2: http 403, round3: http 403
-- http://www.norbertstresovice.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnost-brevnov.cz — round1: timeout, round2: ok
+- http://www.farnostbubenec.cz — round1: timeout, round2: ok
+- http://www.matejstranti.com — round1: timeout, round2: ok
+- http://www.srdcepane.cz — round1: timeout, round2: ok
+- http://www.farnostbranik.cz — round1: timeout, round2: ok
 - http://mimon.farnost.cz/ — round1: http 403, round2: http 403, round3: http 403
 - http://farnostsluknov.cz — round1: http 403, round2: http 403, round3: http 403
+- http://www.saletini.cz — round1: timeout, round2: timeout, round3: ok
 - http://www.farnostmelnik.cz — round1: timeout, round2: ok
-- http://www.dekanstvimh.cz/ — round1: timeout, round2: timeout, round3: ok
+- http://www.turnov.cz/cs/organizace/cirkve.html — round1: timeout, round2: ok
+- http://www.dekanstvimh.cz/ — round1: timeout, round2: ok
 - http://www.lhoteckafarnost.cz — round1: http 403, round2: http 403, round3: http 403
 - https://farnosthostivar.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostcakovice.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnosthloubetin.cz — round1: http 403, round2: http 403, round3: http 403
-- http://kbely.farnost.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnostporici.cz/index.php — round1: http 403, round2: timeout, round3: http 403
+- http://www.farnost-vinor.org — round1: other, round2: other, round3: other
+- http://www.kostel-klecany.cz — round1: timeout, round2: ok
+- http://kbely.farnost.cz — round1: timeout, round2: http 403, round3: http 403
+- http://www.farnostporici.cz/index.php — round1: http 403, round2: http 403, round3: http 403
 - http://www.revnice.farnost.cz — round1: other, round2: other, round3: other
-- http://www.kosteluhonice.cz — round1: other, round2: other, round3: other
-- http://www.farnost-uvaly.estranky.cz — round1: timeout, round2: timeout, round3: timeout
-- http://www.farnost-mnichovice.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnost-mnichovice.cz — round1: timeout, round2: ok
 - http://www.svprokop-sazava.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnost-unhost.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnost-unhost.cz — round1: timeout, round2: ok
 - https://www.farnost-smecno.webnode.cz — round1: other, round2: other, round3: other
 - http://www.farnostbudyne.cz — round1: timeout, round2: timeout, round3: timeout
 - https://farnostjince.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnostbenatky.cz — round1: timeout, round2: timeout, round3: timeout
-- http://www.farnostdivisov.cz — round1: timeout, round2: timeout, round3: timeout
-- http://www.farnostvlasim.cz — round1: other, round2: other, round3: other
 - http://www.farnostmcely.cz/ — round1: http 403, round2: http 403, round3: http 403
 - https://farnoststetsko.cz/ — round1: http 403, round2: http 403, round3: http 403
+- http://www.farnostpodborany.cz/ — round1: other, round2: other, round3: other
 - https://farnostlibochovice.cz/ — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnost-terezin.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnosttanvald.cz/index.php — round1: http 403, round2: http 403, round3: http 403
 - http://www.arcidekanstvi-lbc.cz — round1: http 403, round2: http 403, round3: http 403
 - https://krizovatka-prichovice.cz/ — round1: other, round2: other, round3: other
-- http://www.sdb.cz/kde-jsme/rumburk/ — round1: other, round2: other, round3: other
-- http://www.farnosthrob.estranky.cz — round1: timeout, round2: timeout, round3: timeout
-- http://www.farnostprepere.estranky.cz/ — round1: other, round2: other, round3: other
-- http://www.farnostpoustevna.estranky.cz/ — round1: other, round2: other, round3: other
 - https://farnostvratislavice.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.proboststvi-jh.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farpel.cz/ — round1: http 403, round2: http 403, round3: http 403
+- http://farnosthvozdna.cz — round1: other, round2: other, round3: other
 - http://www.farnostdvurkralove.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnosthkpp.cz — round1: http 403, round2: http 403, round3: http 403
 - https://rokytnickefarnosti.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.rkfbreznice.cz/ — round1: http 403, round2: http 403, round3: http 403
 - http://prelaturakrumlov.cz/misto.php?id=734 — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnosti-na-lipne.cz — round1: other, round2: other, round3: other
-- http://www.farnostmorkov.estranky.cz — round1: timeout, round2: timeout, round3: timeout
 - http://www.farnost-hnojnik.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnosthavirov.cz — round1: http 403, round2: http 403, round3: http 403
-- http://farnostkraslice.estranky.cz — round1: timeout, round2: timeout, round3: timeout
 - http://www.svaty-mikulas.mozello.cz — round1: other, round2: other, round3: other
-- http://www.farnost-nyrany.cz — round1: timeout, round2: timeout, round3: timeout
-- http://farnostvsechovice.cz/index.php — round1: http 403, round2: http 403, round3: http 403
+- http://farnostvsechovice.cz — round1: http 403, round2: http 403, round3: http 403
+- http://farnost.valasskapolanka.cz — round1: other, round2: other, round3: other
 - http://farnostkromeriz.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostmiroslav.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostvysokepopovice.cz — round1: http 403, round2: http 403, round3: http 403
@@ -131,68 +125,64 @@ Inconclusive (logged, kept): 272
 - http://www.farnost-trebechovice.cz — round1: http 403, round2: http 403, round3: http 403
 - https://farnostkrucemburk.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnosttrutnov.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnost-prelouc.estranky.cz — round1: other, round2: other, round3: other
 - http://www.farnostpolna.cz — round1: other, round2: other, round3: other
 - http://www.farnosttrutnov2.cz — round1: http 403, round2: http 403, round3: http 403
+- http://www.katedralahradec.cz — round1: http 403, round2: ok
 - http://www.farnostpribyslav.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnostvmyto.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.vesmir.signaly.cz/farnost-destne.html — round1: timeout, round2: timeout, round3: timeout
 - http://www.farnostnm.cz — round1: http 403, round2: http 403, round3: http 403
+- http://www.farnost-caslav.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnostjistebnice.cz/ — round1: http 403, round2: http 403, round3: http 403
-- http://www.dekanstvi-protivin.estranky.cz/ — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnostsevetin.cz — round1: http 429, round2: http 429, round3: http 429
 - http://vimperk.farnost.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnostveseli.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnostkamenice.cz/ — round1: other, round2: other, round3: other
 - http://www.blatna.farnost.cz/ — round1: other, round2: other, round3: other
 - http://www.farnostprachatice.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.dekanstvicb.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostvelesin.cz/ — round1: http 403, round2: http 403, round3: http 403
 - http://prelaturakrumlov.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnostpocatky.estranky.cz/ — round1: timeout, round2: timeout, round3: timeout
 - http://www.kostelyvitorazska.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostborovany.cz/ — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostvodnany.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.cernovicefarnost.estranky.cz/ — round1: timeout, round2: timeout, round3: timeout
-- http://www.farnostveseli.cz/clanky/farnost-drahov/ — round1: timeout, round2: timeout, round3: timeout
-- http://www.farnostbilovec.cz — round1: other, round2: other, round3: other
+- http://www.farnostskalice.cz — round1: timeout, round2: timeout, round3: ok
+- http://www.farnostropice.cz — round1: http 429, round2: http 429, round3: http 429
 - http://www.farnosttesin.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostskorosice.cz/ — round1: http 429, round2: http 429, round3: http 429
 - http://www.farnostzlatehory.cz — round1: http 429, round2: http 429, round3: http 429
 - http://www.rkfhostalkovice.cz — round1: http 429, round2: http 429, round3: http 429
-- http://farnost.paskov.cz — round1: timeout, round2: timeout, round3: timeout
 - http://www.farnostpribor.cz — round1: http 429, round2: http 429, round3: http 429
 - http://kostelberoun.cz/ — round1: http 429, round2: http 429, round3: http 429
-- https://farnost-dolni-benesov.estranky.cz/ — round1: other, round2: other, round3: other
 - http://www.farnostfrydek.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostdobratice.cz/ — round1: http 429, round2: http 429, round3: http 429
 - http://www.farnostkozlovice.cz — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnost-chodov.cz — round1: other, round2: other, round3: other
+- http://fma.cz/pcs — round1: timeout, round2: ok
 - http://www.farnostcheb.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.rkfpz.mozello.cz — round1: other, round2: other, round3: other
+- http://www.farnostbartolomej.cz — round1: http 403, round2: ok
 - http://www.mariakulm.eu/cs — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnostsvihov.estranky.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnostspaleneporici.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnostbecovnadteplou.cz — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnostrokycany.cz — round1: other, round2: other, round3: other
 - http://arcidekanstvi-nepomuk.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnost-sak.cz — round1: http 429, round2: http 429, round3: http 429
+- http://www.sdbplzen.cz — round1: other, round2: other, round3: other
 - http://farnostdomazlice.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.reckokatolikkv.estranky.cz — round1: timeout, round2: timeout, round3: timeout
-- http://www.farnostkolovec.cz — round1: timeout, round2: timeout, round3: timeout
+- http://farnost.nezamyslice.cz — round1: other, round2: other, round3: other
 - http://svatymichal.cz — round1: other, round2: other, round3: other
 - http://rkfzabreh.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostkojetin.8u.cz/ — round1: http 403, round2: http 403, round3: http 403
 - http://farnostholesov.cz — round1: http 403, round2: http 403, round3: http 403
+- http://farnost.hornibecva.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnostuh.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostzubri.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnostzlin.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostbilovice.cz — round1: other, round2: other, round3: other
 - http://farnosthornilhota.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnost-veseli.cz — round1: http 429, round2: http 429, round3: http 429
-- http://farnosttesetice.estranky.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnostroznov.cz — round1: http 403, round2: http 403, round3: http 403
 - http://fapohorelice.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostkelc.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostvizovice.cz — round1: http 403, round2: http 403, round3: http 403
+- http://farnostlostice.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnostzeranovice.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostzdounky.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnost-vbystrice.cz — round1: http 429, round2: http 429, round3: http 429
@@ -217,51 +207,70 @@ Inconclusive (logged, kept): 272
 - http://farnostlouka.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnostkunstat.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostujezdubrna.cz — round1: http 403, round2: http 403, round3: http 403
+- http://farnost.dacice.cz — round1: http 500, round2: http 500, round3: timeout
 - http://farnostrajec.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnostletovice.cz — round1: http 403, round2: http 403, round3: http 403
-- http://farnosttvarozna.cz — round1: http 429, round2: http 429, round3: http 429
-- http://farnosttesany.cz — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnostzeletava.cz — round1: http 429, round2: http 429, round3: http 429
-- http://brezi.farnost.cz — round1: http 403, round2: http 403, round3: http 403
-- http://farnostdrnovice.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnost-hostinne.estranky.cz — round1: timeout, round2: timeout, round3: timeout
-- http://www.farnostbojanov.cz — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnostsebranice.cz — round1: http 403, round2: http 403, round3: http 403
-- https://farnostnekor.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnispolecenstvi.cz — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnosthb.cz — round1: http 429, round2: http 429, round3: http 429
+- http://farnosttvarozna.cz — round1: http 429, round2: http 429, round3: timeout
+- http://farnosttesany.cz — round1: http 429, round2: http 429, round3: timeout
+- http://www.farnostzeletava.cz — round1: http 429, round2: http 429, round3: timeout
+- http://brezi.farnost.cz — round1: http 403, round2: timeout, round3: timeout
+- http://farnostdrnovice.cz — round1: http 403, round2: http 403, round3: timeout
+- http://www.farnostrychnov.cz — round1: http 403, round2: timeout, round3: timeout
+- http://www.farnostbojanov.cz — round1: http 429, round2: timeout, round3: timeout
+- http://www.farnostsebranice.cz — round1: http 403, round2: timeout, round3: timeout
+- https://farnostnekor.cz — round1: http 403, round2: timeout, round3: timeout
+- http://www.farnispolecenstvi.cz — round1: http 429, round2: timeout, round3: timeout
+- http://www.farnostla.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.ousteckefarnosti.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnosthb.cz — round1: timeout, round2: timeout, round3: timeout
 - http://www.chlumek.net — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnost-opatovice-nad-labem0.webnode.cz — round1: timeout, round2: timeout, round3: timeout
 - http://www.farnostteplicenm.cz — round1: timeout, round2: timeout, round3: timeout
-- http://www.dolnocermenska.farnost.eu — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnost-slatinany.cz — round1: http 429, round2: timeout, round3: http 429
-- http://www.lovcice.eu — round1: other, round2: other, round3: other
-- http://www.farnostzbraslavice.cz — round1: other, round2: other, round3: other
-- http://farnost-horicky.estranky.cz/ — round1: timeout, round2: timeout, round3: timeout
-- http://www.klasterkraliky.cz — round1: http 403, round2: http 403, round3: http 403
+- http://www.msvatonovicekostel.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnostzeliv.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnostzleby.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.dolnocermenska.farnost.eu — round1: timeout, round2: timeout, round3: timeout
+- http://www.kfarnost.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnostpolice.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnostlb.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnost-slatinany.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnostsvratka.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.farnost-holice.cz — round1: timeout, round2: timeout, round3: ok
+- https://nachod.farnost.cz — round1: timeout, round2: timeout, round3: timeout
+- http://www.lovcice.eu — round1: timeout, round2: timeout, round3: other
+- http://www.farnostceskaskalice.webnode.cz — round1: timeout, round2: timeout, round3: ok
+- http://www.neratov.cz/o-nas/farnost — round1: timeout, round2: http 404, round3: http 404
+- http://www.vikariatjilemnice.cz/farnost/horni_stepanice — round1: timeout, round2: ok
+- http://www.vikariatjilemnice.cz/farnost/horni_branna — round1: timeout, round2: ok
+- http://www.farnostzbraslavice.cz — round1: timeout, round2: ok
+- http://farnost-horicky.estranky.cz/ — round1: timeout, round2: timeout, round3: ok
+- https://farnostkorouhevsadek.webnode.cz — round1: timeout, round2: ok
+- http://www.myanasefarnosti.cz — round1: timeout, round2: ok
+- http://www.klasterkraliky.cz — round1: timeout, round2: http 403, round3: http 403
+- http://www.vikariatjilemnice.cz/farnost/rokytnice_nad_jizerou — round1: timeout, round2: ok
+- https://farnost.studenec.cz — round1: timeout, round2: ok
+- http://www.vikariatjilemnice.cz/farnost/ponikla — round1: timeout, round2: ok
+- http://www.farnostvk.cz — round1: timeout, round2: ok
 - http://www.farnostpacov.cz — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnostvolary.estranky.cz/ — round1: timeout, round2: timeout, round3: timeout
 - http://milevsko.klastermilevsko.cz/ — round1: http 429, round2: http 429, round3: http 429
 - http://proboststvi-jh.cz/strmilov/index.php — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostvelhartice.cz — round1: http 403, round2: http 403, round3: http 403
+- https://www.prelaturakrumlov.cz/misto.php?id=728 — round1: http 403, round2: http 403, round3: http 403
 - http://chysky.klastermilevsko.cz/ — round1: http 429, round2: http 429, round3: http 429
 - http://www.farnostlisov.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostprachatice.cz/ — round1: http 403, round2: http 403, round3: http 403
 - http://farnostlukavec.cz/ — round1: http 429, round2: http 429, round3: http 429
 - http://bernartice.klastermilevsko.cz/ — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnostvolary.estranky.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnostsuchevrbne.cz — round1: http 403, round2: http 403, round3: http 403
 - https://www.ktispromlade.cz/ — round1: http 403, round2: http 403, round3: http 403
-- http://www.rkfmilicin.estranky.cz — round1: timeout, round2: timeout, round3: timeout
 - http://www.proboststvi-jh.cz/novabystrice — round1: http 403, round2: http 403, round3: http 403
 - http://proboststvi-jh.cz/kunzak/index.php — round1: http 403, round2: http 403, round3: http 403
 - http://sepekov.klastermilevsko.cz/ — round1: http 429, round2: http 429, round3: http 429
 - http://www.kestrany-pisecko.cz/farnost/ds-5686/p1=4333 — round1: http 403, round2: http 403, round3: http 403
 - http://lko.klastermilevsko.cz/ — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnostveseli.cz/clanky/farnost-kardasova-recice — round1: timeout, round2: timeout, round3: timeout
 - http://kvetov.klastermilevsko.cz/ — round1: http 429, round2: http 429, round3: http 429
 - http://proboststvi-jh.cz/pena/index.php — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostborovany.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnostveseli.cz/clanky/farnost-drachov/ — round1: timeout, round2: timeout, round3: timeout
 - http://www.jannepomuckycb.cz/ — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostvelkapolom.cz — round1: http 429, round2: http 429, round3: http 429
 - http://www.farnostlichnov.cz/ — round1: http 403, round2: http 403, round3: http 403
@@ -275,28 +284,30 @@ Inconclusive (logged, kept): 272
 - http://www.farnostmostrava.cz — round1: http 429, round2: http 429, round3: http 429
 - http://www.farnostkravare.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostsvinov.cz — round1: http 429, round2: http 429, round3: http 429
+- https://www.farnostchlebovicestaric.cz/ — round1: other, round2: other, round3: other
 - http://farnostsj.cz — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnostverovice.estranky.cz — round1: other, round2: other, round3: other
 - http://www.farnostpetrvald.cz — round1: http 429, round2: http 429, round3: http 429
 - http://frydlant.farnost.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostkoprivnice.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnoststepankovice.cz — round1: http 403, round2: http 403, round3: http 403
 - http://privoz.farnost.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostplana.eu — round1: http 429, round2: http 429, round3: http 429
-- http://www.farnostplanice.cz — round1: timeout, round2: timeout, round3: timeout
-- http://www.klastertepla.cz — round1: http 403, round2: http 403, round3: http 403
+- http://www.klastertepla.cz — round1: timeout, round2: ok
+- http://www.farnostsokolov.cz — round1: other, round2: other, round3: other
 - http://www.arcidekanstvi-nepomuk.cz/pradlo — round1: http 403, round2: http 403, round3: http 403
 - http://www.arcidekanstvi-nepomuk.cz/vrcen — round1: http 403, round2: http 403, round3: http 403
+- http://www.farnoststararole.cz — round1: other, round2: other, round3: other
 - http://www.arcidekanstvi-nepomuk.cz/mysliv — round1: http 403, round2: http 403, round3: http 403
 - http://farnostmalenovice.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostvyskov.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostcervenavoda.cz — round1: http 403, round2: http 403, round3: http 403
+- http://farnost-francovalhota.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnostslusovice.cz — round1: http 403, round2: http 403, round3: http 403
-- http://farnost-mestecko-trnavka.estranky.cz — round1: other, round2: other, round3: other
 - http://farnostnapajedla.cz — round1: http 403, round2: http 403, round3: http 403
 - http://fapitin.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnost-laskov.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostlidecko.cz — round1: http 403, round2: http 403, round3: http 403
+- http://farnostsumice.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnostvelkytynec.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnosthluk.cz — round1: http 429, round2: http 429, round3: http 429
 - http://www.hostyn.cz — round1: http 403, round2: http 403, round3: http 403
@@ -311,30 +322,28 @@ Inconclusive (logged, kept): 272
 - http://farnostsdbzlin.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostvnorovy.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostpraksice.cz — round1: http 403, round2: http 403, round3: http 403
-- http://kyjov.farnost.cz/mistrin — round1: http 404, round2: http 403, round3: http 404
+- http://krenov.websnadno.cz — round1: other, round2: other, round3: other
 - http://www.farnost-modrice.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnostmasuvky.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostzeletava.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnostrudikov.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnoststudena.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnostreckovice.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnostjaromerice.cz — round1: http 429, round2: http 429, round3: http 429
+- http://www.saratice.cz/kostel — round1: other, round2: other, round3: other
 - http://www.farnostorechov.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostdeblin.cz — round1: http 403, round2: http 403, round3: http 403
-- http://www.farnostlomnice.cz — round1: timeout, round2: timeout, round3: timeout
 - http://farnosthodonin.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostcebin.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.farnostvelkebilovice.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostmyslova.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnostadamov.cz — round1: http 429, round2: http 429, round3: http 429
 - http://www.augustinbrno.cz — round1: http 429, round2: http 429, round3: http 429
-- http://rkf-nizkovice.estranky.cz — round1: timeout, round2: timeout, round3: timeout
 - http://svatymichalbrno.cz — round1: http 429, round2: http 429, round3: http 429
 - http://luzice.farnost.cz — round1: http 403, round2: http 403, round3: http 403
 - http://farnostkrenova.cz — round1: http 429, round2: http 429, round3: http 429
 - http://farnosthorniujezd.cz — round1: http 403, round2: http 403, round3: http 403
 - http://www.zabrdovice.cz — round1: http 429, round2: http 429, round3: http 429
-- http://farnostsyrovice.cz — round1: timeout, round2: http 429, round3: http 429
+- http://farnostsyrovice.cz — round1: http 429, round2: http 429, round3: http 429
 - http://www.kapucini.cz — round1: http 429, round2: http 429, round3: http 429
 - http://www.kvetnov-quinau.cz/ — round1: http 429, round2: http 429, round3: http 429
 - www.facebook.com/otvksb/ — round1: other, round2: other, round3: other
