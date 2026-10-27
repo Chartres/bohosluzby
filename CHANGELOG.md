@@ -5,6 +5,14 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **Všech svatých a Dušičky pages**: `/dusicky/` (dates, the indulgence for the dead, how
+  exact the times are) and `/dusicky/<city>/` for the 30 city pages — every service the
+  registry gives for 1 and 2 November, by time, church linked, one-offs and old entries
+  marked. Static HTML, no app on top (the app has no such route); the service worker lets
+  them through. Each `/kostel/<id>/` page lists the two days in the month before and
+  carries them as schema.org `Event`s. Sitemap `lastmod` for church pages is now the
+  registry's own date (build date only while the feast section is on the page).
+  `scripts/check-prerender.mjs` reads the new pages back. IndexNow key file added.
 - **seznam · mapa moved to a bottom bar**, in thumb reach, in both views. It fills the old
   blank strip under the map and owns the bottom safe area. (Pavol 1A, 2026-10-25)
 - **"7:30⁺²" on map chips**: the number of further services that day that the same filters

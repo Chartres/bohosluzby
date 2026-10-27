@@ -46,6 +46,9 @@ export default defineConfig({
         // fallback): the SPA handles those routes; don't precache duplicates.
         globIgnores: ['mesto/**', 'kostel/**', 'embed/**', 'embed.js', '404.html'],
         navigateFallback: '/index.html',
+        // /dusicky/ pages are static lists with no app route — a returning
+        // visitor's service worker must fetch them, not answer with the app shell
+        navigateFallbackDenylist: [/^\/dusicky\//],
         cleanupOutdatedCaches: true,
         // Fonts are self-hosted (Fontsource) and precached via globPatterns
         // (woff2) — no Google Fonts runtime caching needed.

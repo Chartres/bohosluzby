@@ -126,6 +126,20 @@ describe('church page', () => {
     expect(JSON.parse(p.jsonLd).url).toBe('https://bohosluzby.dravec.org/kostel/1/')
   })
 
+  // "dušičková mše <obec>": the small-town searches land on church pages
+  it('in the month before All Saints, lists 1 and 2 November and carries them as Events', () => {
+    const p = churchPage({ church: CHURCH, entry: ENTRY, today: '2026-10-27' })
+    expect(p.body).toContain('Všech svatých a Dušičky 2026')
+    expect(p.body).toContain('neděle 1. listopadu')
+    const ld = JSON.parse(p.jsonLd)
+    expect(ld.event.map((e: { startDate: string }) => e.startDate)).toEqual([
+      '2026-11-01T14:00+01:00',
+      '2026-11-01T20:00+01:00',
+    ])
+    expect(page.body).not.toContain('Dušičky') // July: no feast section
+    expect(JSON.parse(page.jsonLd).event).toBeUndefined()
+  })
+
   it('a church with no shard entry still gets an honest page', () => {
     const p = churchPage({ church: CHURCH, entry: undefined, today: TODAY })
     expect(p.body).toContain('<h1>kostel Nejsvětějšího Salvátora</h1>')
