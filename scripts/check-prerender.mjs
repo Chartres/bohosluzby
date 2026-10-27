@@ -27,6 +27,24 @@ for (const [id, name] of index) {
   const embed = `${root}dist/embed/${id}.json`
   if (!existsSync(embed) || JSON.parse(readFileSync(embed, 'utf8')).id !== id) problems.push(`${id}: no embed json`)
 }
+// Dušičky pages: a static list per city page, readable without JavaScript, no
+// app bundle booting over it (the app has no /dusicky/ route)
+const cityDirs = [...sitemap.matchAll(/\/mesto\/([^/]+)\/<\/loc>/g)].map((m) => m[1])
+for (const slug of ['', ...cityDirs]) {
+  const path = slug ? `dusicky/${slug}/` : 'dusicky/'
+  const file = `${root}dist/${path}index.html`
+  if (!existsSync(file)) {
+    problems.push(`${path}: no page`)
+    continue
+  }
+  const html = readFileSync(file, 'utf8')
+  if (!html.includes('<title>Dušičky')) problems.push(`${path}: title is not the feast's`)
+  if (!html.includes(`<link rel="canonical" href="https://bohosluzby.dravec.org/${path}" />`))
+    problems.push(`${path}: canonical is not the page`)
+  if (html.includes('type="module"')) problems.push(`${path}: boots the app over the list`)
+  if (slug && !html.includes('class="ordo"')) problems.push(`${path}: no service list`)
+  if (!sitemap.includes(`/${path}</loc>`)) problems.push(`${path}: missing from sitemap.xml`)
+}
 if (problems.length) {
   console.error(`church pages: ${problems.length} problem(s)\n${problems.slice(0, 20).join('\n')}`)
   process.exit(1)

@@ -93,3 +93,27 @@ test('the app boots on a prerendered church page and shows that church', async (
   await expect(page.getByRole('heading', { name: /katedrála sv\. Víta/ }).first()).toBeVisible()
   await expect(page.getByRole('region', { name: 'Pořad bohoslužeb' })).toBeVisible()
 })
+
+// P8 Hana (docs/PERSONAS.md): searches "dušičková mše Brno" on her phone, lands on
+// the static feast list, reads a time, opens that church — no JavaScript needed
+// to read it (crawlers and AI agents read the same HTML).
+test('P8: the Dušičky city page is a readable list that leads to the church', async ({ browser }) => {
+  const ctx = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } })
+  const page = await ctx.newPage()
+  await page.goto('/dusicky/brno/')
+  await expect(page).toHaveTitle(/Dušičky a Všech svatých \d{4} — mše svatá Brno/)
+  await expect(page.locator('h2#den-1')).toContainText('1. listopadu')
+  await expect(page.locator('h2#den-2')).toContainText('2. listopadu')
+  const first = page.locator('ul.ordo li').first()
+  await expect(first.locator('.t')).toHaveText(/^\d{1,2}:\d{2}/)
+  await page.screenshot({ path: 'e2e/shots/p8-dusicky-brno.png', fullPage: false })
+  const href = await first.locator('a').getAttribute('href')
+  expect(href).toMatch(/^https:\/\/bohosluzby\.dravec\.org\/kostel\/\d+\/$/)
+  await page.goto(href!.replace('https://bohosluzby.dravec.org', ''))
+  await expect(page.locator('h1').first()).toBeVisible()
+  await ctx.close()
+
+  const hub = await (await browser.newContext()).newPage()
+  await hub.goto('/dusicky/')
+  await expect(hub.locator('a[href$="/dusicky/praha/"]')).toBeVisible()
+})

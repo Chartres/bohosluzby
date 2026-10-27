@@ -149,6 +149,26 @@ Friday, the Vigil, plus "kdy je půlnoční?".
 
 ---
 
+## P8 · Hana — Dušičky in the town she grew up in
+
+Lives in Prague, drives to her parents' town for All Saints / All Souls (1–2 Nov) to visit
+the family graves, and wants a Mass there: for the dead, ideally with her mother.
+
+- **Trigger:** the last week of October; she searches on her phone ("dušičková mše
+  Kroměříž", "mše svatá Brno 1. listopadu"), not in the app.
+- **Constraint:** she doesn't know the parishes there; feast schedules change and parishes
+  rarely publish them (the 27 Oct 2026 refresh had one one-off for 1 Nov in all of ČR).
+- **Journey (e2e, `e2e/seo.spec.ts` "P8"):**
+  1. Search lands on `/dusicky/<město>/` — readable without JavaScript, both days, by time.
+  2. She picks a time; the church link opens its page with the weekly ordo and the
+     feast-day section.
+  3. (Mechanic C, `docs/SIGNATURE.md`) *pozvat* — she sends her mother the Mass in a
+     message.
+- **Done:** she is at that Mass with her mother; nothing on the page claimed more than the
+  registry says (old entries carry their date, notes are printed).
+
+---
+
 ## Journey ↔ automation map
 
 | Persona | Journey | Where it runs |
@@ -160,6 +180,7 @@ Friday, the Vigil, plus "kdy je půlnoční?".
 | P5 Ludmila | feast chip + feast ordo | `e2e/day.spec.ts` (tint) + manual on real feasts |
 | P6 Věra | summer note on detail + hero cross-check | `e2e/personas.spec.ts` |
 | P7 Ondřej | Triduum/Christmas plan | manual/seasonal (Holy Week, 20–24 Dec) |
+| P8 Hana | search → `/dusicky/<město>/` → church | `e2e/seo.spec.ts` (P8) + manual 1–2 Nov |
 
 Seasonal manual passes are due: Holy Week (P7), the week before Christmas (P7), the first
 week of July (P6 live re-check), and any workday slavnost (P5). Log each pass as shots in

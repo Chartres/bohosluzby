@@ -21,6 +21,10 @@
 - https://bohosluzby.dravec.org/ — allow location (or pick a city) and read the list.
 - City pages are real URLs, e.g. https://bohosluzby.dravec.org/mesto/praha/ (see the sitemap).
 - Church pages: https://bohosluzby.dravec.org/kostel/<id>/
+- All Saints (1 Nov) and All Souls / Dušičky (2 Nov): https://bohosluzby.dravec.org/dusicky/ —
+  static per-city lists of the services the register gives for those two dates, e.g.
+  https://bohosluzby.dravec.org/dusicky/brno/. Church pages carry the two days too in the
+  month before.
 
 ## Data & provenance
 - Source: the official register of the Czech Bishops' Conference, https://bohosluzby.cirkev.cz

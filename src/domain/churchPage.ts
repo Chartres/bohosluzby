@@ -5,6 +5,7 @@
 // source and its date — and the stale warning the app shows.
 // Node imports this via type stripping: explicit .ts specifiers, types only
 // from elsewhere.
+import { churchFeastSection, feastEvents } from './feast.ts'
 import { isConfession, isStale, normalizeLang } from './registry.ts'
 import { churchUrl, SITE_ORIGIN } from './site.ts'
 
@@ -121,6 +122,8 @@ export function churchPage(input: {
       `<ul>${extras.map((r) => `<li>${esc(`${dateCz(r[0])} ${rowText(r[1], r[2], r[3], r[4], r[5])}`)}</li>`).join('')}</ul>`,
     )
   }
+  const feast = churchFeastSection(entry, today)
+  if (feast) parts.push(feast)
   if (confession.length) {
     parts.push('<h2>Svátost smíření</h2>', byDay(confession, (r) => r[1] + (r[5].trim() ? ` — ${r[5].trim()}` : '')))
   }
@@ -140,6 +143,7 @@ export function churchPage(input: {
       </div>
 `
 
+  const events = feastEvents(entry, today, { name: church.name, url })
   const jsonLd = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'Church',
@@ -148,6 +152,7 @@ export function churchPage(input: {
     mainEntityOfPage: url,
     address: { '@type': 'PostalAddress', addressLocality: church.city, addressCountry: 'CZ' },
     geo: { '@type': 'GeoCoordinates', latitude: church.lat, longitude: church.lng },
+    ...(events.length ? { event: events } : {}),
   }).replaceAll('<', '\\u003c') // never let registry text close the <script>
 
   return { url, title, description, body, jsonLd }
