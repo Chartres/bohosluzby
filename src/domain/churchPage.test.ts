@@ -147,3 +147,14 @@ describe('church page', () => {
     expect(p.body).not.toContain('<h2>Pořad bohoslužeb</h2>')
   })
 })
+
+describe('church page — titular feast (mechanic B)', () => {
+  it('names the title and its day when the name carries one', () => {
+    const p = churchPage({ church: { ...CHURCH, name: 'kostel sv. Martina' }, entry: ENTRY, today: TODAY })
+    expect(p.body).toContain('Titulární svátek (pouť): památka sv. Martina, 11. listopadu.')
+  })
+  it('says nothing when the title is ambiguous', () => {
+    const p = churchPage({ church: { ...CHURCH, name: 'kostel sv. Jakuba' }, entry: ENTRY, today: TODAY })
+    expect(p.body).not.toContain('Titulární svátek')
+  })
+})

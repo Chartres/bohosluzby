@@ -113,7 +113,9 @@ test('P8: the Dušičky city page is a readable list that leads to the church', 
   await expect(page.locator('h1').first()).toBeVisible()
   await ctx.close()
 
-  const hub = await (await browser.newContext()).newPage()
+  const hubCtx = await browser.newContext()
+  const hub = await hubCtx.newPage()
   await hub.goto('/dusicky/')
   await expect(hub.locator('a[href$="/dusicky/praha/"]')).toBeVisible()
+  await hubCtx.close()
 })

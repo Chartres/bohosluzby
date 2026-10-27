@@ -309,3 +309,22 @@ describe('weekday-specific notes', () => {
     expect(within(schedule).getAllByText('V červenci, srpnu a září není páteční mše sv.')).toHaveLength(1)
   })
 })
+
+// Mechanic C (docs/SIGNATURE.md): pozvat — one person invites another to one Mass.
+describe('pozvat', () => {
+  it('opens the share sheet with the next date, time, church and a tagged link', async () => {
+    const share = vi.fn(async () => {})
+    Object.defineProperty(navigator, 'share', { value: share, configurable: true })
+    try {
+      render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+      const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+      await act(async () => within(schedule).getAllByRole('button', { name: 'pozvat' })[0].click())
+      expect(share).toHaveBeenCalledTimes(1)
+      const arg = (share.mock.calls[0] as unknown as [{ text: string; url: string }])[0]
+      expect(arg.text).toMatch(/^Půjdeš se mnou na mši svatou\? (Dnes|Zítra|V neděli \d+\. \d+\.) v 09:00, kostel 2 \(Praha 1\)\.$/)
+      expect(arg.url).toBe('https://bohosluzby.dravec.org/kostel/2/?utm_source=pozvani')
+    } finally {
+      delete (navigator as { share?: unknown }).share
+    }
+  })
+})
