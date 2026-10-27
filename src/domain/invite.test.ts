@@ -51,6 +51,18 @@ describe('inviteFor', () => {
     expect(inv.text).toContain('kostel sv. Jakuba, Brno.')
   })
 
+  it('says "ve" where Czech does (ve 4, ve 12, ve 14, ve 20 …)', () => {
+    expect(inviteFor(CHURCH, svc('7', '14:00', 'pobožnost'), NOW, 'cs')!.text).toContain('ve 14:00')
+    expect(inviteFor(CHURCH, svc('7', '12:00'), NOW, 'cs')!.text).toContain('ve 12:00')
+    expect(inviteFor(CHURCH, svc('7', '18:30'), NOW, 'cs')!.text).toContain('v 18:30')
+  })
+
+  it('English keeps today/tomorrow lower-case after a service name', () => {
+    expect(inviteFor(CHURCH, svc('2', '18:00', 'adorace'), NOW, 'en')!.text).toBe(
+      'Will you come with me? Adorace today at 18:00, kostel sv. Jakuba (Brno).',
+    )
+  })
+
   it('English', () => {
     expect(inviteFor(CHURCH, svc('7', '9:00'), NOW, 'en')!.text).toBe(
       'Will you come to Mass with me? Sunday 1 Nov at 9:00, kostel sv. Jakuba (Brno).',

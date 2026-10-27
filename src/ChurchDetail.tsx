@@ -152,19 +152,32 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
   const onInvite = async () => {
     const inv = inviteFor(church, service, new Date(), lang())
     if (!inv) return flash(t('remind_none'))
-    track('key_action', { action: 'invite', church: church.id })
-    try {
-      if (isNative) {
+    const sent = () => track('key_action', { action: 'invite', church: church.id })
+    if (isNative) {
+      try {
         const { Share } = await import('@capacitor/share')
         await Share.share({ text: inv.text, url: inv.url })
-      } else if (navigator.share) {
-        await navigator.share({ text: inv.text, url: inv.url })
-      } else {
-        await navigator.clipboard.writeText(`${inv.text}\n${inv.url}`)
-        flash(t('invite_copied'))
+        sent()
+      } catch {
+        // the person closed the share sheet
       }
+      return
+    }
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: inv.text, url: inv.url })
+        return sent()
+      } catch (err) {
+        if ((err as Error)?.name === 'AbortError') return // closed the sheet
+        // refused (NotAllowedError, unsupported data) → copy instead
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${inv.text}\n${inv.url}`)
+      flash(t('invite_copied'))
+      sent()
     } catch {
-      // the person closed the share sheet — nothing to report
+      flash(t('remind_failed'))
     }
   }
 

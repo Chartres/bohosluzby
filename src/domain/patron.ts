@@ -30,7 +30,7 @@ const TITLES: [RegExp, string, string | number][] = [
   [/panny marie růžencové/, 'památka Panny Marie Růžencové', '10-7'],
   [/panny marie lurdské/, 'památka Panny Marie Lurdské', '2-11'],
   [/jména panny marie/, 'památka Jména Panny Marie', '9-12'],
-  [/zvěstování (páně|panny marie)/, 'slavnost Zvěstování Páně', '3-25'],
+  [/zvěstování (páně|panny marie|panně marii)/, 'slavnost Zvěstování Páně', '3-25'],
   [/proměnění páně/, 'svátek Proměnění Páně', '8-6'],
   [/povýšení sv\. kříže/, 'svátek Povýšení svatého Kříže', '9-14'],
   [/všech svatých/, 'slavnost Všech svatých', '11-1'],
@@ -63,7 +63,7 @@ const TITLES: [RegExp, string, string | number][] = [
   [/sv\. barbory/, 'památka sv. Barbory', '12-4'],
   [/sv\. ondřeje/, 'svátek sv. Ondřeje', '11-30'],
   [/sv\. vojtěcha/, 'svátek sv. Vojtěcha', '4-23'],
-  [/sv\. (marie|maří) magdalény/, 'svátek sv. Marie Magdalény', '7-22'],
+  [/sv\. (marie|maří|máří) magdalény/, 'svátek sv. Marie Magdalény', '7-22'],
   [/sv\. matouše/, 'svátek sv. Matouše', '9-21'],
   [/sv\. ludmily/, 'památka sv. Ludmily', '9-16'],
   [/sv\. štěpána/, 'svátek sv. Štěpána', '12-26'],
@@ -73,38 +73,76 @@ const TITLES: [RegExp, string, string | number][] = [
   [/sv\. hedviky/, 'památka sv. Hedviky', '10-16'],
   [/sv\. zdislavy/, 'památka sv. Zdislavy', '5-30'],
   [/sv\. klementa/, 'památka sv. Klementa', '11-23'],
+  [/sv\. alžběty uherské/, 'památka sv. Alžběty Uherské', '11-17'],
 ]
 
 const normalise = (name: string) =>
   name
     .toLowerCase()
+    .replace(/\s+/g, ' ')
     .replace(/\bp\. marie/g, 'panny marie')
     .replace(/svat(ého|é) /g, 'sv. ')
     .replace(/sv\. (\S+) a sv\. /g, 'sv. $1 a ')
     .replace(/sv\. michala/g, 'sv. michaela')
     .replace(/magdalen[ya]/g, 'magdalény')
+    .replace(/sv\. stětí /g, 'stětí sv. ')
+
+// What may stand before the title: the kind of building and its status.
+const BUILDING = new Set([
+  'kostel', 'kostelík', 'kaple', 'katedrála', 'konkatedrála', 'bazilika', 'chrám', 'rotunda', 'minor',
+  'farní', 'filiální', 'klášterní', 'poutní', 'hřbitovní', 'děkanský', 'proboštský', 'zámecký',
+  'kapitulní', 'bývalý', 'špitální', 'zámecká',
+])
 
 export function patronOf(name: string): Patron | null {
-  const n = normalise(name)
+  // the place after the comma is not part of the title
+  const n = normalise(name.split(',')[0])
   for (const [re, title, when] of TITLES) {
-    if (!re.test(n)) continue
+    const m = re.exec(n)
+    if (!m) continue
+    // the title must be the church's only one: nothing but the building kind
+    // before it, and no "… a sv. X" / "s kaplí …" after it — which of two
+    // titles is the church's own is not ours to guess
+    const before = n.slice(0, m.index).replace(/[()]/g, ' ').split(/\s+/).filter(Boolean)
+    if (!before.every((w) => BUILDING.has(w))) continue
+    if (/^\s+(a|s|se)\s/.test(n.slice(m.index + m[0].length))) return null
     return typeof when === 'number' ? { title, easter: when } : { title, fixed: when }
   }
   return null
 }
 
 const iso = (t: number) => new Date(t).toISOString().slice(0, 10)
+const DAY = 86_400_000
+const isSunday = (t: number) => new Date(t).getUTCDay() === 0
+
+/** The three titles here that the General Norms move when they collide:
+ * Annunciation in Holy Week or the Easter Octave → Monday after the 2nd
+ * Sunday of Easter, on a Sunday of Lent → Monday; St Joseph in Holy Week →
+ * the Saturday before Palm Sunday, on a Sunday of Lent → Monday; 8 Dec on a
+ * Sunday of Advent → Monday. */
+function transferred(md: string, t: number, easter: number): number {
+  const palm = easter - 7 * DAY
+  if (md === '3-25') {
+    if (t >= palm && t <= easter + 7 * DAY) return easter + 8 * DAY
+    return isSunday(t) ? t + DAY : t
+  }
+  if (md === '3-19') {
+    if (t >= palm && t < easter) return palm - DAY
+    return isSunday(t) ? t + DAY : t
+  }
+  if (md === '12-8') return isSunday(t) ? t + DAY : t
+  return t
+}
 
 /** The next celebration on or after `today` ("YYYY-MM-DD"). */
 export function nextPatronDate(p: Patron, today: string): string {
   const y = Number(today.slice(0, 4))
   const on = (year: number) => {
-    if (p.fixed) {
-      const [m, d] = p.fixed.split('-').map(Number)
-      return iso(Date.UTC(year, m - 1, d))
-    }
     const e = easterSunday(year)
-    return iso(Date.UTC(year, e.month - 1, e.day) + (p.easter ?? 0) * 86_400_000)
+    const easter = Date.UTC(year, e.month - 1, e.day)
+    if (!p.fixed) return iso(easter + (p.easter ?? 0) * DAY)
+    const [m, d] = p.fixed.split('-').map(Number)
+    return iso(transferred(p.fixed, Date.UTC(year, m - 1, d), easter))
   }
   return on(y) >= today ? on(y) : on(y + 1)
 }

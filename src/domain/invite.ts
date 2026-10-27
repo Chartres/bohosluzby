@@ -17,6 +17,8 @@ const KDY_CS = ['v neděli', 'v pondělí', 'v úterý', 've středu', 've čtvr
 const DAY_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const MONTH_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
+const VE_HOURS = new Set([2, 3, 4, 12, 13, 14, 20, 21, 22, 23])
+
 const isMass = (type: string) => !type.trim() || /mše|liturgi/i.test(type)
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -41,13 +43,17 @@ export function inviteFor(
   const url = `${churchUrl(church.id)}?utm_source=pozvani`
 
   if (lang === 'en') {
-    const when = offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : `${DAY_EN[dow]} ${d} ${MONTH_EN[m - 1]}`
-    const what = isMass(service.type) ? 'Will you come to Mass with me?' : `Will you come with me? ${service.type.trim()},`
-    return { text: `${what} ${when} at ${time}, ${place}.`, url }
+    const when = offset === 0 ? 'today' : offset === 1 ? 'tomorrow' : `${DAY_EN[dow]} ${d} ${MONTH_EN[m - 1]}`
+    const text = isMass(service.type)
+      ? `Will you come to Mass with me? ${cap(when)} at ${time}, ${place}.`
+      : `Will you come with me? ${cap(service.type.trim())} ${when} at ${time}, ${place}.`
+    return { text, url }
   }
   const kdy = offset === 0 ? 'dnes' : offset === 1 ? 'zítra' : `${KDY_CS[dow]} ${d}. ${m}.`
+  // "ve dvě, ve dvanáct, ve čtrnáct, ve dvacet…" — the hours read with dv/tř/čt
+  const v = VE_HOURS.has(Number(time.split(':')[0])) ? 've' : 'v'
   const text = isMass(service.type)
-    ? `Půjdeš se mnou na mši svatou? ${cap(kdy)} v ${time}, ${place}.`
-    : `Půjdeš se mnou? ${cap(service.type.trim())} ${kdy} v ${time}, ${place}.`
+    ? `Půjdeš se mnou na mši svatou? ${cap(kdy)} ${v} ${time}, ${place}.`
+    : `Půjdeš se mnou? ${cap(service.type.trim())} ${kdy} ${v} ${time}, ${place}.`
   return { text, url }
 }

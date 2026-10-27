@@ -328,3 +328,25 @@ describe('pozvat', () => {
     }
   })
 })
+
+describe('pozvat — when sharing is refused', () => {
+  it('copies the invitation instead and says so', async () => {
+    const share = vi.fn(async () => {
+      throw Object.assign(new Error('no'), { name: 'NotAllowedError' })
+    })
+    const writeText = vi.fn(async () => {})
+    Object.defineProperty(navigator, 'share', { value: share, configurable: true })
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    try {
+      render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+      const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+      await act(async () => within(schedule).getAllByRole('button', { name: 'pozvat' })[0].click())
+      expect(writeText).toHaveBeenCalledTimes(1)
+      expect((writeText.mock.calls[0] as unknown as [string])[0]).toContain('https://bohosluzby.dravec.org/kostel/2/?utm_source=pozvani')
+      expect(screen.getByText('pozvánka zkopírována ✓')).toBeInTheDocument()
+    } finally {
+      delete (navigator as { share?: unknown }).share
+      delete (navigator as { clipboard?: unknown }).clipboard
+    }
+  })
+})
