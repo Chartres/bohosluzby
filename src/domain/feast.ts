@@ -89,8 +89,9 @@ export function servicesOn(entry: RawEntry | undefined, iso: string): FeastServi
   const weekly = entry.s
     .filter((r) => r[0].includes(dow) && !isConfession(r[4]) && parseNote(r[5]).runsOn(y, m, d))
     .map((r) => row(r, false))
-    // a one-off at the same time is the parish's word for that day — print it once
-    .filter((s) => !extras.some((x) => x.time === s.time))
+    // the same service entered again as a one-off for that day — print it once;
+    // a different one-off at that time (a cemetery devotion) never hides the Mass
+    .filter((s) => !extras.some((x) => toMin(x.time) === toMin(s.time) && x.type === s.type && x.lang === s.lang && x.greek === s.greek))
   return [...weekly, ...extras].sort((a, b) => toMin(a.time) - toMin(b.time))
 }
 
@@ -293,5 +294,21 @@ export function feastEvents(entry: RawEntry | undefined, today: string, place: {
         eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
         location: { '@type': 'Church' as const, name: place.name, url: place.url },
       })),
+  )
+}
+
+/** The static feast pages boot no app, so they count their own visit: one
+ * first-party page_view into the shared events table, the same ids the app
+ * uses (fw:vid / fw:sid). Nothing when the build has no Supabase config. */
+export function feastBeacon(supabaseUrl: string | undefined, key: string | undefined): string {
+  if (!supabaseUrl || !key) return ''
+  const cfg = JSON.stringify({ u: `${supabaseUrl.replace(/\/$/, '')}/rest/v1/events`, k: key }).replaceAll('<', '\\u003c')
+  return (
+    `<script>(()=>{try{const c=${cfg};` +
+    `const id=(s,n)=>{try{let v=s.getItem(n);if(!v){v=crypto.randomUUID();s.setItem(n,v)}return v}catch(e){return crypto.randomUUID()}};` +
+    `let ref=null;try{const b=h=>h.replace(/^www\\./,'');const h=b(new URL(document.referrer).hostname);if(h&&h!==b(location.host))ref=h}catch(e){}` +
+    `fetch(c.u,{method:'POST',keepalive:true,headers:{apikey:c.k,authorization:'Bearer '+c.k,'content-type':'application/json',prefer:'return=minimal'},` +
+    `body:JSON.stringify({app:'bohosluzby',event:'page_view',props:{route:'feast',feast:'dusicky',path:location.pathname,ref:ref,platform:'web'},` +
+    `visitor_id:id(localStorage,'fw:vid'),session_id:id(sessionStorage,'fw:sid'),flywheel_uid:null,created_at:new Date().toISOString()})}).catch(()=>{})}catch(e){}})()</script>`
   )
 }

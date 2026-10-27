@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url'
 import { aggregateCities } from '../src/domain/cities.ts'
 import { churchPage } from '../src/domain/churchPage.ts'
 import { embedData } from '../src/domain/embedData.ts'
-import { churchFeastSection, feastCityPage, feastHubPage } from '../src/domain/feast.ts'
+import { churchFeastSection, feastBeacon, feastCityPage, feastHubPage } from '../src/domain/feast.ts'
 import { SITE_ORIGIN as ORIGIN } from '../src/domain/site.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -121,6 +121,10 @@ const STATIC_CSS = `
       .cities li { padding: 0.5rem 0; break-inside: avoid; }
       .ordo-page .small { font-size: 0.875rem; color: #655c4d; }
 `
+const BEACON = feastBeacon(
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_ANON_KEY,
+)
 function staticPage(page) {
   return withMeta(template, page)
     .replace(/<script type="module"[^>]*><\/script>\s*/g, '')
@@ -128,7 +132,7 @@ function staticPage(page) {
     .replace(/<!--seo-->[\s\S]*<!--\/seo-->/, () => `<!--seo-->${page.body}<!--/seo-->`)
     .replace(
       '</head>',
-      () => `  <style>${STATIC_CSS}    </style>\n    <script type="application/ld+json">${page.jsonLd}</script>\n  </head>`,
+      () => `  <style>${STATIC_CSS}    </style>\n    <script type="application/ld+json">${page.jsonLd}</script>\n    ${BEACON}\n  </head>`,
     )
 }
 const feastUrls = ['/dusicky/']

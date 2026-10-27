@@ -2,7 +2,7 @@
 // The two days a year people most look up Mass times away from home — at
 // their family's graves. The pages list only what the registry says for that
 // date: the weekly ordo filtered by its notes, plus one-offs dated that day.
-import { allSaints, servicesOn, feastCityPage, feastHubPage, churchFeastSection, feastEvents } from './feast'
+import { allSaints, servicesOn, feastCityPage, feastHubPage, churchFeastSection, feastEvents, feastBeacon } from './feast'
 import type { RawEntry } from './churchPage'
 
 type Row = [string, string, string, 0 | 1, string, string]
@@ -53,6 +53,16 @@ describe('servicesOn — what the registry says for one date', () => {
     const got = servicesOn(e, '2026-11-01')
     expect(got.map((s) => s.time)).toEqual(['11:00', '17:00'])
     expect(got[1].uncertain).toBe(true)
+  })
+
+  it('prints a weekly row once when the parish re-entered it as a one-off for the day', () => {
+    const e = entry([['7', '8:00', 'česky', 0, '', '']], [['2026-11-01', '08:00', 'česky', 0, '', 'slavnost']])
+    expect(servicesOn(e, '2026-11-01')).toHaveLength(1)
+  })
+
+  it('a different one-off at the same time never hides the weekly Mass', () => {
+    const e = entry([['7', '15:00', 'česky', 0, 'mše sv.', '']], [['2026-11-01', '15:00', 'česky', 0, 'pobožnost', 'na hřbitově']])
+    expect(servicesOn(e, '2026-11-01').map((s) => s.type)).toEqual(['mše sv.', 'pobožnost'])
   })
 
   it('never lists confession windows', () => {
@@ -190,5 +200,21 @@ describe('feastEvents — schema.org Event per feast-day service', () => {
 
   it('is empty outside the window', () => {
     expect(feastEvents(ENTRIES['1'], '2026-08-01', { name: 'k', url: 'u' })).toEqual([])
+  })
+})
+
+describe('feastBeacon — the static pages count their own visit', () => {
+  it('is empty without Supabase config', () => {
+    expect(feastBeacon(undefined, 'k')).toBe('')
+    expect(feastBeacon('https://x.supabase.co', undefined)).toBe('')
+  })
+
+  it('posts one page_view with the app ids, and cannot be broken out of', () => {
+    const s = feastBeacon('https://x.supabase.co/', 'sb_publishable_</script>')
+    expect(s).toContain('https://x.supabase.co/rest/v1/events')
+    expect(s).toContain("event:'page_view'")
+    expect(s).toContain("'fw:vid'")
+    expect(s.match(/<\/script>/g)).toHaveLength(1)
+    expect(s).not.toMatch(/\(\?<[=!]/) // no lookbehind (iOS 15)
   })
 })
