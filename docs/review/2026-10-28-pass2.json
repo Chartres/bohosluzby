@@ -5,7 +5,7 @@
       "title": "Signals kit: contract test, allow-list, bot-aware client, analytics guard",
       "pr": "https://github.com/Chartres/bohosluzby/pull/69",
       "merged": true,
-      "live_checked": "LIVE_CHECK_PLACEHOLDER"
+      "live_checked": "2026-10-28 10:12 UTC. CI run 40669899025 green on cec27ce, and its 'Analytics config in the bundle' step passed right before the upload. Live /assets/index-b79kY0Xk.js has the Supabase project URL and the extended bot list. I ran the live /dusicky/praha/ beacon under stubbed browsers: an iPhone UA posts to /rest/v1/events with props {route:'feast', feast:'dusicky', path:'/dusicky/praha/', static:true, ref:null, platform:'web'}, while Googlebot and webdriver are skipped. /mesto/praha/ returns 200. I sent no real insert, so the KPIs stay clean."
     }
   ],
   "signals_fixed": [
