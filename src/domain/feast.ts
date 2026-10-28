@@ -306,16 +306,19 @@ export function feastEvents(entry: RawEntry | undefined, today: string, place: {
 
 /** The static feast pages boot no app, so they count their own visit: one
  * first-party page_view into the shared events table, the same ids the app
- * uses (fw:vid / fw:sid). Nothing when the build has no Supabase config. */
+ * uses (fw:vid / fw:sid), tagged static:true. Skips crawlers and automation.
+ * Nothing when the build has no Supabase config. */
 export function feastBeacon(supabaseUrl: string | undefined, key: string | undefined): string {
   if (!supabaseUrl || !key) return ''
   const cfg = JSON.stringify({ u: `${supabaseUrl.replace(/\/$/, '')}/rest/v1/events`, k: key }).replaceAll('<', '\\u003c')
   return (
-    `<script>(()=>{try{const c=${cfg};` +
+    `<script>(()=>{try{const c=${cfg};const n=navigator;` +
+    // same rule as isLikelyBot (lib/telemetry.ts): crawlers and automation are not visitors
+    `if(n.webdriver||/(?:^|[^u])bot\\b|crawl|spider|slurp|headless|lighthouse|prerender|pagespeed|inspectiontool|googleother|facebookexternalhit|embedly|preview/i.test(n.userAgent||''))return;` +
     `const id=(s,n)=>{try{let v=s.getItem(n);if(!v){v=crypto.randomUUID();s.setItem(n,v)}return v}catch(e){return crypto.randomUUID()}};` +
     `let ref=null;try{const b=h=>h.replace(/^www\\./,'');const h=b(new URL(document.referrer).hostname);if(h&&h!==b(location.host))ref=h}catch(e){}` +
     `fetch(c.u,{method:'POST',keepalive:true,headers:{apikey:c.k,authorization:'Bearer '+c.k,'content-type':'application/json',prefer:'return=minimal'},` +
-    `body:JSON.stringify({app:'bohosluzby',event:'page_view',props:{route:'feast',feast:'dusicky',path:location.pathname,ref:ref,platform:'web'},` +
+    `body:JSON.stringify({app:'bohosluzby',event:'page_view',props:{route:'feast',feast:'dusicky',path:location.pathname,static:true,ref:ref,platform:'web'},` +
     `visitor_id:id(localStorage,'fw:vid'),session_id:id(sessionStorage,'fw:sid'),flywheel_uid:null,created_at:new Date().toISOString()})}).catch(()=>{})}catch(e){}})()</script>`
   )
 }

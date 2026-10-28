@@ -243,4 +243,34 @@ describe('feastBeacon — the static pages count their own visit', () => {
     expect(s.match(/<\/script>/g)).toHaveLength(1)
     expect(s).not.toMatch(/\(\?<[=!]/) // no lookbehind (iOS 15)
   })
+
+  // run the inline script against a stub browser; returns the posted body, or null
+  const run = (nav: { userAgent: string; webdriver?: boolean }) => {
+    const js = feastBeacon('https://x.supabase.co', 'k').replace(/^<script>|<\/script>$/g, '')
+    const store = () => {
+      const m = new Map<string, string>()
+      return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v) }
+    }
+    let body: string | null = null
+    const fetch = (_u: string, init: { body: string }) => ((body = init.body), Promise.resolve())
+    new Function('navigator', 'fetch', 'localStorage', 'sessionStorage', 'location', 'document', js)(
+      nav, fetch, store(), store(), { pathname: '/dusicky/praha/', host: 'bohosluzby.dravec.org' }, { referrer: '' },
+    )
+    return body ? JSON.parse(body) : null
+  }
+  const iphone =
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'
+
+  it('sends {path, static: true} for a person', () => {
+    const row = run({ userAgent: iphone })
+    expect(row).toMatchObject({ app: 'bohosluzby', event: 'page_view', props: { path: '/dusicky/praha/', static: true } })
+    expect(row.visitor_id).toBeTruthy()
+  })
+
+  it('stays silent for crawlers and automated browsers', () => {
+    expect(run({ userAgent: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' })).toBeNull()
+    expect(run({ userAgent: 'Mozilla/5.0 HeadlessChrome/129.0' })).toBeNull()
+    expect(run({ userAgent: iphone, webdriver: true })).toBeNull()
+    expect(run({ userAgent: 'Mozilla/5.0 (Linux; Android 10; CUBOT X30) Chrome/120.0 Mobile' })).not.toBeNull()
+  })
 })

@@ -6,12 +6,13 @@ import { createFlywheelClient, type SupabaseLike } from './platform/flywheel-cli
  * Usage tracking via the Flywheel Common Platform client (shared across all
  * flywheel apps). First-party, cookieless, fire-and-forget; no-ops when
  * Supabase isn't configured (local/tests) — and for crawlers and automation,
- * which execute JS and would otherwise count as visitors.
+ * which execute JS and would otherwise count as visitors. isLikelyBot covers
+ * the client's isAutomatedBrowser list and more, but keeps CUBOT phones.
  */
-const bot = typeof navigator !== 'undefined' && isLikelyBot(navigator)
 const fw = createFlywheelClient({
   app: 'bohosluzby',
-  supabase: bot ? null : (supabase as unknown as SupabaseLike | null),
+  supabase: supabase as unknown as SupabaseLike | null,
+  isAutomated: () => typeof navigator !== 'undefined' && isLikelyBot(navigator),
 })
 
 export const track = fw.track
