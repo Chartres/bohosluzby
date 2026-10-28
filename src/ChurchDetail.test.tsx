@@ -350,3 +350,13 @@ describe('pozvat — when sharing is refused', () => {
     }
   })
 })
+
+// Mechanic B: the titular feast is one line of the Farnost section, not a section of its own
+describe('titulární svátek', () => {
+  it('sits in the Farnost section', async () => {
+    render(<ChurchDetail church={{ ...church('2', '50-14'), name: 'kostel sv. Martina' }} onBack={() => {}} />)
+    const parish = await screen.findByRole('region', { name: 'Farnost' })
+    expect(within(parish).getByText(/titulární svátek \(pouť\): památka sv\. Martina, 11\. listopadu/)).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: /Titulární svátek/ })).toBeNull()
+  })
+})
