@@ -821,21 +821,17 @@ export function ChurchDetail({
             </section>
           )}
 
-          {/* Mechanic B (docs/SIGNATURE.md): the church's title and its day — the pouť */}
-          {patron && (
-            <section aria-label={t('patron_title')} className="mt-7">
-              <h3 className="rubric border-b border-hairline pb-1">{t('patron_title')}</h3>
-              <p className="mt-3 text-sm">
-                {patron.title} · {patronDateLabel(patron, pragueIsoDate(new Date()))}
-              </p>
-            </section>
-          )}
-
-          {(svc.parish || svc.parishAddress || svc.contacts.length > 0) && (
+          {(svc.parish || svc.parishAddress || svc.contacts.length > 0 || patron) && (
             <section aria-label={t('parish_title')} className="mt-7">
               <h3 className="rubric border-b border-hairline pb-1">{t('parish_title')}</h3>
               {svc.parish && <p className="mt-3 text-sm">{svc.parish}</p>}
               {svc.parishAddress && <p className="mt-0.5 text-sm text-ink-faded">{svc.parishAddress}</p>}
+              {/* Mechanic B (docs/SIGNATURE.md): the church's title and its day — the pouť */}
+              {patron && (
+                <p className={`${svc.parish || svc.parishAddress ? 'mt-1.5' : 'mt-3'} text-sm text-ink-faded`}>
+                  {t('patron_label')}: {patron.title}, {patronDateLabel(patron, pragueIsoDate(new Date()))}
+                </p>
+              )}
               {svc.contacts.length > 0 && (
                 <p className="mt-1.5 space-x-3 text-sm">
                   {svc.contacts.map(([type, value], i) => {
