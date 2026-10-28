@@ -27,8 +27,10 @@ import { oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
 import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
 import { churchUrl } from './domain/site'
+import { inviteFor } from './domain/invite'
+import { patronDateLabel, patronOf } from './domain/patron'
 import { favoritesSnapshot, subscribeFavorites, toggleFavorite } from './lib/favorites'
-import { churchWitnessIntro, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
+import { churchWitnessIntro, lang, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
 
 // A church viewed within this window after a Mass started seeds the after-Mass
 // ledger — the "recent viewers" cohort (docs/PILGRIM-WITNESS-PLAN.md).
@@ -145,6 +147,40 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
     )
   }
 
+  // Mechanic C (docs/SIGNATURE.md): one person invites another, in their own
+  // messenger. Prefilled with the next date this service really runs.
+  const onInvite = async () => {
+    const inv = inviteFor(church, service, new Date(), lang())
+    if (!inv) return flash(t('remind_none'))
+    const sent = () => track('key_action', { action: 'invite', church: church.id })
+    if (isNative) {
+      try {
+        const { Share } = await import('@capacitor/share')
+        await Share.share({ text: inv.text, url: inv.url })
+        sent()
+      } catch {
+        // the person closed the share sheet
+      }
+      return
+    }
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: inv.text, url: inv.url })
+        return sent()
+      } catch (err) {
+        if ((err as Error)?.name === 'AbortError') return // closed the sheet
+        // refused (NotAllowedError, unsupported data) → copy instead
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${inv.text}\n${inv.url}`)
+      flash(t('invite_copied'))
+      sent()
+    } catch {
+      flash(t('remind_failed'))
+    }
+  }
+
   return (
     <div className="flex shrink-0 items-baseline gap-3">
       {/* the flash is VISIBLE (and stays one persistent aria-live region) — a
@@ -166,6 +202,9 @@ function ServiceActions({ church, service }: { church: Church; service: Service 
           )}
           <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onCalendar}>
             {t('add_calendar')}
+          </button>
+          <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onInvite}>
+            {t('invite')}
           </button>
         </>
       )}
@@ -497,6 +536,7 @@ export function ChurchDetail({
   }, [svc, church])
 
   const extras = svc ? svc.extra.filter((x) => x.date >= pragueIsoDate(new Date())) : []
+  const patron = patronOf(church.name)
 
   // Confession coverage: the ~6 churches with a typed "svátost smíření" row PLUS
   // times mined from Mass notes for the ~37 that only mention confession in free
@@ -778,6 +818,16 @@ export function ChurchDetail({
                   </li>
                 ))}
               </ul>
+            </section>
+          )}
+
+          {/* Mechanic B (docs/SIGNATURE.md): the church's title and its day — the pouť */}
+          {patron && (
+            <section aria-label={t('patron_title')} className="mt-7">
+              <h3 className="rubric border-b border-hairline pb-1">{t('patron_title')}</h3>
+              <p className="mt-3 text-sm">
+                {patron.title} · {patronDateLabel(patron, pragueIsoDate(new Date()))}
+              </p>
             </section>
           )}
 

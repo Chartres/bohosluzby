@@ -91,7 +91,7 @@ export function servicesOn(entry: RawEntry | undefined, iso: string): FeastServi
     .map((r) => row(r, false))
     // the same service entered again as a one-off for that day — print it once;
     // a different one-off at that time (a cemetery devotion) never hides the Mass
-    .filter((s) => !extras.some((x) => toMin(x.time) === toMin(s.time) && x.type === s.type && x.lang === s.lang && x.greek === s.greek))
+    .filter((s) => !extras.some((x) => toMin(x.time) === toMin(s.time) && typeLabel(x.type) === typeLabel(s.type) && x.lang === s.lang && x.greek === s.greek))
   return [...weekly, ...extras].sort((a, b) => toMin(a.time) - toMin(b.time))
 }
 

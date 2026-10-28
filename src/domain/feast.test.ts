@@ -60,6 +60,11 @@ describe('servicesOn — what the registry says for one date', () => {
     expect(servicesOn(e, '2026-11-01')).toHaveLength(1)
   })
 
+  it('a blank-type weekly Mass and a "mše sv." one-off at that time are the same service', () => {
+    const e = entry([['7', '09:00', 'česky', 0, '', '']], [['2026-11-01', '09:00', 'česky', 0, 'mše sv.', '']])
+    expect(servicesOn(e, '2026-11-01')).toHaveLength(1)
+  })
+
   it('a different one-off at the same time never hides the weekly Mass', () => {
     const e = entry([['7', '15:00', 'česky', 0, 'mše sv.', '']], [['2026-11-01', '15:00', 'česky', 0, 'pobožnost', 'na hřbitově']])
     expect(servicesOn(e, '2026-11-01').map((s) => s.type)).toEqual(['mše sv.', 'pobožnost'])

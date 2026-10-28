@@ -5,6 +5,15 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **pozvat** on every service row (`docs/SIGNATURE.md` mechanic C): opens your messenger with
+  "Půjdeš se mnou na mši svatou? V neděli 1. 11. v 9:00, kostel … (město)." and the church
+  link (`utm_source=pozvani`). The date is the next one the service really runs (its note
+  respected). Fires `key_action: invite`.
+- **Titulární svátek (pouť)** on the church detail and the static church page (mechanic B):
+  the church's title read from its name, with its day. Only titles with one unambiguous
+  date; "sv. Jakuba" alone or a bare "Panny Marie" get nothing.
+- `docs/SIGNATURE.md` (lineage: Schematismus, Ordo, rubrics, CIC 1218, growth by attraction)
+  and `docs/research/competition-2026-10.md`.
 - **Všech svatých a Dušičky pages**: `/dusicky/` (dates, the indulgence for the dead, how
   exact the times are) and `/dusicky/<city>/` for the 30 city pages — every service the
   registry gives for 1 and 2 November, by time, church linked, one-offs and old entries

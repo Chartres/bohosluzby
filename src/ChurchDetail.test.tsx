@@ -309,3 +309,44 @@ describe('weekday-specific notes', () => {
     expect(within(schedule).getAllByText('V červenci, srpnu a září není páteční mše sv.')).toHaveLength(1)
   })
 })
+
+// Mechanic C (docs/SIGNATURE.md): pozvat — one person invites another to one Mass.
+describe('pozvat', () => {
+  it('opens the share sheet with the next date, time, church and a tagged link', async () => {
+    const share = vi.fn(async () => {})
+    Object.defineProperty(navigator, 'share', { value: share, configurable: true })
+    try {
+      render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+      const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+      await act(async () => within(schedule).getAllByRole('button', { name: 'pozvat' })[0].click())
+      expect(share).toHaveBeenCalledTimes(1)
+      const arg = (share.mock.calls[0] as unknown as [{ text: string; url: string }])[0]
+      expect(arg.text).toMatch(/^Půjdeš se mnou na mši svatou\? (Dnes|Zítra|V neděli \d+\. \d+\.) v 09:00, kostel 2 \(Praha 1\)\.$/)
+      expect(arg.url).toBe('https://bohosluzby.dravec.org/kostel/2/?utm_source=pozvani')
+    } finally {
+      delete (navigator as { share?: unknown }).share
+    }
+  })
+})
+
+describe('pozvat — when sharing is refused', () => {
+  it('copies the invitation instead and says so', async () => {
+    const share = vi.fn(async () => {
+      throw Object.assign(new Error('no'), { name: 'NotAllowedError' })
+    })
+    const writeText = vi.fn(async () => {})
+    Object.defineProperty(navigator, 'share', { value: share, configurable: true })
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    try {
+      render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+      const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+      await act(async () => within(schedule).getAllByRole('button', { name: 'pozvat' })[0].click())
+      expect(writeText).toHaveBeenCalledTimes(1)
+      expect((writeText.mock.calls[0] as unknown as [string])[0]).toContain('https://bohosluzby.dravec.org/kostel/2/?utm_source=pozvani')
+      expect(screen.getByText('pozvánka zkopírována ✓')).toBeInTheDocument()
+    } finally {
+      delete (navigator as { share?: unknown }).share
+      delete (navigator as { clipboard?: unknown }).clipboard
+    }
+  })
+})
