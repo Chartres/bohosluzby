@@ -10,7 +10,21 @@ this order:
 
 Update the **Now** section at the end of every session; it is the handoff.
 
-## Now — as of 2026-10-24
+## Now — as of 2026-10-28 (deep round, flywheel `docs/program/2026-10-27-deep-round.md`)
+
+- **All Saints / Dušičky (1–2 Nov 2026) pages are live** (#63): `/dusicky/` + 30 city
+  lists, a feast section and schema.org Events on every church page, static HTML with
+  their own `page_view` (route `feast`). They roll to 2027 on the next rebuild after 2 Nov
+  (the 3 Nov refresh). Walk P8 on 1–2 Nov.
+- **Submitted**: IndexNow, all 4,054 sitemap URLs to Seznam and Bing (27 Oct, flywheel
+  launch-log). Google Search Console and Seznam Webmaster still need Pavol's login.
+- **Signature** (`docs/SIGNATURE.md`, #64): titular feast (pouť) on church pages and
+  "pozvat" on service rows — web only. **No TestFlight yet**: visual change, Pavol's look
+  at the detail shot first (flywheel `docs/review/2026-10-28/bohosluzby/`).
+- Competition: `docs/research/competition-2026-10.md`. City pages carry ItemList JSON-LD (#65).
+- Next: `/vanoce/` on the feast engine before 15 Dec; "tento týden slaví" (poutě nearby).
+
+## Before — as of 2026-10-24
 
 - **Stage**: soft-launch.
   - The kill criterion (≥50 weekly visitors by 2026-09-03) is **missed and overdue**.
