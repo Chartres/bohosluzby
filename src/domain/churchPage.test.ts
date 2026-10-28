@@ -158,3 +158,15 @@ describe('church page — titular feast (mechanic B)', () => {
     expect(p.body).not.toContain('Titulární svátek')
   })
 })
+
+describe('cityItemList — /mesto/<slug>/ structured data', () => {
+  it('lists every church with its own page, and cannot close its script tag', async () => {
+    const { cityItemList } = await import('./churchPage')
+    const ld = cityItemList({ name: 'Brno', slug: 'brno', churches: [{ id: '7', name: 'kostel </script>' }, { id: '8', name: 'kaple' }] })
+    expect(ld).not.toContain('<')
+    const o = JSON.parse(ld)
+    expect(o['@type']).toBe('ItemList')
+    expect(o.numberOfItems).toBe(2)
+    expect(o.itemListElement[0]).toMatchObject({ position: 1, url: 'https://bohosluzby.dravec.org/kostel/7/' })
+  })
+})

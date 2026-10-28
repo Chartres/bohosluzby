@@ -11,7 +11,7 @@
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { aggregateCities } from '../src/domain/cities.ts'
-import { churchPage } from '../src/domain/churchPage.ts'
+import { churchPage, cityItemList } from '../src/domain/churchPage.ts'
 import { embedData } from '../src/domain/embedData.ts'
 import { churchFeastSection, feastBeacon, feastCityPage, feastHubPage } from '../src/domain/feast.ts'
 import { SITE_ORIGIN as ORIGIN } from '../src/domain/site.ts'
@@ -90,10 +90,9 @@ for (const city of cities) {
         <p><a href="${ORIGIN}/">Bohoslužby podle vaší polohy</a></p>
       </div>
 `
-  const html = withMeta(template, { title, description, url }).replace(
-    /<!--seo-->[\s\S]*<!--\/seo-->/,
-    `<!--seo-->${body}<!--/seo-->`,
-  )
+  const html = withMeta(template, { title, description, url })
+    .replace(/<!--seo-->[\s\S]*<!--\/seo-->/, () => `<!--seo-->${body}<!--/seo-->`)
+    .replace('</head>', () => `  <script type="application/ld+json">${cityItemList(city)}</script>\n  </head>`)
   mkdirSync(`${root}dist/mesto/${city.slug}`, { recursive: true })
   writeFileSync(`${root}dist/mesto/${city.slug}/index.html`, html)
 }
