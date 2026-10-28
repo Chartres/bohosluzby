@@ -10,7 +10,7 @@
 // imported .ts domain module via type stripping)
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { aggregateCities } from '../src/domain/cities.ts'
+import { aggregateCities, cityLabel } from '../src/domain/cities.ts'
 import { churchPage, cityItemList } from '../src/domain/churchPage.ts'
 import { embedData } from '../src/domain/embedData.ts'
 import { churchFeastSection, feastBeacon, feastCityPage, feastHubPage } from '../src/domain/feast.ts'
@@ -25,7 +25,16 @@ const CHURCH_PAGES = process.env.PRERENDER_CHURCHES === '1'
 const index = JSON.parse(readFileSync(`${root}public/data/churches.json`, 'utf8')).map(
   ([id, name, city, lat, lng, , cell, www]) => ({ id, name, city, lat, lng, cell, www: www || undefined }),
 )
-const cities = aggregateCities(index).slice(0, CITY_PAGES)
+const allCities = aggregateCities(index)
+const cities = allCities.slice(0, CITY_PAGES)
+// Dušičky pages: every municipality with 3+ churches — people go back to the
+// district town they grew up in, which the top 30 by church count misses
+// (Jihlava, Karlovy Vary, Kolín…). Namesakes carry their nearest town.
+const FEAST_MIN_CHURCHES = 3
+const feastCities = allCities
+  .filter((c) => c.count >= FEAST_MIN_CHURCHES)
+  .map((c, i) => ({ ...c, label: cityLabel(c), cityPage: i < CITY_PAGES }))
+  .sort((a, b) => a.label.localeCompare(b.label, 'cs'))
 
 const esc = (s) =>
   s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
@@ -66,6 +75,17 @@ function withMeta(html, { title, description, url }) {
     .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/, `$1${esc(description)}$2`)
 }
 
+// Dušičky pages are computed first: a /mesto/ page links its feast page only
+// when one exists (a town with nothing on either day gets none — after the
+// rollover to next year that can be a top-30 city too)
+const feastPages = feastCities
+  .map((city) => ({
+    city,
+    page: feastCityPage({ city, entries: Object.fromEntries(city.churches.map((c) => [c.id, entryOf(c)])), today }),
+  }))
+  .filter(({ page }) => page.services > 0) // nothing in the registry for either day — no thin page
+const feastSlugs = new Set(feastPages.map(({ city }) => city.slug))
+
 // city pages — titles match the real queries ("mše praha dnes", "bohoslužby brno")
 for (const city of cities) {
   const url = `${ORIGIN}/mesto/${city.slug}/`
@@ -86,7 +106,7 @@ for (const city of cities) {
         <ul>
           ${cityLinks(city.slug)}
         </ul>
-        <p><a href="${ORIGIN}/dusicky/${city.slug}/">Všech svatých a Dušičky — mše svatá ${esc(city.name)}</a></p>
+        ${feastSlugs.has(city.slug) ? `<p><a href="${ORIGIN}/dusicky/${city.slug}/">Všech svatých a Dušičky — mše svatá ${esc(city.name)}</a></p>` : ''}
         <p><a href="${ORIGIN}/">Bohoslužby podle vaší polohy</a></p>
       </div>
 `
@@ -116,8 +136,8 @@ const STATIC_CSS = `
       .ordo li { display: grid; grid-template-columns: 3.75rem 1fr; column-gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid #d8d0bd; min-height: 44px; }
       .ordo .t { grid-row: span 2; font-family: 'Fraunces Variable', Fraunces, Georgia, serif; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
       .ordo .d { grid-column: 2; font-size: 0.875rem; color: #655c4d; }
-      .cities { list-style: none; padding: 0; columns: 2; column-gap: 1.5rem; }
-      .cities li { padding: 0.5rem 0; break-inside: avoid; }
+      .cities { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.5rem; }
+      .cities li { padding: 0.5rem 0; }
       .ordo-page .small { font-size: 0.875rem; color: #655c4d; }
 `
 const BEACON = feastBeacon(
@@ -135,14 +155,15 @@ function staticPage(page) {
     )
 }
 const feastUrls = ['/dusicky/']
-mkdirSync(`${root}dist/dusicky`, { recursive: true })
-writeFileSync(`${root}dist/dusicky/index.html`, staticPage(feastHubPage({ cities, today })))
-for (const city of cities) {
-  const entries = Object.fromEntries(city.churches.map((c) => [c.id, entryOf(c)]))
+const feastListed = []
+for (const { city, page } of feastPages) {
   mkdirSync(`${root}dist/dusicky/${city.slug}`, { recursive: true })
-  writeFileSync(`${root}dist/dusicky/${city.slug}/index.html`, staticPage(feastCityPage({ city, entries, today })))
+  writeFileSync(`${root}dist/dusicky/${city.slug}/index.html`, staticPage(page))
   feastUrls.push(`/dusicky/${city.slug}/`)
+  feastListed.push(city)
 }
+mkdirSync(`${root}dist/dusicky`, { recursive: true })
+writeFileSync(`${root}dist/dusicky/index.html`, staticPage(feastHubPage({ cities: feastListed, today })))
 
 // home page: inject the city index into its static seo block, then mirror it
 // to 404.html (GH Pages deep-link fallback for /kostel/<id>/)

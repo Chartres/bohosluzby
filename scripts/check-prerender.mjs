@@ -30,7 +30,13 @@ for (const [id, name] of index) {
 // Dušičky pages: a static list per city page, readable without JavaScript, no
 // app bundle booting over it (the app has no /dusicky/ route)
 const cityDirs = [...sitemap.matchAll(/\/mesto\/([^/]+)\/<\/loc>/g)].map((m) => m[1])
-for (const slug of ['', ...cityDirs]) {
+const feastDirs = [...sitemap.matchAll(/\/dusicky\/([^/]+)\/<\/loc>/g)].map((m) => m[1])
+for (const slug of cityDirs) {
+  // a city page may only link a feast page that exists
+  const html = readFileSync(`${root}dist/mesto/${slug}/index.html`, 'utf8')
+  for (const m of html.matchAll(/\/dusicky\/([^/"]+)\//g)) if (!feastDirs.includes(m[1])) problems.push(`mesto/${slug}/ links a missing /dusicky/${m[1]}/`)
+}
+for (const slug of ['', ...feastDirs]) {
   const path = slug ? `dusicky/${slug}/` : 'dusicky/'
   const file = `${root}dist/${path}index.html`
   if (!existsSync(file)) {
