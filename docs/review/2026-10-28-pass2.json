@@ -1,0 +1,59 @@
+{
+  "headline": "Signals kit vendored, crawlers and automation no longer count as visitors, and deploy now fails if the bundle has no analytics config. No change to pages, feast days or Pozvat.",
+  "shipped": [
+    {
+      "title": "Signals kit: contract test, allow-list, bot-aware client, analytics guard",
+      "pr": "https://github.com/Chartres/bohosluzby/pull/69",
+      "merged": true,
+      "live_checked": "2026-10-28 10:12 UTC. CI run 40669899025 green on cec27ce, and its 'Analytics config in the bundle' step passed right before the upload. Live /assets/index-b79kY0Xk.js has the Supabase project URL and the extended bot list. I ran the live /dusicky/praha/ beacon under stubbed browsers: an iPhone UA posts to /rest/v1/events with props {route:'feast', feast:'dusicky', path:'/dusicky/praha/', static:true, ref:null, platform:'web'}, while Googlebot and webdriver are skipped. /mesto/praha/ returns 200. I sent no real insert, so the KPIs stay clean."
+    }
+  ],
+  "signals_fixed": [
+    "signals contract test: src/platform/flywheel-events.contract.test.ts (vendored from autoskola-kviz main, glob unchanged: web source is /src). All app events (page_view, key_action, conversion, error, feedback_given) are on the allow-list.",
+    "vendored allow-list copy: src/platform/flywheel-events.json (version 2, 2026-10-27). App sends none of the pending names.",
+    "flywheel-client at reference: isAutomatedBrowser + isAutomated config. analytics.ts passes isAutomated = isLikelyBot (lib/telemetry.ts), which now also covers the reference's prerender/googleother/embedly/preview tokens.",
+    "CI analytics bundle guard: `node scripts/check-analytics.mjs dist # flywheel:analytics-guard` right before upload-pages-artifact, main push/dispatch only. Verified locally: fails on a build without Supabase env, passes with it.",
+    "CI concurrency: group ci-${{ github.ref }}, cancel-in-progress only when ref != refs/heads/main.",
+    "static pages: the /dusicky/* pages (hub + 176 towns) already had a first-party beacon; it now sends props {path, static: true, route, feast, ref, platform} and skips webdriver/bot UAs. City (/mesto/) and church (/kostel/) pages boot the app bundle and send page_view through the client, so no beacon was added there."
+  ],
+  "decisions": [
+    {
+      "question": "Where does the analytics guard run? The brief says the deploy job, but here dist is uploaded in the test job and the deploy job only publishes the artifact.",
+      "options": ["test job, right before upload-pages-artifact", "move the upload into the deploy job and guard there"],
+      "default_taken": "test job, right before upload-pages-artifact, same if-condition as the upload",
+      "why": "Same exact dist, nothing rebuilds between the guard and the upload, and no change to the deploy pipeline days before Dušičky."
+    },
+    {
+      "question": "Use the client's default isAutomatedBrowser or the app's own isLikelyBot?",
+      "options": ["client default", "isLikelyBot extended with the reference tokens", "union of both"],
+      "default_taken": "isLikelyBot extended with the reference tokens",
+      "why": "The reference regex's bare bot\\b flags CUBOT phones (real users, covered by an existing test). The extended isLikelyBot catches everything the reference catches otherwise."
+    },
+    {
+      "question": "Take the reference client's 'anon' fallback id when storage is unavailable?",
+      "options": ["reference 'anon'", "keep local per-session random id"],
+      "default_taken": "keep local per-session random id",
+      "why": "A shared 'anon' merges every storage-less visitor into one visitor."
+    },
+    {
+      "question": "Touch the Dušičky beacon although Dušičky pages are off-limits in this pass?",
+      "options": ["leave it", "tracking-only edit (static:true + bot skip)"],
+      "default_taken": "tracking-only edit",
+      "why": "The work package asks for exactly this on static pages; page markup and content are unchanged. Revert = one function in src/domain/feast.ts."
+    },
+    {
+      "question": "Dispatch a TestFlight build (AGENTS.md: every user-facing change goes to TestFlight)?",
+      "options": ["dispatch beta", "skip"],
+      "default_taken": "skip",
+      "why": "Not user-facing: nothing a person sees changed. Build 1.4 (85) stays current."
+    }
+  ],
+  "ios_events": "The iOS (and Android) app is the same web bundle in a Capacitor shell, built with VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY in release-ios.yml / release-android.yml, so it sends the same events through flywheel-client with props.platform='ios'/'android' on page_view. WKWebView does not set navigator.webdriver, so real iOS users still count. iOS code untouched. It picks up the bot filter with the next store build.",
+  "next": [
+    "Add the analytics guard to release-ios.yml and release-android.yml (a native build without the Supabase secrets ships an app that sends nothing). Not done here: iOS left alone in this pass.",
+    "The beacon's bot regex is a hand copy of isLikelyBot; a test that ties the two would keep them in sync.",
+    "'preview' in the bot regex is broad (from the reference); watch for real UAs containing it.",
+    "Upstream: the reference flywheel-client's bare bot\\b flags CUBOT phones; consider (?:^|[^u])bot\\b in the hub copy.",
+    "After 1–2 Nov: compare page_view with props.static=true against /dusicky/ sessions to see what Dušičky traffic did."
+  ]
+}
