@@ -140,6 +140,17 @@ describe('feastCityPage — /dusicky/<city>/', () => {
     expect(page.body).toMatch(/ohlášk/)
   })
 
+  it('counts its services, so a town with none on both days gets no page', () => {
+    expect(page.services).toBe(5)
+  })
+
+  it('links the week view only where a city page exists', () => {
+    expect(page.body).toContain('href="https://bohosluzby.dravec.org/mesto/brno/"')
+    const small = feastCityPage({ city: { ...CITY, cityPage: false }, entries: ENTRIES, today: '2026-10-27' })
+    expect(small.body).not.toContain('/mesto/')
+    expect(small.body).toContain('Bohoslužby podle vaší polohy')
+  })
+
   it('carries breadcrumb JSON-LD that cannot close its script tag', () => {
     const ld = JSON.parse(page.jsonLd)
     expect(ld['@type']).toBe('BreadcrumbList')

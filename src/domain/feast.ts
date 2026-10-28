@@ -142,10 +142,11 @@ function dateCz(iso: string): string {
 const ldSafe = (o: unknown) => JSON.stringify(o).replaceAll('<', '\\u003c')
 
 export function feastCityPage(input: {
-  city: { name: string; slug: string; churches: PageChurchRef[] }
+  /** cityPage: a prerendered /mesto/<slug>/ exists to link to (the 30 largest). */
+  city: { name: string; slug: string; churches: PageChurchRef[]; cityPage?: boolean }
   entries: Record<string, RawEntry | undefined>
   today: string
-}): FeastPage {
+}): FeastPage & { services: number } {
   const { city, entries, today } = input
   const { year, days } = allSaints(today)
   const now = new Date(`${today}T12:00:00Z`)
@@ -195,7 +196,11 @@ export function feastCityPage(input: {
         <p class="small">Podle rejstříku ČBK, seřazeno podle času. Skok na: <a href="#den-1">${esc(days[0].label)}</a> · <a href="#den-2">${esc(days[1].label)}</a></p>
         ${sections.join('\n        ')}
         <p class="small">${SOURCE_NOTE}</p>
-        <p><a href="${SITE_ORIGIN}/mesto/${esc(city.slug)}/">Bohoslužby ${esc(city.name)} — celý týden v aplikaci</a> · <a href="${SITE_ORIGIN}/dusicky/">Dušičky v dalších městech</a></p>
+        <p>${
+          city.cityPage === false
+            ? `<a href="${SITE_ORIGIN}/">Bohoslužby podle vaší polohy — celý týden v aplikaci</a>`
+            : `<a href="${SITE_ORIGIN}/mesto/${esc(city.slug)}/">Bohoslužby ${esc(city.name)} — celý týden v aplikaci</a>`
+        } · <a href="${SITE_ORIGIN}/dusicky/">Dušičky v dalších městech</a></p>
       </main>
 `
   const jsonLd = ldSafe({
@@ -207,7 +212,7 @@ export function feastCityPage(input: {
       { '@type': 'ListItem', position: 3, name: city.name, item: url },
     ],
   })
-  return { url, title, description, body, jsonLd }
+  return { url, title, description, body, jsonLd, services: total }
 }
 
 export function feastHubPage(input: { cities: { name: string; slug: string; count: number }[]; today: string }): FeastPage {
@@ -221,7 +226,7 @@ export function feastHubPage(input: { cities: { name: string; slug: string; coun
     ],
     [
       'Kde najdu mši svatou na Dušičky?',
-      'Pro větší města je seznam výše; každá stránka je seřazená podle času. Pro ostatní obce otevřete aplikaci Kam na mši a zvolte obec nebo povolte polohu; na stránce každého kostela je i jeho pořad na 1. a 2. listopadu.',
+      'Pro města a obce se třemi a více kostely je seznam výše; každá stránka je seřazená podle času. Pro ostatní obce otevřete aplikaci Kam na mši a zvolte obec nebo povolte polohu; na stránce každého kostela je i jeho pořad na 1. a 2. listopadu.',
     ],
     [
       'Jak získat odpustky za zemřelé?',
