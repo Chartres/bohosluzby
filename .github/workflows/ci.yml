@@ -16,7 +16,7 @@ permissions:
 # deploy cancel or queue behind each other.) The deploy job keeps its own lane.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
@@ -53,6 +53,12 @@ jobs:
             echo "::error::regex lookbehind in the bundle — breaks iOS < 16.4"
             exit 1
           fi
+      # analytics bundle guard on the exact dist we upload: a build without the
+      # Supabase secrets would deploy an app that sends no events. Nothing may
+      # rebuild dist between this step and the upload.
+      - name: Analytics config in the bundle
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        run: node scripts/check-analytics.mjs dist # flywheel:analytics-guard
       # workflow_dispatch deploys too — the refresh-data workflow pushes with
       # GITHUB_TOKEN (which can't fire the push trigger) and then dispatches this
       - uses: actions/upload-pages-artifact@v3

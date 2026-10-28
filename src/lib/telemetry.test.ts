@@ -34,6 +34,10 @@ describe('isLikelyBot', () => {
       'Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Mobile Safari/537.36 Chrome-Lighthouse',
       'Mozilla/5.0 (compatible; Google-InspectionTool/1.0;)',
       'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)',
+      // the reference client's isAutomatedBrowser list (flywheel-client.ts)
+      'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Mobile Safari/537.36 (compatible; GoogleOther)',
+      'Mozilla/5.0 (compatible; Embedly/0.2; +http://support.embed.ly/)',
+      'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36 Prerender (+https://github.com/prerender/prerender)',
     ]) {
       expect(isLikelyBot({ userAgent: ua }), ua).toBe(true)
     }

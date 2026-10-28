@@ -5,7 +5,7 @@
 // No lookbehind: it is a parse error on iOS Safari < 16.4 and would take the
 // whole bundle down there.
 const BOT_UA =
-  /(?:^|[^u])bot\b|crawl|spider|slurp|headless|lighthouse|pagespeed|inspectiontool|bingpreview|facebookexternalhit/i
+  /(?:^|[^u])bot\b|crawl|spider|slurp|headless|lighthouse|prerender|pagespeed|inspectiontool|googleother|bingpreview|facebookexternalhit|embedly|preview/i
 
 export function isLikelyBot(nav: { userAgent?: string; webdriver?: boolean }): boolean {
   return nav.webdriver === true || BOT_UA.test(nav.userAgent ?? '')

@@ -38,6 +38,18 @@ export interface FlywheelClientConfig {
   storage?: Storage
   /** Injectable clock for tests. */
   now?: () => string
+  /** True for automated browsers (CI, audits, Playwright, crawlers). Default: isAutomatedBrowser(navigator). Their events are dropped. */
+  isAutomated?: () => boolean
+}
+
+// Headless browsers and crawlers that run JS (Googlebot renders every page with
+// fresh storage, so each render looked like a new visitor).
+const BOT_UA = /bot\b|crawl|spider|slurp|headless|lighthouse|prerender|pagespeed|googleother|bingpreview|facebookexternalhit|embedly|preview/i
+
+/** True for browsers that are not a person: webdriver (Playwright, CI) or a bot/headless user agent. */
+export function isAutomatedBrowser(nav?: { webdriver?: boolean; userAgent?: string }): boolean {
+  if (!nav) return false
+  return nav.webdriver === true || BOT_UA.test(nav.userAgent ?? '')
 }
 
 export interface EventRow {
@@ -125,8 +137,10 @@ export function createFlywheelClient(config: FlywheelClientConfig): FlywheelClie
   const now = config.now ?? (() => new Date().toISOString())
   let flywheelUid: string | null = null
 
+  const automated = (config.isAutomated ?? (() => isAutomatedBrowser(typeof navigator !== 'undefined' ? navigator : undefined)))()
   const insert = (table: string, row: unknown) => {
     if (!supabase) return // no-op when unconfigured — never breaks the app
+    if (automated) return // our own CI/audit browsers are not visitors (KPIs stay honest)
     try {
       const res = supabase.from(table).insert(row)
       // supabase-js returns a thenable; swallow both outcomes (fire-and-forget)
