@@ -140,6 +140,16 @@ describe('feastCityPage — /dusicky/<city>/', () => {
     expect(page.body).toMatch(/ohlášk/)
   })
 
+  it('shows a namesake by its label but reads quarters against the municipality', () => {
+    const p = feastCityPage({
+      city: { name: 'Hlinsko', label: 'Hlinsko (Skuteč)', slug: 'hlinsko', churches: [{ id: '5', name: 'kostel Narození Panny Marie', city: 'Hlinsko' }] },
+      entries: { '5': entry([['7', '09:00', 'česky', 0, '', '']]) },
+      today: '2026-10-27',
+    })
+    expect(p.title).toContain('mše svatá Hlinsko (Skuteč)')
+    expect(p.body).not.toContain('</a>, Hlinsko')
+  })
+
   it('counts its services, so a town with none on both days gets no page', () => {
     expect(page.services).toBe(5)
   })

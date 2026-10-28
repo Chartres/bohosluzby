@@ -143,7 +143,8 @@ const ldSafe = (o: unknown) => JSON.stringify(o).replaceAll('<', '\\u003c')
 
 export function feastCityPage(input: {
   /** cityPage: a prerendered /mesto/<slug>/ exists to link to (the 30 largest). */
-  city: { name: string; slug: string; churches: PageChurchRef[]; cityPage?: boolean }
+  /** label: the display name ('Hranice (Lipník nad Bečvou)' for a namesake); name stays the municipality. */
+  city: { name: string; slug: string; churches: PageChurchRef[]; cityPage?: boolean; label?: string }
   entries: Record<string, RawEntry | undefined>
   today: string
 }): FeastPage & { services: number } {
@@ -183,16 +184,17 @@ export function feastCityPage(input: {
     return `<h2 id="den-${i + 1}"><span class="rubric">${esc(day.label)}</span> ${esc(day.name)}</h2>\n${list}`
   })
 
-  const title = `Dušičky a Všech svatých ${year} — mše svatá ${city.name} | Kam na mši`
+  const shown = city.label ?? city.name
+  const title = `Dušičky a Všech svatých ${year} — mše svatá ${shown} | Kam na mši`
   const description = (
-    `${city.name}: mše svatá na Všech svatých (${days[0].label}) a na Dušičky (${days[1].label} ${year}) — ` +
+    `${shown}: mše svatá na Všech svatých (${days[0].label}) a na Dušičky (${days[1].label} ${year}) — ` +
     `${total} ${plural(total, 'bohoslužba', 'bohoslužby', 'bohoslužeb')} v ${churchesWithRows} ${plural(churchesWithRows, 'kostele', 'kostelech', 'kostelech')}, podle rejstříku ČBK.`
   ).slice(0, 200)
 
   const body = `
       <main class="ordo-page">
         <p class="crumbs"><a href="${SITE_ORIGIN}/">Kam na mši</a> › <a href="${SITE_ORIGIN}/dusicky/">Dušičky ${year}</a></p>
-        <h1>Všech svatých a Dušičky ${year}: mše svatá — ${esc(city.name)}</h1>
+        <h1>Všech svatých a Dušičky ${year}: mše svatá — ${esc(shown)}</h1>
         <p class="small">Podle rejstříku ČBK, seřazeno podle času. Skok na: <a href="#den-1">${esc(days[0].label)}</a> · <a href="#den-2">${esc(days[1].label)}</a></p>
         ${sections.join('\n        ')}
         <p class="small">${SOURCE_NOTE}</p>
@@ -209,13 +211,13 @@ export function feastCityPage(input: {
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Kam na mši', item: `${SITE_ORIGIN}/` },
       { '@type': 'ListItem', position: 2, name: `Dušičky ${year}`, item: `${SITE_ORIGIN}/dusicky/` },
-      { '@type': 'ListItem', position: 3, name: city.name, item: url },
+      { '@type': 'ListItem', position: 3, name: shown, item: url },
     ],
   })
   return { url, title, description, body, jsonLd, services: total }
 }
 
-export function feastHubPage(input: { cities: { name: string; slug: string; count: number }[]; today: string }): FeastPage {
+export function feastHubPage(input: { cities: { name: string; slug: string; count: number; label?: string }[]; today: string }): FeastPage {
   const { cities, today } = input
   const { year, days } = allSaints(today)
   const url = `${SITE_ORIGIN}/dusicky/`
@@ -226,7 +228,7 @@ export function feastHubPage(input: { cities: { name: string; slug: string; coun
     ],
     [
       'Kde najdu mši svatou na Dušičky?',
-      'Pro města a obce se třemi a více kostely je seznam výše; každá stránka je seřazená podle času. Pro ostatní obce otevřete aplikaci Kam na mši a zvolte obec nebo povolte polohu; na stránce každého kostela je i jeho pořad na 1. a 2. listopadu.',
+      'Pro města a obce se třemi a více kostely, pro které rejstřík na tyto dny uvádí aspoň jednu bohoslužbu, je seznam výše; každá stránka je seřazená podle času. Pro ostatní obce otevřete aplikaci Kam na mši a zvolte obec nebo povolte polohu; na stránce každého kostela je i jeho pořad na 1. a 2. listopadu.',
     ],
     [
       'Jak získat odpustky za zemřelé?',
@@ -241,7 +243,7 @@ export function feastHubPage(input: { cities: { name: string; slug: string; coun
         <p><span class="rubric">${esc(days[0].label)}</span> ${esc(days[0].name)}<br /><span class="rubric">${esc(days[1].label)}</span> ${esc(days[1].name)}</p>
         <h2>Města</h2>
         <ul class="cities">${cities
-          .map((c) => `<li><a href="${SITE_ORIGIN}/dusicky/${esc(c.slug)}/">${esc(c.name)}</a></li>`)
+          .map((c) => `<li><a href="${SITE_ORIGIN}/dusicky/${esc(c.slug)}/">${esc(c.label ?? c.name)}</a></li>`)
           .join('')}</ul>
         <p>Jiná obec? <a href="${SITE_ORIGIN}/">Otevřete aplikaci</a> a vyberte ji, nebo povolte polohu.</p>
         <h2>Otázky</h2>

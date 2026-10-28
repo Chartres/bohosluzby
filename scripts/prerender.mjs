@@ -33,8 +33,8 @@ const cities = allCities.slice(0, CITY_PAGES)
 const FEAST_MIN_CHURCHES = 3
 const feastCities = allCities
   .filter((c) => c.count >= FEAST_MIN_CHURCHES)
-  .map((c, i) => ({ ...c, name: cityLabel(c), cityPage: i < CITY_PAGES }))
-  .sort((a, b) => a.name.localeCompare(b.name, 'cs'))
+  .map((c, i) => ({ ...c, label: cityLabel(c), cityPage: i < CITY_PAGES }))
+  .sort((a, b) => a.label.localeCompare(b.label, 'cs'))
 
 const esc = (s) =>
   s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
@@ -75,6 +75,17 @@ function withMeta(html, { title, description, url }) {
     .replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*(")/, `$1${esc(description)}$2`)
 }
 
+// Dušičky pages are computed first: a /mesto/ page links its feast page only
+// when one exists (a town with nothing on either day gets none — after the
+// rollover to next year that can be a top-30 city too)
+const feastPages = feastCities
+  .map((city) => ({
+    city,
+    page: feastCityPage({ city, entries: Object.fromEntries(city.churches.map((c) => [c.id, entryOf(c)])), today }),
+  }))
+  .filter(({ page }) => page.services > 0) // nothing in the registry for either day — no thin page
+const feastSlugs = new Set(feastPages.map(({ city }) => city.slug))
+
 // city pages — titles match the real queries ("mše praha dnes", "bohoslužby brno")
 for (const city of cities) {
   const url = `${ORIGIN}/mesto/${city.slug}/`
@@ -95,7 +106,7 @@ for (const city of cities) {
         <ul>
           ${cityLinks(city.slug)}
         </ul>
-        <p><a href="${ORIGIN}/dusicky/${city.slug}/">Všech svatých a Dušičky — mše svatá ${esc(city.name)}</a></p>
+        ${feastSlugs.has(city.slug) ? `<p><a href="${ORIGIN}/dusicky/${city.slug}/">Všech svatých a Dušičky — mše svatá ${esc(city.name)}</a></p>` : ''}
         <p><a href="${ORIGIN}/">Bohoslužby podle vaší polohy</a></p>
       </div>
 `
@@ -145,10 +156,7 @@ function staticPage(page) {
 }
 const feastUrls = ['/dusicky/']
 const feastListed = []
-for (const city of feastCities) {
-  const entries = Object.fromEntries(city.churches.map((c) => [c.id, entryOf(c)]))
-  const page = feastCityPage({ city, entries, today })
-  if (page.services === 0) continue // nothing in the registry for either day — no thin page
+for (const { city, page } of feastPages) {
   mkdirSync(`${root}dist/dusicky/${city.slug}`, { recursive: true })
   writeFileSync(`${root}dist/dusicky/${city.slug}/index.html`, staticPage(page))
   feastUrls.push(`/dusicky/${city.slug}/`)
