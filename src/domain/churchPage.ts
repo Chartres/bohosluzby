@@ -160,3 +160,21 @@ export function churchPage(input: {
 
   return { url, title, description, body, jsonLd }
 }
+
+/** schema.org ItemList for a /mesto/<slug>/ page: its churches, each pointing
+ * at its own page (which carries the Church JSON-LD). Safe to inline. */
+export function cityItemList(city: { name: string; slug: string; churches: { id: string; name: string }[] }): string {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `Kostely a bohoslužby — ${city.name}`,
+    url: `${SITE_ORIGIN}/mesto/${city.slug}/`,
+    numberOfItems: city.churches.length,
+    itemListElement: city.churches.map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: churchUrl(c.id),
+      name: c.name,
+    })),
+  }).replaceAll('<', '\\u003c')
+}
