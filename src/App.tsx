@@ -127,15 +127,15 @@ const CAS_KEY = 'bohosluzby:cas'
 // spans a nap but not an overnight-to-next-visit gap.
 const STICKY_TTL_MS = 12 * 60 * 60 * 1000
 
-function loadSticky<T>(key: string, opts: { sameDay?: boolean } = {}): T | null {
+function loadSticky<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key)
     if (!raw) return null
     const parsed = JSON.parse(raw) as { savedAt?: number; value?: T }
     if (typeof parsed.savedAt !== 'number' || Date.now() - parsed.savedAt > STICKY_TTL_MS) return null
-    // time-of-day prefs (kolem 18:00) mean nothing tomorrow morning — the 12h
-    // TTL alone let 23:30's pick survive to 08:00 and open an empty list
-    if (opts.sameDay && !samePragueDay(new Date(parsed.savedAt), new Date())) return null
+    // prefs mean nothing tomorrow morning — the 12h TTL alone let 23:30's
+    // "kolem 18:00" or filters survive to 08:00 (founder case 8)
+    if (!samePragueDay(new Date(parsed.savedAt), new Date())) return null
     return parsed.value ?? null
   } catch {
     return null // private mode, or a pre-TTL value written by an older build
@@ -147,7 +147,7 @@ function saveSticky<T>(key: string, value: T): void {
 }
 
 function loadFilters(): Filters {
-  const f = { ...NO_FILTERS, ...loadSticky<Filters>(FILTERS_KEY, { sameDay: true }) }
+  const f = { ...NO_FILTERS, ...loadSticky<Filters>(FILTERS_KEY) }
   // With witness disabled there is no filter UI to clear a stale persisted
   // selection — drop it so an old build's witnessTags can't silently narrow the list.
   if (!WITNESS_ENABLED) f.witnessTags = []
@@ -321,7 +321,7 @@ export default function App() {
   // sticky like the other filters (within STICKY_TTL_MS): a plain visit
   // re-applies the saved cas
   useEffect(() => {
-    const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
+    const saved = parseCas(loadSticky<string>(CAS_KEY))
     // an expired key is dead weight, and the resume check would take it for this kdy's source
     if (!saved) removeKey(CAS_KEY)
     else if (!parseCas(new URLSearchParams(location.search).get('cas'))) setParam('cas', saved)
@@ -550,7 +550,7 @@ export default function App() {
       return JSON.stringify(next) === JSON.stringify(cur) ? cur : next
     })
     const resumed = new Date()
-    const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
+    const saved = parseCas(loadSticky<string>(CAS_KEY))
     // a saved kdy expires on the same clock as the filters; a URL-only one (shared
     // link, nothing or another value stored) on time away
     let expired = false
