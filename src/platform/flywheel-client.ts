@@ -74,12 +74,25 @@ export interface FeedbackRow {
   created_at: string
 }
 
+// crypto.randomUUID is absent on iOS 15.0–15.3 (Safari < 15.4); fall back to
+// Math.random hex — good enough for a visitor-id, not for cryptographic use.
+function randomUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  // ponytail: Math.random fallback, non-crypto; upgrade if collision matters
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+  })
+}
+
 // Per-key ephemeral fallbacks when storage is unavailable — unique per session,
 // not shared across devices the way a static 'anon' string would be.
 const _fallbacks = new Map<string, string>()
 const fallback = (key: string): string => {
   let v = _fallbacks.get(key)
-  if (!v) { v = crypto.randomUUID(); _fallbacks.set(key, v) }
+  if (!v) { v = randomUUID(); _fallbacks.set(key, v) }
   return v
 }
 
@@ -88,7 +101,7 @@ function readId(storage: Storage | undefined, key: string): string {
     if (!storage) return fallback(key)
     let v = storage.getItem(key)
     if (!v) {
-      v = crypto.randomUUID()
+      v = randomUUID()
       storage.setItem(key, v)
     }
     return v
