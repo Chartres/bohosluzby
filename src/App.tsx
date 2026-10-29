@@ -147,7 +147,7 @@ function saveSticky<T>(key: string, value: T): void {
 }
 
 function loadFilters(): Filters {
-  const f = { ...NO_FILTERS, ...loadSticky<Filters>(FILTERS_KEY) }
+  const f = { ...NO_FILTERS, ...loadSticky<Filters>(FILTERS_KEY, { sameDay: true }) }
   // With witness disabled there is no filter UI to clear a stale persisted
   // selection — drop it so an old build's witnessTags can't silently narrow the list.
   if (!WITNESS_ENABLED) f.witnessTags = []
