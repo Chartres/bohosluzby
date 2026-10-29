@@ -131,6 +131,14 @@ function parseOrdinals(s: string): (number | 'last')[] | null {
  * in one call; notably nthWeekday returns true for non-target weekdays (a
  * "governs only wd" sentinel) so not(nthWeekday) would wrongly exclude them. */
 function parseInclusion(s: string, negated = false): Pred | null {
+  // one full date, year included ("kromě 2. 11. 2026"): data/corrections.mjs
+  // writes these when a parish announces a Mass doesn't take place that day
+  const date = /^(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})$/.exec(s)
+  if (date) {
+    const [dd, mm, yy] = [Number(date[1]), Number(date[2]), Number(date[3])]
+    const pos: Pred = (y, m, d) => y === yy && m === mm && d === dd
+    return negated ? not(pos) : pos
+  }
   const months = parseMonthSet(s)
   if (months) {
     const pos: Pred = (_y, m) => months.has(m)
@@ -295,6 +303,7 @@ const FREQUENCY = /^(?:1x\s+(?:za\s+měsíc|měsíčně|za\s+14\s+dní|za\s+2\s+
 const cache = new Map<string, NoteRule>()
 // Segments that contribute exclusion predicates — ANDed so each exclusion stacks.
 const EXCL_SEG = /^(?:kromě|mimo|vyjma|s\s+výjimkou)\s+/
+const EXCL_DATE = /^kromě\s+\d{1,2}\.\s*\d{1,2}\.\s*\d{4}\.?$/
 
 // H2: classify an inclusion segment so same-kind segments can be OR'd.
 // "v červenci, v srpnu" → both 'month' → OR → July or August.
@@ -333,13 +342,23 @@ export function parseNote(note: string): NoteRule {
     `(^|\\s)(${ORDINAL_RE}(?:\\s*,\\s*${ORDINAL_RE})+)(\\s+(?:${WEEKDAY_RE})(?:\\s+v\\s+měsíci)?)`,
     'gi',
   )
-  const segs = trimmed
+  const allSegs = trimmed
     .replace(/(\p{Ll}{3})\.\s+(?=\p{Lu})/gu, '$1\u0000')
     .split('\u0000')
     .map((s) => s.replace(multiNthRe, (_, pre: string, ords: string, wd: string) => pre + ords.replace(/\s*,\s*/g, ' a ') + wd))
     .flatMap((s) => s.split(/\s*[,;]\s*/))
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean)
+  // "kromě 2. 11. 2026" (data/corrections.mjs: the parish announced it doesn't
+  // take place that day) holds even when the rest of the note is unreadable
+  const dateExcl = allSegs.filter((s) => EXCL_DATE.test(s)).map((s) => parseSegment(s) as Pred)
+  const segs = allSegs.filter((s) => !EXCL_DATE.test(s))
+  if (dateExcl.length) {
+    const base = parseNote(segs.join(', '))
+    const rule: NoteRule = { runsOn: (y, m, d) => dateExcl.every((p) => p(y, m, d)) && base.runsOn(y, m, d), uncertain: base.uncertain }
+    cache.set(trimmed, rule)
+    return rule
+  }
 
   const parsed = segs.map(parseSegment)
   const preds = parsed.filter((p): p is Pred => typeof p === 'function')

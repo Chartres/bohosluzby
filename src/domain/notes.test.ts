@@ -412,3 +412,25 @@ describe('exclusions read exactly what they name (sweep 2026-09-30, consolidated
     expect(noteUncertain(note)).toBe(true) // can't prove it either way → shown, flagged
   })
 })
+
+describe('one excluded date (data/corrections.mjs)', () => {
+  it('"kromě 2. 11. 2026" skips that day only', () => {
+    expect(runs('kromě 2. 11. 2026', '2026-11-02')).toBe(false)
+    expect(runs('kromě 2. 11. 2026', '2026-11-09')).toBe(true)
+    expect(runs('kromě 2. 11. 2026', '2027-11-02')).toBe(true)
+    expect(noteUncertain('kromě 2. 11. 2026')).toBe(false)
+  })
+  it('stacks on an existing note and on a second date', () => {
+    expect(runs('ve školním roce, kromě 2. 11. 2026', '2026-11-02')).toBe(false)
+    expect(runs('ve školním roce, kromě 2. 11. 2026', '2026-11-09')).toBe(true)
+    expect(runs('ve školním roce, kromě 2. 11. 2026', '2026-07-06')).toBe(false)
+    expect(runs('kromě 1. 11. 2026, kromě 2. 11. 2026', '2026-11-01')).toBe(false)
+    expect(runs('kromě 1. 11. 2026, kromě 2. 11. 2026', '2026-11-02')).toBe(false)
+  })
+  it('holds even when the rest of the note is unreadable (still flagged uncertain)', () => {
+    const note = 'kromě měsíce května, kromě 2. 11. 2026'
+    expect(runs(note, '2026-11-02')).toBe(false)
+    expect(runs(note, '2026-11-09')).toBe(runs('kromě měsíce května', '2026-11-09'))
+    expect(noteUncertain(note)).toBe(noteUncertain('kromě měsíce května'))
+  })
+})
