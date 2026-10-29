@@ -1,0 +1,92 @@
+{
+  "headline": "Dušičky check: 395 churches in the 30 largest towns compared with the parishes' own 2026 announcements. 65 were wrong and 64 are fixed and live, each with its source. Native store builds now fail without the analytics config. No change to page design, the feast-day line or Pozvat.",
+  "shipped": [
+    {
+      "title": "Analytics bundle guard in the iOS and Android release pipelines",
+      "pr": "https://github.com/Chartres/bohosluzby/pull/71",
+      "merged": true,
+      "live_checked": "2026-10-29 02:47 UTC. The main CI run 40806962830 on d86731d is green. raw.githubusercontent.com main has the flywheel:analytics-guard line in release-android.yml, release-ios.yml and ios/App/fastlane/Fastfile. Before merge I checked locally: a build without VITE_SUPABASE_URL, then cap sync android, fails the guard on android/app/src/main/assets/public; with a project URL it passes, on that folder and on ios/App/App/public. No release was dispatched, so the guard runs for real only on the next store build."
+    },
+    {
+      "title": "Dušičky 2026: sourced corrections for 64 churches in the 30 largest towns",
+      "pr": "https://github.com/Chartres/bohosluzby/pull/72",
+      "merged": true,
+      "live_checked": "2026-10-29 02:52 UTC. Live /data/version.json timestamp is 2026-10-29T02:42:40Z, so installed apps pull the new shards. Live /dusicky/liberec/ shows Rochlice 07:00 on 2 Nov, and its 17:00 is gone. /dusicky/praha/ shows the cathedral's 18:00 on 2 Nov, and the Vyšehrad rotunda's 18:00 is gone. /dusicky/brno/ shows the cathedral's 17:30. /dusicky/plzen/ no longer has Slovany's 07:30 on 1 Nov."
+    }
+  ],
+  "data_check": {
+    "checked": 395,
+    "wrong": 65,
+    "fixed": 64,
+    "unverifiable": 209,
+    "notes": [
+      "Sample: the 30 most populous towns that have a Dušičky page. Praha (115 churches), Brno (41), Ostrava (30), Olomouc (21) and Plzeň (16) were checked in full. The other 25 towns were checked for every church they list. 121 churches are confirmed. Many of those are confirmed for 1 Nov only, because most parishes publish the week of 2 Nov this Sunday.",
+      "Unit = a church. 'Wrong' means a 2026 parish source gives different Mass times for that church on 1 or 2 Nov than the site showed. 'Unverifiable' means no 2026 source covered it. Old (2025) announcements and undated standing schedules didn't count as sources.",
+      "What was wrong: mostly a 2 Nov Mass the registry lacks (cathedrals in Praha, Brno and Hradec Králové; Týn; Karlín; Vršovice; Strašnice; Pardubice sv. Václav; Jihlava sv. Jakub, and others). About 20 were Masses the site showed that won't happen on that date: moved to another church (Kladno sv. Florián, Třebíč sv. Martin, Znojmo sv. Kříž, Ostrava-Výškovice, HK sv. Kliment, Vyšehrad rotunda), moved to another time (Rochlice, Proskovice, Stará Bělá, Hrabůvka, Radvanice, Žebětín, Židenice, Plzeň-Malesice, the Vietnamese Mass at Plzeň NPM), or not held (Rýnovice, Prostějov-Krasice, Plzeň-Slovany 07:30).",
+      "Fix: data/corrections.json is the correction log, with church id, date, what changed, source URL, source date, a verbatim quote and the check date for each entry. It holds 69 entries: 69 Masses added as dated one-offs, and 23 registry Masses excluded for that one date with 'kromě D. M. YYYY'. data/extract.mjs re-applies the log at every refresh, and data/corrections.test.mjs fails CI if a correction doesn't land.",
+      "Not fixed (1): Přerov sv. Vavřinec, 1 Nov 10:30. The bulletin says 'Přerov 9:00, 18:30' but doesn't name the church, so it's in the 'wrong' count without a correction.",
+      "Per-church results, with each source and note: docs/review/2026-10-29-dusicky-check.json (by_town has the counts).",
+      "Parishes that have published nothing usable for 2026: the pages have no place to say this (see decisions), so they are listed here. Bot wall or 403: Liberec arciděkanství; ČB děkanství sv. Mikuláš (9 churches), ČB sv. Jan Nepomucký and Suché Vrbné; Příbram sv. Jakub; Cheb (5); Havířov (3); Frýdek (3); Ostrava-Přívoz and Moravská Ostrava (4); HK Pražské Předměstí/Kukleny; Zlín (farnostzlin.cz, Malenovice, Panny Marie Pomocnice, Březnice); Třebíč bazilika; Brno-Žabovřesky and Komín; Praha Stodůlky, Lhotka, Hostivař, Hloubětín, Kbely, Braník and Podolí. Down, or nothing for 2026: Ostrava-Hrabová, Hrušov, Vítkovice and Polanka; Karviná (3); Česká Lípa (ohlášky from 2012); Teplice salesiáni (schedule ended June 2026); Svatá Hora (domain now redirects to a rental site); the Greek-Catholic parishes in Karlovy Vary and Pardubice; Prostějov sv. Petr a Pavel and Žešov; Opava sv. Duch and the co-cathedral (no times). In Praha, 71 of 115 churches couldn't be checked, among them sv. Tomáš, sv. Jindřich, Panny Marie Sněžné, Podskalí, Břevnov (times given without naming the church), Bohnice, Kobylisy, Libeň, Emauzy, Košíře, Modřany and Střešovice.",
+      "Leads to re-check, not changed (standing schedules or no 2026 date): Děčín I Monday 7:00 vs 07:30 on the site; Plzeň Greek-Catholic Sunday 9:30/11:00 vs 9:00/10:30; Plzeň Domeček Monday 18:00 vs 17:30; Louky nad Olší Sunday 07:30 vs 08:30; Praha cathedral 17:00 nešpory on 1 Nov (not in the cathedral's 2026 calendar); Břevnov 2 Nov 16:00; Spořilov 1 Nov 08:30; Olomouc-Nové Sady evening Mass on 2 Nov (no time published); Plzeň NPM 2 Nov 12:00 (the registry says the first Monday is a Liturgy of the Word, the parish says Mass).",
+      "Registry link problems seen: farnost-velke-hostice.cz is a spam shop now; svata-hora.cz redirects to nasvate.cz."
+    ]
+  },
+  "decisions": [
+    {
+      "question": "How to correct times without touching page design: a new 'ověřeno v ohláškách' row style, or the existing row types?",
+      "options": ["existing row types: dated one-off for an added Mass, a one-date exclusion on the weekly row for a cancelled one", "new 'verified from the parish' marker on the page"],
+      "default_taken": "existing row types",
+      "why": "Dušičky page design is off-limits this pass. Corrected Masses show the existing 'mimořádná, zapsaná na tento den' marker, and the page's source note still says one-offs come from the registry. Rows also keep the 'rozpis ověřen naposledy …' line from the registry date even when they're corrected. Wording for this is Pavol's call."
+    },
+    {
+      "question": "Cancel a Mass for one date: delete the registry row, or exclude the date?",
+      "options": ["delete or replace the weekly row", "append 'kromě D. M. YYYY' to its note, read by parseNote"],
+      "default_taken": "append 'kromě D. M. YYYY'",
+      "why": "Every view (list, detail, .ics, feast pages, embed) already goes through parseNote, so one rule covers them all and the row comes back by itself after the date. Side effects: the weekly ordo on the church detail shows 'kromě 2. 11. 2026' until the next registry refresh drops it, and an .ics export of that row becomes a dated series with one exception. A full-date exclusion also holds when the rest of the note is unreadable; without that, three announced cancellations stayed visible."
+    },
+    {
+      "question": "Remove a Mass when the source doesn't name the church (Přerov sv. Vavřinec 10:30)?",
+      "options": ["remove", "leave and list"],
+      "default_taken": "leave and list",
+      "why": "Hiding a real Mass is the worse error. Corrections only remove where the source names the church."
+    },
+    {
+      "question": "Where parishes have published nothing for 2026: say so on the page?",
+      "options": ["add a line to the page", "list in the hand-back"],
+      "default_taken": "list in the hand-back",
+      "why": "The page has no place for it beyond the existing old-registry line, and adding one changes the design."
+    },
+    {
+      "question": "Bump version.json so installed apps pull the corrected data?",
+      "options": ["bump timestamp only", "bump generated too", "leave"],
+      "default_taken": "bump timestamp only",
+      "why": "The app compares the timestamp. 'generated' is shown as 'aktuální k …' and stays at the registry date, 27 Oct, because the registry itself wasn't refreshed."
+    },
+    {
+      "question": "iOS analytics guard: as a workflow step, or in the Fastfile?",
+      "options": ["workflow step after fastlane", "pre-build in the workflow", "Fastfile sync_web right after cap sync, plus an early secrets check in the workflow"],
+      "default_taken": "Fastfile sync_web plus an early secrets check",
+      "why": "The web bundle is built inside the lane. A step after fastlane would run after the TestFlight upload, and a separate pre-build would check a different bundle than the one archived. This also guards local Mac builds: one without VITE_SUPABASE_URL now fails."
+    },
+    {
+      "question": "Dispatch a TestFlight / Play build for the corrected data?",
+      "options": ["dispatch beta", "skip"],
+      "default_taken": "skip",
+      "why": "The brief says don't dispatch a release. Installed apps get the corrected shards from the web via the version.json bump, without a store build."
+    },
+    {
+      "question": "Ping IndexNow for the changed /dusicky/ pages?",
+      "options": ["submit", "leave to the central job"],
+      "default_taken": "leave to the central job",
+      "why": "The brief says IndexNow is central."
+    }
+  ],
+  "next": [
+    "Sunday 1 Nov: most parishes publish the week of 2 Nov in that day's ohlášky. A second pass on 1 Nov, rerunning the same sample, would turn many 'unverifiable' into checked 2 Nov times while it still matters. The tooling is in place: add entries to data/corrections.json, run `node data/corrections.mjs`, and the CI test proves they land.",
+    "Pavol: decide the wording for corrected rows. 'mimořádná, zapsaná na tento den' and 'rozpis ověřen naposledy …' are both misleading on a time we have just checked against a 2026 announcement.",
+    "Check the 9 leads listed in data_check.notes. They come from standing schedules, so they weren't changed.",
+    "The 146 Dušičky towns outside the sample are unchecked.",
+    "The next store builds (iOS beta, Android tag) are the first real run of the native analytics guard. On the Mac mini, check that VITE_SUPABASE_URL is in its environment before a local fastlane release.",
+    "After 2 Nov: drop the past corrections from data/corrections.json, or keep it as the log. The past ones are skipped anyway, and the next registry refresh clears the 'kromě' notes."
+  ]
+}
