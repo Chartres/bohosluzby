@@ -15,3 +15,23 @@ it('no regex lookbehind in app code (iOS 15 WebKit cannot parse it)', () => {
     .map(([file]) => file)
   expect(offenders).toEqual([])
 })
+
+it('no bare Safari 15.4+ APIs in app code (regress silently on iOS 15.0–15.3)', () => {
+  // Each pattern is an API absent in Safari ≤15.3 that throws or returns wrong results
+  // without a polyfill. crypto.randomUUID must use ?. (optional chain) — bare call throws.
+  const checks: Array<[string, RegExp, ((f: string) => boolean)?]> = [
+    ['Object.hasOwn(', /Object\.hasOwn\(/],
+    // flywheel-client.ts IS the polyfill (uses bare call inside a typeof guard) — excluded
+    ['crypto.randomUUID() bare call', /crypto\.randomUUID\(\)/, (f) => !f.includes('flywheel-client')],
+    ['.structuredClone(', /\bstructuredClone\(/],
+    ['.at(-', /\.at\(-/],
+    ['.findLast(', /\.findLast\(/],
+    ['.toSorted(', /\.toSorted\(/],
+  ]
+  for (const [label, pattern, include] of checks) {
+    const offenders = Object.entries(sources)
+      .filter(([file, code]) => pattern.test(code) && (include ? include(file) : true))
+      .map(([file]) => file)
+    expect(offenders, label).toEqual([])
+  }
+})
