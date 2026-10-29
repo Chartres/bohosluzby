@@ -427,4 +427,10 @@ describe('one excluded date (data/corrections.mjs)', () => {
     expect(runs('kromě 1. 11. 2026, kromě 2. 11. 2026', '2026-11-01')).toBe(false)
     expect(runs('kromě 1. 11. 2026, kromě 2. 11. 2026', '2026-11-02')).toBe(false)
   })
+  it('holds even when the rest of the note is unreadable (still flagged uncertain)', () => {
+    const note = 'kromě měsíce května, kromě 2. 11. 2026'
+    expect(runs(note, '2026-11-02')).toBe(false)
+    expect(runs(note, '2026-11-09')).toBe(runs('kromě měsíce května', '2026-11-09'))
+    expect(noteUncertain(note)).toBe(noteUncertain('kromě měsíce května'))
+  })
 })

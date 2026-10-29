@@ -5,6 +5,15 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **Dušičky 2026 data check**: 395 churches in the 30 largest towns (Praha, Brno, Ostrava,
+  Plzeň, Olomouc in full) checked against the parishes' own 2026 announcements — 121
+  confirmed, 65 wrong, 209 unverifiable (`docs/review/2026-10-29-dusicky-check.json`).
+  64 fixed through `data/corrections.json`: every change has its source URL and quote;
+  missing Masses are added as dated one-offs, cancelled ones get "kromě D. M. YYYY" on the
+  weekly row. `data/corrections.mjs` applies them (extract.mjs re-applies at every refresh);
+  `data/corrections.test.mjs` fails if one doesn't land in the committed shards.
+- notes: a full-date exclusion ("kromě 2. 11. 2026") excludes that one day, even when the
+  rest of the note is unreadable.
 - **pozvat** on every service row (`docs/SIGNATURE.md` mechanic C): opens your messenger with
   "Půjdeš se mnou na mši svatou? V neděli 1. 11. v 9:00, kostel … (město)." and the church
   link (`utm_source=pozvani`). The date is the next one the service really runs (its note

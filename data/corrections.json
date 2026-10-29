@@ -1,4 +1,1188 @@
 {
-  "about": "Sourced hand corrections on top of the ČBK registry. See data/corrections.mjs.",
-  "corrections": []
+ "about": "Sourced hand corrections on top of the ČBK registry for Všech svatých / Dušičky 2026 — each from the parish's own 2026 announcement (ohlášky, bulletin, parish or diocese calendar), checked 2026-10-29. Format and how it is applied: data/corrections.mjs. Times not published by a parish are never invented here.",
+ "corrections": [
+  {
+   "id": "8000366182975",
+   "church": "kostel farní Nejsvětější Trojice",
+   "town": "brno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://farnost-krpole.cz/bohosluzby/",
+   "source_date": "Pořad bohoslužeb od 23. října 2026 do 8. listopadu 2026",
+   "quote": "1. listopadu NEDĚLE SLAVNOST VŠECH SVATÝCH 07:30 … 09:30 … 18:30 … 2. listopadu PONDĚLÍ VZPOMÍNKA NA VŠECHNY VĚRNÉ ZEMŘELÉ 07:00 … 18:00 …",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "80001727189162",
+   "church": "kaple Svaté Rodiny",
+   "town": "brno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:00",
+     "mše sv."
+    ]
+   ],
+   "source": "http://farnostzebetinkohoutovice.cz/ohlasky",
+   "source_date": "ohlášky 25. 10. 2026",
+   "quote": "neděle 1.11. slavnost Všech svatých K 7:30 … Ž 9:00 … K 10:30 … Mše sv. v pondělí 2. listopadu budou slouženy takto: v 8:00 a 18:30 ve farním kostele v Žebětíně, v 17:00 v kohoutovické kapli.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "80002154787703",
+   "church": "kostel farní sv. Václava",
+   "town": "brno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "http://farnost-obrany.cz",
+   "source_date": "ohlášky 25. 10. 2026 (Výročí posvěcení kostela)",
+   "quote": "V Ne 1.11. v 9.00 – mše svatá v kostele / V Po 2.11. v 18.00 – mše svatá v kostele",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "80003377019272",
+   "church": "kostel farní Neposkvrněného početí Panny Marie",
+   "town": "brno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:30",
+     "mše sv."
+    ]
+   ],
+   "source": "http://farnostkrenova.cz/ohlasky-25-rijna-2026/",
+   "source_date": "ohlášky 25. října 2026",
+   "quote": "V pondělí 2. listopadu bude vzpomínka na všechny věrné zemřelé mše sv. bude ráno v 6 hodin a mimořádně i večer v 18.30.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "80003503712071",
+   "church": "kostel farní sv. Bartoloměje",
+   "town": "brno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "08:00",
+     "mše sv."
+    ],
+    [
+     "18:30",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "18:00"
+   ],
+   "source": "http://farnostzebetinkohoutovice.cz/ohlasky",
+   "source_date": "ohlášky 25. 10. 2026",
+   "quote": "neděle 1.11. … Ž 9:00, za farnost … Mše sv. v pondělí 2. listopadu budou slouženy takto: v 8:00 a 18:30 ve farním kostele v Žebětíně",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "80003795866278",
+   "church": "kostel farní sv. Jana Křtitele a sv. Jana Evangelisty",
+   "town": "brno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "07:30",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.faby.cz/info-latest/ohlasky/859-ohlasky-z-nedele-25-rijna.html",
+   "source_date": "ohlášky/pořad bohoslužeb 25. 10. – 1. 11. 2026 (PDF '30. neděle v mezidobí 26.pdf')",
+   "quote": "NE 1.11. Slavnost Všech svatých 7:30 / 8:45 / 10:00 / 18:00 … v pondělí, na „Dušičky“, bude celodenní adorace. Zahájíme ji ranní mší svatou v 7:30 a ukončíme večerní mší svatou v 18:00.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "80003890689181",
+   "church": "kostel farní sv. Cyrila a Metoděje",
+   "town": "brno",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "08:00",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "07:30"
+   ],
+   "source": "https://farnostzidenice.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 25.10. do 1.11.2026 (44. týden)",
+   "quote": "Neděle 1.11. SLAVNOST VŠECH SVATÝCH 08:00 kostel sv. Cyrila a Metoděje Mše svatá … 10:00 kostel sv. Cyrila a Metoděje Mše svatá za farníky … 14:30 Hřbitov Židenice Modlitba za zemřelé",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "80004224895303",
+   "church": "kostel rektorátní Nalezení sv. Kříže",
+   "town": "brno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://kapucini.cz/ohl-brno/",
+   "source_date": "ohlášky Brno, neděle 25. 10. 2026",
+   "quote": "Neděle 1.11. Slavnost Všech svatých 10:00 … 17:00 … Také informujeme, že v pondělí 2. 11. v 17 hod. zde bude sloužena mše sv., a po ní se uskuteční tradiční dušičková pobožnost v hrobce pod kostelem.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "5000261589548",
+   "church": "farní kostel sv. Jana Nepomuckého",
+   "town": "ostrava",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "07:30",
+     "mše sv."
+    ],
+    [
+     "09:00",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "10:00"
+   ],
+   "source": "https://www.farnost-starabela.cz/wp-content/uploads/2026/10/30.mez_.pdf",
+   "source_date": "pořad bohoslužeb 25.10.–1.11.2026",
+   "quote": "NE 1.11. Slavnost Všech svatých: 07.30 Za + Marii Březinovou…; 08.45 KRMELÍN…; 09.00 Za farníky; 10.00 PROSKOVICE",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50001362279293",
+   "church": "farní kostel sv. Jakuba Staršího",
+   "town": "ostrava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "16:45",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnost-plesna.cz/blog_clanek/aktualni-bohosluzby-a-ohlasky-16563",
+   "source_date": "článek 23.10.2026",
+   "quote": "Neděle 1.11 (Všech svatých) … 9,00: Bohoslužba …; Pondělí 2.11 (Památka zesnulých – dušičky) … 16,45: Bohoslužba … Po bohoslužbě dušičková pobožnost na hřbitově.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50001563516939",
+   "church": "filiální kostel Nanebevzetí P. Marie",
+   "town": "ostrava",
+   "date": "2026-11-02",
+   "drop": [
+    "08:30"
+   ],
+   "source": "https://farnostoz.cz/2026/porad-bohosluzeb-a-ohlasky",
+   "source_date": "ohlášky 25. 10. 2026 (30. neděle v mezidobí)",
+   "quote": "Slavnost Všech svatých: Příští neděli 1. listopadu budou mše svaté v obvyklém nedělním pořadu. … v pondělí 2. listopadu budou mše svaté v kostele Svatého Ducha v 8.00 a 18.00 hodin. Kaple Nanebevzetí Panny Marie … Pondělí: není … Neděle: není",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50001664090132",
+   "church": "farní kostel Svatého Ducha",
+   "town": "ostrava",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "08:00",
+     "mše sv."
+    ],
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "08:30"
+   ],
+   "source": "https://farnostoz.cz/2026/porad-bohosluzeb-a-ohlasky",
+   "source_date": "ohlášky 25. 10. 2026; pravidelný pořad na téže stránce",
+   "quote": "Slavnost Všech svatých: Příští neděli 1. listopadu budou mše svaté v obvyklém nedělním pořadu. … v pondělí 2. listopadu budou mše svaté v kostele Svatého Ducha v 8.00 a 18.00 hodin. Kostel Svatého Ducha … Neděle: 8.00, 10.30, 18.00",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50001664090132",
+   "church": "farní kostel Svatého Ducha",
+   "town": "ostrava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "08:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://farnostoz.cz/2026/porad-bohosluzeb-a-ohlasky",
+   "source_date": "ohlášky 25. 10. 2026; pravidelný pořad na téže stránce",
+   "quote": "Slavnost Všech svatých: Příští neděli 1. listopadu budou mše svaté v obvyklém nedělním pořadu. … v pondělí 2. listopadu budou mše svaté v kostele Svatého Ducha v 8.00 a 18.00 hodin. Kostel Svatého Ducha … Neděle: 8.00, 10.30, 18.00",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50001769461796",
+   "church": "farní kostel P. Marie Královny posv.růžence ",
+   "town": "ostrava",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "08:00",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "06:30",
+    "08:15"
+   ],
+   "source": "http://www.ostravahrabuvka.farnost.cz/files/ohlasky1025.pdf",
+   "source_date": "ohlášky 25.10.–1.11.2026",
+   "quote": "1.11. - Slavnost VŠECH SVATÝCH: 8,00 hod …; 10,00 hod …; v pondělí 2.11. Vzpomínka na všechny věrné zemřelé mše svaté v 6,30 a 17,30 hod",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50001769461796",
+   "church": "farní kostel P. Marie Královny posv.růžence ",
+   "town": "ostrava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:30",
+     "mše sv."
+    ]
+   ],
+   "source": "http://www.ostravahrabuvka.farnost.cz/files/ohlasky1025.pdf",
+   "source_date": "ohlášky 25.10.–1.11.2026",
+   "quote": "1.11. - Slavnost VŠECH SVATÝCH: 8,00 hod …; 10,00 hod …; v pondělí 2.11. Vzpomínka na všechny věrné zemřelé mše svaté v 6,30 a 17,30 hod",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50003408729965",
+   "church": "farní kostel Neposkvrněného početí P. Marie",
+   "town": "ostrava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:05",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "07:10"
+   ],
+   "source": "http://www.farnostradvanice.cz/bohosluzby",
+   "source_date": "Aktuální pořad bohoslužeb 30.8.–2.11.2026",
+   "quote": "1.11. Slavnost Všech svatých 9:00 …; 2.11. Vzpomínka na všechny věrné zemřelé 17:05 za všechny zemřelé farníky",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50003420284960",
+   "church": "kaple sv. Floriána",
+   "town": "ostrava",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "10:00",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "11:15"
+   ],
+   "source": "https://www.farnost-starabela.cz/wp-content/uploads/2026/10/30.mez_.pdf",
+   "source_date": "pořad bohoslužeb 25.10.–1.11.2026",
+   "quote": "NE 1.11. … 10.00 PROSKOVICE",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "5000283593426",
+   "church": "farní kostel sv. Martina biskupa",
+   "town": "frydek-mistek",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://farnostskalice.cz/bohosluzby/bohosluzby-ve-skalici/",
+   "source_date": "pořad bohoslužeb ve Skalici (listopad 2026)",
+   "quote": "01.11. Neděle Slavnost Všech svatých 8:30 …; 02.11. Pondělí Vzpomínka na všechny věrné zemřelé 17:00 …",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "5000749002625",
+   "church": "farní kostel sv. Jana a Pavla",
+   "town": "frydek-mistek",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "07:00",
+     "mše sv."
+    ],
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostmistek.cz/userFiles/pb-26-10-1-11-2026.jpg ; https://www.farnostmistek.cz/userFiles/ohlasky-25-10-2026.jpg",
+   "source_date": "pořad bohoslužeb 26.10.–1.11.2026 + ohlášky 25. 10. 2026",
+   "quote": "Ne 1. 11. SLAVNOST VŠECH SVATÝCH: 8.00 FK, 10.00 FK, 18.30 FK, 7.30 L, 9.00 S, 10.30 H; V den vzpomínky na všechny věrné zemřelé v pondělí 2. 11. budou mše svaté v Místku v 7 h a v 18 h ve farním kostele.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "70003987986679",
+   "church": "filiální kostel sv. Josefa, pěstouna (dělníka)",
+   "town": "prostejov",
+   "date": "2026-11-01",
+   "drop": [
+    "18:00"
+   ],
+   "source": "https://povyseni.dpv.cz/bohosluzby",
+   "source_date": "pořad bohoslužeb od 29. 10. 2026 na osm dní",
+   "quote": "neděle 1. 11. Všech svatých 7:30 Mše svatá Povýšení sv. Kříže; 9:00 Mše svatá sv. Cyrila a Metoděje; 10:30 Mše svatá Povýšení sv. Kříže; 19:00 kompletář | pondělí 2. 11. 8:00 Mše svatá Povýšení sv. Kříže (Krasice: pravidelně jen 2. čtvrtek v měsíci 18:00)",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "7000444084148",
+   "church": "farní kostel sv. Maří Magdaleny",
+   "town": "prerov",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "09:00",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "08:45"
+   ],
+   "source": "https://farnostprerov.cz/include/stahnout_soubor.php?soubor=11268",
+   "source_date": "Pořad bohoslužeb v týdnu od 25. X. do 1. XI. 2026",
+   "quote": "Neděle 1. XI. Všech svatých: Šířava 7:30; Přerov 9:00, 18:30; Beňov 7:30; Předmostí 9:00; Horní Moštěnice 11:00",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50001714523034",
+   "church": "farní kostel sv. Prokopa",
+   "town": "opava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv.",
+     "čtení otčenášků",
+     "česky"
+    ]
+   ],
+   "source": "https://farnost-opava-komarov.cz/",
+   "source_date": "Pořad dušičkových bohoslužeb (so 31.10.–po 2.11., 1. neděle adventní 29.11.) = 2026",
+   "quote": "01.11. NEDĚLE … Komárov 08.45 h MŠE SVATÁ … Suché Lazce 14.00 h Pobožnost za zemřelé na hřbitově … 02. 11. PONDĚLÍ … Raduň 16.30 h MŠE SVATÁ … Komárov 18.00 h MŠE SVATÁ a čtení „otčenášků“",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50002468667444",
+   "church": "farní kostel sv. Petra a Pavla",
+   "town": "opava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "16:30",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostjaktar.cz/2026/10/dusicky-2026/",
+   "source_date": "plakát „Dušičky“ 2026 (publikováno 26.10.2026) + pořad 25.10.–1.11.2026",
+   "quote": "Slavnost Všech svatých (neděle 1. 11.) 08:00 hod. Jaktař, 09:30 hod. Kateřinky; Památka věrných zemřelých (pondělí 2. 11.) 16:30 hod. Jaktař, 18:00 hod. Kateřinky",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50003378529245",
+   "church": "farní kostel sv. Kateřiny",
+   "town": "opava",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "09:30",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostjaktar.cz/2026/10/dusicky-2026/",
+   "source_date": "plakát „Dušičky“ 2026 (publikováno 26.10.2026) + pořad 25.10.–1.11.2026",
+   "quote": "Slavnost Všech svatých (neděle 1. 11.) 08:00 hod. Jaktař, 09:30 hod. Kateřinky; Památka věrných zemřelých (pondělí 2. 11.) 16:30 hod. Jaktař, 18:00 hod. Kateřinky",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "50003378529245",
+   "church": "farní kostel sv. Kateřiny",
+   "town": "opava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostjaktar.cz/2026/10/dusicky-2026/",
+   "source_date": "plakát „Dušičky“ 2026 (publikováno 26.10.2026) + pořad 25.10.–1.11.2026",
+   "quote": "Slavnost Všech svatých (neděle 1. 11.) 08:00 hod. Jaktař, 09:30 hod. Kateřinky; Památka věrných zemřelých (pondělí 2. 11.) 16:30 hod. Jaktař, 18:00 hod. Kateřinky",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "6000167417520",
+   "church": "filiální kostel sv. Jiří Malesice",
+   "town": "plzen",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "15:00",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "15:15"
+   ],
+   "source": "https://rkfpz.mozello.cz/bohosluzby/",
+   "source_date": "Pořad bohoslužeb, poslední aktualizace 25.10.2026",
+   "quote": "kostel sv. Jiří v Plzni - Malesicích … 15:00 (1.,3.,5. neděli v měsíci) (2026 - 1.11., 15.11., 29.11. …) · 1.11.2026 po mši v kostele sv. Jiří v Malesicích (cca 16:30) - hřbitov Malesice",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "6000706443357",
+   "church": "filiální kostel sv. Jiří Plzeň-Doubravka",
+   "town": "plzen",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://farnost.sdbplzen.cz/ohlasky/25-10-2026-30-nedele-v-mezidobi",
+   "source_date": "ohlášky 25. 10. 2026",
+   "quote": "2. 11. Pondělí Památka zesnulých – vzpomínka na všechny věrné zemřelé (mše sv. v 8:00 v Lobzích, v 17:00 u sv. Jiří) … Pravidelné bohoslužby jsou jako obvykle. Regular schedule: Kostel sv. Jiří na Doubravce, Neděle 8,45 - mše sv.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "60002727640371",
+   "church": "filiální kostel Nanebevzetí Panny Marie, (u františkánů) Plzeň",
+   "town": "plzen",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "10:30",
+     "mše sv.",
+     "ve vietnamském jazyce",
+     "česky"
+    ]
+   ],
+   "drop": [
+    "14:00"
+   ],
+   "source": "https://www.farnostbartolomej.cz/calendar/bohosluzby",
+   "source_date": "parish calendar, entries dated 1. a 2. listopadu 2026",
+   "quote": "01.11.26 08:00 mše svatá NPM · 10:30 mše svatá NPM (vietnamská) · 18:00 Ador. a nešpory – výjimečně v NPM · 20:00 mše svatá NPM · 02.11.26 12:00 mše svatá NPM · 17:00 mše svatá NPM (Přidané mše sv. – NPM za zemřelé…) · 18:00 Svíce pro naše zemřelé – bohosl. s biskupem Tomášem",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "60002727640371",
+   "church": "filiální kostel Nanebevzetí Panny Marie, (u františkánů) Plzeň",
+   "town": "plzen",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostbartolomej.cz/calendar/bohosluzby",
+   "source_date": "parish calendar, entries dated 1. a 2. listopadu 2026",
+   "quote": "01.11.26 08:00 mše svatá NPM · 10:30 mše svatá NPM (vietnamská) · 18:00 Ador. a nešpory – výjimečně v NPM · 20:00 mše svatá NPM · 02.11.26 12:00 mše svatá NPM · 17:00 mše svatá NPM (Přidané mše sv. – NPM za zemřelé…) · 18:00 Svíce pro naše zemřelé – bohosl. s biskupem Tomášem",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "60004047193916",
+   "church": "farní kostel Panny Marie Růžencové Plzeň-Slovany",
+   "town": "plzen",
+   "date": "2026-11-01",
+   "drop": [
+    "07:30"
+   ],
+   "source": "https://plzen.op.cz/bohosluzby",
+   "source_date": "parish rozpis, ne 1. 11. / po 2. 11. (2026; aktuality also cite 2. 11. 2026)",
+   "quote": "ne 1. 11. Všech svatých … 09:00 mše svatá … 10:30 mše svatá … 18:00 mše svatá · po 2. 11. Věrných zemřelých … 18:00 mše svatá",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "40001752272320",
+   "church": "farní kostel Nanebevzetí Panny Marie",
+   "town": "tabor",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "09:00",
+     "mše sv."
+    ],
+    [
+     "16:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.klokoty.cz/data/web/pozvanky/dusicky-2026.jpg",
+   "source_date": "parish poster dusicky-2026 (article dated 1. 11. 2026 on klokoty.cz)",
+   "quote": "Neděle 1. listopadu Mše svaté 8.30 a 10.00 ve farním domě Emauzy … Pondělí 2. listopadu Mše svaté 9.00 • 16.00 • 17.00 ve farním domě Emauzy",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "60003117109791",
+   "church": "farní kostel Nanebevstoupení Páně Karlovy Vary - Stará Role",
+   "town": "karlovy-vary",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnoststararole.cz/",
+   "source_date": "Aktuální ohlášky, v mezidobí 30. týden (26. říj 2026)",
+   "quote": "neděle 1. listopadu Slavnost VŠECH SVATÝCH Stará Role missa 9:00 hod. … pondělí 2. listopadu Stará Role missa 18:00 hod.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "2000335",
+   "church": "děkanský kostel sv. Jana Křtitele, Liberec",
+   "town": "liberec",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "07:00",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "17:00"
+   ],
+   "source": "https://rochlice.cz/2026/10/25/ohlasky-na-30-nedeli-v-mezidobi-25-10-2026/",
+   "source_date": "ohlášky 30. neděle v mezidobí 25. 10. 2026",
+   "quote": "Listopad 2026 1. Všech svatých … (Obvyklý pořad mší sv. Rochlice: Po, Čt, Pá od 17; So od 8 a Ne od 10 hod.; Hanychov: Út od 17, Ne od 8:30 hod.) – 2.11. „dušičky“: mše svatá bude výjimečně od 7 hodin ráno.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "2000337",
+   "church": "farní kostel sv. Antonína Paduánského, Liberec-Ruprechtice",
+   "town": "liberec",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostruprechtice.cz/2026/10/24/ohlasky-na-30-nedeli-v-mezidobi-25-10-2026/",
+   "source_date": "ohlášky 30. neděle v mezidobí 25. 10. 2026 (zveřejněno 24. 10. 2026)",
+   "quote": "Mše a pravidelná setkání budou podle obvyklého programu … v pondělí 2. 11. … od 17 hod. pak bude pobožnost na ruprechtickém hřbitově. V 18 hod. bude mimořádně také večerní mše sv.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "2000356",
+   "church": "filiální kostel Seslání Ducha svatého, Rýnovice",
+   "town": "jablonec-nad-nisou",
+   "date": "2026-11-01",
+   "drop": [
+    "14:00"
+   ],
+   "source": "https://www.farnostjablonec.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 25.10. do 1.11.2026 (44. týden)",
+   "quote": "Ve 14 hodin bude mše svatá dnes v Rýnovicích, příští neděli na Nové Vsi. … NE 1.11. 14:00 kostel Panny Marie Pomocné, Nová Ves nad Nisou",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000383",
+   "church": "farní kostel Nanebevzetí Panny Marie, Kladno",
+   "town": "kladno",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "19:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostkladno.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 26.10. do 1.11.2026 (44. týden)",
+   "quote": "NEDĚLE 1.11.2026 … 08:30 Kročehlavy Mše svatá; 08:30 Vrapice Mše svatá; 10:00 Nanebevzetí Panny Marie Mše svatá; 10:30 Hnidousy Mše svatá; … 19:00 Nanebevzetí Panny Marie Mše svatá Za farnost. V neděli 1.11. bude večerní mše sv. u P. Marie slavena od 19 h. (Mše sv. u sv. Floriána v 18 h slavena nebude.)",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000385",
+   "church": "kaple sv. Floriána, Kladno",
+   "town": "kladno",
+   "date": "2026-11-01",
+   "drop": [
+    "18:00"
+   ],
+   "source": "https://www.farnostkladno.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 26.10. do 1.11.2026 (44. týden)",
+   "quote": "NEDĚLE 1.11.2026 … 08:30 Kročehlavy Mše svatá; 08:30 Vrapice Mše svatá; 10:00 Nanebevzetí Panny Marie Mše svatá; 10:30 Hnidousy Mše svatá; … 19:00 Nanebevzetí Panny Marie Mše svatá Za farnost. V neděli 1.11. bude večerní mše sv. u P. Marie slavena od 19 h. (Mše sv. u sv. Floriána v 18 h slavena nebude.)",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "30001048923549",
+   "church": "filiální kostel sv. Jana Křtitele (na Zámečku)",
+   "town": "hradec-kralove",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:30",
+     "mše sv.",
+     "za zemřelé",
+     "česky"
+    ]
+   ],
+   "source": "http://www.antonin.cz/Media/ContentItems/8310_08310/261025-30-ne-v-mezidobi.pdf",
+   "source_date": "ohlášky 30. neděle v mezidobí 25.10.2026",
+   "quote": "Neděle 1. 11. Slavnost VŠECH SVATÝCH 8.30 Sv. Antonín Mše svatá; 10.30 Sv. Jan Křtitel Mše svatá ... V pondělí 2. 11. bude za ně v 18.30 v kostele sv. Jana Křtitele Na Zámečku sloužena mše svatá.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "30001418822059",
+   "church": "farní kostel sv. Pavla, apoštola",
+   "town": "hradec-kralove",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "08:00",
+     "mše sv.",
+     "s kapitulou",
+     "česky"
+    ],
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "drop": [
+    "07:30"
+   ],
+   "source": "https://pouchov.farnost.cz/ohlasky",
+   "source_date": "ohlášky z neděle 25. 10. 2026 + bohoslužby tohoto týdne (https://pouchov.farnost.cz/bohosluzby)",
+   "quote": "Neděle 1. 11. 2026 - Slavnost Všech svatých: 8:00 Pouchov, 9:30 Rožberk, 10:45 Lochenice. Mše svaté 2. 11.: 8:00 – Pouchov – mše svatá s kapitulou; 17:00 - Rožberk – mše svatá; 18:00 – Pouchov – mše svatá",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "30003877372098",
+   "church": "kaple sv. Klementa, papeže a mučedníka",
+   "town": "hradec-kralove",
+   "date": "2026-11-02",
+   "drop": [
+    "18:30"
+   ],
+   "source": "https://www.katedralahradec.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb 25.10.–1.11.2026 + ohlášky ze dne 25. října 2026",
+   "quote": "V pondělí při vzpomínce na všechny věrné zemřelé ... Tento den budou mše svaté v 7.00 v kostele Panny Marie a v 18.30 v katedrále.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "30004208774140",
+   "church": "katedrální a farní chrám Svatého Ducha - katedrála",
+   "town": "hradec-kralove",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:30",
+     "mše sv.",
+     "za zemřelé",
+     "česky"
+    ]
+   ],
+   "source": "https://www.katedralahradec.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb 25.10.–1.11.2026 + ohlášky ze dne 25. října 2026",
+   "quote": "NEDĚLE 1.11.2026: 09:00 katedrála; 10:30 katedrála; 17:30 katedrála Slavnostní nešpory. V pondělí při vzpomínce na všechny věrné zemřelé ... Tento den budou mše svaté v 7.00 v kostele Panny Marie a v 18.30 v katedrále.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "30002542656487",
+   "church": "rektorský kostel sv. Václava, mučedníka (u salesiánů)",
+   "town": "pardubice",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://salesianipardubice.cz/kostel/ohlasky-a-informace/",
+   "source_date": "Bohoslužby v týdnu 25. října – 1. listopadu 2026 + ohlášky (podzim 2026)",
+   "quote": "neděle 1. 11. 2026 Všech svatých 9:00 10:30 ... Mše sv. na Památku všech zemřelých v pondělí 2.11. bude u nás v 17:00.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "80001282713631",
+   "church": "kostel farní sv. Jakuba Staršího",
+   "town": "jihlava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.svjakub.cz/bohosluzby/2026-45/",
+   "source_date": "pořad bohoslužeb 1.–8. 11. 2026 (45. týden) + farní ohlášky 30. neděle v mezidobí (25. 10. 2026)",
+   "quote": "neděle 1. 11. 2026: 10:30 Kostel sv. Jakuba Většího Za farnost; 19:00 Kostel sv. Jakuba Většího. pondělí 2. 11. 2026: 08:00 Kaple Panny Marie Bolestné Za zemřelé; 18:00 Kostel sv. Jakuba Většího Za zemřelé. (Ohlášky: Mše sv. u sv. Jakuba bude ráno v 8 h a večer v 18 h.)",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "80001079981598",
+   "church": "kostel farní sv. Martina",
+   "town": "trebic",
+   "date": "2026-11-01",
+   "drop": [
+    "18:00"
+   ],
+   "source": "https://drive.google.com/file/d/1-ZE6qIEnU6tgORlzmw5c8dS-YBgx3oZm/view",
+   "source_date": "Informace pro třebíčské farnosti 18. října 2026 (XXXV/20), rozpis do 1. 11.",
+   "quote": "Slavnost VŠECH SVATÝCH Neděle 1. listopadu: 7:00 Bazilika, 7:30 Jejkov, 8:30 Martin, 9:00 Jejkov, 10:00 Bazilika, 18:00 Hřbitov",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "80002517750938",
+   "church": "kostel farní sv. Kříže",
+   "town": "znojmo",
+   "date": "2026-11-01",
+   "drop": [
+    "18:00"
+   ],
+   "source": "https://www.farnostznojmo.cz/stah.php?id=2&z",
+   "source_date": "ohlášky farností Znojmo – sv. Mikuláš a sv. Kříž od 25.10.2026 do 1.11.2026",
+   "quote": "1.11. Slavnost všech Svatých: 8.00 Sv. Kříž; 9.00 Sv. Mikuláš; 10.00 Sv. Kříž; 11.00 Sv. Alžběta; 18.00 Sv. Michal",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "10001",
+   "church": "katedrála sv. Víta, Václava a Vojtěcha, Praha-Hradčany",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/?datum=202611",
+   "source_date": "katedrála – bohoslužby, kalendář Listopad 2026",
+   "quote": "1. 11. Ne 08.30 Mše svatá na slavnost Všech svatých … 1. 11. Ne 10.00 Mše svatá na slavnost Všech svatých … 2. 11. Po 07.00 Mše svatá … v kapli sv. Vojtěcha … 2. 11. Po 18.00 Mše svatá na vzpomínku na všechny věrné zemřelé Celebrují členové Metropolitní kapituly",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "100019",
+   "church": "klášterní kostel sv. Josefa, Praha-Nové Město",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "07:00",
+     "mše sv."
+    ],
+    [
+     "17:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://kapucini.cz/ohlasky-praha-nove-mesto/",
+   "source_date": "ohlášky Praha-Nové Město, neděle 25. 10. 2026",
+   "quote": "V pondělí 2. listopadu budou u nás mimořádně „dušičkové“ mše svaté v 7:00 a v 17:00.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "100020",
+   "church": "farní kostel sv. Vojtěcha, Praha-Nové Město",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "tradiční latinská mše",
+     "latinsky"
+    ]
+   ],
+   "source": "https://farnostsvvojtech.websnadno.cz/zpravodaj/zpravodaj_rijen_2026-page-001_original.jpg",
+   "source_date": "Zpravodaj farnosti sv. Vojtěcha, říjen 2026",
+   "quote": "Neděle 1. 11. SLAVNOST VŠECH SVATÝCH Sv. Vojtěch (TLM) 8:00, Sv. Vojtěch 10:00, Sv. Voršila 17:00; PONDĚLÍ 2. 11. Sv. Vojtěch (TLM) 6:30, Sv. Voršila 17:00, Sv. Vojtěch 19:00",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "100025",
+   "church": "farní kostel Nejsv. Salvátora, Praha-Staré Město",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "20:00",
+     "mše sv.",
+     "Mozartovo Requiem",
+     "česky"
+    ]
+   ],
+   "source": "https://www.farnostsalvator.cz/clanek/3661/prijdte-vzpomenout-na-sve-zemrele",
+   "source_date": "farnostsalvator.cz events (1.11.) + článek dated 2.11.2026 20:00",
+   "quote": "1.11. 14:00 Mše sv. P. Jan Hála … 1.11. 20:00 Mše sv. Mons. Tomáš Halík; [2.11.2026 20:00] Přijďte vzpomenout na své zemřelé při mši svaté, kterou doprovodí Mozartovo Requiem.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "100026",
+   "church": "filiální kostel sv. Haštala, Praha-Staré Město",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:00",
+     "mše sv."
+    ]
+   ],
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "source_date": "Týn aktuality (undated page; 2026 by context: '22.10. Výročí 500 let od nástupu Habsburků', komentované prohlídky st 21.10./4.11./18.11.)",
+   "quote": "1.11. Slavnost Všech svatých s. Havel 8:30 s. Haštal 11:00 M. Boží 9:30, 21:00 2.11. Památka všech věrných zemřelých s. Havel 12:15 s. Haštal 17:00 M. Boží 18:00 Při bohoslužbě v Týnském chrámu zazní Mozartovo Requiem.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "100031",
+   "church": "farní kostel Matky Boží před Týnem, Praha-Staré Město",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv.",
+     "Mozartovo Requiem",
+     "česky"
+    ]
+   ],
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "source_date": "Týn aktuality (undated page; 2026 by context: '22.10. Výročí 500 let od nástupu Habsburků', komentované prohlídky st 21.10./4.11./18.11.)",
+   "quote": "1.11. Slavnost Všech svatých s. Havel 8:30 s. Haštal 11:00 M. Boží 9:30, 21:00 2.11. Památka všech věrných zemřelých s. Havel 12:15 s. Haštal 17:00 M. Boží 18:00 Při bohoslužbě v Týnském chrámu zazní Mozartovo Requiem.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "100032",
+   "church": "filiální kostel sv. Havla, Praha-Staré Město",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "12:15",
+     "mše sv."
+    ]
+   ],
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "source_date": "Týn aktuality (undated page; 2026 by context: '22.10. Výročí 500 let od nástupu Habsburků', komentované prohlídky st 21.10./4.11./18.11.)",
+   "quote": "1.11. Slavnost Všech svatých s. Havel 8:30 s. Haštal 11:00 M. Boží 9:30, 21:00 2.11. Památka všech věrných zemřelých s. Havel 12:15 s. Haštal 17:00 M. Boží 18:00 Při bohoslužbě v Týnském chrámu zazní Mozartovo Requiem.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "100043",
+   "church": "filiální kostel sv. Ignáce, Praha-Nové Město",
+   "town": "praha",
+   "date": "2026-11-01",
+   "add": [
+    [
+     "07:30",
+     "mše sv."
+    ],
+    [
+     "09:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.kostelignac.cz/wp-content/uploads/2026/10/1025-1101-1.jpg",
+   "source_date": "Služby v kostele sv. Ignáce 25.10. – 1.11. 2026",
+   "quote": "Neděle 1.11. Mše svatá: 7:30 Gl, 9:00 Hy, 11:00 Ha, 17:30 Jo (+ 10 – křest)",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "100053",
+   "church": "farní kostel sv. Václava, Praha-Smíchov",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:30",
+     "mše sv.",
+     "Michnovo Requiem, poté nešpory za zemřelé",
+     "česky"
+    ]
+   ],
+   "source": "https://www.farnostsmichov.cz/oznameni/poboznosti-za-zemrele-1-2-listopadu-2026-10478",
+   "source_date": "oznámení 'Pobožnosti za zemřelé 1.–2. listopadu 2026'",
+   "quote": "V pondělí 2. listopadu budou v kostele sv. Václava na Smíchově mše svaté v 7:30 a v 17:30. Při večerní mši zazní Requiem Adama Václava Michny",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "100095",
+   "church": "kapitulní bazilika sv. Petra a Pavla, Praha-Vyšehrad",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:00",
+     "mše sv.",
+     "arcibiskup Přibyl, poté modlitba na Slavíně",
+     "česky"
+    ]
+   ],
+   "source": "https://farnost.kkvys.cz/",
+   "source_date": "Aktuální program 25. října – 1. listopadu 2026 (+ pozvánka bazilika.kkvys.cz z 19.10.2026)",
+   "quote": "1. 11. NEDĚLE: SLAVNOST VŠECH SVATÝCH 9:00 mše sv. v bazilice … 2.11. Pondělí … 8:00 bohoslužba ve hřbitovní kapli 17:00 mše sv. v bazilice + modlitba na Slavíně (Mons. S. Přibyl)",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "100096",
+   "church": "kaple sv. Martina, Praha-Vyšehrad",
+   "town": "praha",
+   "date": "2026-11-02",
+   "drop": [
+    "18:00"
+   ],
+   "source": "https://farnost.kkvys.cz/",
+   "source_date": "Aktuální program 25. října – 1. listopadu 2026",
+   "quote": "2.11. Pondělí: VZPOMÍNKA NA VŠECHNY VĚRNÉ ZEMŘELÉ 8:00 bohoslužba ve hřbitovní kapli 17:00 mše sv. v bazilice + modlitba na Slavíně",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000100",
+   "church": "farní kostel sv. Františka z Assisi, Praha-Chodov",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.kcmt.cz/clanky-vse/nedelni-ohlasky-25-10-2026/",
+   "source_date": "Nedělní ohlášky 25. 10. 2026",
+   "quote": "Na svátek zemřelých, v pondělí 2. 11. budou mše v 6.45 ráno v KCMT a v 18 h. u sv. Františka. Zveme také na dušičkovou pobožnost na chodovském hřbitově v 17 h.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000108",
+   "church": "filiální kostel sv. Pankráce, Praha-Nusle",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv.",
+     "a pobožnost za zemřelé",
+     "česky"
+    ]
+   ],
+   "source": "http://www.farnostnusle.websnadno.cz",
+   "source_date": "homepage UPOZORNĚNÍ (28.–29. 10. and 2. 11. 2026)",
+   "quote": "2. 11. 2026 Památka všech věrných zesnulých mše sv. a pobožnost za zemřelé v kostele sv. Pankráce v 18 h.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000110",
+   "church": "farní kostel sv. Anežky České a sv. patronů českých, Praha-Spořilov",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "http://farnost-sporilov.cz/ohlasky/Oznamy_2026_10_25.doc",
+   "source_date": "ohlášky Neděle 25. října 2026",
+   "quote": "Mše svaté: v neděli v 8.30 a 10.30 … Příští pondělí 2. listopadu je Vzpomínka na věrné zesnulé a tady bude mše sv. v 18.00.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000114",
+   "church": "farní kostel Neposkvrněného Početí Panny Marie, Praha-Strašnice",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "07:00",
+     "mše sv."
+    ],
+    [
+     "12:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnoststrasnice.cz/wp-content/uploads/2026/10/ohlasky-261025.pdf",
+   "source_date": "Ohlášky 25. října 2026",
+   "quote": "V pondělí 2. listopadu na Dušičky budou v našem kostele tři mše svaté, obětované za zemřelé. V 7:00, ve 12:00 a v 18:00",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000121",
+   "church": "farní kostel sv. Václava, Praha-Vršovice",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv.",
+     "se čtením jmen zemřelých",
+     "česky"
+    ]
+   ],
+   "source": "https://www.farnostvrsovice.cz/",
+   "source_date": "Oznámení neděle 25. října – 1. listopadu 2026 (na úvodní stránce)",
+   "quote": "V pondělí 2. listopadu v den Vzpomínky na všechny věrné zemřelé bude sloužena v kostele sv. Václava v 18:00 mše sv., při níž se budou číst jména zemřelých.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000126",
+   "church": "filiální kostel sv. Rocha, Šebestiána a Rosálie, Praha-Žižkov",
+   "town": "praha",
+   "date": "2026-11-01",
+   "drop": [
+    "11:00"
+   ],
+   "source": "https://www.farnost-zizkov.cz/masses_calendar.php",
+   "source_date": "kalendář bohoslužeb 29.10.–28.12.2026 + akce „Vzpomínka na všechny věrné zemřelé“ 02.11.2026 (event.php?id=13)",
+   "quote": "ne 01.11. 17:00 Kostel sv. Rocha Mše sv. ... po 02.11. 06:00 Kostel sv. Rocha Mše sv. Tichá ... po 02.11. 16:15 Kostel sv. Rocha Mše sv. Za všechny zemřelé našeho města",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000126",
+   "church": "filiální kostel sv. Rocha, Šebestiána a Rosálie, Praha-Žižkov",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "06:00",
+     "mše sv.",
+     "tichá",
+     "česky"
+    ],
+    [
+     "16:15",
+     "mše sv.",
+     "za všechny zemřelé našeho města",
+     "česky"
+    ]
+   ],
+   "source": "https://www.farnost-zizkov.cz/masses_calendar.php",
+   "source_date": "kalendář bohoslužeb 29.10.–28.12.2026 + akce „Vzpomínka na všechny věrné zemřelé“ 02.11.2026 (event.php?id=13)",
+   "quote": "ne 01.11. 17:00 Kostel sv. Rocha Mše sv. ... po 02.11. 06:00 Kostel sv. Rocha Mše sv. Tichá ... po 02.11. 16:15 Kostel sv. Rocha Mše sv. Za všechny zemřelé našeho města",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000131",
+   "church": "farní kostel sv. Cyrila a Metoděje, Praha-Karlín",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnost-karlin.cz/rss_kalendar.php",
+   "source_date": "farní kalendář (RSS), stav 29. 10. 2026",
+   "quote": "2026-11-01 09:30 - Mše svatá kostel sv. Cyrila a Metoděje ... 2026-11-01 18:30 - Mše svatá ... 2026-11-02 18:00 - Mše svatá kostel sv. Cyrila a Metoděje",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000140",
+   "church": "farní kostel sv. Ludmily, Praha-Chvaly",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostchvalyjirny.cz/oznameni/dusickove-zpovidani-a-poboznosti-na-hrbitovech-10580",
+   "source_date": "oznámení „Dušičkové zpovídání a pobožnosti na hřbitovech“ (2.11.2026) + farní kalendář RSS",
+   "quote": "Mše svatá 2. listopadu od 18:00 ve Chvalech. | RSS: 2026-11-01 08:30 - Mše svatá Chvaly; 2026-11-01 18:00 - Mše svatá Chvaly",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000141",
+   "church": "farní kostel sv. Bartoloměje, Praha-Kyje",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "bohoslužba",
+     "za všechny zemřelé",
+     "česky"
+    ]
+   ],
+   "source": "https://www.farnostkyje.cz/v2/",
+   "source_date": "Ohlášky farnosti Kyje, 30. neděle v mezidobí (25. 10. 2026)",
+   "quote": "V neděli 1. listopadu od 17.00 hod. ... pobožnost a modlitba za všechny zemřelé na kyjském hřbitově a následně od 18.00 hodin v Oáze na Černém Mostě Mše svatá. ... V pondělí 2. listopadu ... Od 18.00 hodin se bude v kostele sv. Bartoloměje konat bohoslužba za všechny zemřelé.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000142",
+   "church": "farní kostel sv. Václava, Praha-Prosek",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://farnostprosek.cz/porad_bohosluzeb",
+   "source_date": "Pořad bohoslužeb od 25.10. do 1.11.2026 – 44. týden",
+   "quote": "neděle 1.11. ... V kostele sv. Václava na Proseku bude mše sv. od 9:00. ... Na proseckém hřbitově bude 2.11.2026 od 17:00 bohoslužba spojená s kropením hrobů ... Následovat bude mše svatá v kostele sv. Václava od 18:00.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "1000895",
+   "church": "kaple sv. Terezie z Kalkaty, Praha-Chodov",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "06:45",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.kcmt.cz/clanky-vse/nedelni-ohlasky-25-10-2026/",
+   "source_date": "Nedělní ohlášky 25. 10. 2026 + akce „Svátek zemřelých 26“",
+   "quote": "Na svátek zemřelých, v pondělí 2. 11. budou mše v 6.45 ráno v KCMT a v 18 h. u sv. Františka.",
+   "checked": "2026-10-29"
+  },
+  {
+   "id": "8000949776313",
+   "church": "katedrála sv. Petra a sv. Pavla",
+   "town": "brno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:30",
+     "bohoslužba",
+     "slaví biskup Vojtěch Cikrle",
+     "česky"
+    ]
+   ],
+   "source": "https://www.biskupstvi.cz/cs/vzpominka-na-vsechny-verne-zemrele-v-katedrale?listId=2260",
+   "source_date": "akce 2. 11. 2026 (biskupství brněnské)",
+   "quote": "V den Vzpomínky na všechny věrné zemřelé v pondělí 2. listopadu bude v 17.30 hodin biskup Vojtěch Cikrle slavit bohoslužbu v katedrále sv. Petra a Pavla.",
+   "checked": "2026-10-29"
+  }
+ ]
 }
