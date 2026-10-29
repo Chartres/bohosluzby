@@ -25,6 +25,7 @@ import { IntroGuide } from './IntroGuide'
 import { SearchPicker } from './SearchPicker'
 import { MyChurches } from './MyChurches'
 import { holyDayLine } from './domain/holyday'
+import { feastWeek } from './domain/feastWeek'
 import { FeedbackCard } from './FeedbackCard'
 import { AfterMassCard, type CardMass } from './AfterMassCard'
 import { massKey, riteOf, slotKey, WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
@@ -606,6 +607,9 @@ export default function App() {
   // the no-location path: the six towns with the most churches, one tap each
   const popularCities = useMemo(() => (index ? aggregateCities(index).slice(0, 6) : []), [index])
   const holy = useMemo(() => holyDayLine(now), [now])
+  // 1 + 2 Nov (Pavol 2026-10-29, D1): one line for the week before — it
+  // replaces the solemnity line, which stays quiet on a Sunday
+  const feast = useMemo(() => feastWeek(now), [now])
 
   // list_ready — the aha that needs no click: a list of times stood on screen.
   // Once per visit; how long it took and how the origin was found.
@@ -933,7 +937,34 @@ export default function App() {
         {!dataError && !picking && !loading && origin && index && !mapMode && (
           <MyChurches index={index} origin={origin} onOpen={openChurch} />
         )}
-        {!dataError && !picking && !loading && origin && holy && !(holy.when === 'tomorrow' && day === 1) && (
+        {!dataError && !picking && !loading && origin && feast && (
+          <p className={`mt-4 text-sm text-ink-faded ${gutter}`} data-testid="feast-line">
+            {feast.map((f, i) => {
+              const at = new Date(`${f.iso}T12:00:00Z`)
+              const label = dayLabel(now, at) // "zítra", "neděle 1. 11."
+              // a picker choice only when ?den= round-trips to that very day
+              const pick = f.offset > 0 && dayFromParam(now, dayToParam(now, f.offset)) === f.offset
+              return (
+                <span key={f.iso}>
+                  {i > 0 && ' · '}
+                  {pick ? (
+                    <button
+                      type="button"
+                      className="-my-3 inline-block py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
+                      onClick={() => setDay(f.offset)}
+                    >
+                      {label}
+                    </button>
+                  ) : (
+                    label
+                  )}{' '}
+                  <span className="text-ink">{f.name}</span>
+                </span>
+              )
+            })}
+          </p>
+        )}
+        {!dataError && !picking && !loading && origin && !feast && holy && !(holy.when === 'tomorrow' && day === 1) && (
           <p className={`mt-4 text-sm text-ink-faded ${gutter}`}>
             {holy.when === 'tomorrow' ? t('holy_tomorrow') : t('holy_today')} {holy.feast}
             {holy.when === 'tomorrow' && (

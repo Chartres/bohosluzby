@@ -5,6 +5,19 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **Tap a service row** (Pavol 2026-10-29, C1): the per-row "připomenout · do kalendáře ·
+  pozvat" are gone; a faded › marks the row as tappable and opens a sheet — pozvat, do
+  kalendáře, připomenout (native) — each a small line icon plus its word.
+- **Photo hero in the season's colour** (B2): greyscale photo with the liturgical colour
+  multiplied over it, so white type always reads. A photo that fails to load falls back to
+  the plain paper header.
+- **Photo credit, one line** (A1): author · licence · Wikimedia Commons. 14 photos had only
+  the author's free-text note as "credit" and no name (13 by Aktron, 1 by Miha Peče) —
+  fixed in photos.json and in the matcher (`artistName`).
+- **1 and 2 November in the app** (D1, D2), the week before through 2 Nov: one line on the
+  home screen ("neděle 1. 11. Slavnost Všech svatých · pondělí 2. 11. Vzpomínka na všechny
+  věrné zemřelé", the days tappable), and a block on each church detail with that church's
+  services on both days, tappable like the ordo. `src/domain/feastWeek.ts`.
 - **Dušičky 2026 data check**: 395 churches in the 30 largest towns (Praha, Brno, Ostrava,
   Plzeň, Olomouc in full) checked against the parishes' own 2026 announcements — 121
   confirmed, 65 wrong, 209 unverifiable (`docs/review/2026-10-29-dusicky-check.json`).

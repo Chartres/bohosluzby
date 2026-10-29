@@ -256,6 +256,17 @@ describe('Marie finds the nearest mass', () => {
     expect(qp('den')).not.toBeNull()
   })
 
+  it('the week before 1 Nov: one line for both days, replacing the solemnity line', async () => {
+    vi.setSystemTime(new Date('2026-10-29T10:00:00Z')) // Thu
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    const line = screen.getByTestId('feast-line')
+    expect(line).toHaveTextContent('neděle 1. 11. Slavnost Všech svatých · pondělí 2. 11. Vzpomínka na všechny věrné zemřelé')
+    fireEvent.click(within(line).getByRole('button', { name: 'neděle 1. 11.' }))
+    expect(qp('den')).not.toBeNull()
+  })
+
   it('footer shows how fresh the registry data is', async () => {
     stubGeolocation('granted')
     render(<App />)
@@ -637,8 +648,10 @@ describe('Marie finds the nearest mass', () => {
     try {
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
       render(<App />)
-      const icsButtons = await screen.findAllByRole('button', { name: 'do kalendáře' })
-      await user.click(icsButtons[0])
+      // C1: tap the first service row, then "do kalendáře" in its sheet
+      const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+      await user.click(within(schedule).getAllByRole('button')[0])
+      await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'do kalendáře' }))
       expect(click).toHaveBeenCalled()
       const blob = createObjectURL.mock.calls[0]![0]
       const ics = await blob.text()

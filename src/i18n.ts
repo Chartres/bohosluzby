@@ -31,6 +31,8 @@ export const cs = {
   holy_tomorrow: 'Zítra je slavnost',
   holy_today: 'Dnes je slavnost',
   holy_cta: 'bohoslužby na zítra',
+  feast_title: '1. a 2. listopadu',
+  feast_none: 'Rejstřík na tento den bohoslužbu neuvádí — ověřte u farnosti.',
   no_geo_title: 'Bez přístupu k poloze',
   no_geo_body: 'Poloha slouží jen k nalezení nejbližších kostelů — nikam se neodesílá.',
   geo_fail_unavailable:
@@ -260,6 +262,8 @@ export const en: Record<Key, string> = {
   holy_tomorrow: 'Tomorrow is the solemnity of',
   holy_today: 'Today is the solemnity of',
   holy_cta: 'services tomorrow',
+  feast_title: '1 and 2 November',
+  feast_none: 'The registry lists no service on this day — check with the parish.',
   no_geo_title: 'No location access',
   no_geo_body: "Location is only used to find the nearest churches — it's never sent anywhere.",
   geo_fail_unavailable:

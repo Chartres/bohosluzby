@@ -120,6 +120,18 @@ export function isReusableLicense(license) {
 }
 
 /** Commons extmetadata Artist is an HTML blob — reduce to plain text. */
+/** The author's name from Commons' Artist HTML. Some author templates expand
+ * to a note with the name only in a link ("I would appreciate being notified…"
+ * linking User:Aktron) — stripped, that left no name, and CC needs one. */
+export function artistName(html) {
+  const text = stripHtml(html)
+  if (text.length <= 40) return text
+  const taken = /\btaken by\s+(.+?)\s*[.,;]/i.exec(text)
+  if (taken) return taken[1]
+  const user = /href="[^"]*User:([^"&#/?]+)/.exec(String(html))
+  return user ? decodeURIComponent(user[1]).replace(/_/g, ' ') : text
+}
+
 export function stripHtml(html) {
   return String(html ?? '')
     .replace(/<[^>]*>/g, ' ')
@@ -171,7 +183,7 @@ async function imageinfo(title) {
   return {
     url: info.thumburl || info.url,
     license: meta.LicenseShortName?.value ?? '',
-    credit: stripHtml(meta.Artist?.value ?? ''),
+    credit: artistName(meta.Artist?.value ?? ''),
   }
 }
 
