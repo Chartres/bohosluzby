@@ -168,7 +168,7 @@ describe('church photo', () => {
     expect(figure).not.toBeNull()
     expect(within(figure!).getByRole('heading', { name: 'kostel 1' })).toBeInTheDocument()
     // the meta links sit over the hero too
-    expect(within(figure!).getByRole('button', { name: 'navigace' })).toBeInTheDocument()
+    expect(within(figure!).getByRole('button', { name: 'trasa' })).toBeInTheDocument()
     expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
   })
 
@@ -318,10 +318,9 @@ describe('pozvat', () => {
     try {
       render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
       const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
-      // C1: the row opens its sheet; pozvat is the sheet's first action
-      await act(async () => within(schedule).getAllByRole('button')[0].click())
-      const sheet = screen.getByRole('dialog')
-      await act(async () => within(sheet).getByRole('button', { name: 'pozvat' }).click())
+      // M1: the row unfolds its verbs in place
+      await act(async () => within(schedule).getAllByRole('button', { expanded: false })[0].click())
+      await act(async () => within(schedule).getByRole('button', { name: 'pozvat' }).click())
       expect(share).toHaveBeenCalledTimes(1)
       const arg = (share.mock.calls[0] as unknown as [{ text: string; url: string }])[0]
       expect(arg.text).toMatch(/^Půjdeš se mnou na mši svatou\? (Dnes|Zítra|V neděli \d+\. \d+\.) v 09:00, kostel 2 \(Praha 1\)\.$/)
@@ -343,10 +342,9 @@ describe('pozvat — when sharing is refused', () => {
     try {
       render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
       const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
-      // C1: the row opens its sheet; pozvat is the sheet's first action
-      await act(async () => within(schedule).getAllByRole('button')[0].click())
-      const sheet = screen.getByRole('dialog')
-      await act(async () => within(sheet).getByRole('button', { name: 'pozvat' }).click())
+      // M1: the row unfolds its verbs in place
+      await act(async () => within(schedule).getAllByRole('button', { expanded: false })[0].click())
+      await act(async () => within(schedule).getByRole('button', { name: 'pozvat' }).click())
       expect(writeText).toHaveBeenCalledTimes(1)
       expect((writeText.mock.calls[0] as unknown as [string])[0]).toContain('https://bohosluzby.dravec.org/kostel/2/?utm_source=pozvani')
       expect(screen.getByText('pozvánka zkopírována ✓')).toBeInTheDocument()
@@ -367,20 +365,30 @@ describe('titulární svátek', () => {
   })
 })
 
-// C1: a service row opens its sheet (pozvat · do kalendáře · připomenout)
-describe('service row sheet', () => {
-  it('opens from the keyboard too, and Escape closes it', async () => {
+// M1: tap a service row — its verbs unfold under it; tap again, they fold away
+describe('service row unfolds', () => {
+  it('one row at a time, from the keyboard too', async () => {
     render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
     const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
-    const row = within(schedule).getAllByRole('button')[0]
-    expect(row).toHaveAttribute('aria-haspopup', 'dialog')
-    expect(within(schedule).queryByRole('button', { name: 'pozvat' })).toBeNull() // no verbs on the row
+    expect(within(schedule).queryByRole('button', { name: 'pozvat' })).toBeNull() // folded: no verbs on the row
+    const row = within(schedule).getAllByRole('button', { expanded: false })[0]
     fireEvent.keyDown(row, { key: 'Enter' })
-    const sheet = screen.getByRole('dialog')
-    expect(within(sheet).getByText('09:00')).toBeInTheDocument()
-    expect(within(sheet).getByRole('button', { name: 'do kalendáře' })).toBeInTheDocument()
-    fireEvent.keyDown(window, { key: 'Escape' })
-    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(row).toHaveAttribute('aria-expanded', 'true')
+    for (const name of ['připomenout', 'do kalendáře', 'pozvat'])
+      expect(within(schedule).getByRole('button', { name })).toBeInTheDocument()
+    fireEvent.click(row)
+    expect(within(schedule).queryByRole('button', { name: 'pozvat' })).toBeNull()
+  })
+})
+
+// M3: the header carries the verbs of the mass you came for (or the next one)
+describe('header mass verbs', () => {
+  it('under the day line', async () => {
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    const line = await screen.findByTestId('day-line')
+    const verbs = line.nextElementSibling as HTMLElement
+    expect(within(verbs).getByRole('button', { name: 'pozvat' })).toBeInTheDocument()
+    expect(within(verbs).getByRole('button', { name: 'připomenout' })).toBeInTheDocument()
   })
 })
 

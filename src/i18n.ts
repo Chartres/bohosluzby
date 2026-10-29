@@ -32,6 +32,8 @@ export const cs = {
   holy_today: 'Dnes je slavnost',
   holy_cta: 'bohoslužby na zítra',
   feast_title: '1. a 2. listopadu',
+  feast_pill_aria: 'Všech svatých a Vzpomínka na všechny věrné zemřelé',
+  mass_actions_aria: 'připomenout, do kalendáře, pozvat',
   feast_none: 'Rejstřík na tento den bohoslužbu neuvádí — ověřte u farnosti.',
   no_geo_title: 'Bez přístupu k poloze',
   no_geo_body: 'Poloha slouží jen k nalezení nejbližších kostelů — nikam se neodesílá.',
@@ -172,7 +174,7 @@ export const cs = {
   remind_none: 'žádná nejbližší',
   share: 'sdílet',
   link_copied: 'odkaz zkopírován ✓',
-  detail_navigate: 'navigace',
+  detail_navigate: 'trasa',
   now_paused: 'nyní se nekoná',
   detail_title_suffix: 'pořad bohoslužeb',
   photo_credit_prefix: 'foto:',
@@ -263,6 +265,8 @@ export const en: Record<Key, string> = {
   holy_today: 'Today is the solemnity of',
   holy_cta: 'services tomorrow',
   feast_title: '1 and 2 November',
+  feast_pill_aria: 'All Saints and All Souls',
+  mass_actions_aria: 'remind, add to calendar, invite',
   feast_none: 'The registry lists no service on this day — check with the parish.',
   no_geo_title: 'No location access',
   no_geo_body: "Location is only used to find the nearest churches — it's never sent anywhere.",
@@ -393,7 +397,7 @@ export const en: Record<Key, string> = {
   remind_none: 'no upcoming service',
   share: 'share',
   link_copied: 'link copied ✓',
-  detail_navigate: 'navigate',
+  detail_navigate: 'route',
   now_paused: 'not currently held',
   detail_title_suffix: 'mass times',
   photo_credit_prefix: 'photo:',
@@ -504,6 +508,13 @@ export function nothingNearbyBody(km: number, place: string | null): string {
   }
   const where = place ?? 'your location'
   return `No services within ${km} km of ${where} in the registry. Try another town.`
+}
+
+/** Web: the reminder is a one-off calendar event carrying an alert. */
+export function reminderCalendarMsg(min: number): string {
+  return lang() === 'cs'
+    ? `✓ událost s upozorněním ${min} min předem — otevřete ji v kalendáři`
+    : `✓ event with an alert ${min} min before — open it in your calendar`
 }
 
 /** "✓ připomeneme 30 min předem" / "✓ we'll remind you 30 min before". */

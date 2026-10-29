@@ -19,7 +19,6 @@ import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { setStatusBarOnDark } from './lib/native-init'
 import { loadData, loadShard } from './lib/dataStore'
-import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { aggregateFor, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { expectAttendance } from './lib/feedbackLedger'
 import { WITNESS_ENABLED } from './lib/flags'
@@ -27,12 +26,12 @@ import { oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
 import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
 import { churchUrl } from './domain/site'
-import { inviteFor } from './domain/invite'
 import { patronDateLabel, patronOf } from './domain/patron'
 import { creditLine } from './domain/photoCredit'
+import { MassVerbs } from './MassVerbs'
 import { feastWeek, servicesOnDate } from './domain/feastWeek'
 import { favoritesSnapshot, subscribeFavorites, toggleFavorite } from './lib/favorites'
-import { churchWitnessIntro, lang, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
+import { churchWitnessIntro, t, langLabel, staleWarning, type Key } from './i18n'
 
 // A church viewed within this window after a Mass started seeds the after-Mass
 // ledger — the "recent viewers" cohort (docs/PILGRIM-WITNESS-PLAN.md).
@@ -120,166 +119,52 @@ function contactHref(type: string, value: string): string | null {
   return null
 }
 
-// Line icons for the service sheet: 1.6px strokes in currentColor, drawn
-// small and quiet next to their word — the word stays the label.
-const ICON: Record<'remind' | 'calendar' | 'invite', string> = {
-  remind: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0',
-  calendar: 'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM16 2v4M8 2v4M3 10h18',
-  invite: 'M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM22 7l-10 6L2 7',
-}
-function Icon({ name }: { name: keyof typeof ICON }) {
+/** A service row whose time is its handle: tap it and the mass's verbs
+ * (připomenout · do kalendáře · pozvat) unfold in place under it; tap again
+ * and they fold away. A faded ▾ at the end — the app's own "opens something"
+ * mark (the filter pills carry it) — says so; it turns when open. */
+function UnfoldRow({
+  church,
+  service,
+  open,
+  onToggle,
+  children,
+  paused,
+  className = '',
+}: {
+  church: Church
+  service: Service | ExtraService
+  open: boolean
+  onToggle: () => void
+  children: ReactNode
+  paused?: boolean
+  className?: string
+}) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-[1.15rem] w-[1.15rem] shrink-0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d={ICON[name]} />
-    </svg>
-  )
-}
-
-export type SheetTarget = { service: Service | ExtraService; when: string }
-
-/** One service's actions — pozvat first (mechanic C, docs/SIGNATURE.md), then
- * calendar and, on native, a reminder. Opened by tapping the service row;
- * styled like the navigation sheet. */
-function ServiceSheet({ church, target, onClose }: { church: Church; target: SheetTarget; onClose: () => void }) {
-  const { service, when } = target
-  const [msg, setMsg] = useState<string | null>(null)
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
-  const onCalendar = () => {
-    addToCalendar(church, service)
-      .then((ok) => (ok ? track('key_action', { action: 'ics', church: church.id }) : setMsg(t('remind_none'))))
-      .catch((err) => logError(err, { where: 'calendar', id: church.id }))
-  }
-
-  const onRemind = async () => {
-    const r = await scheduleMassReminder(church, service)
-    track('key_action', { action: 'reminder', church: church.id, result: r })
-    setMsg(
-      r === 'scheduled'
-        ? reminderScheduledMsg(REMINDER_LEAD_MIN)
-        : r === 'denied'
-          ? t('remind_denied')
-          : r === 'failed'
-            ? t('remind_failed')
-            : t('remind_none'),
-    )
-  }
-
-  // Mechanic C (docs/SIGNATURE.md): one person invites another, in their own
-  // messenger. Prefilled with the next date this service really runs.
-  const onInvite = async () => {
-    const inv = inviteFor(church, service, new Date(), lang())
-    if (!inv) return setMsg(t('remind_none'))
-    const sent = () => track('key_action', { action: 'invite', church: church.id })
-    if (isNative) {
-      try {
-        const { Share } = await import('@capacitor/share')
-        await Share.share({ text: inv.text, url: inv.url })
-        sent()
-      } catch {
-        // the person closed the share sheet
-      }
-      return
-    }
-    if (navigator.share) {
-      try {
-        await navigator.share({ text: inv.text, url: inv.url })
-        return sent()
-      } catch (err) {
-        if ((err as Error)?.name === 'AbortError') return // closed the sheet
-        // refused (NotAllowedError, unsupported data) → copy instead
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(`${inv.text}\n${inv.url}`)
-      setMsg(t('invite_copied'))
-      sent()
-    } catch {
-      setMsg(t('remind_failed'))
-    }
-  }
-
-  const action = 'flex min-h-12 w-full items-center gap-3 border-t border-hairline text-left text-base hover:text-ink'
-  return (
-    <>
-      <button type="button" aria-label={t('close')} className="fixed inset-0 z-[1190] bg-ink/20" onClick={onClose} />
+    <div className="border-b border-hairline">
       <div
-        role="dialog"
-        aria-modal
-        aria-label={`${when} ${service.time}: ${church.name}`}
-        className="fixed inset-x-0 bottom-0 z-[1200] border-t border-hairline bg-paper px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+        data-paused={paused || undefined}
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
+        onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onToggle()
+          }
+        }}
+        className={`tap-row flex cursor-pointer items-baseline gap-4 py-2 ${className}`}
       >
-        <div className="mx-auto max-w-2xl">
-          <p className="rubric">{when}</p>
-          <p className="mt-1 flex items-baseline gap-3">
-            <span className="font-display text-xl font-semibold tabular-nums">{service.time}</span>
-            <span className="text-base">{service.type || t('service_fallback')}</span>
-          </p>
-          <p className="truncate text-sm text-ink-faded">{church.name}</p>
-          {/* the result is VISIBLE (one persistent aria-live region) — a
-              scheduled reminder the user can't see happened reads as broken */}
-          <p className={msg ? 'mt-2 text-sm font-semibold text-rubric' : 'sr-only'} role="status" aria-live="polite">
-            {msg ?? ''}
-          </p>
-          <ul className="mt-2">
-            <li>
-              <button type="button" className={action} onClick={onInvite}>
-                <Icon name="invite" />
-                {t('invite')}
-              </button>
-            </li>
-            <li>
-              <button type="button" className={action} onClick={onCalendar}>
-                <Icon name="calendar" />
-                {t('add_calendar')}
-              </button>
-            </li>
-            {isNative && (
-              <li>
-                <button type="button" className={action} onClick={onRemind}>
-                  <Icon name="remind" />
-                  {t('remind')}
-                </button>
-              </li>
-            )}
-          </ul>
-          <button type="button" className="rubric mt-2 w-full border-t border-hairline pt-3 pb-1 text-center" onClick={onClose}>
-            {t('close')}
-          </button>
-        </div>
+        {children}
+        <span
+          aria-hidden="true"
+          className={`self-center pl-1 text-[0.6rem] text-ink-faded/60 transition-transform ${open ? 'rotate-180' : ''}`}
+        >
+          ▾
+        </span>
       </div>
-    </>
-  )
-}
-
-/** A service row that opens its sheet. The affordance is quiet: a faded
- * chevron at the end and a season-tinted press, nothing else on the row. */
-function TapRow({ onOpen, children, className = '', paused }: { onOpen: () => void; children: ReactNode; className?: string; paused?: boolean }) {
-  return (
-    <div
-      data-paused={paused || undefined}
-      role="button"
-      tabIndex={0}
-      aria-haspopup="dialog"
-      onClick={onOpen}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          onOpen()
-        }
-      }}
-      className={`tap-row flex cursor-pointer items-baseline gap-4 border-b border-hairline py-2 ${className}`}
-    >
-      {children}
-      <span aria-hidden="true" className="self-center pl-1 text-lg leading-none text-ink-faded/50">
-        ›
-      </span>
+      {open && <MassVerbs church={church} service={service} className="pb-2" />}
     </div>
   )
 }
@@ -383,6 +268,7 @@ function DetailHeading({
   focus: Date | null
 }) {
   const text = hero ? 'text-paper' : 'text-ink-faded'
+  const head = (focus && line.find((u) => u.start.getTime() === focus.getTime())) || line[0]
   // -my-3 py-3: a 44px hit area without moving the text line
   const link = `-my-3 inline-block py-3 ${hero ? heroLinkCls : linkCls}`
   return (
@@ -403,13 +289,16 @@ function DetailHeading({
           {line.map((u, i) => (
             <span key={i}>
               {i > 0 && <span className={text}> · </span>}
-              <span className={focus && u.start.getTime() === focus.getTime() ? 'font-semibold' : undefined}>
+              <span className={u === head ? 'font-semibold' : undefined}>
                 {fmtTime(u.start)} {u.service.type || t('service_fallback')}
               </span>
             </span>
           ))}
         </p>
       )}
+      {/* M3 (Pavol 2026-10-29): the verbs of the mass you came for — the one
+          tapped in the list, else the next one — right under its line */}
+      {head && <MassVerbs church={church} service={head.service} hero={hero} className="mt-2" />}
       {/* one meta row of actions under the title — navigate · share · save · web
           farnosti (navigace opens the map-app chooser, so no separate "mapa"). Bundled (not a separate block) so the schedule stays primary. */}
       <p className={`mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${text}`}>
@@ -453,7 +342,9 @@ export function ChurchDetail({
   const [svc, setSvc] = useState<ChurchServices | null>(null)
   const [failed, setFailed] = useState(false)
   const [navOpen, setNavOpen] = useState(false)
-  const [sheet, setSheet] = useState<SheetTarget | null>(null)
+  // one unfolded row at a time (its mass verbs showing)
+  const [openRow, setOpenRow] = useState<string | null>(null)
+  const toggleRow = (key: string) => setOpenRow((k) => (k === key ? null : key))
   // Všech svatých + 2 Nov: this church's services on both days, the week before
   const feast = useMemo(() => feastWeek(new Date()), [])
   const [photo, setPhoto] = useState<ChurchPhoto | null>(null)
@@ -803,7 +694,7 @@ export function ChurchDetail({
                       <ul>
                         {rows.map((x, i) => (
                           <li key={i}>
-                            <TapRow onOpen={() => setSheet({ service: x, when })}>
+                            <UnfoldRow church={church} service={x} open={openRow === `f-${f.iso}-${i}`} onToggle={() => toggleRow(`f-${f.iso}-${i}`)}>
                               <p className="font-display w-14 shrink-0 text-xl font-semibold tabular-nums">{x.time}</p>
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm">{x.type || t('service_fallback')}</p>
@@ -813,7 +704,7 @@ export function ChurchDetail({
                                   {x.greek && <Chip label={t('greek_chip')} />}
                                 </p>
                               </div>
-                            </TapRow>
+                            </UnfoldRow>
                           </li>
                         ))}
                       </ul>
@@ -842,7 +733,9 @@ export function ChurchDetail({
                         <ServiceRow
                           s={s}
                           day={day}
-                          onOpen={() => setSheet({ service: s, when: t(DAY_NAME_KEY[day]) })}
+                          church={church}
+                          open={openRow === `o-${day}-${i}`}
+                          onToggle={() => toggleRow(`o-${day}-${i}`)}
                           slot={agg.slots.get(slotKey(church.id, day, s.time, riteOf(s), s.lang))}
                           churchTopIds={churchTopIds}
                         />
@@ -914,7 +807,7 @@ export function ChurchDetail({
               <ul>
                 {extras.map((x, i) => (
                   <li key={i}>
-                    <TapRow onOpen={() => setSheet({ service: x, when: fmtDateCz(x.date) })}>
+                    <UnfoldRow church={church} service={x} open={openRow === `x-${i}`} onToggle={() => toggleRow(`x-${i}`)}>
                     <p className="font-display w-24 shrink-0 text-base font-semibold whitespace-nowrap">
                       {fmtDateCz(x.date)}
                     </p>
@@ -933,7 +826,7 @@ export function ChurchDetail({
                         />
                       )}
                     </div>
-                    </TapRow>
+                    </UnfoldRow>
                   </li>
                 ))}
               </ul>
@@ -980,7 +873,6 @@ export function ChurchDetail({
         </>
       )}
 
-      {sheet && <ServiceSheet church={church} target={sheet} onClose={() => setSheet(null)} />}
       {navOpen && (
         <NavSheet
           target={{ name: church.name, lat: church.lat, lng: church.lng }}
@@ -1028,13 +920,17 @@ function HeroNav({ onBack, onHelp, bar }: { onBack: () => void; onHelp?: () => v
 function ServiceRow({
   s,
   day,
-  onOpen,
+  church,
+  open,
+  onToggle,
   slot,
   churchTopIds,
 }: {
   s: Service
   day: number
-  onOpen: () => void
+  church: Church
+  open: boolean
+  onToggle: () => void
   slot?: Aggregate
   churchTopIds: string[]
 }) {
@@ -1055,7 +951,7 @@ function ServiceRow({
     )
   })()
   return (
-    <TapRow onOpen={onOpen} paused={pausedNow} className={pausedNow ? 'opacity-45' : ''}>
+    <UnfoldRow church={church} service={s} open={open} onToggle={onToggle} paused={pausedNow} className={pausedNow ? 'opacity-45' : ''}>
       {/* paused: struck through so the eye skips it; still listed (summer
           schedules come back) */}
       <p className={`font-display w-14 shrink-0 text-xl font-semibold tabular-nums ${pausedNow ? 'line-through decoration-1' : ''}`}>
@@ -1073,6 +969,6 @@ function ServiceRow({
         </p>
         {WITNESS_ENABLED && <MassDiverges chips={divergentChips(slot, churchTopIds)} />}
       </div>
-    </TapRow>
+    </UnfoldRow>
   )
 }

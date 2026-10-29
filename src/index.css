@@ -148,15 +148,20 @@ html {
   opacity: 0.45;
 }
 
-/* Tappable service rows: a quiet season-tinted press, nothing at rest but
-   the faded chevron. */
+/* Service rows that unfold their mass verbs: a quiet season-tinted press,
+   nothing at rest but the faded ▾. */
 .tap-row {
   -webkit-tap-highlight-color: transparent;
   transition: background-color 120ms ease-out;
 }
-.tap-row:hover,
 .tap-row:active {
   background: color-mix(in srgb, var(--season) 7%, transparent);
+}
+/* hover only where there IS a hover — iOS keeps :hover stuck after a tap */
+@media (hover: hover) {
+  .tap-row:hover {
+    background: color-mix(in srgb, var(--season) 7%, transparent);
+  }
 }
 .tap-row:focus-visible {
   outline-offset: -2px;

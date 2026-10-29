@@ -50,6 +50,11 @@ export async function addToCalendar(church: Church, service: AnyService): Promis
     return true
   }
 
+  download(ics, filename)
+  return true
+}
+
+function download(ics: string, filename: string): void {
   const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }))
   const a = document.createElement('a')
   a.href = url
@@ -58,10 +63,9 @@ export async function addToCalendar(church: Church, service: AnyService): Promis
   // Defer revoke so the browser has time to start the download before the
   // object URL is freed (synchronous revoke breaks Firefox and Safari).
   setTimeout(() => URL.revokeObjectURL(url), 0)
-  return true
 }
 
-export type ReminderResult = 'scheduled' | 'denied' | 'no-upcoming' | 'unsupported' | 'failed'
+export type ReminderResult = 'scheduled' | 'calendar' | 'denied' | 'no-upcoming' | 'unsupported' | 'failed'
 
 /**
  * When to fire the reminder: REMINDER_LEAD_MIN before the next occurrence the
@@ -75,16 +79,22 @@ export function reminderTimeFor(service: AnyService, now: Date): Date | null {
 
 /**
  * Schedule a local notification REMINDER_LEAD_MIN before the next occurrence of
- * this service. Native only (web returns 'unsupported' — the button is hidden
- * there). The occurrence maths is tested in domain/occurrences (nextReminderAt).
+ * this service. The web can't schedule one, so there it downloads a one-off
+ * calendar event for that occurrence carrying an alert REMINDER_LEAD_MIN before
+ * ('calendar'). The occurrence maths is tested in domain/occurrences (nextReminderAt).
  */
 export async function scheduleMassReminder(
   church: Church,
   service: AnyService,
 ): Promise<ReminderResult> {
-  if (!isNative) return 'unsupported'
   const at = reminderTimeFor(service, new Date())
   if (!at) return 'no-upcoming'
+  if (!isNative) {
+    const ics = buildICS(church, service, new Date(), { once: true, alarmMin: REMINDER_LEAD_MIN })
+    if (!ics) return 'no-upcoming'
+    download(ics, icsName(church, service).replace('.ics', '-pripominka.ics'))
+    return 'calendar'
+  }
 
   const { LocalNotifications } = await import('@capacitor/local-notifications')
   let perm = await LocalNotifications.checkPermissions()
