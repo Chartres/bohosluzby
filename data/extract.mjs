@@ -23,6 +23,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, statSync, rmSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { applyCorrections, loadCorrections } from './corrections.mjs'
 
 // not new URL('..', import.meta.url): Vite (vitest) rewrites that pattern as an asset URL
 const root = `${dirname(dirname(fileURLToPath(import.meta.url)))}/`
@@ -240,6 +241,11 @@ function transform() {
     if (extra.length) entry.x = extra.map((r) => [r.datum.slice(0, 10), ...svcRow(r).slice(1)])
     ;(shards[cell] ??= {})[id] = entry
   }
+
+  // sourced hand corrections (data/corrections.json) — survive every refresh
+  const fixes = applyCorrections(shards, loadCorrections())
+  if (fixes.missing.length) process.stderr.write(`corrections: ids not in the dataset: ${fixes.missing.join(', ')}\n`)
+  process.stderr.write(`corrections: ${fixes.applied.length} row(s) added\n`)
 
   index.sort((a, b) => Number(a[0]) - Number(b[0]))
   writeFileSync(`${OUT}/churches.json`, JSON.stringify(index))
