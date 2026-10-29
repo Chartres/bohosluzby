@@ -244,8 +244,8 @@ function transform() {
 
   // sourced hand corrections (data/corrections.json) — survive every refresh
   const fixes = applyCorrections(shards, loadCorrections())
-  if (fixes.missing.length) process.stderr.write(`corrections: ids not in the dataset: ${fixes.missing.join(', ')}\n`)
-  process.stderr.write(`corrections: ${fixes.applied.length} row(s) added\n`)
+  if (fixes.missing.length) process.stderr.write(`corrections: not applied: ${fixes.missing.join('; ')}\n`)
+  process.stderr.write(`corrections: ${fixes.applied.length} change(s)\n`)
 
   index.sort((a, b) => Number(a[0]) - Number(b[0]))
   writeFileSync(`${OUT}/churches.json`, JSON.stringify(index))

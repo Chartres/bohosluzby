@@ -131,6 +131,14 @@ function parseOrdinals(s: string): (number | 'last')[] | null {
  * in one call; notably nthWeekday returns true for non-target weekdays (a
  * "governs only wd" sentinel) so not(nthWeekday) would wrongly exclude them. */
 function parseInclusion(s: string, negated = false): Pred | null {
+  // one full date, year included ("kromě 2. 11. 2026"): data/corrections.mjs
+  // writes these when a parish announces a Mass doesn't take place that day
+  const date = /^(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})$/.exec(s)
+  if (date) {
+    const [dd, mm, yy] = [Number(date[1]), Number(date[2]), Number(date[3])]
+    const pos: Pred = (y, m, d) => y === yy && m === mm && d === dd
+    return negated ? not(pos) : pos
+  }
   const months = parseMonthSet(s)
   if (months) {
     const pos: Pred = (_y, m) => months.has(m)
