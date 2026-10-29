@@ -73,6 +73,10 @@ describe('liturgicalDay — seasons 2026 (Roman rite, CZ)', () => {
   it('fixed solemnities override the running season (8 Dec in Advent is gold)', () => {
     expect(day(2026, 12, 8).color).toBe('gold')
   })
+
+  it('All Souls Day (2 Nov) has violet accent in ordinary time', () => {
+    expect(day(2026, 11, 2)).toMatchObject({ color: 'violet', feast: 'Vzpomínka na všechny věrné zemřelé' })
+  })
 })
 
 describe('liturgicalDay — feast names (day-picker highlight + list header line)', () => {
