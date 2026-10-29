@@ -57,6 +57,7 @@ const FIXED: Record<string, { color: LiturgicalColor; feast: string }> = {
   '8-15': { color: 'gold', feast: 'Nanebevzetí Panny Marie' },
   '9-28': { color: 'red', feast: 'sv. Václava' }, // martyr, CZ solemnity
   '11-1': { color: 'gold', feast: 'Všech svatých' },
+  '11-2': { color: 'violet', feast: 'Vzpomínka na všechny věrné zemřelé' },
   '12-8': { color: 'gold', feast: 'Neposkvrněného početí Panny Marie' },
   '12-25': { color: 'gold', feast: 'Narození Páně' },
 }
