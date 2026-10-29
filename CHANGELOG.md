@@ -5,6 +5,11 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- Native analytics guard: `scripts/check-analytics.mjs` now also runs on the native bundles —
+  `android/app/src/main/assets/public` after `cap sync` in release-android.yml, and
+  `ios/App/App/public` in the Fastfile's `sync_web` (CI and local), plus an early secrets
+  check in release-ios.yml. A store build without the Supabase config fails instead of
+  shipping an app that sends no events.
 - **pozvat** on every service row (`docs/SIGNATURE.md` mechanic C): opens your messenger with
   "Půjdeš se mnou na mši svatou? V neděli 1. 11. v 9:00, kostel … (město)." and the church
   link (`utm_source=pozvani`). The date is the next one the service really runs (its note
