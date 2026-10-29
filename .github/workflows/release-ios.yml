@@ -67,6 +67,19 @@ jobs:
             exit 1
           fi
 
+      # Fail before signing when the analytics config is missing. The bundle guard
+      # itself (scripts/check-analytics.mjs on ios/App/App/public) runs inside the
+      # lane, in the Fastfile's sync_web, right after cap sync. # flywheel:analytics-guard
+      - name: Analytics config present
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error::VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY not set: the app would send no events"
+            exit 1
+          fi
+
       - name: App Store Connect API key
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}

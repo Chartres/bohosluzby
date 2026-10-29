@@ -10,7 +10,8 @@
 #   ANDROID_KEYSTORE_PASSWORD · ANDROID_KEY_ALIAS · ANDROID_KEY_PASSWORD
 # Optional (Play Console → Setup → API access → service account JSON):
 #   PLAY_SERVICE_ACCOUNT_JSON
-# Plus the web build's VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY.
+# Plus the web build's VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY. These are
+# required: without them the analytics guard fails the build (an app sending no events).
 name: Release Android
 
 on:
@@ -64,6 +65,11 @@ jobs:
           npm ci
           npm run build
           npx cap sync android
+
+      # The exact JS gradle packages; a build without VITE_SUPABASE_URL ships an
+      # app that sends no events, so it fails here (unlike signing, no dark mode).
+      - name: Analytics config in the bundle
+        run: node scripts/check-analytics.mjs android/app/src/main/assets/public # flywheel:analytics-guard
 
       - name: Resolve version
         id: v

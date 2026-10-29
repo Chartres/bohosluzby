@@ -44,6 +44,9 @@ def sync_web(build_number = nil)
   root = sh("git rev-parse --show-toplevel", log: false).strip
   env = build_number ? "VITE_BUILD=#{build_number.to_i} " : ""
   sh("cd #{root.shellescape} && #{env}npm run build && npx cap sync ios")
+  # Analytics bundle guard on the exact JS gym archives: a build without
+  # VITE_SUPABASE_URL would ship an app that sends no events.
+  sh("cd #{root.shellescape} && node scripts/check-analytics.mjs ios/App/App/public") # flywheel:analytics-guard
 end
 
 platform :ios do
