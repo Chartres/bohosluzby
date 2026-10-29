@@ -9,6 +9,7 @@ const base = '/'
 
 export default defineConfig({
   base,
+  build: { target: ['es2020', 'safari15'] },
   plugins: [
     react(),
     tailwindcss(),
