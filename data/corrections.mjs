@@ -2,7 +2,7 @@
 // The registry is the parishes' own word but often years old; for a feast weekend
 // a parish's current announcement (ohlášky, bulletin, diocese listing) beats it.
 // Per church and date a correction can
-//   add:  ["HH:MM", type, note?] — a Mass the parish announces that the registry
+//   add:  ["HH:MM", type, note?, lang?] — a Mass the parish announces that the registry
 //         lacks, written as a dated one-off (shard `x` row, shown as "mimořádná");
 //   drop: ["HH:MM"] — a registry Mass the parish says doesn't take place that day.
 //         The weekly row stays; its note gains "kromě D. M. YYYY", which
@@ -68,8 +68,8 @@ export function applyCorrections(shards, corrections, today = new Date().toISOSt
       if (hit) applied.push(`${c.id} ${c.date} -${time}`)
       else missing.push(`${c.id} ${c.date} -${time} (no such row)`)
     }
-    for (const [time, type, note = ''] of c.add ?? []) {
-      const row = [c.date, time, 'česky', 0, type, note]
+    for (const [time, type, note = '', lang = 'česky'] of c.add ?? []) {
+      const row = [c.date, time, lang, 0, type, note]
       entry.x ??= []
       if (entry.x.some((r) => r[0] === c.date && toMin(r[1]) === toMin(time) && r[4] === type)) continue
       entry.x.push(row)
