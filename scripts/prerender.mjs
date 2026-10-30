@@ -159,7 +159,8 @@ const STATIC_CSS = `
       .finder label { display: block; font-family: 'Source Sans 3', system-ui, sans-serif; color: #9a2b1e; font-variant-caps: all-small-caps; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
       .finder .row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
       .finder input { flex: 1 1 11rem; min-width: 0; min-height: 44px; box-sizing: border-box; font: inherit; font-size: 1rem; padding: 0.5rem 0.65rem; color: #1a1712; background: #fffcf4; border: 1px solid #b9ae95; border-radius: 2px; }
-      .finder input:focus, .finder button:focus-visible { outline: 2px solid var(--season); outline-offset: 1px; }
+      .finder input:focus { outline: 2px solid var(--season); outline-offset: 1px; }
+      .finder button:focus-visible { outline: 2px solid var(--season); outline-offset: 1px; }
       .finder button { flex: 0 0 auto; min-height: 44px; font: inherit; font-size: 0.95rem; padding: 0.5rem 0.85rem; color: #1a1712; background: transparent; border: 1px solid #b9ae95; border-radius: 2px; cursor: pointer; }
       .finder p { margin: 0.35rem 0 0; min-height: 1.3em; }
       .near { list-style: none; padding: 0; margin: 0.25rem 0 0; }

@@ -284,7 +284,7 @@ var f=document.getElementById('finder');if(!f)return;f.hidden=false;
 var q=document.getElementById('najdi'),btn=document.getElementById('poloha'),stav=document.getElementById('stav'),
 groups=document.getElementById('dieceze'),near=document.getElementById('blizko'),nic=document.getElementById('nic'),
 svg=document.querySelector('.map svg'),me=document.getElementById('me');
-var items=[].slice.call(groups.querySelectorAll('li[data-k]')),nearItems=[],dots={},pos=null,last=null;
+var items=[].slice.call(groups.querySelectorAll('li[data-k]')),nearItems=[],dots={},pos=null,last=null,asking=false;
 [].forEach.call(svg.querySelectorAll('a[data-s]'),function(a){dots[a.getAttribute('data-s')]=a});
 function fold(s){return s.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim()}
 function km(a,b,c,d){var r=Math.PI/180,x=Math.sin((c-a)*r/2),y=Math.sin((d-b)*r/2);return 12742*Math.asin(Math.sqrt(x*x+Math.cos(a*r)*Math.cos(c*r)*y*y))}
@@ -302,17 +302,18 @@ if(!nearItems.length||last!==p){last=p;near.textContent='';nearItems=items.map(f
 return{li:li,d:km(p.lat,p.lng,+li.getAttribute('data-lat'),+li.getAttribute('data-lng'))}}).sort(function(a,b){return a.d-b.d}).map(function(o){
 var li=document.createElement('li');li.setAttribute('data-k',o.li.getAttribute('data-k'));li.setAttribute('data-s',o.li.getAttribute('data-s'));
 li.appendChild(o.li.querySelector('a').cloneNode(true));var s=document.createElement('span');s.className='km';
-s.textContent=(o.d<10?o.d.toFixed(1).replace('.',','):Math.round(o.d))+'\\u00a0km';li.appendChild(s);near.appendChild(li);return li})}
+s.textContent=(o.d<9.95?o.d.toFixed(1).replace('.',','):Math.round(o.d))+'\\u00a0km';li.appendChild(s);near.appendChild(li);return li})}
 var x=(p.lng-${LNG0})*${KX.toFixed(6)}*${SCALE.toFixed(3)},y=(${LAT1}-p.lat)*${SCALE.toFixed(3)};
 if(x>0&&x<${MAP_W}&&y>0&&y<${MAP_H}){me.setAttribute('cx',x.toFixed(1));me.setAttribute('cy',y.toFixed(1))}
 btn.textContent='Podle diecézí';stav.textContent='Seřazeno podle vzdálenosti od vás. Poloha zůstává v telefonu, nikam ji neposíláme.';render()}
 btn.addEventListener('click',function(){
 if(pos){pos=null;btn.textContent='Podle mé polohy';stav.textContent='';me.setAttribute('cx','-50');render();return}
 if(last){sortBy(last);return}
+if(asking)return;
 if(!navigator.geolocation){stav.textContent='Tento prohlížeč polohu neumí. Najděte obec podle názvu.';return}
-stav.textContent='Zjišťuji polohu…';
-navigator.geolocation.getCurrentPosition(function(g){sortBy({lat:g.coords.latitude,lng:g.coords.longitude})},
-function(e){stav.textContent=e&&e.code===1?'Poloha není povolená. Najděte obec podle názvu.':'Polohu se nepodařilo zjistit. Najděte obec podle názvu.'},
+stav.textContent='Zjišťuji polohu…';asking=true;
+navigator.geolocation.getCurrentPosition(function(g){asking=false;sortBy({lat:g.coords.latitude,lng:g.coords.longitude})},
+function(e){asking=false;stav.textContent=e&&e.code===1?'Poloha není povolená. Najděte obec podle názvu.':'Polohu se nepodařilo zjistit. Najděte obec podle názvu.'},
 {enableHighAccuracy:false,timeout:15000,maximumAge:600000})});
 })()`
 
