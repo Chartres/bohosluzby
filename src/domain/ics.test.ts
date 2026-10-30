@@ -104,6 +104,16 @@ describe('buildICS — note-restricted weekly services (sweep F1, G2)', () => {
     expect(unfold(ics)).toContain('20261102') // EXDATE for the one-off
   })
 
+  it('G2: dated exclusion on the last horizon occurrence is included in EXDATE', () => {
+    // Sep 27 2027 is the last Monday within 366 days of Oct 1 2026; excluding it
+    // must still produce an EXDATE even though it falls after `last` (Sep 20 2027).
+    const withLastExcl: Service = { days: '1', time: '09:00', lang: 'česky', greek: false, type: 'mše sv.', note: 'kromě 27. 9. 2027' }
+    const ics = buildICS(church, withLastExcl, new Date('2026-10-01T08:00:00Z'))!
+    expect(ics).not.toBeNull()
+    expect(ics).toMatch(/RRULE:FREQ=WEEKLY;BYDAY=MO\r\n/) // open-ended — no UNTIL
+    expect(unfold(ics)).toContain('20270927') // EXDATE must include the horizon-end excluded date
+  })
+
   it('a note that excludes nothing keeps the open-ended weekly RRULE', () => {
     const ics = buildICS(church, { ...weekly, note: 'pro děti' }, now)!
     expect(ics).toContain('RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR\r\n')
