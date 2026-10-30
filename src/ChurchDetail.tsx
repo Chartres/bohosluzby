@@ -26,7 +26,7 @@ import { oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
 import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
 import { churchUrl } from './domain/site'
-import { patronDateLabel, patronOf } from './domain/patron'
+import { patronDateLabel, patronOfChurch } from './domain/patron'
 import { creditLine } from './domain/photoCredit'
 import { MassVerbs, onDate } from './MassVerbs'
 import { feastWeek, servicesOnDate } from './domain/feastWeek'
@@ -502,7 +502,7 @@ export function ChurchDetail({
   }, [svc, church])
 
   const extras = svc ? svc.extra.filter((x) => x.date >= pragueIsoDate(new Date())) : []
-  const patron = patronOf(church.name)
+  const patron = patronOfChurch(church)
 
   // Confession coverage: the ~6 churches with a typed "svátost smíření" row PLUS
   // times mined from Mass notes for the ~37 that only mention confession in free

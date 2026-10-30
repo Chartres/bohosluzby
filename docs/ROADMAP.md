@@ -10,6 +10,16 @@ this order:
 
 Update the **Now** section at the end of every session; it is the handoff.
 
+## Now — as of 2026-10-30 (Pavol's decision page, hand-back `docs/review/2026-10-30.json`)
+
+- `/dusicky/` hub: an SVG map with a dot per town page, the towns grouped by diocese, a
+  "Najdi obec" filter, and an opt-in "Podle mé polohy" sort (#76, live).
+- Title feasts for ambiguous church names now come from the parish's own source: 37 of 150,
+  the rest show nothing. The remaining 113 can be re-checked (data/patron-sources.json says
+  why each is open; ~25 parish sites block automated reads).
+- iOS: builds 81–88 of 1.4 are on App Store Connect, all from CI. Nothing submitted (the
+  hand-back lists them).
+
 ## Now — as of 2026-10-28 (deep round, flywheel `docs/program/2026-10-27-deep-round.md`)
 
 - **All Saints / Dušičky (1–2 Nov 2026) pages are live** (#63): `/dusicky/` + 30 city

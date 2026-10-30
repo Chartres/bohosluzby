@@ -122,3 +122,7 @@ Pavol's picks, dated, in his words where he wrote any. Newest first.
    → Still nothing by default. Where a parish's own website or bulletin names the feast, the
    church gets it, with that source recorded next to it in the data; where nothing confirms
    it, nothing is shown.
+   Result (30 Oct): 150 ambiguous, 37 confirmed from a parish or diocese source, 113 still
+   unknown, and those show nothing (`data/patron-sources.json`, `PARISH_TITLES`). Rows were not
+   counted when the date was inferred from a Sunday alone, when the parish keeps two poutě, or
+   when the quote came only from a search summary.
