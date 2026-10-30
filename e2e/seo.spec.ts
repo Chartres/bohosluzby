@@ -116,6 +116,70 @@ test('P8: the Dušičky city page is a readable list that leads to the church', 
   const hubCtx = await browser.newContext()
   const hub = await hubCtx.newPage()
   await hub.goto('/dusicky/')
-  await expect(hub.locator('a[href$="/dusicky/praha/"]')).toBeVisible()
+  await expect(hub.locator('#dieceze a[href$="/dusicky/praha/"]')).toBeVisible()
   await hubCtx.close()
+})
+
+// P8 step 0 (docs/PERSONAS.md): Hana lands on the hub, not on her town. She finds
+// Kroměříž on the map, by typing it, or by her position, on a phone.
+test('P8 Hana: /dusicky/ hub — map, Najdi obec, Podle mé polohy at 390 px', async ({ browser }) => {
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    isMobile: true,
+    hasTouch: true,
+    permissions: ['geolocation'],
+    geolocation: { latitude: 49.2977, longitude: 17.3931 }, // Kroměříž
+  })
+  const page = await ctx.newPage()
+  await page.goto('/dusicky/')
+  const map = page.locator('.map svg')
+  await expect(map).toBeVisible()
+  // the map fits the phone: no sideways scroll, every town a dot
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
+  const towns = await page.locator('#dieceze li').count()
+  expect(towns).toBeGreaterThan(100)
+  await expect(page.locator('.map a[data-s]')).toHaveCount(towns)
+  await page.screenshot({ path: 'e2e/shots/p8-dusicky-hub-390.png' })
+  await page.screenshot({ path: 'e2e/shots/p8-dusicky-hub-390-full.png', fullPage: true })
+
+  // a dot is a link to that town's page
+  const dot = page.locator('.map a[data-s="kromeriz"]')
+  await expect(dot).toHaveAttribute('href', 'https://bohosluzby.dravec.org/dusicky/kromeriz/')
+
+  // grouped by diocese; typing filters as she goes, without diacritics
+  await expect(page.locator('#dieceze h3').first()).toHaveText('Arcidiecéze pražská')
+  const input = page.getByLabel('Najdi obec')
+  await input.fill('kromer')
+  await expect(page.locator('#dieceze li:visible')).toHaveCount(1)
+  await expect(page.locator('#dieceze li:visible a')).toHaveText('Kroměříž')
+  await expect(page.locator('#dieceze section:visible h3')).toHaveText('Arcidiecéze olomoucká')
+  await page.screenshot({ path: 'e2e/shots/p8-dusicky-hub-390-search.png' })
+  await input.fill('')
+
+  // by position: asked only on the tap, nearest first, with the distance
+  await page.getByRole('button', { name: 'Podle mé polohy' }).click()
+  await expect(page.locator('#blizko li').first().locator('a')).toHaveText('Kroměříž')
+  await expect(page.locator('#blizko li').first().locator('.km')).toHaveText(/^\d+(,\d)?\u00a0km$/)
+  await expect(page.locator('#dieceze')).toBeHidden()
+  await page.screenshot({ path: 'e2e/shots/p8-dusicky-hub-390-near.png' })
+  await page.getByRole('button', { name: 'Podle diecézí' }).click()
+  await expect(page.locator('#dieceze')).toBeVisible()
+  await ctx.close()
+
+  // desktop: the same page, the map at the column width
+  const wide = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+  const desk = await wide.newPage()
+  await desk.goto('/dusicky/')
+  await expect(desk.locator('.map svg')).toBeVisible()
+  await desk.screenshot({ path: 'e2e/shots/p8-dusicky-hub-1280.png' })
+  await wide.close()
+
+  // without JavaScript the grouped list stands alone; the finder stays hidden
+  const nojs = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } })
+  const plain = await nojs.newPage()
+  await plain.goto('/dusicky/')
+  await expect(plain.locator('#finder')).toBeHidden()
+  await expect(plain.locator('#dieceze a[href$="/dusicky/kromeriz/"]')).toBeVisible()
+  await nojs.close()
 })

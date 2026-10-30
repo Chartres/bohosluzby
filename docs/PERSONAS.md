@@ -159,6 +159,8 @@ the family graves, and wants a Mass there: for the dead, ideally with her mother
 - **Constraint:** she doesn't know the parishes there; feast schedules change and parishes
   rarely publish them (the 27 Oct 2026 refresh had one one-off for 1 Nov in all of ČR).
 - **Journey (e2e, `e2e/seo.spec.ts` "P8"):**
+  0. Or search lands on the hub `/dusicky/`: she finds the town on the map, types it into
+     "Najdi obec", or taps "Podle mé polohy" (`e2e/seo.spec.ts` "P8 Hana", 390 px).
   1. Search lands on `/dusicky/<město>/` — readable without JavaScript, both days, by time.
   2. She picks a time; the church link opens its page with the weekly ordo and the
      feast-day section.

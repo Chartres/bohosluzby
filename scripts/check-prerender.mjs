@@ -49,6 +49,8 @@ for (const slug of ['', ...feastDirs]) {
     problems.push(`${path}: canonical is not the page`)
   if (html.includes('type="module"')) problems.push(`${path}: boots the app over the list`)
   if (slug && !html.includes('class="ordo"')) problems.push(`${path}: no service list`)
+  // the hub: a build-time SVG map and the towns grouped by diocese, no tiles
+  if (!slug && !(html.includes('<figure class="map"><svg') && html.includes('id="dieceze"'))) problems.push(`${path}: no map or diocese list`)
   if (!sitemap.includes(`/${path}</loc>`)) problems.push(`${path}: missing from sitemap.xml`)
 }
 if (problems.length) {

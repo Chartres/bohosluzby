@@ -99,3 +99,26 @@ Pavol's constitution, articles cited by number (the text is private):
 official, unreadable on a phone) or a global directory (readable, thin on Czech data, funded
 by ads or donations). Kam na mši is the Schematismus in your pocket: official data, set like a
 printed ordo, organised around the liturgical year and around one person inviting another.
+
+## 6. Decision log
+
+Pavol's picks, dated, in his words where he wrote any. Newest first.
+
+**2026-10-30** (decision page, 08:30 CET; built the same day)
+1. **Dušičky town pages: keep** (176). On the hub: *"Add a map to this page? List of towns in
+   alphabetical order is strange ux."* → `/dusicky/` has a build-time SVG map (a dot per town
+   page, each a link), the towns grouped by diocese instead of A–Z, a "Najdi obec" filter and
+   an opt-in "Podle mé polohy" sort. Diocese, not kraj: it comes from data we hold (the
+   registry id), it is the Schematismus's own order, and each group names the kraje it
+   covers for anyone who doesn't know church geography.
+2. **Patron feast and pouť line: keep.**
+3. **Pozvat: keep.**
+4. **Feast pages, registry entries older than 18 months:** *"list with the date on the row"*.
+   Already so ("rozpis ověřen naposledy …, ověřte u farnosti"); now a decision, not a default.
+5. **Feast pages:** *"static page"*. Plain static HTML; the app does not boot on top
+   (`scripts/check-prerender.mjs` fails a feast page that loads the bundle).
+6. **Ambiguous patronal titles** (plain "sv. Jakuba", two-title churches, Navštívení P. M.):
+   *"show nothing"*, with *"Explore parish sites of the ambiguous ones to find the feast"*.
+   → Still nothing by default. Where a parish's own website or bulletin names the feast, the
+   church gets it, with that source recorded next to it in the data; where nothing confirms
+   it, nothing is shown.
