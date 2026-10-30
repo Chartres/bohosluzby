@@ -1,10 +1,10 @@
 {
- "about": "Churches whose title feast the name leaves open (Pavol 2026-10-30: show nothing; \"Explore parish sites of the ambiguous ones to find the feast\"). A row is confirmed only where the parish website, parish bulletin or diocese names the feast or saint for this church in text that was read; dates inferred from a Sunday alone, two poutě, search-summary quotes and municipal/tourist sources do not count. Confirmed rows feed PARISH_TITLES in src/domain/patron.ts.",
+ "about": "Churches whose title feast the name leaves open (Pavol 2026-10-30: show nothing; \"Explore parish sites of the ambiguous ones to find the feast\"). A row is confirmed only where the parish website, parish bulletin or diocese names the feast or saint for this church in text that was read; dates inferred from a Sunday alone, two poutě, search-summary quotes and municipal/tourist sources do not count; neither does a dedication statement without a feast or pouť day. Where a parish keeps two poutě, the row counts only if the source calls one of them the titular feast. Confirmed rows feed PARISH_TITLES in src/domain/patron.ts.",
  "checked": "2026-10-30",
  "counts": {
   "ambiguous": 150,
-  "confirmed": 37,
-  "unknown": 113
+  "confirmed": 32,
+  "unknown": 118
  },
  "churches": [
   {
@@ -33,19 +33,6 @@
    "note": "Rakovník parish; also 2024 post: July pilgrimages on 7 and 14 July.",
    "checked": "2026-10-30",
    "quote_recheck": "ok"
-  },
-  {
-   "id": "2000258",
-   "name": "farní kostel sv. Prokopa a Mikuláše, Bohušovice nad Ohří",
-   "kind": "two titles",
-   "confirmed": true,
-   "title": "památka sv. Prokopa",
-   "date": "7-4",
-   "source": "https://www.farnostdoksany.cz/bohusovice",
-   "source_date": null,
-   "quote": "Hlavní oltář byl vysvěcen 15. září 1716 ke cti sv. Prokopa ... O týden později byly vysvěceny boční oltáře ke cti sv. Josefa a sv. Mikuláše.",
-   "note": "Parish page: main altar is St Prokop's and St Nicholas has a side altar, so Prokop is the primary title. No pouť date is stated.",
-   "checked": "2026-10-30"
   },
   {
    "id": "2000316",
@@ -112,19 +99,6 @@
    "source_date": "2026",
    "quote": "Pouť 31.května /nebo v neděli po tomto datu/ Posvícení v neděli po 14. září",
    "note": "Farnost Boušín (Boušín is part of Slatina nad Úpou), site of the Visitation church; pouť on 31 May.",
-   "checked": "2026-10-30"
-  },
-  {
-   "id": "30002101808255",
-   "name": "filiální kostel Navštívení Panny Marie",
-   "kind": "Navštívení P. M. (2. 7. CZ / 31. 5.)",
-   "confirmed": true,
-   "title": "svátek Navštívení Panny Marie",
-   "date": "7-2",
-   "source": "http://www.farnost-nizkov.cz/Media/ContentItems/5798_05798/ohlasky-2026-06-28.pdf",
-   "source_date": "2026-06-28",
-   "quote": "NEDĚLE 5.7.2026 … 10.00 Sirákov … POUŤ V SIRÁKOVĚ Za živé a zemřelé občany Sirákova",
-   "note": "Nížkov ohlášky: pouť in Sirákov (chapel of the Visitation) on Sunday 5.7. = Sunday after 2 July.",
    "checked": "2026-10-30"
   },
   {
@@ -234,19 +208,6 @@
    "checked": "2026-10-30"
   },
   {
-   "id": "5000799949612",
-   "name": "farní kostel sv. Michala a Barbory",
-   "kind": "two titles",
-   "confirmed": true,
-   "title": "svátek sv. Michaela archanděla",
-   "date": "9-29",
-   "source": "https://farnostkozlovice.cz/?page_id=45",
-   "source_date": null,
-   "quote": "Kostel svatého Michaela archanděla v Kozlovicích byl postaven v letech 1731-1742 ... Prohlášení sv. Barbory za spolupatronku kostela",
-   "note": "Parish history: the church is St Michael's and St Barbara was added as co-patroness.",
-   "checked": "2026-10-30"
-  },
-  {
    "id": "60002871972936",
    "name": "farní kostel Nejsvětější Trojice a sv. Šimona a Judy Dýšina",
    "kind": "two titles",
@@ -270,19 +231,6 @@
    "source_date": "2026-01-16",
    "quote": "Neděle-26.7.2026 Sněžná 11:00 Pouť-sv. Jakub, společná mše svatá pro celou farnost",
    "note": "Parish list of 2026 pouti: Sněžná pouť on Sunday 26.7., the Sunday nearest 25 July -> Jakub Starší.",
-   "checked": "2026-10-30"
-  },
-  {
-   "id": "6000690502946",
-   "name": "farní kostel sv. Michaela a Panny Marie Věrné Ostrov",
-   "kind": "two titles",
-   "confirmed": true,
-   "title": "svátek sv. Michaela archanděla",
-   "date": "9-29",
-   "source": "https://farnostostrov.cz/ohlasky/25.-nedele-v-mezidobi-26.pdf",
-   "source_date": "2026-09-20",
-   "quote": "Michaelská pouť v Ostrově v neděli 27.9. – poutní mše sv. v kostele sv. Archanděla Michaela a Panny Marie Věrné v 9 h.",
-   "note": "Ohlášky: Michaelská pouť Sunday 27.9. Note the church also keeps a Marian pouť k Panně Marii Věrné in May (10.5.2026, ohlášky 6. neděle velikonoční) - Panna Maria Věrná has no fixed calendar feast; Michael is the titular one.",
    "checked": "2026-10-30"
   },
   {
@@ -458,20 +406,6 @@
    "checked": "2026-10-30"
   },
   {
-   "id": "8000394979761",
-   "name": "kostel farní sv. Kateřiny a Panny Marie",
-   "kind": "two titles",
-   "confirmed": true,
-   "title": "památka sv. Kateřiny Alexandrijské",
-   "date": "11-25",
-   "source": "http://www.farnost-heralec.cz/historie/historie-farnost-heralec",
-   "source_date": null,
-   "quote": "Za jejího života položeny základy pro nový kostel k úctě sv. Kateřiny, p.m.",
-   "note": "Parish history says the present church was founded in honour of sv. Kateřina (and replaced an older Kateřina church). It is a dedication statement, not a pouť date.",
-   "checked": "2026-10-30",
-   "quote_recheck": "ok"
-  },
-  {
    "id": "8000515450433",
    "name": "kostel farní Navštívení Panny Marie",
    "kind": "Navštívení P. M. (2. 7. CZ / 31. 5.)",
@@ -574,6 +508,19 @@
    "source_date": "2026",
    "quote": "9. 8. neděle – Svatovavřinecká pouť … 10.00 Slavnostní Mše svatá",
    "note": "Basilica keeps a Svatovavřinecká pouť (Sunday by 10 Aug). It also holds a Pouť ke svaté Zdislavě on 30. 5. (patroness of the diocese), so the Zdislava memorial (5-30) is a second patronal pouť. | Not used: parish keeps two poutě (sv. Vavřinec 10. 8., sv. Zdislava 30. 5.); which is the title feast is not stated",
+   "checked": "2026-10-30"
+  },
+  {
+   "id": "2000258",
+   "name": "farní kostel sv. Prokopa a Mikuláše, Bohušovice nad Ohří",
+   "kind": "two titles",
+   "confirmed": false,
+   "title": null,
+   "date": null,
+   "source": "https://www.farnostdoksany.cz/bohusovice",
+   "source_date": null,
+   "quote": "Hlavní oltář byl vysvěcen 15. září 1716 ke cti sv. Prokopa ... O týden později byly vysvěceny boční oltáře ke cti sv. Josefa a sv. Mikuláše.",
+   "note": "Parish page: main altar is St Prokop's and St Nicholas has a side altar, so Prokop is the primary title. No pouť date is stated. | Not used (review: title read from the main altar; no pouť or feast day stated)",
    "checked": "2026-10-30"
   },
   {
@@ -795,6 +742,19 @@
    "source_date": null,
    "quote": null,
    "note": "The Holice parish page calls this church 'Zvěstování P. Marie' (main altar picture Zvěstování), not Navštívení, so the registry title may be wrong. No pouť date given.",
+   "checked": "2026-10-30"
+  },
+  {
+   "id": "30002101808255",
+   "name": "filiální kostel Navštívení Panny Marie",
+   "kind": "Navštívení P. M. (2. 7. CZ / 31. 5.)",
+   "confirmed": false,
+   "title": null,
+   "date": null,
+   "source": "http://www.farnost-nizkov.cz/Media/ContentItems/5798_05798/ohlasky-2026-06-28.pdf",
+   "source_date": "2026-06-28",
+   "quote": "NEDĚLE 5.7.2026 … 10.00 Sirákov … POUŤ V SIRÁKOVĚ Za živé a zemřelé občany Sirákova",
+   "note": "Nížkov ohlášky: pouť in Sirákov (chapel of the Visitation) on Sunday 5.7. = Sunday after 2 July. | Not used (review: the source says \"pouť v Sirákově\" on Sunday 5. 7. without naming the feast; date inferred from the Sunday)",
    "checked": "2026-10-30"
   },
   {
@@ -1396,6 +1356,19 @@
    "checked": "2026-10-30"
   },
   {
+   "id": "5000799949612",
+   "name": "farní kostel sv. Michala a Barbory",
+   "kind": "two titles",
+   "confirmed": false,
+   "title": null,
+   "date": null,
+   "source": "https://farnostkozlovice.cz/?page_id=45",
+   "source_date": null,
+   "quote": "Kostel svatého Michaela archanděla v Kozlovicích byl postaven v letech 1731-1742 ... Prohlášení sv. Barbory za spolupatronku kostela",
+   "note": "Parish history: the church is St Michael's and St Barbara was added as co-patroness. | Not used (review: a dedication/history statement with no feast or pouť day)",
+   "checked": "2026-10-30"
+  },
+  {
    "id": "500080330633",
    "name": "kaple Navštívení P. Marie",
    "kind": "Navštívení P. M. (2. 7. CZ / 31. 5.)",
@@ -1497,6 +1470,19 @@
    "source_date": null,
    "quote": null,
    "note": "Tachov parish site lists the church; no pouť date found (pouť list covers Bor area only). Note Prokop and Oldřich are both 4 July.",
+   "checked": "2026-10-30"
+  },
+  {
+   "id": "6000690502946",
+   "name": "farní kostel sv. Michaela a Panny Marie Věrné Ostrov",
+   "kind": "two titles",
+   "confirmed": false,
+   "title": null,
+   "date": null,
+   "source": "https://farnostostrov.cz/ohlasky/25.-nedele-v-mezidobi-26.pdf",
+   "source_date": "2026-09-20",
+   "quote": "Michaelská pouť v Ostrově v neděli 27.9. – poutní mše sv. v kostele sv. Archanděla Michaela a Panny Marie Věrné v 9 h.",
+   "note": "Ohlášky: Michaelská pouť Sunday 27.9. Note the church also keeps a Marian pouť k Panně Marii Věrné in May (10.5.2026, ohlášky 6. neděle velikonoční) - Panna Maria Věrná has no fixed calendar feast; Michael is the titular one. | Not used (review: the church also keeps a Marian pouť (P. Maria Věrná, May); two poutě)",
    "checked": "2026-10-30"
   },
   {
@@ -1901,6 +1887,20 @@
    "quote": null,
    "note": "No www; nothing found.",
    "checked": "2026-10-30"
+  },
+  {
+   "id": "8000394979761",
+   "name": "kostel farní sv. Kateřiny a Panny Marie",
+   "kind": "two titles",
+   "confirmed": false,
+   "title": null,
+   "date": null,
+   "source": "http://www.farnost-heralec.cz/historie/historie-farnost-heralec",
+   "source_date": null,
+   "quote": "Za jejího života položeny základy pro nový kostel k úctě sv. Kateřiny, p.m.",
+   "note": "Parish history says the present church was founded in honour of sv. Kateřina (and replaced an older Kateřina church). It is a dedication statement, not a pouť date. | Not used (review: a dedication statement only; which of its two titles is kept is not stated)",
+   "checked": "2026-10-30",
+   "quote_recheck": "ok"
   },
   {
    "id": "80004095355387",

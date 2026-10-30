@@ -165,13 +165,11 @@ export function patronDateLabel(p: Patron, today: string): string {
 export const PARISH_TITLES: Record<string, [string, string, string]> = {
   '1000353': ['svátek Navštívení Panny Marie', '5-31', 'https://www.farnoststechovice.cz/wp-content/uploads/2025/12/Planfarnosti_2026.pdf'], // kaple Navštívení Panny Marie, Davle
   '1000726': ['svátek Navštívení Panny Marie', '7-2', 'http://www.rkfrakovnik.cz/pout-v-petrovicich/'], // farní kostel Navštívení Panny Marie, Petrovice u Rakovníka
-  '2000258': ['památka sv. Prokopa', '7-4', 'https://www.farnostdoksany.cz/bohusovice'], // farní kostel sv. Prokopa a Mikuláše, Bohušovice nad Ohří
   '2000316': ['svátek Navštívení Panny Marie', '7-2', 'https://www.farnosthejnice.cz/2026/05/15/hejnicka-poutni-mse-patrocinium/'], // farní kostel Navštívení Panny Marie, Hejnice
   '2000453': ['svátek sv. Jakuba Staršího', '7-25', 'http://www.farnostlouny.com/index.php?id=8'], // farní kostel sv. Jakuba apoštola, Cítoliby
   '2000573': ['svátek sv. Jakuba Staršího', '7-25', 'https://dekanstvimh.cz/poutni-slavnost-ke-cti-sv-jakuba-a-sv-anny-do-mn-hradiste-nedele-28-cervence/'], // děkanský kostel sv. Jakuba apoštola, Mnichovo Hradiště
   '200069': ['svátek Navštívení Panny Marie', '7-2', 'https://farnostbozkov.cz/2013/07/07/pout-ke-kralovne-hor/'], // farní kostel Navštívení Panny Marie, Bozkov
   '30001021059087': ['svátek Navštívení Panny Marie', '5-31', 'https://farnostbousin.cz/bohosluzby/'], // farní kostel Navštívení Panny Marie
-  '30002101808255': ['svátek Navštívení Panny Marie', '7-2', 'http://www.farnost-nizkov.cz/Media/ContentItems/5798_05798/ohlasky-2026-06-28.pdf'], // filiální kostel Navštívení Panny Marie
   '30003227384806': ['slavnost Nanebevzetí Panny Marie', '8-15', 'https://sedlec.info/ohlasky/437/'], // farní kostel Nanebevzetí Panny Marie a sv. Jana Křtitele
   '30003645000453': ['svátek Narození Panny Marie', '9-8', 'http://www.farnostzeliv.cz'], // opatský a farní kostel Narození Panny Marie
   '4000850126195': ['svátek sv. Jana Nepomuckého', '5-16', 'https://farnostkaplice.cz/2023.pdf'], // filiální kostel Panny Marie Bolestné a sv. Jana Nepomuckého
@@ -180,10 +178,8 @@ export const PARISH_TITLES: Record<string, [string, string, string]> = {
   '50002237542694': ['svátek Navštívení Panny Marie', '5-31', 'https://www.farnost-spalov.cz/wp-content/uploads/2026/05/Ohlasky_2026-05-24_o.pdf'], // farní kostel Navštívení P. Marie
   '50003474315039': ['svátek Navštívení Panny Marie', '5-31', 'http://farnost-domaslavice.webnode.cz/menu/'], // filiální kostel Navštívení P. Marie
   '5000368960041': ['svátek Navštívení Panny Marie', '5-31', 'https://farnostdobra.cz/'], // kaple Navštívení P. Marie
-  '5000799949612': ['svátek sv. Michaela archanděla', '9-29', 'https://farnostkozlovice.cz/?page_id=45'], // farní kostel sv. Michala a Barbory
   '60002871972936': ['svátek sv. Šimona a Judy', '10-28', 'https://www.farnostdysina.cz/blog/2026/10/29/pout-ktera-zapustila-koreny-28-10-2026/'], // farní kostel Nejsvětější Trojice a sv. Šimona a Judy Dýšina
   '60003999141812': ['svátek sv. Jakuba Staršího', '7-25', 'http://farnostkraslice.estranky.cz/clanky/poute---feste-v-kraslicke-farnosti-v-kalendarnim-roce/poutni-slavnosti-ve-farnosti-2026.html'], // filiální kostel sv. Jakuba Sněžná
-  '6000690502946': ['svátek sv. Michaela archanděla', '9-29', 'https://farnostostrov.cz/ohlasky/25.-nedele-v-mezidobi-26.pdf'], // farní kostel sv. Michaela a Panny Marie Věrné Ostrov
   '70001082828364': ['slavnost Nanebevzetí Panny Marie', '8-15', 'https://kyjov.farnost.cz/blog_clanek/farni-kostel-zdobi-dve-nove-vitraze-26109'], // farní kostel Nanebevzetí Panny Marie a sv. Cyrila a Metoděje
   '70001610901718': ['svátek Navštívení Panny Marie', '7-2', 'http://zasova.net/archiv_poradu_bohosluzeb?porad=Q1g1ZTV0YzBRU2htY2pzcVlTY1EvQT09Ojpa7JiyBRdv3J98qrEeUk8N&t=TjY4bTlMY0tsYmtBWTA4QXFTMUJVRTdCRUxsWHZnemhibDM5MW1XRVczZz06OskWB643oOFdwhiribBihK0%3D'], // farní kostel Navštívení Panny Marie
   '70001825863035': ['svátek Navštívení Panny Marie', '5-31', 'http://farnostvelehrad.cz/clanek/kaple-navstiveni-panny-marie-v-tupesich-5695'], // kaple Navštívení Panny Marie
@@ -197,7 +193,6 @@ export const PARISH_TITLES: Record<string, [string, string, string]> = {
   '80003287724522': ['svátek sv. Jakuba Staršího', '7-25', 'https://www.svatyjakub.cz/program-o-prazdninach-2026/'], // kostel farní sv. Jakuba
   '80003291841355': ['svátek Navštívení Panny Marie', '7-2', 'http://www.farnostlomnice.cz/clanky/aktualne/dobre-zpravy/poute-2026.html'], // kostel farní Navštívení Panny Marie
   '80003795866278': ['slavnost Narození sv. Jana Křtitele', '6-24', 'https://www.faby.cz/akce-pozvanky/pripravujeme/748-kalendar-hlavnich-akci-v-roce-2026.html'], // kostel farní sv. Jana Křtitele a sv. Jana Evangelisty
-  '8000394979761': ['památka sv. Kateřiny Alexandrijské', '11-25', 'http://www.farnost-heralec.cz/historie/historie-farnost-heralec'], // kostel farní sv. Kateřiny a Panny Marie
   '8000515450433': ['svátek Navštívení Panny Marie', '5-31', 'http://www.farnostbabice.com/inpage/bohosluzby-438/'], // kostel farní Navštívení Panny Marie
   '8000567053899': ['svátek sv. Václava', '9-28', 'http://farnostlouka.cz/aktuality/7/'], // kostel farní sv. Václava a Panny Marie
 }

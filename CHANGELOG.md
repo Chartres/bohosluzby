@@ -7,9 +7,9 @@ Format: what a user notices first, then what an agent needs to know.
 ## Unreleased (web: live · iOS/Android: next store build)
 - **Title feast from the parish where the name is ambiguous** (Pavol 2026-10-30): plain
   "sv. Jakuba", two-title churches and Navštívení P. M. stay silent unless the parish's own
-  website or bulletin names the feast. 37 of 150 such churches are now confirmed, each with
+  website or bulletin names the feast. 32 of 150 such churches are now confirmed, each with
   its source URL and a verbatim quote in `data/patron-sources.json`. `patronOfChurch` in
-  `src/domain/patron.ts` adds them to the church page and the detail; the other 113 still
+  `src/domain/patron.ts` adds them to the church page and the detail; the other 118 still
   show nothing.
 - **/dusicky/ hub: map, towns by diocese, Najdi obec** (Pavol 2026-10-30: "Add a map to this
   page? List of towns in alphabetical order is strange ux."). A map of Czechia with a dot
