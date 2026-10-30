@@ -75,17 +75,26 @@ export const specOf = (s: Service | ExtraService) =>
  * RRULE;UNTIL=<last occurrence> and EXDATE for every skipped date — deletable as one.
  * Dated-only exclusions ("kromě 2. 11. 2026"): open-ended RRULE, EXDATE for the
  * listed dates only. Unrestricted services keep an open-ended weekly RRULE. */
-export function buildICS(church: Church, service: Service | ExtraService, now: Date): string | null {
+export function buildICS(
+  church: Church,
+  service: Service | ExtraService,
+  now: Date,
+  /** once: only the next occurrence (no RRULE) — the web's "připomenout";
+   * alarmMin: a VALARM that many minutes before the start */
+  opts: { once?: boolean; alarmMin?: number } = {},
+): string | null {
   const all = nextOccurrences(specOf(service), now, HORIZON_DAYS)
-  const occs = all.filter((occ) => runsAt(service.note, occ))
-  if (occs.length === 0) return null
+  const runsOn = all.filter((occ) => runsAt(service.note, occ))
+  if (runsOn.length === 0) return null
+  const occs = opts.once ? runsOn.slice(0, 1) : runsOn
+  const weekly = 'days' in service && !opts.once
   // Dated-only exclusions ("kromě D. M. YYYY") get EXDATE treatment — no UNTIL needed.
-  const restricted = 'days' in service && occs.length < all.length && !hasDatedOnlyExclusions(service.note)
+  const restricted = weekly && occs.length < all.length && !hasDatedOnlyExclusions(service.note)
 
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`
   const url = churchUrl(church.id)
-  const uid = `${church.id}-${'days' in service ? service.days : service.date}-${service.time}-${service.type}-${service.lang}`
+  const uid = `${church.id}-${'days' in service ? service.days : service.date}-${service.time}-${service.type}-${service.lang}${opts.once ? `-${runsOn[0].getTime()}` : ''}`
   const utc = (at: Date) => at.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z')
   const dtstamp = utc(now)
 
@@ -99,14 +108,16 @@ export function buildICS(church: Church, service: Service | ExtraService, now: D
   const first = occs[0]
   const last = occs[occs.length - 1]
   const runs = new Set(occs.map((o) => o.getTime()))
-  const excluded = all.filter((o) => o >= first && !runs.has(o.getTime()) && (!restricted || o <= last))
+  const excluded = weekly
+    ? all.filter((o) => o >= first && !runs.has(o.getTime()) && (!restricted || o <= last))
+    : []
   const event = [
     'BEGIN:VEVENT',
     `UID:${uid}@bohosluzby.dravec.org`,
     `DTSTAMP:${dtstamp}`,
     `DTSTART;TZID=Europe/Prague:${local(first)}`,
     'DURATION:PT1H', // ponytail: the registry has no end times; an hour is the honest default
-    ...('days' in service
+    ...(weekly
       ? [`RRULE:FREQ=WEEKLY;BYDAY=${[...service.days].map((d) => BYDAY[d]).filter(Boolean).join(',')}${restricted ? `;UNTIL=${utc(last)}` : ''}`]
       : []),
     ...(excluded.length ? [`EXDATE;TZID=Europe/Prague:${excluded.map(local).join(',')}`] : []),
@@ -114,6 +125,9 @@ export function buildICS(church: Church, service: Service | ExtraService, now: D
     `LOCATION:${escapeText([church.name, church.city].filter(Boolean).join(', '))}`,
     `DESCRIPTION:${escapeText(`${service.note ? `${service.note}\n` : ''}${url}\nÚdaje z rejstříku ČBK — ověřte ve farnosti.`)}`,
     `URL:${url}`,
+    ...(opts.alarmMin
+      ? ['BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${escapeText(summary)}`, `TRIGGER:-PT${opts.alarmMin}M`, 'END:VALARM']
+      : []),
     'END:VEVENT',
   ]
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//bohosluzby.dravec.org//CS', ...VTIMEZONE, ...event, 'END:VCALENDAR']

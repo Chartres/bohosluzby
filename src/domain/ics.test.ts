@@ -130,3 +130,20 @@ it('folds lines at 75 octets, counting UTF-8 bytes, without splitting a characte
   const unfolded = ics.replace(/\r\n /g, '')
   expect(unfolded).toContain(`SUMMARY:Mše sv. — ${longName.name}`)
 })
+
+describe('buildICS — the web reminder (once + alarm)', () => {
+  it('only the next occurrence, no RRULE, with a VALARM 30 min before', () => {
+    const ics = buildICS(church, weekly, now, { once: true, alarmMin: 30 })!
+    expect(ics).toContain('DTSTART;TZID=Europe/Prague:20260703T180000')
+    expect(ics).not.toContain('RRULE:FREQ=WEEKLY') // (the VTIMEZONE block has its own yearly RRULEs)
+    expect(ics).not.toContain('EXDATE')
+    expect(ics).toContain('BEGIN:VALARM')
+    expect(ics).toContain('TRIGGER:-PT30M')
+    // its own UID, so it never replaces the weekly series in the calendar
+    expect(ics).not.toContain('UID:42-135-18:00@')
+  })
+  it('respects the note: the next occurrence the note allows', () => {
+    const s: Service = { ...weekly, note: 'kromě 3. 7. 2026' }
+    expect(buildICS(church, s, now, { once: true, alarmMin: 30 })).toContain('DTSTART;TZID=Europe/Prague:20260706T180000')
+  })
+})

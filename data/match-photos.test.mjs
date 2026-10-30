@@ -8,6 +8,7 @@ import {
   rankFiles,
   isReusableLicense,
   stripHtml,
+  artistName,
   titleFromThumbUrl,
 } from './match-photos.mjs'
 
@@ -104,5 +105,18 @@ describe('stripHtml', () => {
   it('reduces an anchor blob to plain text', () => {
     expect(stripHtml('<a href="/wiki/User:Jan">Jan Novák</a>')).toBe('Jan Novák')
     expect(stripHtml('Foo &amp; Bar')).toBe('Foo & Bar')
+  })
+})
+
+describe('artistName', () => {
+  it('keeps a plain name', () => {
+    expect(artistName('<a href="/wiki/User:Jan">Jan Novák</a>')).toBe('Jan Novák')
+  })
+  it('recovers the user from a note-only template', () => {
+    const html = '<span>I would appreciate being notified if you use my work outside Wikimedia. More of my work can be found in my <a href="//commons.wikimedia.org/wiki/User:Aktron/Gallery">personal gallery</a>.</span>'
+    expect(artistName(html)).toBe('Aktron')
+  })
+  it('takes the name out of "This Photo was taken by …"', () => {
+    expect(artistName('This Photo was taken by <a href="/wiki/User:Miha_Pe%C4%8De">Miha Peče</a> . Feel free to use my photos, but please mention me as the author.')).toBe('Miha Peče')
   })
 })

@@ -25,6 +25,8 @@ import { IntroGuide } from './IntroGuide'
 import { SearchPicker } from './SearchPicker'
 import { MyChurches } from './MyChurches'
 import { holyDayLine } from './domain/holyday'
+import { feastWeek, type FeastDayRef } from './domain/feastWeek'
+import { MassVerbs, onDate } from './MassVerbs'
 import { FeedbackCard } from './FeedbackCard'
 import { AfterMassCard, type CardMass } from './AfterMassCard'
 import { massKey, riteOf, slotKey, WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
@@ -50,6 +52,8 @@ import {
   type Key,
 } from './i18n'
 
+/** ?den= value for the '1.–2. 11.' pill (both feast days at once) */
+const FEAST_DEN = 'svatky'
 const NEARBY_KM = 30
 const NEARBY_CAP = 120
 const LIST_LIMIT = 20
@@ -275,7 +279,15 @@ export default function App() {
   const params = new URLSearchParams(search)
   const feedbackParam = params.get('feedback')
   const den = params.get('den')
-  const day = useMemo(() => dayFromParam(now, den), [den, now]) // now ticks → re-resolves after midnight
+  // 1 + 2 Nov (Pavol 2026-10-29, D-b): the week before, a "1.–2. 11." pill
+  // (?den=svatky) lists both days at once; everything else then reads the
+  // first of them as the selected day (map, countdowns, kolem times)
+  const feast = useMemo(() => feastWeek(now), [now])
+  const feastOn = den === FEAST_DEN && feast !== null
+  const day = useMemo(
+    () => (feastOn ? feast![0].offset : dayFromParam(now, den)),
+    [den, now, feastOn, feast],
+  ) // now ticks → re-resolves after midnight
   const cas = parseCas(params.get('cas'))
   const setParams = (entries: Record<string, string | null>) => {
     const p = new URLSearchParams(search)
@@ -606,15 +618,18 @@ export default function App() {
   // data): keep only Masses carrying ALL selected tags at slot- or church-tier.
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
-    const all = selectUpcoming(now, origin, data.nearby, data.byId, filters, cas, day, {
-      limit: witnessTags.length ? Infinity : listLimit,
-    })
+    const days: DayChoice[] = feastOn ? feast!.map((f) => f.offset) : [day]
+    const all = days.flatMap((d) =>
+      selectUpcoming(now, origin, data.nearby, data.byId, filters, cas, d, {
+        limit: witnessTags.length ? Infinity : listLimit,
+      }),
+    )
     if (witnessTags.length === 0) return all
     return all
       .filter((u) => churchHasTags(u.church.id, massKey(u.church.id, u.service, u.start), witnessTags))
       .slice(0, listLimit)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
-  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, now])
+  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, now, feastOn, feast])
 
   // the no-location path: the six towns with the most churches, one tap each
   const popularCities = useMemo(() => (index ? aggregateCities(index).slice(0, 6) : []), [index])
@@ -1030,6 +1045,12 @@ export default function App() {
                 langs={langs}
                 onReset={resetAll}
                 now={now}
+                feast={feast}
+                feastOn={feastOn}
+                onFeast={(on) => {
+                  setParam('den', on ? FEAST_DEN : null)
+                  track('key_action', { action: 'day', day: on ? FEAST_DEN : 'now' })
+                }}
               />
               {/* not on a live fix (offline / last-known / picked city): search is the
                   main CTA — a visible input-shaped button, not a buried "změnit" link */}
@@ -1043,7 +1064,8 @@ export default function App() {
                   {t('search_cta')}
                 </button>
               )}
-              {!mapMode && <FeastLine day={day} />}
+              {/* the two-day list names its feasts in its day rubrics */}
+              {!mapMode && !feastOn && <FeastLine day={day} />}
               {/* season advisory replaces the per-row "ověřeno <year>" marker —
                   "times often change NOW, verify" is a signal the reader can
                   act on; a provenance year wasn't. Not in map mode: chrome
@@ -1091,7 +1113,8 @@ export default function App() {
               <>
                 <ServiceList
                   rows={rows}
-                  showUntil={day === 'now' || day === 0}
+                  feast={feast}
+                  showUntil={!feastOn && (day === 'now' || day === 0)}
                   witnessChurches={witnessChurches}
                   onOpen={openChurch}
                   onNavigate={setNavTarget}
@@ -1179,9 +1202,26 @@ export default function App() {
   )
 }
 
+/** '1.–2. 11.' while both feast days are ahead; '2. 11.' on the last one. */
+function feastLabel(feast: FeastDayRef[]): string {
+  const dm = (iso: string) => `${Number(iso.slice(8))}. ${Number(iso.slice(5, 7))}.`
+  return feast.length > 1 ? `${Number(feast[0].iso.slice(8))}.–${dm(feast[1].iso)}` : dm(feast[0].iso)
+}
+
 // The day rubric of the ordo, as a picker: which page are you reading?
 // Active day is set in rubric red — day labels are rubrics in a missal.
-function DayPicker({ day, onChange, now = new Date() }: { day: DayChoice; onChange: (d: DayChoice) => void; now?: Date }) {
+function DayPicker({
+  day,
+  onChange,
+  now = new Date(),
+  feast,
+}: {
+  day: DayChoice
+  onChange: (d: DayChoice) => void
+  now?: Date
+  /** the '1.–2. 11.' choice, offered first the week before */
+  feast?: { label: string; on: boolean; toggle: () => void }
+}) {
   const options = useMemo(() => dayOptions(now), [now])
   // a bookmarked ?den= must not hide its own chip off-screen
   const activeRef = useRef<HTMLButtonElement>(null)
@@ -1196,6 +1236,20 @@ function DayPicker({ day, onChange, now = new Date() }: { day: DayChoice; onChan
       aria-label={t('day_group')}
       className="scroll-row -ml-1 mt-1 flex items-baseline gap-x-4 overflow-x-auto py-2 whitespace-nowrap"
     >
+      {feast && (
+        <button
+          type="button"
+          aria-pressed={feast.on}
+          aria-label={t('feast_pill_aria')}
+          className={`-my-2 px-1 py-3.5 text-xs font-semibold uppercase tracking-[0.08em] ${
+            feast.on ? 'text-rubric underline decoration-rubric decoration-2 underline-offset-4' : ''
+          }`}
+          style={feast.on ? undefined : { color: 'var(--season)' }}
+          onClick={feast.toggle}
+        >
+          {feast.label}
+        </button>
+      )}
       {options.map(({ key, label, lit }) => {
         const active = key === day
         // feast days get a quiet tint of their liturgical color (a missal marks them too)
@@ -1354,14 +1408,20 @@ function ServiceList({
   witnessChurches,
   onOpen,
   onNavigate,
+  feast = null,
 }: {
   rows: Upcoming[]
   showUntil: boolean
   witnessChurches: Set<string>
   onOpen: (id: string, at?: Date) => void
   onNavigate: (t: { name: string; lat: number; lng: number }) => void
+  /** the week before 1 Nov: the day rubric names the feast */
+  feast?: FeastDayRef[] | null
 }) {
   const now = new Date()
+  // one row at a time unfolds its mass verbs (tap the time)
+  const [open, setOpen] = useState<string | null>(null)
+  const feastName = (start: Date) => feast?.find((f) => f.iso === pragueIsoDate(start))?.name
   let lastDay = ''
   return (
     <ol className="mt-2" data-testid="seznam">
@@ -1371,23 +1431,41 @@ function ServiceList({
         lastDay = day
         // index suffix: the ordo can hold two rows with the same (church, start) —
         // duplicate keys corrupted reconciliation and left phantom rows on day switch
+        const key = `${r.church.id}-${r.start.getTime()}-${i}`
+        const isOpen = open === key
+        const feastOf = showDay ? feastName(r.start) : undefined
         return (
-          <li key={`${r.church.id}-${r.start.getTime()}-${i}`}>
-            {showDay && <h3 className="rubric mt-6 mb-1">{day}</h3>}
+          <li key={key}>
+            {showDay && (
+              <h3 className="rubric mt-6 mb-1">
+                {day}
+                {feastOf && ` · ${feastOf}`}
+              </h3>
+            )}
             {/* stretched link: the name anchor covers the row; mapa/web sit above it */}
             <div className="group relative flex items-baseline gap-4 border-t border-hairline py-3">
-              <div className="w-16 shrink-0">
-                <p className="font-display text-2xl font-semibold tabular-nums">
+              {/* the TIME is the mass (Pavol 2026-10-29, M1): tap it and its
+                  verbs unfold under the row; z-10 lifts it above the
+                  stretched church link. ▾ = the app's "opens something". */}
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                aria-label={`${fmtTime(r.start)} — ${t('mass_actions_aria')}`}
+                className="relative z-10 -my-1 w-16 shrink-0 py-1 text-left"
+                onClick={() => setOpen(isOpen ? null : key)}
+              >
+                <span className="font-display block text-2xl font-semibold tabular-nums">
                   {fmtTime(r.start)}
-                </p>
+                </span>
                 {/* countdown under the time — the right edge belongs to the
                     verb stack, and a narrow column wraps "za 7 h 4 min" fine */}
-                {showUntil && (
-                  <p className="mt-0.5 text-xs font-semibold text-ink-faded">
-                    {fmtUntil(now, r.start)}
-                  </p>
-                )}
-              </div>
+                <span className="mt-0.5 block text-xs font-semibold text-ink-faded">
+                  {showUntil && `${fmtUntil(now, r.start)} `}
+                  <span aria-hidden="true" className={`inline-block text-[0.6rem] opacity-60 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                    ▾
+                  </span>
+                </span>
+              </button>
               <div className="min-w-0 flex-1">
                 <p className="font-display text-[1.05rem] leading-snug font-semibold">
                   <a
@@ -1468,6 +1546,7 @@ function ServiceList({
                 </div>
               </div>
             </div>
+            {isOpen && <MassVerbs church={r.church} service={onDate(r.service, r.start)} className="pb-3" />}
           </li>
         )
       })}
@@ -1503,6 +1582,9 @@ function OrdoControls({
   langs,
   onReset,
   now = new Date(),
+  feast = null,
+  feastOn = false,
+  onFeast,
 }: {
   day: DayChoice
   onDay: (d: DayChoice) => void
@@ -1513,6 +1595,10 @@ function OrdoControls({
   langs: string[]
   onReset: () => void
   now?: Date
+  /** 1 + 2 Nov, the week before: the '1.–2. 11.' pill (D-b) */
+  feast?: FeastDayRef[] | null
+  feastOn?: boolean
+  onFeast?: (on: boolean) => void
 }) {
   const [open, setOpen] = useState(false)
   const narrow = useNarrow()
@@ -1528,8 +1614,9 @@ function OrdoControls({
   const whatCount =
     [filters.massOnly, filters.barrierFree, filters.greek, filters.lang].filter(Boolean).length +
     filters.witnessTags.length
-  const dayLbl =
-    day === 'now'
+  const dayLbl = feastOn
+    ? t('day_group')
+    : day === 'now'
       ? t('day_now')
       : (dayOptions(new Date()).find((o) => o.key === day)?.label ?? t('day_group'))
   const kdyLbl = cas ? (cas in BANDS ? bandLabel(cas as Band) : aroundLabel(cas)) : t('anytime')
@@ -1582,7 +1669,12 @@ function OrdoControls({
       }
     >
       <p className="rubric mt-2 text-ink-faded">{t('day_group').toLowerCase()}</p>
-      <DayPicker day={day} onChange={onDay} now={now} />
+      <DayPicker
+        day={feastOn ? -1 : day}
+        onChange={onDay}
+        now={now}
+        feast={feast && onFeast ? { label: feastLabel(feast), on: feastOn, toggle: () => onFeast(!feastOn) } : undefined}
+      />
       <p className="rubric mt-2 text-ink-faded">{t('rubric_when')}</p>
       <div
         role="group"
@@ -1781,12 +1873,29 @@ function OrdoControls({
         // clear pill scrolling out of reach (user feedback)
         className="scroll-row -ml-1 flex items-baseline gap-x-3 overflow-x-auto py-2 whitespace-nowrap"
       >
-        {pill(t('day_group').toLowerCase(), dayLbl, day !== 'now')}
+        {/* D-b: both feast days in one list — a toggle, not a sheet; first in
+            the row and set in the season colour while it's offered */}
+        {feast && onFeast && (
+          <button
+            type="button"
+            aria-pressed={feastOn}
+            aria-label={t('feast_pill_aria')}
+            // digits only: no caps tracking, so the row still fits 375px
+            className={`-my-2 px-0.5 py-3.5 text-sm font-semibold whitespace-nowrap ${
+              feastOn ? 'underline decoration-2 underline-offset-4' : 'hover:text-ink'
+            }`}
+            style={{ color: 'var(--season)', textDecorationColor: 'var(--season)' }}
+            onClick={() => onFeast(!feastOn)}
+          >
+            {feastLabel(feast)}
+          </button>
+        )}
+        {pill(t('day_group').toLowerCase(), dayLbl, day !== 'now' && !feastOn)}
         {pill(t('rubric_when'), kdyLbl, Boolean(cas))}
         {pill(t('rubric_range'), okruhLbl, Boolean(filters.maxKm))}
         {pill(t('rubric_what'), filtryLbl, whatCount > 0)}
         {/* anything narrowed → one pill back to the clean page */}
-        {(day !== 'now' || cas || filters.maxKm || whatCount > 0) && (
+        {(day !== 'now' || feastOn || cas || filters.maxKm || whatCount > 0) && (
           <button
             type="button"
             aria-label={t('clear_all_aria')}

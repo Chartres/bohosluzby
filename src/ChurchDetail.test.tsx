@@ -1,9 +1,9 @@
 // Confession ("svátost smíření") rows are stored as service rows whose TIME is a
 // window range, not a Mass start. They must stay out of the Mass schedule and
 // render in their own auxiliary section, range intact.
-import { vi } from 'vitest'
+import { afterEach, vi } from 'vitest'
 vi.mock('./lib/supabase', () => ({ supabase: null }))
-import { act, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { ChurchDetail } from './ChurchDetail'
 import type { Church } from './domain/data'
 
@@ -168,7 +168,7 @@ describe('church photo', () => {
     expect(figure).not.toBeNull()
     expect(within(figure!).getByRole('heading', { name: 'kostel 1' })).toBeInTheDocument()
     // the meta links sit over the hero too
-    expect(within(figure!).getByRole('button', { name: 'navigace' })).toBeInTheDocument()
+    expect(within(figure!).getByRole('button', { name: 'trasa' })).toBeInTheDocument()
     expect(screen.getByText(/foto: Jan Novák · CC BY-SA 4\.0 · Wikimedia Commons/)).toBeInTheDocument()
   })
 
@@ -318,7 +318,9 @@ describe('pozvat', () => {
     try {
       render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
       const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
-      await act(async () => within(schedule).getAllByRole('button', { name: 'pozvat' })[0].click())
+      // M1: the row unfolds its verbs in place
+      await act(async () => within(schedule).getAllByRole('button', { expanded: false })[0].click())
+      await act(async () => within(schedule).getByRole('button', { name: 'pozvat' }).click())
       expect(share).toHaveBeenCalledTimes(1)
       const arg = (share.mock.calls[0] as unknown as [{ text: string; url: string }])[0]
       expect(arg.text).toMatch(/^Půjdeš se mnou na mši svatou\? (Dnes|Zítra|V neděli \d+\. \d+\.) v 09:00, kostel 2 \(Praha 1\)\.$/)
@@ -340,7 +342,9 @@ describe('pozvat — when sharing is refused', () => {
     try {
       render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
       const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
-      await act(async () => within(schedule).getAllByRole('button', { name: 'pozvat' })[0].click())
+      // M1: the row unfolds its verbs in place
+      await act(async () => within(schedule).getAllByRole('button', { expanded: false })[0].click())
+      await act(async () => within(schedule).getByRole('button', { name: 'pozvat' }).click())
       expect(writeText).toHaveBeenCalledTimes(1)
       expect((writeText.mock.calls[0] as unknown as [string])[0]).toContain('https://bohosluzby.dravec.org/kostel/2/?utm_source=pozvani')
       expect(screen.getByText('pozvánka zkopírována ✓')).toBeInTheDocument()
@@ -358,5 +362,54 @@ describe('titulární svátek', () => {
     const parish = await screen.findByRole('region', { name: 'Farnost' })
     expect(within(parish).getByText(/titulární svátek \(pouť\): památka sv\. Martina, 11\. listopadu/)).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: /Titulární svátek/ })).toBeNull()
+  })
+})
+
+// M1: tap a service row — its verbs unfold under it; tap again, they fold away
+describe('service row unfolds', () => {
+  it('one row at a time, from the keyboard too', async () => {
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(within(schedule).queryByRole('button', { name: 'pozvat' })).toBeNull() // folded: no verbs on the row
+    const row = within(schedule).getAllByRole('button', { expanded: false })[0]
+    fireEvent.keyDown(row, { key: 'Enter' })
+    expect(row).toHaveAttribute('aria-expanded', 'true')
+    for (const name of ['připomenout', 'do kalendáře', 'pozvat'])
+      expect(within(schedule).getByRole('button', { name })).toBeInTheDocument()
+    fireEvent.click(row)
+    expect(within(schedule).queryByRole('button', { name: 'pozvat' })).toBeNull()
+  })
+})
+
+// M3: the header carries the verbs of the mass you came for (or the next one)
+describe('header mass verbs', () => {
+  it('under the day line', async () => {
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    const line = await screen.findByTestId('day-line')
+    const verbs = line.nextElementSibling as HTMLElement
+    expect(within(verbs).getByRole('button', { name: 'pozvat' })).toBeInTheDocument()
+    expect(within(verbs).getByRole('button', { name: 'připomenout' })).toBeInTheDocument()
+  })
+})
+
+// D2: the week before 1 Nov, the church's services on 1 and 2 Nov above the ordo
+describe('1 + 2 November block', () => {
+  afterEach(() => vi.useRealTimers())
+  it('the week before: Sunday 09:00 under Všech svatých, nothing listed on 2 Nov', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-29T10:00:00Z'))
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    const block = await screen.findByRole('region', { name: '1. a 2. listopadu' })
+    expect(within(block).getByText('Slavnost Všech svatých')).toBeInTheDocument()
+    expect(within(block).getByText('Vzpomínka na všechny věrné zemřelé')).toBeInTheDocument()
+    expect(within(block).getByText('09:00')).toBeInTheDocument()
+    expect(within(block).getByText(/neuvádí/)).toBeInTheDocument()
+  })
+  it('not outside the week', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-20T10:00:00Z'))
+    render(<ChurchDetail church={church('2', '50-14')} onBack={() => {}} />)
+    await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(screen.queryByRole('region', { name: '1. a 2. listopadu' })).toBeNull()
   })
 })
