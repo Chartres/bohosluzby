@@ -562,6 +562,9 @@ export default function App() {
     }
     const away = resumed.getTime() - hiddenAt > STICKY_TTL_MS || !samePragueDay(new Date(hiddenAt), resumed)
     if (cas && saved !== cas && (expired || away)) setParam('cas', saved)
+    // 'zitra' was relative to the previous day — after a cross-day gap it points
+    // to the day-after-tomorrow; reset to 'now' so the user sees today's services
+    if (away && den === 'zitra') setParam('den', null)
     // ponytail: 15 min away ≈ maybe moved; shorter app switches keep the list as is
     if (origin?.source === 'geo' && !picking && resumed.getTime() - hiddenAt >= 15 * 60_000) locate(true)
   }
