@@ -416,7 +416,11 @@ export default function App() {
         onLate: (late) => {
           setLocating(false)
           if (!late.coords) return
-          if (originRef.current?.source === 'city' || pickingRef.current) return
+          if (originRef.current?.source === 'city') return
+          if (pickingRef.current) {
+            pendingGeoRef.current = { lat: late.coords.lat, lng: late.coords.lng }
+            return
+          }
           setOrigin({ lat: late.coords.lat, lng: late.coords.lng, source: 'geo' })
           setGeoFail(null)
           setGeoDenied(false)
@@ -427,8 +431,14 @@ export default function App() {
           setLocating(false)
           const { lat, lng } = r.coords
           // a city picked while the fix was pending (up to 30 s) wins over it;
-          // also bail if the picker is currently open — user is mid-choice
-          setOrigin((cur) => (cur?.source === 'city' || pickingRef.current ? cur : { lat, lng, source: 'geo' }))
+          // picker open — save fix for when it closes rather than dropping it
+          if (originRef.current?.source === 'city') {
+            // city wins, discard
+          } else if (pickingRef.current) {
+            pendingGeoRef.current = { lat, lng }
+          } else {
+            setOrigin({ lat, lng, source: 'geo' })
+          }
         } else {
           if (r.error !== 'deadline') setLocating(false) // a deadline keeps listening (onLate)
           fallback(r.error ?? 'timeout')
@@ -459,6 +469,7 @@ export default function App() {
   originRef.current = origin
   const pickingRef = useRef(picking)
   pickingRef.current = picking
+  const pendingGeoRef = useRef<{ lat: number; lng: number } | null>(null)
   useEffect(() => {
     if (!index) return
     if (citySlug) {
@@ -731,12 +742,14 @@ export default function App() {
 
   const pickCity = (city: City) => {
     track('key_action', { action: 'city_selected', city: city.name })
+    pendingGeoRef.current = null // city chosen — discard any pending GPS fix
     setGeoDenied(false)
     setPicking(false)
     navigate(`/mesto/${city.slug}/${search}`) // history push — back returns to my location
   }
   const pickChurch = (id: string) => {
     track('key_action', { action: 'church_selected', church: id })
+    pendingGeoRef.current = null
     setPicking(false)
     navigate(`/kostel/${id}/${search}`)
   }
@@ -920,7 +933,16 @@ export default function App() {
               index={index}
               onPickCity={pickCity}
               onPickChurch={pickChurch}
-              onClose={() => setPicking(false)}
+              onClose={() => {
+                setPicking(false)
+                const pending = pendingGeoRef.current
+                if (pending) {
+                  pendingGeoRef.current = null
+                  setOrigin((cur) => (cur?.source === 'city' ? cur : { lat: pending.lat, lng: pending.lng, source: 'geo' }))
+                  setGeoFail(null)
+                  setGeoDenied(false)
+                }
+              }}
             />
           </section>
         )}
