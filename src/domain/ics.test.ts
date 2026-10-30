@@ -93,6 +93,17 @@ describe('buildICS — note-restricted weekly services (sweep F1, G2)', () => {
     expect(ics).not.toContain('EXDATE')
   })
 
+  it('a dated-only exclusion ("kromě 2. 11. 2026") keeps open-ended RRULE and adds EXDATE', () => {
+    // Oct 1 → first Mon = Oct 5; Nov 2 (Mon, All Souls Day) is excluded mid-series
+    const testNow = new Date('2026-10-01T08:00:00Z')
+    const withDateExcl: Service = { days: '1', time: '09:00', lang: 'česky', greek: false, type: 'mše sv.', note: 'kromě 2. 11. 2026' }
+    const ics = buildICS(church, withDateExcl, testNow)!
+    expect(ics).not.toBeNull()
+    expect(ics).toMatch(/RRULE:FREQ=WEEKLY;BYDAY=MO\r\n/) // open-ended — no UNTIL
+    expect(ics).not.toContain(';UNTIL=')
+    expect(unfold(ics)).toContain('20261102') // EXDATE for the one-off
+  })
+
   it('a note that excludes nothing keeps the open-ended weekly RRULE', () => {
     const ics = buildICS(church, { ...weekly, note: 'pro děti' }, now)!
     expect(ics).toContain('RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR\r\n')

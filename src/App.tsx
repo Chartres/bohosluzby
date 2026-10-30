@@ -426,8 +426,9 @@ export default function App() {
         if (r.coords) {
           setLocating(false)
           const { lat, lng } = r.coords
-          // a city picked while the fix was pending (up to 30 s) wins over it
-          setOrigin((cur) => (cur?.source === 'city' ? cur : { lat, lng, source: 'geo' }))
+          // a city picked while the fix was pending (up to 30 s) wins over it;
+          // also bail if the picker is currently open — user is mid-choice
+          setOrigin((cur) => (cur?.source === 'city' || pickingRef.current ? cur : { lat, lng, source: 'geo' }))
         } else {
           if (r.error !== 'deadline') setLocating(false) // a deadline keeps listening (onLate)
           fallback(r.error ?? 'timeout')

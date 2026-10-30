@@ -3,7 +3,7 @@
 // via TZID + an explicit VTIMEZONE so every client agrees across DST.
 import type { Church, ExtraService, Service } from './data'
 import { nextOccurrences, pragueToday, pragueMinutes } from './occurrences'
-import { runsAt } from './notes'
+import { runsAt, hasDatedOnlyExclusions } from './notes'
 import { churchUrl } from './site'
 
 const BYDAY: Record<string, string> = { 1: 'MO', 2: 'TU', 3: 'WE', 4: 'TH', 5: 'FR', 6: 'SA', 7: 'SU' }
@@ -78,7 +78,8 @@ export function buildICS(church: Church, service: Service | ExtraService, now: D
   const all = nextOccurrences(specOf(service), now, HORIZON_DAYS)
   const occs = all.filter((occ) => runsAt(service.note, occ))
   if (occs.length === 0) return null
-  const restricted = 'days' in service && occs.length < all.length
+  // Dated-only exclusions ("kromě D. M. YYYY") get EXDATE treatment — no UNTIL needed.
+  const restricted = 'days' in service && occs.length < all.length && !hasDatedOnlyExclusions(service.note ?? '')
 
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`
