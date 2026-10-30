@@ -315,7 +315,8 @@ export function feastBeacon(supabaseUrl: string | undefined, key: string | undef
     `<script>(()=>{try{const c=${cfg};const n=navigator;` +
     // same rule as isLikelyBot (lib/telemetry.ts): crawlers and automation are not visitors
     `if(n.webdriver||/(?:^|[^u])bot\\b|crawl|spider|slurp|headless|lighthouse|prerender|pagespeed|inspectiontool|googleother|facebookexternalhit|embedly|preview/i.test(n.userAgent||''))return;` +
-    `const id=(s,n)=>{try{let v=s.getItem(n);if(!v){v=crypto.randomUUID();s.setItem(n,v)}return v}catch(e){return crypto.randomUUID()}};` +
+    `const rUID=()=>crypto.randomUUID?.()??Array.from({length:8},()=>Math.floor(Math.random()*0x10000).toString(16).padStart(4,'0')).join('-');` +
+    `const id=(s,n)=>{try{let v=s.getItem(n);if(!v){v=rUID();s.setItem(n,v)}return v}catch(e){return rUID()}};` +
     `let ref=null;try{const b=h=>h.replace(/^www\\./,'');const h=b(new URL(document.referrer).hostname);if(h&&h!==b(location.host))ref=h}catch(e){}` +
     `fetch(c.u,{method:'POST',keepalive:true,headers:{apikey:c.k,authorization:'Bearer '+c.k,'content-type':'application/json',prefer:'return=minimal'},` +
     `body:JSON.stringify({app:'bohosluzby',event:'page_view',props:{route:'feast',feast:'dusicky',path:location.pathname,static:true,ref:ref,platform:'web'},` +

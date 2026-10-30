@@ -131,15 +131,15 @@ const CAS_KEY = 'bohosluzby:cas'
 // spans a nap but not an overnight-to-next-visit gap.
 const STICKY_TTL_MS = 12 * 60 * 60 * 1000
 
-function loadSticky<T>(key: string, opts: { sameDay?: boolean } = {}): T | null {
+function loadSticky<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key)
     if (!raw) return null
     const parsed = JSON.parse(raw) as { savedAt?: number; value?: T }
     if (typeof parsed.savedAt !== 'number' || Date.now() - parsed.savedAt > STICKY_TTL_MS) return null
-    // time-of-day prefs (kolem 18:00) mean nothing tomorrow morning — the 12h
-    // TTL alone let 23:30's pick survive to 08:00 and open an empty list
-    if (opts.sameDay && !samePragueDay(new Date(parsed.savedAt), new Date())) return null
+    // prefs mean nothing tomorrow morning — the 12h TTL alone let 23:30's
+    // "kolem 18:00" or filters survive to 08:00 (founder case 8)
+    if (!samePragueDay(new Date(parsed.savedAt), new Date())) return null
     return parsed.value ?? null
   } catch {
     return null // private mode, or a pre-TTL value written by an older build
@@ -333,7 +333,7 @@ export default function App() {
   // sticky like the other filters (within STICKY_TTL_MS): a plain visit
   // re-applies the saved cas
   useEffect(() => {
-    const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
+    const saved = parseCas(loadSticky<string>(CAS_KEY))
     // an expired key is dead weight, and the resume check would take it for this kdy's source
     if (!saved) removeKey(CAS_KEY)
     else if (!parseCas(new URLSearchParams(location.search).get('cas'))) setParam('cas', saved)
@@ -408,6 +408,17 @@ export default function App() {
       setGeoFail(reason)
       if (!last) setGeoDenied(true) // with a seeded origin the list already stands
     }
+    // a city picked while the fix was pending (up to 30 s) wins over it; an open
+    // picker parks the fix until it closes rather than dropping it
+    const takeFix = ({ lat, lng }: { lat: number; lng: number }): boolean => {
+      if (originRef.current?.source === 'city') return false
+      if (pickingRef.current) {
+        pendingGeoRef.current = { lat, lng }
+        return false
+      }
+      setOrigin({ lat, lng, source: 'geo' })
+      return true
+    }
     if (!background) setLocating(true)
     getPermissionState().then((perm) => {
       if (background && perm !== 'granted') return // stay silent, keep the list
@@ -427,19 +438,16 @@ export default function App() {
         // A 'geo' origin is no choice: a resume re-locate replaces the old fix.
         onLate: (late) => {
           setLocating(false)
-          if (!late.coords) return
-          if (originRef.current?.source === 'city' || pickingRef.current) return
-          setOrigin({ lat: late.coords.lat, lng: late.coords.lng, source: 'geo' })
-          setGeoFail(null)
-          setGeoDenied(false)
+          if (late.coords && takeFix(late.coords)) {
+            setGeoFail(null)
+            setGeoDenied(false)
+          }
         },
       }).then((r) => {
         setGeoPrompting(false)
         if (r.coords) {
           setLocating(false)
-          const { lat, lng } = r.coords
-          // a city picked while the fix was pending (up to 30 s) wins over it
-          setOrigin((cur) => (cur?.source === 'city' ? cur : { lat, lng, source: 'geo' }))
+          takeFix(r.coords)
         } else {
           if (r.error !== 'deadline') setLocating(false) // a deadline keeps listening (onLate)
           fallback(r.error ?? 'timeout')
@@ -470,6 +478,7 @@ export default function App() {
   originRef.current = origin
   const pickingRef = useRef(picking)
   pickingRef.current = picking
+  const pendingGeoRef = useRef<{ lat: number; lng: number } | null>(null)
   useEffect(() => {
     if (!index) return
     if (citySlug) {
@@ -562,7 +571,7 @@ export default function App() {
       return JSON.stringify(next) === JSON.stringify(cur) ? cur : next
     })
     const resumed = new Date()
-    const saved = parseCas(loadSticky<string>(CAS_KEY, { sameDay: true }))
+    const saved = parseCas(loadSticky<string>(CAS_KEY))
     // a saved kdy expires on the same clock as the filters; a URL-only one (shared
     // link, nothing or another value stored) on time away
     let expired = false
@@ -572,10 +581,14 @@ export default function App() {
     } catch {
       // private mode — nothing was stored
     }
-    const away = resumed.getTime() - hiddenAt > STICKY_TTL_MS || !samePragueDay(new Date(hiddenAt), resumed)
+    const awayMs = resumed.getTime() - hiddenAt
+    const away = awayMs > STICKY_TTL_MS || !samePragueDay(new Date(hiddenAt), resumed)
     if (cas && saved !== cas && (expired || away)) setParam('cas', saved)
+    // 'zitra' was relative to the previous day — after a cross-day gap it points
+    // to the day-after-tomorrow; reset to 'now' so the user sees today's services
+    if (away && den === 'zitra') setParam('den', null)
     // ponytail: 15 min away ≈ maybe moved; shorter app switches keep the list as is
-    if (origin?.source === 'geo' && !picking && resumed.getTime() - hiddenAt >= 15 * 60_000) locate(true)
+    if (origin?.source === 'geo' && !picking && awayMs >= 15 * 60_000) locate(true)
   }
 
   useEffect(() => {
@@ -741,12 +754,14 @@ export default function App() {
 
   const pickCity = (city: City) => {
     track('key_action', { action: 'city_selected', city: city.name })
+    pendingGeoRef.current = null // city chosen — discard any pending GPS fix
     setGeoDenied(false)
     setPicking(false)
     navigate(`/mesto/${city.slug}/${search}`) // history push — back returns to my location
   }
   const pickChurch = (id: string) => {
     track('key_action', { action: 'church_selected', church: id })
+    pendingGeoRef.current = null
     setPicking(false)
     navigate(`/kostel/${id}/${search}`)
   }
@@ -930,7 +945,16 @@ export default function App() {
               index={index}
               onPickCity={pickCity}
               onPickChurch={pickChurch}
-              onClose={() => setPicking(false)}
+              onClose={() => {
+                setPicking(false)
+                const pending = pendingGeoRef.current
+                if (pending) {
+                  pendingGeoRef.current = null
+                  setOrigin((cur) => (cur?.source === 'city' ? cur : { lat: pending.lat, lng: pending.lng, source: 'geo' }))
+                  setGeoFail(null)
+                  setGeoDenied(false)
+                }
+              }}
             />
           </section>
         )}

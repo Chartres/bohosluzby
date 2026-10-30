@@ -11,8 +11,11 @@ export const REMINDER_LEAD_MIN = 30
 
 type AnyService = Service | ExtraService
 
-const icsName = (church: Church, s: AnyService) =>
-  `bohosluzby-${church.id}-${s.time.replace(':', '')}.ics`
+const icsName = (church: Church, s: AnyService) => {
+  const days = ('days' in s ? s.days : s.date).replace(/[^a-z0-9]/gi, '_')
+  const type = s.type.replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
+  return `bohosluzby-${church.id}-${days}-${s.time.replace(':', '')}-${type}.ics`
+}
 
 /** Stable positive 31-bit id for a service's reminder (LocalNotifications needs an int). */
 function reminderId(church: Church, s: AnyService): number {

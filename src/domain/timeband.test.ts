@@ -59,6 +59,12 @@ describe('parseCas (?cas= validation)', () => {
     expect(parseCas('9:5')).toBeNull()
     expect(parseCas('kolem 9')).toBeNull()
   })
+  it('rejects prototype-inherited property names (hasOwnProperty guard)', () => {
+    // Without Object.prototype.hasOwnProperty.call, 'toString' would match
+    // the inherited Object.prototype.toString and return a non-null value.
+    expect(parseCas('toString')).toBeNull()
+    expect(parseCas('__proto__')).toBeNull()
+  })
 })
 
 describe('matchesCas — bands', () => {

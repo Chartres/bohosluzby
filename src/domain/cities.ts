@@ -97,12 +97,18 @@ export function aggregateCities(index: Church[]): City[] {
     if (g) g.push(city)
     else slugGroups.set(city.slug, [city])
   }
+  const usedSlugs = new Set(out.map((c) => c.slug))
   for (const group of slugGroups.values()) {
     if (group.length <= 1) continue
     // Sort by name for a stable assignment; lat as tiebreaker for same-name edge cases.
     group.sort((a, b) => a.name.localeCompare(b.name, 'cs') || (a.lat - b.lat))
     group.forEach((city, i) => {
-      if (i > 0) city.slug = `${city.slug}-${i + 1}`
+      if (i === 0) return
+      let n = i + 1
+      let candidate = `${city.slug}-${n}`
+      while (usedSlugs.has(candidate)) candidate = `${city.slug}-${++n}`
+      usedSlugs.add(candidate)
+      city.slug = candidate
     })
   }
 

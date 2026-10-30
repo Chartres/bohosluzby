@@ -1,9 +1,10 @@
-// iCalendar (RFC 5545) export. Unrestricted weekly services carry an RRULE,
-// note-restricted ones a year-long RRULE (UNTIL) minus the dates the note excludes (EXDATE). Times are Prague wall clock
+// iCalendar (RFC 5545) export. Unrestricted weekly services carry an open-ended RRULE.
+// Recurring exclusions (monthly, seasonal windows) get a year-long RRULE with UNTIL + EXDATE;
+// dated-only exclusions ("kromě D. M. YYYY") keep an open-ended RRULE with EXDATE only. Times are Prague wall clock
 // via TZID + an explicit VTIMEZONE so every client agrees across DST.
 import type { Church, ExtraService, Service } from './data'
 import { nextOccurrences, pragueToday, pragueMinutes } from './occurrences'
-import { runsAt } from './notes'
+import { runsAt, hasDatedOnlyExclusions } from './notes'
 import { churchUrl } from './site'
 
 const BYDAY: Record<string, string> = { 1: 'MO', 2: 'TU', 3: 'WE', 4: 'TH', 5: 'FR', 6: 'SA', 7: 'SU' }
@@ -70,10 +71,10 @@ export const specOf = (s: Service | ExtraService) =>
 
 /** VCALENDAR text for one service of a church, or null when the service has no
  * occurrence within a year (past one-off, unparsable time, note excludes all).
- * A weekly service whose note excludes some dates ("1. týden v měsíci", "od 1.6.
- * do 30.9.") becomes ONE series — deletable as one in the calendar — running to
- * the last date the app itself lists in the next year, with every other date
- * excluded; an unrestricted one keeps an open-ended weekly RRULE. */
+ * Recurring exclusions ("1. týden v měsíci", "od 1.6. do 30.9."): ONE series with
+ * RRULE;UNTIL=<last occurrence> and EXDATE for every skipped date — deletable as one.
+ * Dated-only exclusions ("kromě 2. 11. 2026"): open-ended RRULE, EXDATE for the
+ * listed dates only. Unrestricted services keep an open-ended weekly RRULE. */
 export function buildICS(
   church: Church,
   service: Service | ExtraService,
@@ -87,12 +88,13 @@ export function buildICS(
   if (runsOn.length === 0) return null
   const occs = opts.once ? runsOn.slice(0, 1) : runsOn
   const weekly = 'days' in service && !opts.once
-  const restricted = weekly && occs.length < all.length
+  // Dated-only exclusions ("kromě D. M. YYYY") get EXDATE treatment — no UNTIL needed.
+  const restricted = weekly && occs.length < all.length && !hasDatedOnlyExclusions(service.note)
 
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`
   const url = churchUrl(church.id)
-  const uid = `${church.id}-${'days' in service ? service.days : service.date}-${service.time}${opts.once ? `-${runsOn[0].getTime()}` : ''}`
+  const uid = `${church.id}-${'days' in service ? service.days : service.date}-${service.time}-${service.type}-${service.lang}${opts.once ? `-${runsOn[0].getTime()}` : ''}`
   const utc = (at: Date) => at.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z')
   const dtstamp = utc(now)
 
@@ -106,7 +108,9 @@ export function buildICS(
   const first = occs[0]
   const last = occs[occs.length - 1]
   const runs = new Set(occs.map((o) => o.getTime()))
-  const excluded = weekly ? all.filter((o) => o > first && o < last && !runs.has(o.getTime())) : []
+  const excluded = weekly
+    ? all.filter((o) => o >= first && !runs.has(o.getTime()) && (!restricted || o <= last))
+    : []
   const event = [
     'BEGIN:VEVENT',
     `UID:${uid}@bohosluzby.dravec.org`,

@@ -65,7 +65,7 @@ function fmtMinutes(t: number): string {
  * old minute-precision links keep working. Anything else → null. */
 export function parseCas(param: string | null): string | null {
   if (!param) return null
-  if (Object.hasOwn(BANDS, param)) return param
+  if (Object.prototype.hasOwnProperty.call(BANDS, param)) return param
   const t = toMinutes(param, true)
   if (t === null) return null
   return fmtMinutes((Math.round(t / 30) * 30) % 1440)

@@ -1202,6 +1202,22 @@ describe('sweep regressions (consolidated 2026-10-17)', () => {
     expect(await screen.findByText(/sv\. Havla/)).toBeInTheDocument() // barrier-free filter expired
   })
 
+  it('filters saved at 22:00 are gone at 07:00 next day even though <12 h elapsed (M1 sameDay)', async () => {
+    // saved at 22:00 Prague (2026-07-03T20:00:00Z), resumed at 07:00 Prague
+    // (2026-07-04T05:00:00Z) — only 9 h elapsed but it's a different calendar day
+    vi.setSystemTime(new Date('2026-07-03T20:00:00Z')) // 22:00 Prague
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    openControls()
+    await user.click(screen.getByRole('button', { name: 'bezbariérové' }))
+    background(new Date('2026-07-03T20:01:00Z'))
+    resume(new Date('2026-07-04T05:00:00Z')) // 07:00 Prague, next day, only 9 h later
+    await vi.waitFor(() => expect(screen.queryByText(/bezbariérové/)).not.toHaveAttribute('aria-pressed', 'true'))
+    expect(await screen.findByText(/sv\. Havla/)).toBeInTheDocument() // barrier-free filter expired
+  })
+
   it('resumed the same evening: a kdy saved >12 h ago drops with the filters (sweep G4)', async () => {
     vi.setSystemTime(new Date('2026-07-03T09:00:00Z')) // 11:00 Prague
     stubGeolocation('granted')
