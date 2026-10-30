@@ -396,6 +396,17 @@ export default function App() {
       setGeoFail(reason)
       if (!last) setGeoDenied(true) // with a seeded origin the list already stands
     }
+    // a city picked while the fix was pending (up to 30 s) wins over it; an open
+    // picker parks the fix until it closes rather than dropping it
+    const takeFix = ({ lat, lng }: { lat: number; lng: number }): boolean => {
+      if (originRef.current?.source === 'city') return false
+      if (pickingRef.current) {
+        pendingGeoRef.current = { lat, lng }
+        return false
+      }
+      setOrigin({ lat, lng, source: 'geo' })
+      return true
+    }
     if (!background) setLocating(true)
     getPermissionState().then((perm) => {
       if (background && perm !== 'granted') return // stay silent, keep the list
@@ -415,30 +426,16 @@ export default function App() {
         // A 'geo' origin is no choice: a resume re-locate replaces the old fix.
         onLate: (late) => {
           setLocating(false)
-          if (!late.coords) return
-          if (originRef.current?.source === 'city') return
-          if (pickingRef.current) {
-            pendingGeoRef.current = { lat: late.coords.lat, lng: late.coords.lng }
-            return
+          if (late.coords && takeFix(late.coords)) {
+            setGeoFail(null)
+            setGeoDenied(false)
           }
-          setOrigin({ lat: late.coords.lat, lng: late.coords.lng, source: 'geo' })
-          setGeoFail(null)
-          setGeoDenied(false)
         },
       }).then((r) => {
         setGeoPrompting(false)
         if (r.coords) {
           setLocating(false)
-          const { lat, lng } = r.coords
-          // a city picked while the fix was pending (up to 30 s) wins over it;
-          // picker open — save fix for when it closes rather than dropping it
-          if (originRef.current?.source === 'city') {
-            // city wins, discard
-          } else if (pickingRef.current) {
-            pendingGeoRef.current = { lat, lng }
-          } else {
-            setOrigin({ lat, lng, source: 'geo' })
-          }
+          takeFix(r.coords)
         } else {
           if (r.error !== 'deadline') setLocating(false) // a deadline keeps listening (onLate)
           fallback(r.error ?? 'timeout')
