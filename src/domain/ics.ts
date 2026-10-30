@@ -79,7 +79,7 @@ export function buildICS(church: Church, service: Service | ExtraService, now: D
   const occs = all.filter((occ) => runsAt(service.note, occ))
   if (occs.length === 0) return null
   // Dated-only exclusions ("kromě D. M. YYYY") get EXDATE treatment — no UNTIL needed.
-  const restricted = 'days' in service && occs.length < all.length && !hasDatedOnlyExclusions(service.note ?? '')
+  const restricted = 'days' in service && occs.length < all.length && !hasDatedOnlyExclusions(service.note)
 
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`

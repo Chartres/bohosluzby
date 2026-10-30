@@ -424,14 +424,12 @@ export const noteUncertain = (note: string): boolean => parseNote(note).uncertai
 
 /** Returns true when every restriction in `note` is a one-off dated exclusion
  * ("kromě D. M. YYYY") — the RRULE can stay open-ended; EXDATE handles the gaps. */
-export function hasDatedOnlyExclusions(note: string): boolean {
-  if (!note) return false
-  const segs = note
+export function hasDatedOnlyExclusions(note: string | undefined): boolean {
+  const segs = (note ?? '')
     .split(/\s*[,;]\s*/)
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean)
-  const dated = segs.filter((s) => EXCL_DATE.test(s))
-  if (dated.length === 0) return false
+  if (!segs.some((s) => EXCL_DATE.test(s))) return false
   // Base note without the dated exclusions must be unrestricted (ALWAYS).
   const rest = segs.filter((s) => !EXCL_DATE.test(s)).join(', ')
   const base = parseNote(rest)
