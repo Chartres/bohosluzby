@@ -15,6 +15,7 @@ import { churchPage, cityItemList } from '../src/domain/churchPage.ts'
 import { embedData } from '../src/domain/embedData.ts'
 import { churchFeastSection, feastBeacon, feastCityPage, feastHubPage } from '../src/domain/feast.ts'
 import { SITE_ORIGIN as ORIGIN } from '../src/domain/site.ts'
+import { dioceseOfTown } from '../src/domain/diocese.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const CITY_PAGES = 30
@@ -136,8 +137,35 @@ const STATIC_CSS = `
       .ordo li { display: grid; grid-template-columns: 3.75rem 1fr; column-gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid #d8d0bd; min-height: 44px; }
       .ordo .t { grid-row: span 2; font-family: 'Fraunces Variable', Fraunces, Georgia, serif; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
       .ordo .d { grid-column: 2; font-size: 0.875rem; color: #655c4d; }
-      .cities { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.5rem; }
-      .cities li { padding: 0.5rem 0; }
+      [hidden] { display: none !important; }
+      .cities { list-style: none; padding: 0; margin: 0.25rem 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.5rem; }
+      @media (min-width: 36rem) { .cities { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+      .cities a, .near a { display: block; padding: 0.6rem 0; min-height: 44px; box-sizing: border-box; }
+      .ordo-page section h3 { margin-bottom: 0; }
+      .ordo-page .area { margin: 0.1rem 0 0; }
+      .map { margin: 1.25rem 0 0; }
+      .map svg { display: block; width: 100%; height: auto; }
+      .map .land { fill: #efe7d4; stroke: #b9ae95; stroke-width: 1.5; stroke-linejoin: round; }
+      .map .hit { fill: transparent; }
+      .map .dot { fill: #1a1712; stroke: #f6f1e5; stroke-width: 1.5; }
+      .map a:hover .dot, .map a:focus .dot { fill: var(--season); }
+      .map svg.q .dot { opacity: 0.18; }
+      .map svg.q a.on .dot { opacity: 1; stroke: var(--season); stroke-width: 7; }
+      .map .names text { font: 600 27px 'Source Sans 3', system-ui, sans-serif; font-variant-caps: all-small-caps; letter-spacing: 0.04em; fill: #655c4d; text-anchor: middle; paint-order: stroke; stroke: #efe7d4; stroke-width: 6px; stroke-linejoin: round; pointer-events: none; }
+      .map svg.q .names { opacity: 0.35; }
+      .map #me { fill: #9a2b1e; stroke: #f6f1e5; stroke-width: 3; }
+      .map figcaption { margin-top: 0.35rem; }
+      .finder { margin: 0.75rem 0 0.5rem; }
+      .finder label { display: block; font-family: 'Source Sans 3', system-ui, sans-serif; color: #9a2b1e; font-variant-caps: all-small-caps; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
+      .finder .row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+      .finder input { flex: 1 1 11rem; min-width: 0; min-height: 44px; box-sizing: border-box; font: inherit; font-size: 1rem; padding: 0.5rem 0.65rem; color: #1a1712; background: #fffcf4; border: 1px solid #b9ae95; border-radius: 2px; }
+      .finder input:focus { outline: 2px solid var(--season); outline-offset: 1px; }
+      .finder button:focus-visible { outline: 2px solid var(--season); outline-offset: 1px; }
+      .finder button { flex: 0 0 auto; min-height: 44px; font: inherit; font-size: 0.95rem; padding: 0.5rem 0.85rem; color: #1a1712; background: transparent; border: 1px solid #b9ae95; border-radius: 2px; cursor: pointer; }
+      .finder p { margin: 0.35rem 0 0; min-height: 1.3em; }
+      .near { list-style: none; padding: 0; margin: 0.25rem 0 0; }
+      .near li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #d8d0bd; }
+      .near .km { font-variant-numeric: tabular-nums; color: #655c4d; font-size: 0.875rem; white-space: nowrap; }
       .ordo-page .small { font-size: 0.875rem; color: #655c4d; }
 `
 const BEACON = feastBeacon(
@@ -163,7 +191,11 @@ for (const { city, page } of feastPages) {
   feastListed.push(city)
 }
 mkdirSync(`${root}dist/dusicky`, { recursive: true })
-writeFileSync(`${root}dist/dusicky/index.html`, staticPage(feastHubPage({ cities: feastListed, today })))
+// the hub's map: Czechia's border (Natural Earth 1:10m, public domain,
+// simplified — data/geo/cz-border.json) and a dot per town page
+const border = JSON.parse(readFileSync(`${root}data/geo/cz-border.json`, 'utf8'))
+const hubTowns = feastListed.map((c) => ({ ...c, diocese: dioceseOfTown(c.churches.map((ch) => ch.id)) }))
+writeFileSync(`${root}dist/dusicky/index.html`, staticPage(feastHubPage({ cities: hubTowns, today, border })))
 
 // home page: inject the city index into its static seo block, then mirror it
 // to 404.html (GH Pages deep-link fallback for /kostel/<id>/)

@@ -179,7 +179,14 @@ describe('feastCityPage — /dusicky/<city>/', () => {
 })
 
 describe('feastHubPage — /dusicky/', () => {
-  const hub = feastHubPage({ cities: [{ name: 'Praha', slug: 'praha', count: 200 }, { name: 'Brno', slug: 'brno', count: 80 }], today: '2026-10-27' })
+  const TOWNS = [
+    { name: 'Praha', slug: 'praha', count: 200, lat: 50.08, lng: 14.43, diocese: '1' },
+    { name: 'Brno', slug: 'brno', count: 80, lat: 49.19, lng: 16.61, diocese: '8' },
+    { name: 'Benešov', slug: 'benesov', count: 4, lat: 49.78, lng: 14.69, diocese: '1' },
+    { name: 'Hranice', slug: 'hranice-4917', count: 3, label: 'Hranice (Cheb)', lat: 50.3, lng: 12.17, diocese: '6' },
+  ]
+  const BORDER: [number, number][] = [[12.1, 50.3], [14.8, 51.0], [18.8, 49.6], [16.9, 48.6], [13.8, 48.7]]
+  const hub = feastHubPage({ cities: TOWNS, today: '2026-10-27', border: BORDER })
 
   it('links every city page and states the dates', () => {
     expect(hub.url).toBe('https://bohosluzby.dravec.org/dusicky/')
@@ -187,6 +194,115 @@ describe('feastHubPage — /dusicky/', () => {
     expect(hub.body).toContain('href="https://bohosluzby.dravec.org/dusicky/brno/"')
     expect(hub.body).toContain('neděle 1. listopadu')
     expect(hub.body).toContain('pondělí 2. listopadu')
+  })
+
+  it('groups the towns by diocese, alphabetical inside, in the ČBK order', () => {
+    const order = [...hub.body.matchAll(/<h3>([^<]+)<\/h3>/g)].map((m) => m[1])
+    expect(order.slice(0, 3)).toEqual(['Arcidiecéze pražská', 'Diecéze plzeňská', 'Diecéze brněnská'])
+    const prague = hub.body.slice(hub.body.indexOf('Arcidiecéze pražská'), hub.body.indexOf('Diecéze plzeňská'))
+    expect(prague.indexOf('/dusicky/benesov/')).toBeLessThan(prague.indexOf('/dusicky/praha/'))
+    expect(prague).not.toContain('/dusicky/brno/')
+  })
+
+  it('draws a map with one linked dot per town and the border, no tiles or third-party script', () => {
+    expect(hub.body).toContain('<svg viewBox="0 0 1000 ')
+    expect(hub.body).toContain('class="land"')
+    for (const t of TOWNS) expect(hub.body).toContain(`data-s="${t.slug}" tabindex="-1"`)
+    expect(hub.body.match(/class="dot"/g)).toHaveLength(TOWNS.length)
+    expect(hub.body).not.toMatch(/<script[^>]+src=/)
+    expect(hub.body).not.toMatch(/tile|openstreetmap/i)
+    // the dots repeat the list; screen readers and keyboards get the list
+    expect(hub.body).toContain('aria-hidden="true"')
+  })
+
+  it('puts west on the left and north on top', () => {
+    const cx = (slug: string) => Number(new RegExp(`data-s="${slug}"[^]*?cx="([\\d.]+)"`).exec(hub.body)![1])
+    const cy = (slug: string) => Number(new RegExp(`data-s="${slug}"[^]*?cy="([\\d.]+)"`).exec(hub.body)![1])
+    expect(cx('hranice-4917')).toBeLessThan(cx('praha'))
+    expect(cx('praha')).toBeLessThan(cx('brno'))
+    expect(cy('praha')).toBeLessThan(cy('brno'))
+  })
+
+  it('carries what search and distance sort need on each row, folded for diacritics', () => {
+    expect(hub.body).toContain('data-k="benesov"')
+    expect(hub.body).toContain('data-k="hranice (cheb)"')
+    expect(hub.body).toContain('data-lat="49.1900" data-lng="16.6100"')
+    expect(hub.body).toContain('<label for="najdi">Najdi obec</label>')
+    expect(hub.body).toContain('Podle mé polohy')
+    // the finder appears only once the script runs; without it the grouped list stands alone
+    expect(hub.body).toContain('id="finder" class="finder" hidden')
+  })
+
+  it('ships a script that parses and has no regex lookbehind (iOS 15)', () => {
+    const js = /<script>([^]*)<\/script>/.exec(hub.body)![1]
+    expect(() => new Function(js)).not.toThrow()
+    expect(js).not.toMatch(/\(\?<[=!]/)
+  })
+
+  describe('in the browser', () => {
+    const mount = (geo?: Partial<Geolocation>) => {
+      document.body.innerHTML = hub.body
+      Object.defineProperty(navigator, 'geolocation', { value: geo, configurable: true })
+      new Function(/<script>([^]*)<\/script>/.exec(hub.body)![1])()
+      const input = document.getElementById('najdi') as HTMLInputElement
+      const type = (v: string) => {
+        input.value = v
+        input.dispatchEvent(new Event('input'))
+      }
+      const visible = (sel: string) =>
+        [...document.querySelectorAll<HTMLElement>(sel)].filter((el) => !el.hidden && !el.closest('[hidden]')).map((el) => el.dataset.s)
+      return { type, visible }
+    }
+
+    it('shows the finder and filters as you type, ignoring diacritics; the map dims the rest', () => {
+      const { type, visible } = mount()
+      expect(document.getElementById('finder')!.hidden).toBe(false)
+      type('benes')
+      expect(visible('#dieceze li')).toEqual(['benesov'])
+      expect(document.querySelector('section[data-d="8"]')!.hasAttribute('hidden')).toBe(true)
+      expect(document.querySelector('.map svg')!.classList.contains('q')).toBe(true)
+      expect(document.querySelector('a[data-s="benesov"]')!.classList.contains('on')).toBe(true)
+      expect(document.querySelector('a[data-s="praha"]')!.classList.contains('on')).toBe(false)
+      type('xyz')
+      expect(visible('#dieceze li')).toEqual([])
+      expect(document.getElementById('nic')!.hidden).toBe(false)
+      type('')
+      expect(visible('#dieceze li')).toHaveLength(TOWNS.length)
+      expect(document.getElementById('nic')!.hidden).toBe(true)
+    })
+
+    it('asks for the position only on the tap, then sorts by distance; a second tap goes back', () => {
+      const getCurrentPosition = vi.fn((ok: PositionCallback) =>
+        ok({ coords: { latitude: 49.2, longitude: 16.6 } } as GeolocationPosition),
+      )
+      const { visible, type } = mount({ getCurrentPosition } as Partial<Geolocation>)
+      expect(getCurrentPosition).not.toHaveBeenCalled()
+      const btn = document.getElementById('poloha')!
+      btn.click()
+      expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+      expect(visible('#blizko li')).toEqual(['brno', 'benesov', 'praha', 'hranice-4917'])
+      expect(document.querySelector('#blizko li .km')!.textContent).toMatch(/^1,\d\u00a0km$/)
+      expect(document.getElementById('dieceze')!.hidden).toBe(true)
+      type('pra')
+      expect(visible('#blizko li')).toEqual(['praha'])
+      type('')
+      btn.click()
+      expect(document.getElementById('dieceze')!.hidden).toBe(false)
+      expect(document.getElementById('blizko')!.hidden).toBe(true)
+      btn.click() // the position is remembered for the page, not asked again
+      expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+      expect(visible('#blizko li')[0]).toBe('brno')
+    })
+
+    it('says so when the position is refused, and keeps the grouped list', () => {
+      const getCurrentPosition = vi.fn((_ok: PositionCallback, err?: PositionErrorCallback | null) =>
+        err?.({ code: 1 } as GeolocationPositionError),
+      )
+      mount({ getCurrentPosition } as Partial<Geolocation>)
+      document.getElementById('poloha')!.click()
+      expect(document.getElementById('stav')!.textContent).toContain('Poloha není povolená')
+      expect(document.getElementById('dieceze')!.hidden).toBe(false)
+    })
   })
 
   it('answers the common questions in visible text and as FAQ JSON-LD', () => {

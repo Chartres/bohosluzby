@@ -9,6 +9,7 @@ import type { RawEntry } from './churchPage.ts'
 import { parseNote } from './notes.ts'
 import { isConfession, isStale, normalizeLang } from './registry.ts'
 import { churchUrl, SITE_ORIGIN } from './site.ts'
+import { DIOCESES } from './diocese.ts'
 
 export interface FeastDay {
   iso: string
@@ -217,8 +218,113 @@ export function feastCityPage(input: {
   return { url, title, description, body, jsonLd, services: total }
 }
 
-export function feastHubPage(input: { cities: { name: string; slug: string; count: number; label?: string }[]; today: string }): FeastPage {
-  const { cities, today } = input
+export interface HubTown {
+  name: string
+  slug: string
+  count: number
+  /** 'Hranice (Lipník nad Bečvou)' for a namesake. */
+  label?: string
+  /** Centroid of the town's churches. */
+  lat: number
+  lng: number
+  /** DIOCESES key (diocese.ts); '' when unknown. */
+  diocese: string
+}
+
+// The hub map: a flat projection of Czechia (longitude shrunk by cos 49.8°,
+// close enough at this size), built at build time — no tiles, no script.
+const MAP_W = 1000
+const LNG0 = 12.03
+const LNG1 = 18.92
+const LAT0 = 48.5
+const LAT1 = 51.11
+const KX = Math.cos((49.8 * Math.PI) / 180)
+const SCALE = MAP_W / ((LNG1 - LNG0) * KX)
+const MAP_H = Math.round((LAT1 - LAT0) * SCALE)
+const px = (lng: number) => Math.round((lng - LNG0) * KX * SCALE * 10) / 10
+const MAP_NAMES = ['Praha', 'Plzeň', 'České Budějovice', 'Hradec Králové', 'Litoměřice', 'Brno', 'Olomouc', 'Ostrava']
+const py = (lat: number) => Math.round((LAT1 - lat) * SCALE * 10) / 10
+
+/** The SVG map: the border, one linked dot per town, the largest few named.
+ * aria-hidden: the list below carries every link, the dots only repeat it. */
+export function feastHubMap(towns: HubTown[], border: [number, number][]): string {
+  const outline = border.length
+    ? `<path class="land" d="M${border.map(([lng, lat]) => `${px(lng)} ${py(lat)}`).join('L')}Z"/>`
+    : ''
+  // small towns drawn last, on top: a big town's dot never swallows its neighbour
+  const bySize = [...towns].sort((a, b) => b.count - a.count)
+  const dots = bySize
+    .map((t) => {
+      const r = Math.round((4.5 + Math.min(4, Math.sqrt(t.count) / 2)) * 10) / 10
+      return (
+        `<a href="${SITE_ORIGIN}/dusicky/${esc(t.slug)}/" data-s="${esc(t.slug)}" tabindex="-1">` +
+        `<title>${esc(t.label ?? t.name)}</title>` +
+        `<circle class="hit" cx="${px(t.lng)}" cy="${py(t.lat)}" r="16"/>` +
+        `<circle class="dot" cx="${px(t.lng)}" cy="${py(t.lat)}" r="${r}"/></a>`
+      )
+    })
+    .reverse()
+    .join('')
+  // the regional capitals with a see, for orientation; only those that have a page
+  const names = MAP_NAMES.map((n) => towns.find((t) => (t.label ?? t.name) === n))
+    .filter((t): t is HubTown => !!t)
+    .map((t) => `<text x="${px(t.lng)}" y="${py(t.lat) - 16}">${esc(t.name)}</text>`)
+    .join('')
+  return (
+    `<svg viewBox="0 0 ${MAP_W} ${MAP_H}" aria-hidden="true" focusable="false">${outline}` +
+    `<g class="towns">${dots}</g><g class="names">${names}</g>` +
+    `<circle id="me" r="9" cx="-50" cy="-50"/></svg>`
+  )
+}
+
+// Search-as-you-type and "Podle mé polohy" on the static hub. Plain ES2015,
+// no lookbehind (iOS 15), nothing sent anywhere: the position stays in the page.
+const HUB_SCRIPT = `(function(){
+var f=document.getElementById('finder');if(!f)return;f.hidden=false;
+var q=document.getElementById('najdi'),btn=document.getElementById('poloha'),stav=document.getElementById('stav'),
+groups=document.getElementById('dieceze'),near=document.getElementById('blizko'),nic=document.getElementById('nic'),
+svg=document.querySelector('.map svg'),me=document.getElementById('me');
+var items=[].slice.call(groups.querySelectorAll('li[data-k]')),nearItems=[],dots={},pos=null,last=null,asking=false;
+[].forEach.call(svg.querySelectorAll('a[data-s]'),function(a){dots[a.getAttribute('data-s')]=a});
+function fold(s){return s.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim()}
+function km(a,b,c,d){var r=Math.PI/180,x=Math.sin((c-a)*r/2),y=Math.sin((d-b)*r/2);return 12742*Math.asin(Math.sqrt(x*x+Math.cos(a*r)*Math.cos(c*r)*y*y))}
+function render(){
+var v=fold(q.value),hits=0,list=pos?nearItems:items;
+if(svg.classList)svg.classList.toggle('q',!!v);
+list.forEach(function(li){var ok=!v||li.getAttribute('data-k').indexOf(v)>=0;li.hidden=!ok;if(ok)hits++;
+var d=dots[li.getAttribute('data-s')];if(d&&d.classList)d.classList.toggle('on',!!v&&ok)});
+[].forEach.call(groups.querySelectorAll('section'),function(s){s.hidden=!pos&&!!v&&!s.querySelector('li:not([hidden])')});
+groups.hidden=!!pos;near.hidden=!pos;nic.hidden=hits>0}
+q.addEventListener('input',render);
+function sortBy(p){
+pos=p;
+if(!nearItems.length||last!==p){last=p;near.textContent='';nearItems=items.map(function(li){
+return{li:li,d:km(p.lat,p.lng,+li.getAttribute('data-lat'),+li.getAttribute('data-lng'))}}).sort(function(a,b){return a.d-b.d}).map(function(o){
+var li=document.createElement('li');li.setAttribute('data-k',o.li.getAttribute('data-k'));li.setAttribute('data-s',o.li.getAttribute('data-s'));
+li.appendChild(o.li.querySelector('a').cloneNode(true));var s=document.createElement('span');s.className='km';
+s.textContent=(o.d<9.95?o.d.toFixed(1).replace('.',','):Math.round(o.d))+'\\u00a0km';li.appendChild(s);near.appendChild(li);return li})}
+var x=(p.lng-${LNG0})*${KX.toFixed(6)}*${SCALE.toFixed(3)},y=(${LAT1}-p.lat)*${SCALE.toFixed(3)};
+if(x>0&&x<${MAP_W}&&y>0&&y<${MAP_H}){me.setAttribute('cx',x.toFixed(1));me.setAttribute('cy',y.toFixed(1))}
+btn.textContent='Podle diecézí';stav.textContent='Seřazeno podle vzdálenosti od vás. Poloha zůstává v telefonu, nikam ji neposíláme.';render()}
+btn.addEventListener('click',function(){
+if(pos){pos=null;btn.textContent='Podle mé polohy';stav.textContent='';me.setAttribute('cx','-50');render();return}
+if(last){sortBy(last);return}
+if(asking)return;
+if(!navigator.geolocation){stav.textContent='Tento prohlížeč polohu neumí. Najděte obec podle názvu.';return}
+stav.textContent='Zjišťuji polohu…';asking=true;
+navigator.geolocation.getCurrentPosition(function(g){asking=false;sortBy({lat:g.coords.latitude,lng:g.coords.longitude})},
+function(e){asking=false;stav.textContent=e&&e.code===1?'Poloha není povolená. Najděte obec podle názvu.':'Polohu se nepodařilo zjistit. Najděte obec podle názvu.'},
+{enableHighAccuracy:false,timeout:15000,maximumAge:600000})});
+})()`
+
+const foldKey = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+
+export function feastHubPage(input: { cities: HubTown[]; today: string; border?: [number, number][] }): FeastPage {
+  const { cities, today, border = [] } = input
   const { year, days } = allSaints(today)
   const url = `${SITE_ORIGIN}/dusicky/`
   const faq: [string, string][] = [
@@ -236,19 +342,44 @@ export function feastHubPage(input: { cities: { name: string; slug: string; coun
     ],
     ['Jsou uvedené časy přesné?', SOURCE_NOTE],
   ]
+  const label = (c: HubTown) => c.label ?? c.name
+  const item = (c: HubTown) =>
+    `<li data-s="${esc(c.slug)}" data-k="${esc(foldKey(label(c)))}" data-lat="${c.lat.toFixed(4)}" data-lng="${c.lng.toFixed(4)}">` +
+    `<a href="${SITE_ORIGIN}/dusicky/${esc(c.slug)}/">${esc(label(c))}</a></li>`
+  const groups = [...DIOCESES, { key: '', name: 'Ostatní', area: '' }]
+    .map((d) => ({ d, towns: cities.filter((c) => (DIOCESES.some((x) => x.key === c.diocese) ? c.diocese : '') === d.key) }))
+    .filter((g) => g.towns.length)
+    .map(
+      ({ d, towns }) =>
+        `<section data-d="${esc(d.key)}"><h3>${esc(d.name)}</h3>${d.area ? `<p class="small area">${esc(d.area)}</p>` : ''}` +
+        `<ul class="cities">${[...towns].sort((a, b) => label(a).localeCompare(label(b), 'cs')).map(item).join('')}</ul></section>`,
+    )
+    .join('\n        ')
   const body = `
       <main class="ordo-page">
         <p class="crumbs"><a href="${SITE_ORIGIN}/">Kam na mši</a></p>
         <h1>Všech svatých a Dušičky ${year} — mše svatá podle měst</h1>
         <p><span class="rubric">${esc(days[0].label)}</span> ${esc(days[0].name)}<br /><span class="rubric">${esc(days[1].label)}</span> ${esc(days[1].name)}</p>
-        <h2>Města</h2>
-        <ul class="cities">${cities
-          .map((c) => `<li><a href="${SITE_ORIGIN}/dusicky/${esc(c.slug)}/">${esc(c.label ?? c.name)}</a></li>`)
-          .join('')}</ul>
+        <figure class="map">${feastHubMap(cities, border)}
+          <figcaption class="small">${cities.length} ${plural(cities.length, 'obec', 'obce', 'obcí')} se stránkou na Dušičky. Klepněte na tečku, nebo obec najděte níže.</figcaption>
+        </figure>
+        <h2 id="obce">Obce podle diecézí</h2>
+        <div id="finder" class="finder" hidden>
+          <label for="najdi">Najdi obec</label>
+          <div class="row"><input id="najdi" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="např. Jihlava" /><button type="button" id="poloha">Podle mé polohy</button></div>
+          <p id="stav" class="small" aria-live="polite"></p>
+        </div>
+        <div id="dieceze">
+        ${groups}
+        </div>
+        <ol id="blizko" class="near" hidden></ol>
+        <p id="nic" hidden>Tahle obec vlastní stránku na Dušičky nemá. <a href="${SITE_ORIGIN}/">Otevřete aplikaci</a> a vyberte ji, nebo povolte polohu.</p>
         <p>Jiná obec? <a href="${SITE_ORIGIN}/">Otevřete aplikaci</a> a vyberte ji, nebo povolte polohu.</p>
         <h2>Otázky</h2>
         ${faq.map(([q, a]) => `<h3>${esc(q)}</h3>\n        <p>${esc(a)}</p>`).join('\n        ')}
+        <p class="small">Hranice státu: Natural Earth (public domain).</p>
       </main>
+      <script>${HUB_SCRIPT}</script>
 `
   const jsonLd = ldSafe({
     '@context': 'https://schema.org',

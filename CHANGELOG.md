@@ -5,6 +5,14 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **/dusicky/ hub: map, towns by diocese, Najdi obec** (Pavol 2026-10-30: "Add a map to this
+  page? List of towns in alphabetical order is strange ux."). A map of Czechia with a dot
+  per town page, each a link; drawn at build time as inline SVG from the town centroids and
+  the Natural Earth border (`data/geo/cz-border.json`), no tiles, no third-party script.
+  Below it the towns are grouped by the eight dioceses (read from the registry id prefix,
+  `src/domain/diocese.ts`), a "Najdi obec" field filters as you type (diacritics ignored, the
+  map dims the rest), and "Podle mé polohy" sorts by distance after a tap; the position
+  stays in the page. Without JavaScript the grouped list stands alone. Web only (static page).
 - **The time is the mass** (Pavol 2026-10-29, M1 + M3): tap a time — in the list, the church
   ordo, the 1.–2. 11. block — and its verbs unfold under the row: připomenout · do kalendáře
   · pozvat, small line icon + word; tap again, they fold away (a faded ▾ marks it). The
