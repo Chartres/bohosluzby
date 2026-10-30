@@ -90,7 +90,10 @@ export async function scheduleMassReminder(
   const at = reminderTimeFor(service, new Date())
   if (!at) return 'no-upcoming'
   if (!isNative) {
-    const ics = buildICS(church, service, new Date(), { once: true, alarmMin: REMINDER_LEAD_MIN })
+    // the occurrence the reminder is for — not one starting in under 30 min,
+    // whose alarm would already have passed (reminderTimeFor skipped it too)
+    const start = new Date(at.getTime() + REMINDER_LEAD_MIN * 60_000)
+    const ics = buildICS(church, service, new Date(start.getTime() - 1), { once: true, alarmMin: REMINDER_LEAD_MIN })
     if (!ics) return 'no-upcoming'
     download(ics, icsName(church, service).replace('.ics', '-pripominka.ics'))
     return 'calendar'

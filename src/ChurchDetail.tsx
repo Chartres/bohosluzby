@@ -28,7 +28,7 @@ import { NavSheet } from './NavSheet'
 import { churchUrl } from './domain/site'
 import { patronDateLabel, patronOf } from './domain/patron'
 import { creditLine } from './domain/photoCredit'
-import { MassVerbs } from './MassVerbs'
+import { MassVerbs, onDate } from './MassVerbs'
 import { feastWeek, servicesOnDate } from './domain/feastWeek'
 import { favoritesSnapshot, subscribeFavorites, toggleFavorite } from './lib/favorites'
 import { churchWitnessIntro, t, langLabel, staleWarning, type Key } from './i18n'
@@ -298,7 +298,7 @@ function DetailHeading({
       )}
       {/* M3 (Pavol 2026-10-29): the verbs of the mass you came for — the one
           tapped in the list, else the next one — right under its line */}
-      {head && <MassVerbs church={church} service={head.service} hero={hero} className="mt-2" />}
+      {head && <MassVerbs church={church} service={onDate(head.service, head.start)} hero={hero} className="mt-2" />}
       {/* one meta row of actions under the title — navigate · share · save · web
           farnosti (navigace opens the map-app chooser, so no separate "mapa"). Bundled (not a separate block) so the schedule stays primary. */}
       <p className={`mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${text}`}>

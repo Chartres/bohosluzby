@@ -26,7 +26,7 @@ import { SearchPicker } from './SearchPicker'
 import { MyChurches } from './MyChurches'
 import { holyDayLine } from './domain/holyday'
 import { feastWeek, type FeastDayRef } from './domain/feastWeek'
-import { MassVerbs } from './MassVerbs'
+import { MassVerbs, onDate } from './MassVerbs'
 import { FeedbackCard } from './FeedbackCard'
 import { AfterMassCard, type CardMass } from './AfterMassCard'
 import { massKey, riteOf, slotKey, WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
@@ -1090,7 +1090,7 @@ export default function App() {
                 <ServiceList
                   rows={rows}
                   feast={feast}
-                  showUntil={day === 'now' || day === 0}
+                  showUntil={!feastOn && (day === 'now' || day === 0)}
                   witnessChurches={witnessChurches}
                   onOpen={openChurch}
                   onNavigate={setNavTarget}
@@ -1522,7 +1522,7 @@ function ServiceList({
                 </div>
               </div>
             </div>
-            {isOpen && <MassVerbs church={r.church} service={r.service} className="pb-3" />}
+            {isOpen && <MassVerbs church={r.church} service={onDate(r.service, r.start)} className="pb-3" />}
           </li>
         )
       })}

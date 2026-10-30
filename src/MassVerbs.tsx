@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import type { Church, ExtraService, Service } from './domain/data'
 import { inviteFor } from './domain/invite'
+import { pragueIsoDate } from './domain/occurrences'
 import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
@@ -25,6 +26,15 @@ function Icon({ name }: { name: keyof typeof ICON }) {
       <path d={ICON[name]} />
     </svg>
   )
+}
+
+/** A row that is one occurrence (list, header, the 1.–2. 11. block) acts on
+ * THAT date — pozvat and připomenout name it, the calendar gets that one
+ * event; a weekly ordo row (no date) acts on the series. */
+export function onDate(service: Service | ExtraService, start: Date): ExtraService {
+  if ('date' in service) return service
+  const { days: _days, ...rest } = service
+  return { ...rest, date: pragueIsoDate(start) }
 }
 
 export function MassVerbs({
