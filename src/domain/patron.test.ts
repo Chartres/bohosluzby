@@ -78,3 +78,40 @@ describe('nextPatronDate', () => {
     expect(nextPatronDate(patronOf('kostel Božského Srdce Páně')!, '2026-10-27')).toBe('2027-06-04')
   })
 })
+
+// Pavol 2026-10-30: ambiguous titles show nothing unless a parish source
+// names the feast; each one is recorded with its source and quote.
+import { PARISH_TITLES, patronOfChurch } from './patron'
+import sources from '../../data/patron-sources.json'
+
+describe('PARISH_TITLES — ambiguous titles settled by a parish source', () => {
+  type Row = { id: string; name: string; confirmed: boolean; title: string | null; date: string | null; source: string | null; quote: string | null }
+  const rows = (sources as { churches: Row[] }).churches
+  const confirmed = rows.filter((r) => r.confirmed)
+
+  it('holds exactly the confirmed rows of data/patron-sources.json, with their source', () => {
+    expect(Object.keys(PARISH_TITLES).sort()).toEqual(confirmed.map((r) => r.id).sort())
+    for (const r of confirmed) expect(PARISH_TITLES[r.id]).toEqual([r.title, r.date, r.source])
+  })
+
+  it('every confirmed row has a URL, a verbatim quote and a real month-day', () => {
+    for (const r of confirmed) {
+      expect(r.source).toMatch(/^https?:\/\//)
+      expect((r.quote ?? '').length).toBeGreaterThan(10)
+      const [m, d] = (r.date ?? '').split('-').map(Number)
+      expect(m >= 1 && m <= 12 && d >= 1 && d <= 31).toBe(true)
+    }
+  })
+
+  it('applies only where the name alone gives nothing', () => {
+    for (const r of rows) expect(patronOf(r.name)).toBeNull()
+  })
+
+  it('shows nothing for a church no source confirmed', () => {
+    for (const r of rows.filter((x) => !x.confirmed)) expect(patronOfChurch(r)).toBeNull()
+  })
+
+  it('the name still wins for an unambiguous title', () => {
+    expect(patronOfChurch({ id: 'x', name: 'kostel sv. Václava' })!.fixed).toBe('9-28')
+  })
+})

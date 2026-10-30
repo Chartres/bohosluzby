@@ -155,3 +155,52 @@ export function patronDateLabel(p: Patron, today: string): string {
   const [y, m, d] = next.split('-').map(Number)
   return p.fixed ? `${d}. ${MONTH_GEN[m - 1]}` : `${d}. ${m}. ${y}`
 }
+
+/** Titles the name alone leaves open ("sv. Jakuba", two titles, Navštívení
+ * P. M. — 2 Jul in the Czech calendar, 31 May in the universal one), settled
+ * by the parish's own website or bulletin (Pavol 2026-10-30: "Explore parish
+ * sites of the ambiguous ones"). id → [title, month-day, source URL]. The
+ * verbatim quote and check date for each live in data/patron-sources.json;
+ * patron.test.ts keeps the two in step. No source, no entry: nothing shown. */
+export const PARISH_TITLES: Record<string, [string, string, string]> = {
+  '1000353': ['svátek Navštívení Panny Marie', '5-31', 'https://www.farnoststechovice.cz/wp-content/uploads/2025/12/Planfarnosti_2026.pdf'], // kaple Navštívení Panny Marie, Davle
+  '1000726': ['svátek Navštívení Panny Marie', '7-2', 'http://www.rkfrakovnik.cz/pout-v-petrovicich/'], // farní kostel Navštívení Panny Marie, Petrovice u Rakovníka
+  '2000316': ['svátek Navštívení Panny Marie', '7-2', 'https://www.farnosthejnice.cz/2026/05/15/hejnicka-poutni-mse-patrocinium/'], // farní kostel Navštívení Panny Marie, Hejnice
+  '2000453': ['svátek sv. Jakuba Staršího', '7-25', 'http://www.farnostlouny.com/index.php?id=8'], // farní kostel sv. Jakuba apoštola, Cítoliby
+  '2000573': ['svátek sv. Jakuba Staršího', '7-25', 'https://dekanstvimh.cz/poutni-slavnost-ke-cti-sv-jakuba-a-sv-anny-do-mn-hradiste-nedele-28-cervence/'], // děkanský kostel sv. Jakuba apoštola, Mnichovo Hradiště
+  '200069': ['svátek Navštívení Panny Marie', '7-2', 'https://farnostbozkov.cz/2013/07/07/pout-ke-kralovne-hor/'], // farní kostel Navštívení Panny Marie, Bozkov
+  '30001021059087': ['svátek Navštívení Panny Marie', '5-31', 'https://farnostbousin.cz/bohosluzby/'], // farní kostel Navštívení Panny Marie
+  '30003227384806': ['slavnost Nanebevzetí Panny Marie', '8-15', 'https://sedlec.info/ohlasky/437/'], // farní kostel Nanebevzetí Panny Marie a sv. Jana Křtitele
+  '30003645000453': ['svátek Narození Panny Marie', '9-8', 'http://www.farnostzeliv.cz'], // opatský a farní kostel Narození Panny Marie
+  '4000850126195': ['svátek sv. Jana Nepomuckého', '5-16', 'https://farnostkaplice.cz/2023.pdf'], // filiální kostel Panny Marie Bolestné a sv. Jana Nepomuckého
+  '50002050314628': ['svátek sv. Jakuba Staršího', '7-25', 'https://doo.cz/2026/09/07/fotogalerie-v-libhosti-oslavili-250-let-kostela/'], // farní kostel sv. Jakuba
+  '50002078022509': ['svátek Navštívení Panny Marie', '5-31', 'https://www.farnostodry.cz/misto/farni-kostel-navstiveni-p-marie-mankovice-2866'], // farní kostel Navštívení P. Marie
+  '50002237542694': ['svátek Navštívení Panny Marie', '5-31', 'https://www.farnost-spalov.cz/wp-content/uploads/2026/05/Ohlasky_2026-05-24_o.pdf'], // farní kostel Navštívení P. Marie
+  '50003474315039': ['svátek Navštívení Panny Marie', '5-31', 'http://farnost-domaslavice.webnode.cz/menu/'], // filiální kostel Navštívení P. Marie
+  '5000368960041': ['svátek Navštívení Panny Marie', '5-31', 'https://farnostdobra.cz/'], // kaple Navštívení P. Marie
+  '60002871972936': ['svátek sv. Šimona a Judy', '10-28', 'https://www.farnostdysina.cz/blog/2026/10/29/pout-ktera-zapustila-koreny-28-10-2026/'], // farní kostel Nejsvětější Trojice a sv. Šimona a Judy Dýšina
+  '60003999141812': ['svátek sv. Jakuba Staršího', '7-25', 'http://farnostkraslice.estranky.cz/clanky/poute---feste-v-kraslicke-farnosti-v-kalendarnim-roce/poutni-slavnosti-ve-farnosti-2026.html'], // filiální kostel sv. Jakuba Sněžná
+  '70001082828364': ['slavnost Nanebevzetí Panny Marie', '8-15', 'https://kyjov.farnost.cz/blog_clanek/farni-kostel-zdobi-dve-nove-vitraze-26109'], // farní kostel Nanebevzetí Panny Marie a sv. Cyrila a Metoděje
+  '70001610901718': ['svátek Navštívení Panny Marie', '7-2', 'http://zasova.net/archiv_poradu_bohosluzeb?porad=Q1g1ZTV0YzBRU2htY2pzcVlTY1EvQT09Ojpa7JiyBRdv3J98qrEeUk8N&t=TjY4bTlMY0tsYmtBWTA4QXFTMUJVRTdCRUxsWHZnemhibDM5MW1XRVczZz06OskWB643oOFdwhiribBihK0%3D'], // farní kostel Navštívení Panny Marie
+  '70001825863035': ['svátek Navštívení Panny Marie', '5-31', 'http://farnostvelehrad.cz/clanek/kaple-navstiveni-panny-marie-v-tupesich-5695'], // kaple Navštívení Panny Marie
+  '7000303200716': ['svátek Navštívení Panny Marie', '7-2', 'http://www.farnostsuchdol.eu/images/pvf-year01736.jpg'], // farní kostel Navštívení Panny Marie
+  '70003039211055': ['svátek Navštívení Panny Marie', '5-31', 'https://www.farnost-trnava.cz/index.php/2026/05/26/trnavska-pout-31-5-2026/'], // farní kostel Navštívení Panny Marie
+  '70003306529547': ['svátek Navštívení Panny Marie', '5-31', 'http://svatykopecek.cz/PageDecision.asp?ID=115'], // farní kostel Navštívení Panny Marie - bazilika minor
+  '70003995026689': ['památka sv. Floriána', '5-4', 'https://www.farnost-senice.cz/2026/05/03/slavime-5-nedeli-velikonocni-14/'], // kaple sv. Floriána a Isidora
+  '80001285799546': ['svátek sv. Jakuba Staršího', '7-25', 'https://www.farnostbrankovice.cz/2026/07/23/fain-leto-2026/'], // kostel farní sv. Jakuba 
+  '8000177625842': ['slavnost sv. Cyrila a Metoděje', '7-5', 'https://www.farnostbrankovice.cz/wp/wp-content/uploads/2022/10/fain_brankovice_15_03.pdf'], // kostel filiální Všech svatých  a sv. Cyrila a Metoděje
+  '80001978461163': ['památka sv. Aloise Gonzagy', '6-21', 'http://www.otnice.9e.cz/2013/09/2012/'], // kostel farní sv. Aloise a sv. Havla
+  '80003287724522': ['svátek sv. Jakuba Staršího', '7-25', 'https://www.svatyjakub.cz/program-o-prazdninach-2026/'], // kostel farní sv. Jakuba
+  '80003291841355': ['svátek Navštívení Panny Marie', '7-2', 'http://www.farnostlomnice.cz/clanky/aktualne/dobre-zpravy/poute-2026.html'], // kostel farní Navštívení Panny Marie
+  '80003795866278': ['slavnost Narození sv. Jana Křtitele', '6-24', 'https://www.faby.cz/akce-pozvanky/pripravujeme/748-kalendar-hlavnich-akci-v-roce-2026.html'], // kostel farní sv. Jana Křtitele a sv. Jana Evangelisty
+  '8000515450433': ['svátek Navštívení Panny Marie', '5-31', 'http://www.farnostbabice.com/inpage/bohosluzby-438/'], // kostel farní Navštívení Panny Marie
+  '8000567053899': ['svátek sv. Václava', '9-28', 'http://farnostlouka.cz/aktuality/7/'], // kostel farní sv. Václava a Panny Marie
+}
+
+/** The church's title feast: from its name, else from a parish source. */
+export function patronOfChurch(church: { id: string; name: string }): Patron | null {
+  const named = patronOf(church.name)
+  if (named) return named
+  const p = PARISH_TITLES[church.id]
+  return p ? { title: p[0], fixed: p[1] } : null
+}

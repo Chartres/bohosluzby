@@ -6,7 +6,7 @@
 // Node imports this via type stripping: explicit .ts specifiers, types only
 // from elsewhere.
 import { churchFeastSection, feastEvents } from './feast.ts'
-import { patronDateLabel, patronOf } from './patron.ts'
+import { patronDateLabel, patronOfChurch } from './patron.ts'
 import { isConfession, isStale, normalizeLang } from './registry.ts'
 import { churchUrl, SITE_ORIGIN } from './site.ts'
 
@@ -114,7 +114,7 @@ export function churchPage(input: {
   const where = [church.city, entry?.p, entry?.pa].filter((s): s is string => Boolean(s?.trim()))
   const parts: string[] = [`<h1>${esc(church.name)}</h1>`]
   if (where.length) parts.push(`<p>${where.map(esc).join(' · ')}</p>`)
-  const patron = patronOf(church.name)
+  const patron = patronOfChurch(church)
   if (patron) parts.push(`<p>Titulární svátek (pouť): ${esc(patron.title)}, ${esc(patronDateLabel(patron, today))}.</p>`)
   if (regular.length) {
     parts.push('<h2>Pořad bohoslužeb</h2>', byDay(regular, (r) => rowText(r[1], r[2], r[3], r[4], r[5])))
