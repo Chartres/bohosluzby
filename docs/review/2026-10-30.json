@@ -1,0 +1,213 @@
+{
+  "headline": "The /dusicky/ hub is live with a map of Czechia (a dot per town page), the towns grouped by diocese, a 'Najdi obec' filter and an opt-in 'Podle mé polohy' sort. Of 150 churches with an ambiguous title, 32 now show their feast from a parish source and 118 still show nothing. iOS: builds 81–88 of 1.4 are on App Store Connect, all from CI. Nothing submitted.",
+  "shipped": [
+    {
+      "title": "/dusicky/ hub: SVG map of town pages, towns by diocese, Najdi obec, Podle mé polohy",
+      "pr": "https://github.com/Chartres/bohosluzby/pull/76",
+      "merged": true,
+      "live_checked": "2026-10-30 ~08:50 UTC, before the Saturday 12:00 CET deadline. Deploy job on 5c7bd0b green. I loaded live https://bohosluzby.dravec.org/dusicky/ in Chromium at 390×844 with an iPhone user agent, with the analytics beacon blocked to keep the KPIs clean. It returned 200 with 1 map, 176 dots, 176 rows and 8 diocese groups in ČBK order. Page width 390, so no sideways scroll. Typing 'jihl' leaves only Jihlava. With the position set to Jihlava, 'Podle mé polohy' sorts Jihlava 0,4 km, Brtnice 10 km, Přibyslav 21 km. The Jihlava dot links to /dusicky/jihlava/, which returns 200. This was emulation, not a physical phone: Pavol should open it once on his own phone."
+    },
+    {
+      "title": "Title feast from the parish where the church name is ambiguous (32 of 150, each with source and quote)",
+      "pr": "https://github.com/Chartres/bohosluzby/pull/77",
+      "merged": true,
+      "live_checked": "2026-10-30 ~09:40 UTC. Deploy on 5c56536 green. Live /kostel/2000316/ (Hejnice) at 390 px: the static page has 'Titulární svátek (pouť): svátek Navštívení Panny Marie, 2. července.', and the app booted on it shows 'titulární svátek (pouť): svátek Navštívení Panny Marie, 2. července'. Live /kostel/200019/ (Jablonné, not settled) shows no line. The /dusicky/ hub still has 176 dots."
+    }
+  ],
+  "patron_research": {
+    "ambiguous": 150,
+    "confirmed": 32,
+    "unknown": 118,
+    "notes": [
+      "Scope: churches the name-reader leaves blank although a feast could apply: 12 plain 'sv. Jakuba' or 'sv. Jakuba apoštola' (Starší 25. 7. or Mladší 3. 5.), 54 with two titles where at least one maps to a feast, and 84 Navštívení P. M. (2. 7. in the Czech calendar, 31. 5. in the universal one). Bare 'Panny Marie' and churches with no feast title at all were not in scope.",
+      "Confirmed means the parish website, the parish bulletin or the diocese names the feast or the saint for this church, in text that was read. Each row in data/patron-sources.json carries the URL, the source date, a verbatim quote and the check date.",
+      "Confirmed by kind: Navštívení 16 (10 kept on 31. 5., 6 on 2. 7.), sv. Jakub Starší 6, two-title churches 10. In two of those the parish keeps the second title, not the first: Staré Hvězdlice Cyril a Metoděj, Dýšina Šimon a Juda.",
+      "Seventeen candidate hits were not counted (twelve at my first pass, five more after the independent review of PR #77: Ostrov, Bohušovice, Heřalec, Sirákov and Kozlovice, which had two poutě or a dedication statement with no feast day), so those churches still show nothing: Šošůvka and Budišov (date inferred from a Sunday, saint not named); Zahnašovice and Hluboké Mašůvky (quote only from a search summary, because the page is behind a bot check); Jablonné v Podještědí, Brno minorité, Rajnochovice and the Jesuit church in Klatovy (the parish keeps two poutě); Ostrava-Zábřeh (pouť on 7 June, near neither date); Běšiny (the parish labels it 31. 5. but keeps it on 5. 7.); Liběšice (pouť tied to the 1743 apparition, not the title); Světlá Hora (Barbora named, but the pouť is in mid-November).",
+      "Of the 118 unknown, about 25 parish sites answered 403, a Cloudflare challenge, a TLS error or a reset. Among them: Český Krumlov, Dačice, ČB děkanství, Vimperk, Březnice, Česká Skalice, Roseč, Cheb, Lobendava, Králíky, Frýdek, Milevsko, Ostrovačice, Lišov, Borovany, Náchod, Čížkovice, Sobíňov. These blocks were not circumvented. Many churches have no parish website at all.",
+      "Spot check: I re-fetched 10 confirmed quotes. 8 matched the live page verbatim. 2 (svatyjakub.cz Brno, farnost-trnava.cz) refused the re-fetch with HTTP 466, and their rows say so. Some quotes were read from parish poster images (Hejnice, Lomnice, Suchdol); the notes say which.",
+      "Registry lead: Ostřetín's parish calls its church 'Zvěstování P. Marie', not Navštívení, so the registry title may be wrong.",
+      "No parish was contacted."
+    ]
+  },
+  "ios_builds": [
+    {
+      "build": 88,
+      "where": "TestFlight (Release iOS run #15, lane beta)",
+      "date": "2026-10-30 07:19 UTC",
+      "contains": "1.4 from main 0f48ca6: #75 sweep (iOS 15 compat, ICS open-ended series, filter expiry) on top of #74 (the time is the mass: verbs unfold, the 1.–2. 11. pill, season duotone photo, one-line photo credit) and the Dušičky data corrections #72. Not in it: the /dusicky/ hub map (#76, web-only static page) and the parish-sourced title feasts (#77)."
+    },
+    {
+      "build": 87,
+      "where": "App Store Connect through lane release (run #14): binary plus the 1.4 listing metadata uploaded, submit_for_review=false, precheck passed",
+      "date": "2026-10-29 02:34 UTC",
+      "contains": "1.4 from main f94b1d7 (#70): titular feast line (#68), signals kit and analytics guard (#69). Same code as 86. Whether 87 is attached to the 1.4 version in App Store Connect can't be seen from here."
+    },
+    {
+      "build": 86,
+      "where": "TestFlight (run #13, lane beta)",
+      "date": "2026-10-29 02:27 UTC",
+      "contains": "1.4 from main f94b1d7: same as 87"
+    },
+    {
+      "build": 85,
+      "where": "TestFlight (run #12, lane beta)",
+      "date": "2026-10-28 03:23 UTC",
+      "contains": "1.4 from main e34e243: titular feast as a line of the Farnost section (#68)"
+    },
+    {
+      "build": 84,
+      "where": "TestFlight (run #11, lane beta)",
+      "date": "2026-10-25 10:17 UTC",
+      "contains": "1.4 from main b372aac: bottom view bar, +N on map chips, nightly photo matching (#62)"
+    },
+    {
+      "build": 83,
+      "where": "TestFlight (run #10, lane beta)",
+      "date": "2026-10-25 04:31 UTC",
+      "contains": "1.4 from main 5f7648a: Brno-area photos (#61)"
+    },
+    {
+      "build": 82,
+      "where": "TestFlight (run #9, lane beta)",
+      "date": "2026-10-25 04:19 UTC",
+      "contains": "1.4 from main 1e53ce5: notes parser nth weekday, faded no-match clusters, iOS edge swipe back (#60)"
+    },
+    {
+      "build": 81,
+      "where": "TestFlight (run #7, lane beta)",
+      "date": "2026-10-24 19:15 UTC",
+      "contains": "1.4 from main be90f71: Xcode 26 / iOS 26 SDK (#58), friends'-feedback map fixes (#56)"
+    },
+    {
+      "build": 80,
+      "where": "App Store: 1.3, approved (built outside CI, on the Mac mini)",
+      "date": "2026-10-14",
+      "contains": "1.3 release (docs/OWNER-TASKS.md)"
+    }
+  ],
+  "decisions": [
+    {
+      "question": "Group the hub's towns by kraj or by diocese?",
+      "options": [
+        "kraj",
+        "diocese"
+      ],
+      "default_taken": "diocese, with the kraje each covers named under each heading",
+      "why": "We can derive it from data we already hold: the first digit of the registry id (1 Praha … 8 Brno), checked in a test against the cathedral towns. Kraj would need a boundary dataset. Diocese is also the Schematismus's own order. The note under each heading and the search field cover people who don't know church geography. To switch to kraj: swap DIOCESES for a kraj table plus a boundary lookup at build time."
+    },
+    {
+      "question": "Map source and form",
+      "options": [
+        "tile map",
+        "static SVG from Natural Earth border + town centroids"
+      ],
+      "default_taken": "static SVG, built at build time",
+      "why": "This is what the brief asked for: no tile server and no third-party script. Natural Earth is public domain, simplified to 446 points (data/geo/cz-border.json). The page is 20 KB gzipped."
+    },
+    {
+      "question": "Map dots in the keyboard / screen-reader order?",
+      "options": [
+        "176 focusable links",
+        "aria-hidden, tabindex -1; the list carries every link"
+      ],
+      "default_taken": "aria-hidden",
+      "why": "176 tab stops would only repeat the list below. The dots are for tapping."
+    },
+    {
+      "question": "Which towns get a name on the map?",
+      "options": [
+        "largest by church count",
+        "the see cities"
+      ],
+      "default_taken": "the see cities (Praha, Plzeň, ČB, HK, Litoměřice, Brno, Olomouc, Ostrava)",
+      "why": "They fit the diocese grouping. The 'largest six' put Opava on top of Ostrava."
+    },
+    {
+      "question": "Position sort: remember it?",
+      "options": [
+        "remember in storage",
+        "page only"
+      ],
+      "default_taken": "page only",
+      "why": "The brief asked for 'only after a tap'. The position never leaves the page, and the page says so."
+    },
+    {
+      "question": "What counts as 'confirmed' for an ambiguous title?",
+      "options": [
+        "any parish mention near the date",
+        "the parish names the feast or saint for this church in read text"
+      ],
+      "default_taken": "the strict rule",
+      "why": "Pavol's default was 'show nothing', and a wrong date is worse than none. Twelve weaker hits were set back to unknown. Each row has a flag and a note, so a looser rule is a data change."
+    },
+    {
+      "question": "Use a confirmed title that our feast table hadn't offered as a candidate (Dýšina Šimon a Juda, Otnice sv. Alois, Staré Hvězdlice Cyril a Metoděj)?",
+      "options": [
+        "only the mapped candidates",
+        "whatever title the parish keeps"
+      ],
+      "default_taken": "whatever title the parish keeps",
+      "why": "It is the church's own title, and the parish source names it."
+    },
+    {
+      "question": "Show the parish source on the church page?",
+      "options": [
+        "link 'zdroj' on the line",
+        "record it in the data only"
+      ],
+      "default_taken": "data only",
+      "why": "Pavol kept the patron line as it is, and the brief asked for the source to be recorded in the data."
+    },
+    {
+      "question": "Dispatch TestFlight after these merges (AGENTS.md: every user-facing merge)?",
+      "options": [
+        "dispatch beta",
+        "skip"
+      ],
+      "default_taken": "skip",
+      "why": "Item 7 says don't submit anything and list the builds. The hub is a web-only static page. #77's title feasts would reach the app with the next build Pavol cuts."
+    },
+    {
+      "question": "Ping IndexNow for /dusicky/?",
+      "options": [
+        "submit",
+        "leave to the central job"
+      ],
+      "default_taken": "leave to the central job",
+      "why": "The brief says IndexNow is central."
+    }
+  ],
+  "proposals": [
+    {
+      "name": "Map on each /dusicky/<town>/ page (the town's churches as dots)",
+      "options": [
+        "no, the list stays the page",
+        "small static SVG of the town's churches above the ordo",
+        "only for the 30 largest towns"
+      ],
+      "recommendation": "Wait until after 2 Nov and see whether hub visitors use the map. It changes the town pages, which you kept as they are."
+    },
+    {
+      "name": "Re-checking the 118 unknown titles",
+      "options": [
+        "leave unknown",
+        "a second pass from a normal browser for the ~25 bot-walled parish sites",
+        "ask parishes (needs your go: it's outreach)"
+      ],
+      "recommendation": "A second pass from a browser in a quieter week. It's cheap, and data/patron-sources.json already lists why each one is open."
+    }
+  ],
+  "next": [
+    "Pavol: open https://bohosluzby.dravec.org/dusicky/ on your phone once before Sunday. The live check was a 390 px emulation.",
+    "Pavol: decide iOS 1.4. Build 88 (30 Oct) is the newest on TestFlight. Build 87 carried the 1.4 metadata through the release lane. Which build is attached to 1.4 in App Store Connect is visible only there. Neither the hub map nor the parish-sourced title feasts are in any build.",
+    "After 2 Nov: compare /dusicky/ hub page_views (static:true) with the town pages, to see whether the map gets used.",
+    "The 3 Nov rebuild rolls the hub to 2027. The map and the diocese groups rebuild from the same data.",
+    "Ostřetín: the parish says Zvěstování, the registry says Navštívení. Add it to the ČBK data-quality list."
+  ],
+  "screenshots": [
+    "e2e/shots/p8-dusicky-hub-390.png",
+    "e2e/shots/p8-dusicky-hub-1280.png",
+    "e2e/shots/p8-dusicky-hub-390-search.png",
+    "e2e/shots/p8-dusicky-hub-390-near.png"
+  ]
+}
