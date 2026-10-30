@@ -1,7 +1,7 @@
 // Church detail — the full weekly schedule set like a printed ordo (grouped by
 // day, times aligned), one-off services in their own rubric section, parish +
 // contacts, and an honest data-freshness line. docs/DESIGN-BRIEF.md governs.
-import { type RefObject, type TouchEvent, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { type ReactNode, type RefObject, type TouchEvent, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import {
   decodeShard,
   type Church,
@@ -19,7 +19,6 @@ import { logError, track } from './analytics'
 import { isNative } from './lib/native'
 import { setStatusBarOnDark } from './lib/native-init'
 import { loadData, loadShard } from './lib/dataStore'
-import { addToCalendar, scheduleMassReminder, REMINDER_LEAD_MIN } from './lib/native-actions'
 import { aggregateFor, divergentChips, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { expectAttendance } from './lib/feedbackLedger'
 import { WITNESS_ENABLED } from './lib/flags'
@@ -27,10 +26,12 @@ import { oneOffKey, riteOf, slotKey, type Aggregate } from './domain/feedback'
 import { WitnessPills } from './WitnessPills'
 import { NavSheet } from './NavSheet'
 import { churchUrl } from './domain/site'
-import { inviteFor } from './domain/invite'
 import { patronDateLabel, patronOf } from './domain/patron'
+import { creditLine } from './domain/photoCredit'
+import { MassVerbs, onDate } from './MassVerbs'
+import { feastWeek, servicesOnDate } from './domain/feastWeek'
 import { favoritesSnapshot, subscribeFavorites, toggleFavorite } from './lib/favorites'
-import { churchWitnessIntro, lang, t, langLabel, reminderScheduledMsg, staleWarning, type Key } from './i18n'
+import { churchWitnessIntro, t, langLabel, staleWarning, type Key } from './i18n'
 
 // A church viewed within this window after a Mass started seeds the after-Mass
 // ledger — the "recent viewers" cohort (docs/PILGRIM-WITNESS-PLAN.md).
@@ -118,96 +119,52 @@ function contactHref(type: string, value: string): string | null {
   return null
 }
 
-/** Per-service actions: add to calendar (native share sheet / web download) and,
- * on native only, schedule a local reminder before the next occurrence. */
-function ServiceActions({ church, service }: { church: Church; service: Service | ExtraService }) {
-  const [msg, setMsg] = useState<string | null>(null)
-  const flash = (m: string) => {
-    setMsg(m)
-    setTimeout(() => setMsg(null), 2500)
-  }
-
-  const onCalendar = () => {
-    addToCalendar(church, service)
-      .then((ok) => (ok ? track('key_action', { action: 'ics', church: church.id }) : flash(t('remind_none'))))
-      .catch((err) => logError(err, { where: 'calendar', id: church.id }))
-  }
-
-  const onRemind = async () => {
-    const r = await scheduleMassReminder(church, service)
-    track('key_action', { action: 'reminder', church: church.id, result: r })
-    flash(
-      r === 'scheduled'
-        ? reminderScheduledMsg(REMINDER_LEAD_MIN)
-        : r === 'denied'
-          ? t('remind_denied')
-          : r === 'failed'
-            ? t('remind_failed')
-            : t('remind_none'),
-    )
-  }
-
-  // Mechanic C (docs/SIGNATURE.md): one person invites another, in their own
-  // messenger. Prefilled with the next date this service really runs.
-  const onInvite = async () => {
-    const inv = inviteFor(church, service, new Date(), lang())
-    if (!inv) return flash(t('remind_none'))
-    const sent = () => track('key_action', { action: 'invite', church: church.id })
-    if (isNative) {
-      try {
-        const { Share } = await import('@capacitor/share')
-        await Share.share({ text: inv.text, url: inv.url })
-        sent()
-      } catch {
-        // the person closed the share sheet
-      }
-      return
-    }
-    if (navigator.share) {
-      try {
-        await navigator.share({ text: inv.text, url: inv.url })
-        return sent()
-      } catch (err) {
-        if ((err as Error)?.name === 'AbortError') return // closed the sheet
-        // refused (NotAllowedError, unsupported data) → copy instead
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(`${inv.text}\n${inv.url}`)
-      flash(t('invite_copied'))
-      sent()
-    } catch {
-      flash(t('remind_failed'))
-    }
-  }
-
+/** A service row whose time is its handle: tap it and the mass's verbs
+ * (připomenout · do kalendáře · pozvat) unfold in place under it; tap again
+ * and they fold away. A faded ▾ at the end — the app's own "opens something"
+ * mark (the filter pills carry it) — says so; it turns when open. */
+function UnfoldRow({
+  church,
+  service,
+  open,
+  onToggle,
+  children,
+  paused,
+  className = '',
+}: {
+  church: Church
+  service: Service | ExtraService
+  open: boolean
+  onToggle: () => void
+  children: ReactNode
+  paused?: boolean
+  className?: string
+}) {
   return (
-    <div className="flex shrink-0 items-baseline gap-3">
-      {/* the flash is VISIBLE (and stays one persistent aria-live region) — a
-          scheduled reminder the user can't see happened reads as a broken
-          button; it briefly replaces the verbs so the row never overflows */}
-      <span
-        className={msg ? 'text-xs font-semibold text-rubric' : 'sr-only'}
-        role="status"
-        aria-live="polite"
+    <div className="border-b border-hairline">
+      <div
+        data-paused={paused || undefined}
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
+        onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onToggle()
+          }
+        }}
+        className={`tap-row flex cursor-pointer items-baseline gap-4 py-2 ${className}`}
       >
-        {msg ?? ''}
-      </span>
-      {!msg && (
-        <>
-          {isNative && (
-            <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onRemind}>
-              {t('remind')}
-            </button>
-          )}
-          <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onCalendar}>
-            {t('add_calendar')}
-          </button>
-          <button type="button" className={`text-xs text-ink-faded ${linkCls}`} onClick={onInvite}>
-            {t('invite')}
-          </button>
-        </>
-      )}
+        {children}
+        <span
+          aria-hidden="true"
+          className={`self-center pl-1 text-[0.6rem] text-ink-faded/60 transition-transform ${open ? 'rotate-180' : ''}`}
+        >
+          ▾
+        </span>
+      </div>
+      {open && <MassVerbs church={church} service={service} className="pb-2" />}
     </div>
   )
 }
@@ -311,6 +268,7 @@ function DetailHeading({
   focus: Date | null
 }) {
   const text = hero ? 'text-paper' : 'text-ink-faded'
+  const head = (focus && line.find((u) => u.start.getTime() === focus.getTime())) || line[0]
   // -my-3 py-3: a 44px hit area without moving the text line
   const link = `-my-3 inline-block py-3 ${hero ? heroLinkCls : linkCls}`
   return (
@@ -331,13 +289,16 @@ function DetailHeading({
           {line.map((u, i) => (
             <span key={i}>
               {i > 0 && <span className={text}> · </span>}
-              <span className={focus && u.start.getTime() === focus.getTime() ? 'font-semibold' : undefined}>
+              <span className={u === head ? 'font-semibold' : undefined}>
                 {fmtTime(u.start)} {u.service.type || t('service_fallback')}
               </span>
             </span>
           ))}
         </p>
       )}
+      {/* M3 (Pavol 2026-10-29): the verbs of the mass you came for — the one
+          tapped in the list, else the next one — right under its line */}
+      {head && <MassVerbs church={church} service={onDate(head.service, head.start)} hero={hero} className="mt-2" />}
       {/* one meta row of actions under the title — navigate · share · save · web
           farnosti (navigace opens the map-app chooser, so no separate "mapa"). Bundled (not a separate block) so the schedule stays primary. */}
       <p className={`mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm ${text}`}>
@@ -381,6 +342,11 @@ export function ChurchDetail({
   const [svc, setSvc] = useState<ChurchServices | null>(null)
   const [failed, setFailed] = useState(false)
   const [navOpen, setNavOpen] = useState(false)
+  // one unfolded row at a time (its mass verbs showing)
+  const [openRow, setOpenRow] = useState<string | null>(null)
+  const toggleRow = (key: string) => setOpenRow((k) => (k === key ? null : key))
+  // Všech svatých + 2 Nov: this church's services on both days, the week before
+  const feast = useMemo(() => feastWeek(new Date()), [])
   const [photo, setPhoto] = useState<ChurchPhoto | null>(null)
   const [dioc, setDioc] = useState<DiocesanConfession | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
@@ -630,8 +596,14 @@ export function ChurchDetail({
             alt={church.name}
             loading="lazy"
             decoding="async"
-            className="block h-[46vh] max-h-[26rem] min-h-[15rem] w-full object-cover object-top"
+            // a photo that fails to load (offline, Commons throttling) falls back
+            // to the plain paper header instead of alt text on an empty scrim
+            onError={() => setPhoto(null)}
+            className="hero-duo block h-[46vh] max-h-[26rem] min-h-[15rem] w-full object-cover object-top"
           />
+          {/* season duotone (Pavol 2026-10-29, B2): the photo in greys, tinted
+              with the liturgical season — paper type always sits on a calm field */}
+          <div aria-hidden="true" className="hero-tint pointer-events-none absolute inset-0" />
           {/* one ink gradient through the whole photo (Pavol 2026-10-16: "the
               bleed is beautiful — run it through the whole photo, a little
               lighter"): darker at the top for the nav + iOS clock, lightest
@@ -647,14 +619,10 @@ export function ChurchDetail({
           <HeroNav onBack={onBack} onHelp={onHelp} bar={false} />
           <figcaption className="hero-legible absolute inset-x-0 bottom-0 px-5 pt-10 pb-3 sm:px-8">
             <DetailHeading church={church} headingRef={headingRef} onNavigate={() => setNavOpen(true)} hero line={line} focus={focus} />
-            {/* attribution: tiny, right-aligned, still legible on the scrim.
-                The author is tidied to the name before any " (…)" wiki markup
-                ("ŠJů ( cs:ŠJů )" → "ŠJů"); licence + Wikimedia Commons kept. */}
-            <p className="mt-1.5 text-right text-[0.65rem] text-paper/70">
-              {t('photo_credit_prefix')}{' '}
-              {[photo.credit.split(' (')[0].trim(), photo.license, 'Wikimedia Commons']
-                .filter(Boolean)
-                .join(' · ')}
+            {/* attribution: one short line — author's name, licence, source
+                (domain/photoCredit.ts drops the free-text notes authors leave) */}
+            <p className="mt-1.5 truncate text-right text-[0.65rem] text-paper/75">
+              {t('photo_credit_prefix')} {creditLine(photo.credit, photo.license)}
             </p>
           </figcaption>
         </figure>
@@ -705,6 +673,47 @@ export function ChurchDetail({
               )}
             </p>
           )}
+          {/* Všech svatých + 2 Nov (Pavol 2026-10-29, D2): the week before and
+              the days themselves, this church's services on both days, above
+              the weekly ordo — the question people actually have that week */}
+          {feast && (
+            <section aria-label={t('feast_title')} className="mt-7">
+              <h3 className="rubric border-b border-hairline pb-1">{t('feast_title')}</h3>
+              {feast.map((f) => {
+                const rows = servicesOnDate(svc, f.iso)
+                const when = dayLabel(new Date(), new Date(`${f.iso}T12:00:00Z`)) // "zítra", "neděle 1. 11."
+                return (
+                  <div key={f.iso} className="mt-4">
+                    <h4 className="text-sm">
+                      <span className="rubric text-[0.7rem]">{when}</span>{' '}
+                      <span className="font-display font-semibold">{f.name}</span>
+                    </h4>
+                    {rows.length === 0 ? (
+                      <p className="mt-1 text-sm text-ink-faded">{t('feast_none')}</p>
+                    ) : (
+                      <ul>
+                        {rows.map((x, i) => (
+                          <li key={i}>
+                            <UnfoldRow church={church} service={x} open={openRow === `f-${f.iso}-${i}`} onToggle={() => toggleRow(`f-${f.iso}-${i}`)}>
+                              <p className="font-display w-14 shrink-0 text-xl font-semibold tabular-nums">{x.time}</p>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm">{x.type || t('service_fallback')}</p>
+                                <NoteText note={x.note} />
+                                <p className="mt-0.5 space-x-2 text-sm empty:hidden">
+                                  {x.lang !== 'česky' && <Chip label={langLabel(x.lang)} />}
+                                  {x.greek && <Chip label={t('greek_chip')} />}
+                                </p>
+                              </div>
+                            </UnfoldRow>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )
+              })}
+            </section>
+          )}
           <section aria-label={t('schedule_title')} className="mt-7">
             <h3 className="rubric border-b border-hairline pb-1">{t('schedule_title')}</h3>
             {svc.regular.length === 0 && (
@@ -725,6 +734,8 @@ export function ChurchDetail({
                           s={s}
                           day={day}
                           church={church}
+                          open={openRow === `o-${day}-${i}`}
+                          onToggle={() => toggleRow(`o-${day}-${i}`)}
                           slot={agg.slots.get(slotKey(church.id, day, s.time, riteOf(s), s.lang))}
                           churchTopIds={churchTopIds}
                         />
@@ -795,7 +806,8 @@ export function ChurchDetail({
               <h3 className="rubric border-b border-hairline pb-1">{t('extras_title')}</h3>
               <ul>
                 {extras.map((x, i) => (
-                  <li key={i} className="flex items-baseline gap-4 border-b border-hairline py-2">
+                  <li key={i}>
+                    <UnfoldRow church={church} service={x} open={openRow === `x-${i}`} onToggle={() => toggleRow(`x-${i}`)}>
                     <p className="font-display w-24 shrink-0 text-base font-semibold whitespace-nowrap">
                       {fmtDateCz(x.date)}
                     </p>
@@ -814,7 +826,7 @@ export function ChurchDetail({
                         />
                       )}
                     </div>
-                    <ServiceActions church={church} service={x} />
+                    </UnfoldRow>
                   </li>
                 ))}
               </ul>
@@ -909,12 +921,16 @@ function ServiceRow({
   s,
   day,
   church,
+  open,
+  onToggle,
   slot,
   churchTopIds,
 }: {
   s: Service
   day: number
   church: Church
+  open: boolean
+  onToggle: () => void
   slot?: Aggregate
   churchTopIds: string[]
 }) {
@@ -935,10 +951,7 @@ function ServiceRow({
     )
   })()
   return (
-    <div
-      data-paused={pausedNow || undefined}
-      className={`flex items-baseline gap-4 border-b border-hairline py-2 ${pausedNow ? 'opacity-45' : ''}`}
-    >
+    <UnfoldRow church={church} service={s} open={open} onToggle={onToggle} paused={pausedNow} className={pausedNow ? 'opacity-45' : ''}>
       {/* paused: struck through so the eye skips it; still listed (summer
           schedules come back) */}
       <p className={`font-display w-14 shrink-0 text-xl font-semibold tabular-nums ${pausedNow ? 'line-through decoration-1' : ''}`}>
@@ -956,7 +969,6 @@ function ServiceRow({
         </p>
         {WITNESS_ENABLED && <MassDiverges chips={divergentChips(slot, churchTopIds)} />}
       </div>
-      <ServiceActions church={church} service={s} />
-    </div>
+    </UnfoldRow>
   )
 }

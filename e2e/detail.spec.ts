@@ -28,7 +28,7 @@ test('detail from the list: weekly ordo, extras, parish, freshness', async ({ pa
 
   // no separate 'mapa' link: navigace opens the nav-app chooser, which lists the map apps
   await expect(page.getByRole('link', { name: 'mapa' })).toHaveCount(0)
-  await page.getByRole('button', { name: 'navigace' }).click()
+  await page.getByRole('button', { name: 'trasa' }).click()
   await expect(page.getByRole('link', { name: 'Apple Maps' })).toHaveAttribute(
     'href',
     /maps\.apple\.com/,

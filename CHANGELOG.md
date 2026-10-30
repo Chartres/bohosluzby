@@ -5,6 +5,24 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **The time is the mass** (Pavol 2026-10-29, M1 + M3): tap a time — in the list, the church
+  ordo, the 1.–2. 11. block — and its verbs unfold under the row: připomenout · do kalendáře
+  · pozvat, small line icon + word; tap again, they fold away (a faded ▾ marks it). The
+  church page's header carries the same line for the mass you came from the list for (or
+  the next one). trasa/web stay with the church; "navigace" is now "trasa", as in the list.
+- **připomenout on the web**: a one-off calendar event for the next occurrence, with an
+  alert 30 min before (`buildICS(…, { once, alarmMin })`); the app keeps its notification.
+- **Photo hero in the season's colour** (B2): greyscale photo with the liturgical colour
+  multiplied over it, so white type always reads. A photo that fails to load falls back to
+  the plain paper header.
+- **Photo credit, one line** (A1): author · licence · Wikimedia Commons. 14 photos had only
+  the author's free-text note as "credit" and no name (13 by Aktron, 1 by Miha Peče) —
+  fixed in photos.json and in the matcher (`artistName`).
+- **1 and 2 November in the app** (D-b, D2), the week before through 2 Nov: a "1.–2. 11."
+  pill first in the filter row (season colour; also in the day sheet) lists both days in
+  one ordo under "NEDĚLE 1. 11. · SLAVNOST VŠECH SVATÝCH" / "PONDĚLÍ 2. 11. · VZPOMÍNKA NA
+  VŠECHNY VĚRNÉ ZEMŘELÉ" (`?den=svatky`; the map shows the first of the two); and a block on
+  each church detail with that church's services on both days. `src/domain/feastWeek.ts`.
 - **Dušičky 2026 data check**: 395 churches in the 30 largest towns (Praha, Brno, Ostrava,
   Plzeň, Olomouc in full) checked against the parishes' own 2026 announcements — 121
   confirmed, 65 wrong, 209 unverifiable (`docs/review/2026-10-29-dusicky-check.json`).

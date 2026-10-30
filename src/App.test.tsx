@@ -256,6 +256,30 @@ describe('Marie finds the nearest mass', () => {
     expect(qp('den')).not.toBeNull()
   })
 
+  it('the week before 1 Nov: a "1.–2. 11." pill lists both days, headed by their feasts', async () => {
+    vi.setSystemTime(new Date('2026-10-29T10:00:00Z')) // Thu
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    const pill = screen.getByRole('button', { name: 'Všech svatých a Vzpomínka na všechny věrné zemřelé', pressed: false })
+    expect(pill).toHaveTextContent('1.–2. 11.')
+    await user.click(pill)
+    expect(qp('den')).toBe('svatky')
+    expect(await screen.findByRole('heading', { name: /neděle 1\. 11\. · Slavnost Všech svatých/i })).toBeInTheDocument()
+    // a second tap returns to "hned"
+    await user.click(screen.getAllByRole('button', { name: 'Všech svatých a Vzpomínka na všechny věrné zemřelé', pressed: true })[0])
+    expect(qp('den')).toBeNull()
+  })
+
+  it('outside that week there is no feast pill', async () => {
+    vi.setSystemTime(new Date('2026-10-20T10:00:00Z'))
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    expect(screen.queryByRole('button', { name: 'Všech svatých a Vzpomínka na všechny věrné zemřelé' })).toBeNull()
+  })
+
   it('footer shows how fresh the registry data is', async () => {
     stubGeolocation('granted')
     render(<App />)
@@ -504,14 +528,14 @@ describe('Marie finds the nearest mass', () => {
       'tel:+420222221339',
     )
 
-    // one way to the map: navigace (its sheet lists the map apps) — no separate "mapa"
+    // one way to the map: trasa (its sheet lists the map apps) — no separate "mapa"
     expect(screen.queryByRole('link', { name: 'mapa' })).toBeNull()
-    expect(screen.getByRole('button', { name: 'navigace' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'trasa' })).toBeInTheDocument()
     // data freshness (honest about staleness)
     expect(screen.getByText(/naposledy ověřeno 1\. 6\. 2026/)).toBeInTheDocument()
 
-    // "navigace" opens the nav-app chooser (geo: was Android-only and dead on iOS)
-    await user.click(screen.getByRole('button', { name: 'navigace' }))
+    // "trasa" opens the nav-app chooser (geo: was Android-only and dead on iOS)
+    await user.click(screen.getByRole('button', { name: 'trasa' }))
     expect(screen.getByRole('link', { name: 'Apple Maps' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'zavřít' }))
 
@@ -637,8 +661,10 @@ describe('Marie finds the nearest mass', () => {
     try {
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
       render(<App />)
-      const icsButtons = await screen.findAllByRole('button', { name: 'do kalendáře' })
-      await user.click(icsButtons[0])
+      // M1: tap the first service row, its verbs unfold under it
+      const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+      await user.click(within(schedule).getAllByRole('button', { expanded: false })[0])
+      await user.click(within(schedule).getByRole('button', { name: 'do kalendáře' }))
       expect(click).toHaveBeenCalled()
       const blob = createObjectURL.mock.calls[0]![0]
       const ics = await blob.text()

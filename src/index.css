@@ -135,3 +135,34 @@ html {
     animation: none;
   }
 }
+
+/* Photo hero, season duotone (B2): the photo in warm greys, then the
+   liturgical colour laid over the mid-tones. Highlights stay light, shadows
+   deepen into the season — white type reads on any church interior. */
+.hero-duo {
+  filter: grayscale(1) contrast(1.05);
+}
+.hero-tint {
+  background: var(--season);
+  mix-blend-mode: multiply;
+  opacity: 0.45;
+}
+
+/* Service rows that unfold their mass verbs: a quiet season-tinted press,
+   nothing at rest but the faded ▾. */
+.tap-row {
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 120ms ease-out;
+}
+.tap-row:active {
+  background: color-mix(in srgb, var(--season) 7%, transparent);
+}
+/* hover only where there IS a hover — iOS keeps :hover stuck after a tap */
+@media (hover: hover) {
+  .tap-row:hover {
+    background: color-mix(in srgb, var(--season) 7%, transparent);
+  }
+}
+.tap-row:focus-visible {
+  outline-offset: -2px;
+}
