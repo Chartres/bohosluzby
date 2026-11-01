@@ -65,6 +65,9 @@ runs — a cancelled mass costs him the only window he had.
   2. Kolem **12:00** (±90 min window matches his time box).
   3. Pick the 12:00 mass nearby → detail → check the note line (no "dle ohlášení"
      uncertainty; freshness "naposledy ověřeno" recent).
+  4. Same question on the map: every group of churches shows its best time for the
+     window (stacked chip + church count), grey only if it fits another day; "jiný den ·
+     skrýt" leaves only what fits now (2026-11-01).
 - **Done:** at his desk by 13:00, mass attended.
 - **Watch for:** the ±90 min "kolem" window honoring the clock edge; unverifiable notes
   ("nepravidelně, dle ohlášení") loudly marked, never silently dropped.
@@ -177,7 +180,7 @@ the family graves, and wants a Mass there: for the dead, ideally with her mother
 |---------|---------|---------------|
 | P1 Marie | hero list, hned | `e2e/hero.spec.ts` (existing) |
 | P2 James | neděle + jazyk + ICS | `e2e/personas.spec.ts` |
-| P3 Tomáš | kolem 12:00 lunch window | `e2e/personas.spec.ts` |
+| P3 Tomáš | kolem 12:00 lunch window, list + map groups | `e2e/personas.spec.ts` |
 | P4 Novákovi | city + dnes + večer + sdílet | `e2e/personas.spec.ts` |
 | P5 Ludmila | feast chip + feast ordo | `e2e/day.spec.ts` (tint) + manual on real feasts |
 | P6 Věra | summer note on detail + hero cross-check | `e2e/personas.spec.ts` |

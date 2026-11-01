@@ -10,6 +10,20 @@ this order:
 
 Update the **Now** section at the end of every session; it is the handoff.
 
+## Now — as of 2026-11-01 (hand-back `docs/review/2026-11-01.json`)
+
+- **Dušičky second data pass is live** (#79–#81): 340 churches re-checked against the
+  1 Nov ohlášky, 40 wrong for 2 Nov, 37 fixed with sources. 204 still unverifiable (about
+  50 behind bot walls). Feast pages verified static, stale rows dated.
+- **Map groups** (#83, waiting for Pavol's OK on the shots, then merge + TestFlight
+  `beta`): stacked time chips with a church count, "jiný den · skrýt", popover line for
+  today's services outside the choice. Journey: P3 Tomáš (list + map).
+- Found while doing it: Playwright's day.spec selector had rotted since #74 (Playwright
+  is not in CI), fixed in #83. The committed `node_modules` self-symlink breaks any
+  `git checkout main` in a working copy: remove it (`git rm --cached node_modules`).
+- Next: after 2 Nov, compare /dusicky/ page_views; consider hiding grey chips by default
+  below zoom 14 (central Praha is crowded at 13–14).
+
 ## Now — as of 2026-10-30 (Pavol's decision page, hand-back `docs/review/2026-10-30.json`)
 
 - `/dusicky/` hub: an SVG map with a dot per town page, the towns grouped by diocese, a
