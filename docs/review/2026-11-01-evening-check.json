@@ -1,0 +1,1353 @@
+{
+ "about": "Dušičky 2026 evening pass, 1 Nov 2026 ~18:00–18:20 CET: the 205 churches left unverifiable this morning (docs/review/2026-11-01-dusicky-check.json), re-checked for 2 Nov only, in two sweeps. Same source rule as 28 Oct and this morning. Fixes: data/corrections.json (4 entries, checked 2026-11-01).",
+ "churches": [
+  {
+   "id": "10003",
+   "name": "filiální kostel sv. Jiří, Praha-Hrad",
+   "status": "unverifiable",
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/",
+   "note": "no change — 2nd evening sweep: cathedral calendar 2.11 still only 7:00 kaple sv. Vojtěcha + 18:00 cathedral; church not named"
+  },
+  {
+   "id": "10002",
+   "name": "kapitulní kostel Všech svatých, Praha-Hrad",
+   "status": "unverifiable",
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/",
+   "note": "no change — 2nd evening sweep: cathedral calendar 2.11 still only 7:00 kaple sv. Vojtěcha + 18:00 cathedral; church not named"
+  },
+  {
+   "id": "10004",
+   "name": "klášterní kostel sv. Benedikta, Praha-Hradčany",
+   "status": "unverifiable",
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/",
+   "note": "no change — 2nd evening sweep: cathedral calendar 2.11 still only 7:00 kaple sv. Vojtěcha + 18:00 cathedral; church not named"
+  },
+  {
+   "id": "10005",
+   "name": "Vojenský kostel sv. Jana Nepomuckého, Praha-Hradčany",
+   "status": "unverifiable",
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/",
+   "note": "no change — 2nd evening sweep: cathedral calendar 2.11 still only 7:00 kaple sv. Vojtěcha + 18:00 cathedral; church not named"
+  },
+  {
+   "id": "1000106",
+   "name": "farní kostel Nanebevzetí Panny Marie, Praha-Modřany",
+   "status": "unverifiable",
+   "source": "http://www.modranskafarnost.cz",
+   "note": "no change — 2nd evening sweep: archive still ends Září 2026; nothing posted"
+  },
+  {
+   "id": "10002789",
+   "name": "kaple sv. Bartoloměje, Praha-Hodkovičky",
+   "status": "unverifiable",
+   "source": "http://www.modranskafarnost.cz",
+   "note": "no change — 2nd evening sweep: archive still ends Září 2026; nothing posted"
+  },
+  {
+   "id": "1000104",
+   "name": "farní kostel Narození Panny Marie, Praha-Michle",
+   "status": "unverifiable",
+   "source": "https://www.michlehabrovka.cz/aktivity/aktuality/",
+   "note": "no change — 2nd evening sweep: newest aktualita still ohlášky 1. 11. (posted 31. 10.); no time/church for 2.11"
+  },
+  {
+   "id": "1000105",
+   "name": "filiální kostel sv. Františka z Assisi, Praha-Krč",
+   "status": "unverifiable",
+   "source": "https://www.michlehabrovka.cz/aktivity/aktuality/",
+   "note": "no change — 2nd evening sweep: newest aktualita still ohlášky 1. 11. (posted 31. 10.); no time/church for 2.11"
+  },
+  {
+   "id": "100048",
+   "name": "farní kostel Nejsvětější Trojice, Praha-Košíře",
+   "status": "unverifiable",
+   "source": "https://farnostkosire.webnode.cz/",
+   "note": "no change — 2nd evening sweep: newest ohlášky still 04.10.2026"
+  },
+  {
+   "id": "100049",
+   "name": "filiální kostel sv. Jana Nepomuckého, Praha-Košíře",
+   "status": "unverifiable",
+   "source": "https://farnostkosire.webnode.cz/",
+   "note": "no change — 2nd evening sweep: newest ohlášky still 04.10.2026"
+  },
+  {
+   "id": "100050",
+   "name": "kaple Nanebevzetí Panny Marie, Praha-Košíře",
+   "status": "unverifiable",
+   "source": "https://farnostkosire.webnode.cz/",
+   "note": "no change — 2nd evening sweep: newest ohlášky still 04.10.2026"
+  },
+  {
+   "id": "1000883",
+   "name": "Prostor ticha",
+   "status": "unverifiable",
+   "source": "https://farnostkosire.webnode.cz/",
+   "note": "no change — 2nd evening sweep: newest ohlášky still 04.10.2026"
+  },
+  {
+   "id": "100039",
+   "name": "farní kostel Nejsvětější Trojice, Praha-Nové Město",
+   "status": "unverifiable",
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "note": "no change — 2nd evening sweep: tyn.cz 2.11 list unchanged (s. Havel 12:15, s. Haštal 17:00, M. Boží 18:00); church not named; no other source"
+  },
+  {
+   "id": "100040",
+   "name": "farní kostel sv. Jana Nepomuckého, Praha-Nové Město",
+   "status": "unverifiable",
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "note": "no change — 2nd evening sweep: tyn.cz 2.11 list unchanged (s. Havel 12:15, s. Haštal 17:00, M. Boží 18:00); church not named; no other source"
+  },
+  {
+   "id": "100041",
+   "name": "klášterní kostel Panny Marie Bolestné, Praha-Nové Město",
+   "status": "unverifiable",
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "note": "no change — 2nd evening sweep: tyn.cz 2.11 list unchanged (s. Havel 12:15, s. Haštal 17:00, M. Boží 18:00); church not named; no other source"
+  },
+  {
+   "id": "1000879",
+   "name": "klášterní kostel sv. Kosmy a Damiána, Praha-Nové Město",
+   "status": "unverifiable",
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "note": "no change — 2nd evening sweep: tyn.cz 2.11 list unchanged (s. Havel 12:15, s. Haštal 17:00, M. Boží 18:00); church not named; no other source"
+  },
+  {
+   "id": "1000878",
+   "name": "opatský kostel Panny Marie a sv. Jeronýma, sv. Cyrila a Metoděje, sv. Vojtěcha a Prokopa, Praha-Nové Město (Emauzy)",
+   "status": "unverifiable",
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "note": "no change — 2nd evening sweep: tyn.cz 2.11 list unchanged (s. Havel 12:15, s. Haštal 17:00, M. Boží 18:00); church not named; no other source"
+  },
+  {
+   "id": "1000103",
+   "name": "farní kostel Panny Marie Královny míru, Praha-Lhotka",
+   "status": "unverifiable",
+   "source": "http://www.lhoteckafarnost.cz",
+   "note": "wall: 403 Cloudflare challenge again 1.11 evening; web search found no other 2026 source."
+  },
+  {
+   "id": "1000887",
+   "name": "nemocniční kaple sv. Václava, Praha-Krč",
+   "status": "unverifiable",
+   "source": "http://www.lhoteckafarnost.cz",
+   "note": "wall: 403 Cloudflare challenge."
+  },
+  {
+   "id": "100017",
+   "name": "farní kostel Panny Marie Sněžné, Praha-Nové Město",
+   "status": "unverifiable",
+   "source": "http://www.pms.ofm.cz/wp/index.php/_ohlasky/",
+   "note": "no change — 2nd evening sweep: ohlášky unchanged, no Mass times for 2.11"
+  },
+  {
+   "id": "100016",
+   "name": "filiální kostel Nejsvětější Trojice, Praha-Nové Město",
+   "status": "unverifiable",
+   "source": "http://www.pms.ofm.cz/wp/index.php/_ohlasky/",
+   "note": "no change — 2nd evening sweep: ohlášky unchanged, no Mass times for 2.11"
+  },
+  {
+   "id": "1000112",
+   "name": "farní kostel Stětí sv. Jana Křtitele, Praha-Hostivař",
+   "status": "unverifiable",
+   "source": "https://farnosthostivar.cz",
+   "note": "wall: 403 Cloudflare challenge; web search only finds undated standing schedule."
+  },
+  {
+   "id": "1000113",
+   "name": "filiální kostel Narození Panny Marie, Praha-Záběhlice",
+   "status": "unverifiable",
+   "source": "https://farnosthostivar.cz",
+   "note": "wall: 403 Cloudflare challenge."
+  },
+  {
+   "id": "1000156",
+   "name": "farní kostel sv. Alžběty, Praha-Kbely",
+   "status": "unverifiable",
+   "source": "https://farnostkbely.cz/",
+   "note": "wall: 403 Cloudflare challenge."
+  },
+  {
+   "id": "100037",
+   "name": "farní kostel sv. Apolináře, Praha-Nové Město",
+   "status": "unverifiable",
+   "note": "no change — 2nd evening sweep: no website; nothing new"
+  },
+  {
+   "id": "100038",
+   "name": "filiální kostel Nanebevzetí Panny Marie, Praha-Nové Město",
+   "status": "unverifiable",
+   "note": "no change — 2nd evening sweep: no website; nothing new"
+  },
+  {
+   "id": "10001731",
+   "name": "kaple Malých sester Ježíšových, Praha 14 - Černý Most",
+   "status": "unverifiable",
+   "source": "https://farnostkyje.cz/v2/farnost/farni-ohlasky/",
+   "note": "no change — 2nd evening sweep: ohlášky unchanged; chapel not named for 2.11"
+  },
+  {
+   "id": "1000132",
+   "name": "klášterní kaple sv. Karla Boromejského",
+   "status": "unverifiable",
+   "source": "https://www.farnost-karlin.cz/rss_kalendar.php",
+   "note": "no change — 2nd evening sweep: calendar 2026-11-02 still only 18:00 kostel sv. Cyrila a Metoděje; chapel not named"
+  },
+  {
+   "id": "100076",
+   "name": "filiální kostel sv. Jana Nepomuckého, Praha-Dejvice",
+   "status": "unverifiable",
+   "source": "https://farnostnebusice.cz/uncategorized/ohlasky/",
+   "note": "no change — 2nd evening sweep: ohlášky unchanged; sv. Jan Nepomucký (Dejvice) not named"
+  },
+  {
+   "id": "100014",
+   "name": "farní kostel sv. Jindřicha a Kunhuty, Praha-Nové Město",
+   "status": "unverifiable",
+   "source": "http://www.svatyjindrich.cz/farni-ohlasky/",
+   "note": "no change — 2nd evening sweep: farní ohlášky still the Misijní neděle (18. 10. 2026) issue"
+  },
+  {
+   "id": "100015",
+   "name": "filiální kostel sv. Kříže, Praha-Nové Město",
+   "status": "unverifiable",
+   "source": "http://www.svatyjindrich.cz/farni-ohlasky/",
+   "note": "no change — 2nd evening sweep: farní ohlášky still the Misijní neděle (18. 10. 2026) issue"
+  },
+  {
+   "id": "100022",
+   "name": "farní kostel sv. Ducha, Praha-Staré Město",
+   "status": "unverifiable",
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "note": "no change — 2nd evening sweep: tyn.cz 2.11 list unchanged (s. Havel 12:15, s. Haštal 17:00, M. Boží 18:00); sv. Duch not named"
+  },
+  {
+   "id": "100030",
+   "name": "klášterní kostel sv. Bartoloměje, Praha-Staré Město",
+   "status": "unverifiable",
+   "source": "http://praha.op.cz",
+   "note": "no change — 2nd evening sweep: homepage rozpis/ohlášky 1. 11. cover sv. Jiljí only (2.11 18:30); sv. Bartoloměj not named"
+  },
+  {
+   "id": "100012",
+   "name": "farní kostel sv. Tomáše, Praha-Malá Strana",
+   "status": "unverifiable",
+   "source": "https://www.augustiniani.cz/wp-json/wp/v2/posts",
+   "note": "no change — 2nd evening sweep: augustiniani.cz newest post still Sept 2026; no 2026 ohlášky for 2.11"
+  },
+  {
+   "id": "10007",
+   "name": "filiální kostel sv. Mikuláše, Praha-Malá Strana",
+   "status": "unverifiable",
+   "source": "https://www.augustiniani.cz/wp-json/wp/v2/posts",
+   "note": "no change — 2nd evening sweep: augustiniani.cz newest post still Sept 2026; no 2026 ohlášky for 2.11; stnicholas.cz not re-fetched (standing schedule only earlier)"
+  },
+  {
+   "id": "100010",
+   "name": "klášterní kostel Panny Marie pod řetězem, Praha-Malá Strana",
+   "status": "unverifiable",
+   "source": "https://www.augustiniani.cz/wp-json/wp/v2/posts",
+   "note": "no change — 2nd evening sweep: augustiniani.cz newest post still Sept 2026; no 2026 ohlášky for 2.11"
+  },
+  {
+   "id": "100011",
+   "name": "klášterní kostel Panny Marie Vítězné a sv. Antonína Pad., Praha-Malá Strana",
+   "status": "unverifiable",
+   "source": "https://www.augustiniani.cz/wp-json/wp/v2/posts",
+   "note": "no change — 2nd evening sweep: augustiniani.cz newest post still Sept 2026; no 2026 ohlášky for 2.11; pragjesu.cz only standing rozvrh earlier"
+  },
+  {
+   "id": "100013",
+   "name": "klášterní kostel sv. Josefa, Praha-Malá Strana",
+   "status": "unverifiable",
+   "source": "https://www.augustiniani.cz/wp-json/wp/v2/posts",
+   "note": "no change — 2nd evening sweep: augustiniani.cz newest post still Sept 2026; no 2026 ohlášky for 2.11"
+  },
+  {
+   "id": "10009",
+   "name": "klášterní kostel sv. Karla Boromejského, Praha-Malá Strana",
+   "status": "unverifiable",
+   "source": "https://www.augustiniani.cz/wp-json/wp/v2/posts",
+   "note": "no change — 2nd evening sweep: augustiniani.cz newest post still Sept 2026; no 2026 ohlášky for 2.11"
+  },
+  {
+   "id": "10002788",
+   "name": "katedrála sv. Klimenta v Praze",
+   "status": "unverifiable",
+   "source": "https://www.exarchat.cz",
+   "note": "no change — 2nd evening sweep: exarchat.cz homepage: nothing dated for 2.11"
+  },
+  {
+   "id": "10001756",
+   "name": "fakultní kaple Panny Marie – Sedes Sapientiae",
+   "status": "unverifiable",
+   "source": "http://www.matejstranti.com",
+   "note": "no change — 2nd evening sweep: no new ohlášky; church not named for 2.11"
+  },
+  {
+   "id": "100069",
+   "name": "filiální kostel sv. Vojtěcha, Praha-Dejvice",
+   "status": "unverifiable",
+   "source": "https://sv-vojtech.eu/wp-json/wp/v2/posts",
+   "note": "no change — 2nd evening sweep: sv-vojtech.eu newest ohlášky still 25.10.2026; parish source does not name sv. Vojtěch"
+  },
+  {
+   "id": "100071",
+   "name": "kaple sv. Michala, Praha-Dejvice",
+   "status": "unverifiable",
+   "source": "http://www.matejstranti.com",
+   "note": "no change — 2nd evening sweep: no new ohlášky; church not named for 2.11"
+  },
+  {
+   "id": "1000107",
+   "name": "farní kostel sv. Václava, Praha-Nusle",
+   "status": "confirmed",
+   "source": "https://farnostnusle.websnadno.cz/Bohosluzby.html",
+   "source_date": "Bohoslužby page (aktualizováno 24.10.2026) + rozpis PDF Od 25. 10. až 30.11.2026 (https://farnostnusle.websnadno.cz/ohlasky/202610_ohlasky3.pdf)",
+   "note": "Parish has two churches; the dated 25.10.–30.11.2026 rozpis lists no Monday Mass at sv. Václav and the 2. 11. notice puts the only Mass at sv. Pankrác 18:00. Agrees with site (nothing at sv. Václav on 2. 11.). Side note: sv. Pankrác should show 18:00 mše sv. on 2. 11."
+  },
+  {
+   "id": "1000129",
+   "name": "farní kostel sv. Petra a Pavla, Praha-Bohnice",
+   "status": "unverifiable",
+   "source": "http://www.farnostbohnice.cz/farnost/ohlasky",
+   "note": "no change — 2nd evening sweep: newest ohlášky still Mše svaté od 18. 10. do 25. 10. 2026"
+  },
+  {
+   "id": "1000130",
+   "name": "filiální kostel sv. Václava, Praha-Bohnice",
+   "status": "unverifiable",
+   "source": "http://www.farnostbohnice.cz/farnost/ohlasky",
+   "note": "no change — 2nd evening sweep: newest ohlášky still Mše svaté od 18. 10. do 25. 10. 2026"
+  },
+  {
+   "id": "1000882",
+   "name": "nemocniční kaple sv. Lazara, Praha-Bohnice",
+   "status": "unverifiable",
+   "source": "http://www.farnostbohnice.cz/farnost/ohlasky",
+   "note": "no change — 2nd evening sweep: newest ohlášky still Mše svaté od 18. 10. do 25. 10. 2026"
+  },
+  {
+   "id": "100077",
+   "name": "farní kostel sv. Norberta, Praha-Střešovice",
+   "status": "unverifiable",
+   "source": "http://www.norbertstresovice.cz",
+   "note": "no change — 2nd evening sweep: newest Informace k neděli still 18. 10. 2026"
+  },
+  {
+   "id": "1000893",
+   "name": "klášterní kaple Panny Marie Andělské, Praha-Břevnov",
+   "status": "unverifiable",
+   "source": "http://www.norbertstresovice.cz",
+   "note": "no change — 2nd evening sweep: newest Informace k neděli still 18. 10. 2026"
+  },
+  {
+   "id": "1000888",
+   "name": "nemocniční kaple Milosrdného Samaritána",
+   "status": "unverifiable",
+   "source": "http://www.norbertstresovice.cz",
+   "note": "no change — 2nd evening sweep: newest Informace k neděli still 18. 10. 2026"
+  },
+  {
+   "id": "1000124",
+   "name": "farní kostel sv. Vojtěcha, Praha-Na Balkáně",
+   "status": "unverifiable",
+   "source": "https://www.farnost-nabalkane.cz/images/dokumenty/NedelniStranka/NedelniStranka.pdf",
+   "note": "no change — 2nd evening sweep: Nedělní stránka unchanged (Last-Modified 24 Oct 2026); homepage notices mention 1., 7., 8. 11. only"
+  },
+  {
+   "id": "1000109",
+   "name": "farní kostel sv. Michaela Archanděla, Praha-Podolí",
+   "status": "wrong",
+   "source": "https://www.farnostbranik.cz/vzpominka-na-vsechny-verne-zemrele/",
+   "source_date": "post dated 2. listopadu 2026 – Vzpomínka na všechny věrné zemřelé (farnost Braník, spravuje i Podolí)",
+   "note": "evening re-check: page loaded fine (HTTP 200, no WAF this time). Parallel sentence for Braník (modlitby na hřbitově 16:30, v 18:00 Mše sv. v kostele sv. Prokopa) confirms the reading: 13:30 = cemetery prayers, 15:00 = Mass in sv. Michael. Site shows nothing on 2. 11.",
+   "fixed_in": "#85"
+  },
+  {
+   "id": "100059",
+   "name": "farní kostel sv. Jakuba Staršího, Praha-Stodůlky",
+   "status": "unverifiable",
+   "source": "http://www.farnoststodulky.cz/",
+   "note": "wall: farnoststodulky.cz still HTTP 403 on 1. 11. evening; not bypassed."
+  },
+  {
+   "id": "100061",
+   "name": "filiální kostel sv. Prokopa, Praha-Stodůlky",
+   "status": "unverifiable",
+   "source": "http://www.farnoststodulky.cz/",
+   "note": "wall: farnoststodulky.cz still HTTP 403 on 1. 11. evening; not bypassed."
+  },
+  {
+   "id": "1000139",
+   "name": "farní kostel sv. Jiří, Praha-Hloubětín",
+   "status": "unverifiable",
+   "source": "http://www.farnosthloubetin.cz",
+   "note": "wall: farnosthloubetin.cz still HTTP 403 on 1. 11. evening; not bypassed."
+  },
+  {
+   "id": "1000136",
+   "name": "farní kostel sv. Vojtěcha, Praha-Libeň",
+   "status": "unverifiable",
+   "source": "https://farnostliben-vysocany.cz/wp-json/wp/v2/posts",
+   "note": "no change — 2nd evening sweep: site not updated since July 2026"
+  },
+  {
+   "id": "1000884",
+   "name": "nemocniční kaple ve Fakultní nemocnici Bulovka",
+   "status": "unverifiable",
+   "source": "https://farnostliben-vysocany.cz/wp-json/wp/v2/posts",
+   "note": "no change — 2nd evening sweep: site not updated since July 2026"
+  },
+  {
+   "id": "80002825887276",
+   "name": "bazilika Nanebevzetí Panny Marie",
+   "status": "unverifiable",
+   "note": "wall: www.opatstvibrno.cz now answers HTTP 403 ('Přístup zakázán – Byl zjištěn malware') — not bypassed; no other 2026 source"
+  },
+  {
+   "id": "80001358846480",
+   "name": "kaple sv. Alžběty",
+   "status": "unverifiable",
+   "note": "wall: www.opatstvibrno.cz now answers HTTP 403 ('Přístup zakázán – Byl zjištěn malware') — not bypassed; no other 2026 source"
+  },
+  {
+   "id": "80002709686873",
+   "name": "kostel rektorátní sv. Leopolda a Václava",
+   "status": "unverifiable",
+   "note": "wall: www.opatstvibrno.cz now answers HTTP 403 ('Přístup zakázán – Byl zjištěn malware') — not bypassed; no other 2026 source"
+  },
+  {
+   "id": "80002862217569",
+   "name": "kostel rektorátní sv. Michaela archanděla",
+   "status": "unverifiable",
+   "note": "no change; svatymichalbrno.cz now answers HTTP 429 (wall/rate limit), not retried further"
+  },
+  {
+   "id": "80003038961411",
+   "name": "kostel rektorátní Svaté Rodiny",
+   "status": "unverifiable",
+   "note": "no change; svatyjakub.cz homepage names neither kostel sv. Rodiny nor 2. 11."
+  },
+  {
+   "id": "80002813858383",
+   "name": "kostel rektorátní Nanebevzetí Panny Marie",
+   "status": "unverifiable",
+   "note": "no change; ujezuitu.cz still only undated schedule"
+  },
+  {
+   "id": "80001507647896",
+   "name": "kostel filiální sv. Kříže",
+   "status": "wrong",
+   "source": "https://www.kostelslatina.cz/",
+   "source_date": "pořad bohoslužeb týden 1.–8. 11. (stránka 2026: 'Výuka náboženství ve školním roce 2026/27'); potvrzeno kalendářem kostela kostelslatinacz@gmail.com, událost 2026-11-02 18:00",
+   "note": "Church's own Google calendar (https://calendar.google.com/calendar/ical/kostelslatinacz%40gmail.com/public/basic.ics) has 'Mše svatá: Za zemřelé farníky, zemřelé kněze ve farnosti a duše v očistci' at 2026-11-02T17:00Z = 18:00. (Page has a typo 'čtvrtek 4.11.' but Sunday 1.11/Monday 2.11/Friday 6.11 match 2026.)",
+   "fixed_in": "#86"
+  },
+  {
+   "id": "80002633679889",
+   "name": "kostel farní sv. Jiljí",
+   "status": "unverifiable",
+   "note": "no change; farnostlisen.cz homepage still only 1. 11. ohlášky (dušičková pobožnost na hřbitově), church not named for 2. 11."
+  },
+  {
+   "id": "80003767518802",
+   "name": "kaple Panny Marie Pomocnice",
+   "status": "unverifiable",
+   "note": "no change; farnostlisen.cz nothing on Kostelíček for 2. 11."
+  },
+  {
+   "id": "80001764582261",
+   "name": "kaple sv. Ludmily",
+   "status": "unverifiable",
+   "note": "no change; Lesná ohlášky 1.–8. 11. 2026 give 2. 11. Masses 7.00 and 18.00 without place; kaple sv. Ludmily not named"
+  },
+  {
+   "id": "8000353103581",
+   "name": "kostel farní Nejsvětějšího Srdce Páně",
+   "status": "unverifiable",
+   "note": "no change; Husovice RSS newest still ohlášky 18. 10. 2026"
+  },
+  {
+   "id": "80002420699120",
+   "name": "kostel filiální Neposkvrněného početí Panny Marie",
+   "status": "unverifiable",
+   "note": "no change; Husovice RSS newest still ohlášky 18. 10. 2026"
+  },
+  {
+   "id": "80003857885295",
+   "name": "kostel farní Nanebevzetí Panny Marie",
+   "status": "unverifiable",
+   "note": "no change; zabrdovice.cz answers HTTP 429 twice (wall/rate limit), stopped"
+  },
+  {
+   "id": "8000400661509",
+   "name": "kaple Pána Ježíše v Getsemanech",
+   "status": "unverifiable",
+   "note": "wall: www.farnostkomin.cz still HTTP 403 (Cloudflare) on 1. 11. evening — not bypassed; no other 2026 source"
+  },
+  {
+   "id": "80003489995421",
+   "name": "kostel farní sv. Vavřince",
+   "status": "unverifiable",
+   "note": "wall: www.farnostkomin.cz still HTTP 403 (Cloudflare) on 1. 11. evening — not bypassed; no other 2026 source"
+  },
+  {
+   "id": "8000561303283",
+   "name": "kaple sv. Václava",
+   "status": "unverifiable",
+   "note": "wall: salesianizabovresky.cz still HTTP 403 (Cloudflare) on 1. 11. evening — not bypassed; no other 2026 source"
+  },
+  {
+   "id": "8000388666746",
+   "name": "kostel farní Panny Marie Pomocnice",
+   "status": "unverifiable",
+   "note": "wall: salesianizabovresky.cz still HTTP 403 (Cloudflare) on 1. 11. evening — not bypassed; no other 2026 source"
+  },
+  {
+   "id": "80003324435852",
+   "name": "kaple sv. Floriána",
+   "status": "unverifiable",
+   "note": "no change; parish has no web"
+  },
+  {
+   "id": "50002208677124",
+   "name": "katedrála Božského Spasitele",
+   "status": "confirmed",
+   "source": "https://doo.cz/kalendar-biskup/pamatka-zemrelych-v-ostravske-katedrale-2/",
+   "source_date": "kalendář biskupa, událost 2. 11. 2026",
+   "note": "Potvrzuje 18:00 (biskupská mše). 7:30 zdroj neuvádí ani nevylučuje (není úplný pořad dne); farnostmostrava.cz stále za WEDOS (401). Text říká 'úterý' (zřejmě převzato z dřívějška), datum události je 2. 11. 2026."
+  },
+  {
+   "id": "5000911872019",
+   "name": "filiální kostel sv. Hedviky",
+   "status": "wrong",
+   "source": "https://www.farnostpustkovec.cz/wp-content/uploads/2026/11/Bohosluzby-listopad-page-0013.jpg",
+   "source_date": "pořad bohoslužeb – listopad (nahráno 1. 11. 2026, /uploads/2026/11/; Neděle 1.11. = 2026)",
+   "note": "Obrázek sám rok neuvádí, ale dny v týdnu (Neděle 1.11., Pondělí 2.11.) odpovídají 2026 a soubor je nahrán 1. 11. 2026; linkován ze stránky /bohosluzby-krasne-pole/.",
+   "fixed_in": "#85"
+  },
+  {
+   "id": "5000683596230",
+   "name": "farní kostel sv. Martina",
+   "status": "unverifiable",
+   "note": "no change — Krnov ohlášky 1.–8. 11. 2026 re-read: still no Mass times for 2. 11."
+  },
+  {
+   "id": "50003886509820",
+   "name": "rektorátní kostel Panny Marie Sedmibolestné poutní chrám",
+   "status": "unverifiable",
+   "note": "no change — Krnov ohlášky 1.–8. 11. 2026 re-read: still no Mass times for 2. 11."
+  },
+  {
+   "id": "50004026231769",
+   "name": "rektorátní kostel Narození Panny Marie klášter minoritů",
+   "status": "unverifiable",
+   "note": "no change — Krnov ohlášky 1.–8. 11. 2026 re-read: still no Mass times for 2. 11."
+  },
+  {
+   "id": "50003089146140",
+   "name": "farní kostel sv. Benedikta",
+   "status": "unverifiable",
+   "note": "no change — Krnov ohlášky 1.–8. 11. 2026 re-read: still no Mass times for 2. 11."
+  },
+  {
+   "id": "50001236725907",
+   "name": "farní kostel Nanebevzetí P. Marie",
+   "status": "unverifiable",
+   "note": "no change — web re-checked: nothing for 2. 11. 2026."
+  },
+  {
+   "id": "5000332839200",
+   "name": "farní kostel Všech svatých",
+   "status": "unverifiable",
+   "source": "http://www.rkfhostalkovice.cz",
+   "note": "rkfhostalkovice.cz: obsahový rám bez ohlášek; navigační rám lista.htm vrací stránku WEDOS.protection (wall/limit), neobcházeno."
+  },
+  {
+   "id": "5000784905915",
+   "name": "kaple sv. Urbana",
+   "status": "unverifiable",
+   "note": "no change — rkfhostalkovice.cz re-checked: near-empty page, nothing for 2. 11."
+  },
+  {
+   "id": "50003300815000",
+   "name": "farní kostel sv. Ducha",
+   "status": "unverifiable",
+   "note": "no change — opava.minorite.cz: newest post still ohlášky 25. 10. 2026."
+  },
+  {
+   "id": "50001833104466",
+   "name": "filiální kostel sv. Jana Křtitele",
+   "status": "unverifiable",
+   "note": "no change — opava.minorite.cz: newest post still ohlášky 25. 10. 2026."
+  },
+  {
+   "id": "5000302314694",
+   "name": "kaple Nejsvětějšího Srdce Marianum",
+   "status": "unverifiable",
+   "note": "no change — opava.minorite.cz: newest post still ohlášky 25. 10. 2026."
+  },
+  {
+   "id": "50004238997267",
+   "name": "farní kostel sv. Petra z Alkantary",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "50003402307703",
+   "name": "konkatedrála Nanebevzetí P. Marie",
+   "status": "confirmed",
+   "source": "https://farnostopava.cz/wp-content/uploads/2026/10/2026-11.pdf",
+   "source_date": "Zpravodaj Cesta, listopad 2026 (nahráno 26. 10. 2026)",
+   "note": "Shoduje se: 6:00 a 7:00 v konkatedrále."
+  },
+  {
+   "id": "50003569858872",
+   "name": "filiální kostel sv. Vojtěcha",
+   "status": "confirmed",
+   "source": "https://farnostopava.cz/wp-content/uploads/2026/10/2026-11.pdf",
+   "source_date": "Zpravodaj Cesta, listopad 2026 (nahráno 26. 10. 2026)",
+   "note": "Úplný pořad farnosti PM na 2. 11.: mše jen v konkatedrále (6, 7) a u sv. Hedviky (18); u sv. Vojtěcha žádná – web nic neukazuje, shoda."
+  },
+  {
+   "id": "50001796167609",
+   "name": "kaple sv. Kříže",
+   "status": "confirmed",
+   "source": "https://farnostopava.cz/wp-content/uploads/2026/10/2026-11.pdf",
+   "source_date": "Zpravodaj Cesta, listopad 2026 (nahráno 26. 10. 2026)",
+   "note": "Úplný pořad farnosti PM na 2. 11.: mše jen v konkatedrále (6, 7) a u sv. Hedviky (18); v kapli sv. Kříže žádná – web nic neukazuje, shoda."
+  },
+  {
+   "id": "50003793263134",
+   "name": "basilica minor Navštívení P.Marie",
+   "status": "unverifiable",
+   "source": "http://www.farnostfrydek.cz",
+   "note": "farnostfrydek.cz 403 (wall), neobcházeno; místecké stránky nic o bazilice na 2. 11."
+  },
+  {
+   "id": "50001936550202",
+   "name": "farní kostel sv. Jana Křtitele",
+   "status": "unverifiable",
+   "source": "http://www.farnostfrydek.cz",
+   "note": "farnostfrydek.cz 403 (wall), neobcházeno."
+  },
+  {
+   "id": "5000545920074",
+   "name": "filiální kostel sv. Šimona a Judy",
+   "status": "unverifiable",
+   "source": "http://www.farnostfrydek.cz",
+   "note": "farnostfrydek.cz 403 (wall), neobcházeno."
+  },
+  {
+   "id": "50002114377606",
+   "name": "farní kostel sv. Anny",
+   "status": "unverifiable",
+   "source": "http://www.farnosthavirov.cz",
+   "note": "farnosthavirov.cz 403 (wall); WebSearch nic pro 2. 11. 2026."
+  },
+  {
+   "id": "50004011355510",
+   "name": "farní kostel sv. Jana Křtitele",
+   "status": "unverifiable",
+   "source": "http://www.farnosthavirov.cz",
+   "note": "farnosthavirov.cz 403 (wall); WebSearch nic pro 2. 11. 2026."
+  },
+  {
+   "id": "500098886534",
+   "name": "farní kostel sv. Markéty",
+   "status": "unverifiable",
+   "source": "http://www.farnosthavirov.cz",
+   "note": "farnosthavirov.cz 403 (wall); WebSearch nic pro 2. 11. 2026."
+  },
+  {
+   "id": "50002769535261",
+   "name": "farní kostel sv. Barbory",
+   "status": "unverifiable",
+   "note": "no change — Stonava web re-checked: no new ohlášky."
+  },
+  {
+   "id": "50004252208943",
+   "name": "farní kostel Neposkvrněného početí P. Marie",
+   "status": "unverifiable",
+   "source": "http://privoz.farnost.cz",
+   "note": "farnostprivoz.cz 403 (wall), neobcházeno."
+  },
+  {
+   "id": "50003581604635",
+   "name": "farní kostel sv. Anny",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "5000571536838",
+   "name": "farní kostel sv. Františka a Viktora",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "5000738128641",
+   "name": "farní kostel sv. Josef, P. Marie Karmel.",
+   "status": "unverifiable",
+   "note": "Bez vlastního webu; farnostmostrava.cz za WEDOS (401); doo.cz nic pro 2. 11."
+  },
+  {
+   "id": "5000500450288",
+   "name": "farní kostel sv. Kateřiny Alexandrijské, panny a mučednice",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "50002289288737",
+   "name": "farní kostel sv. Pavla, apoštola",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "50003324086625",
+   "name": "filiální kostel sv. Václava",
+   "status": "unverifiable",
+   "source": "http://www.farnostmostrava.cz",
+   "note": "farnostmostrava.cz za WEDOS ochranou (401), neobcházeno."
+  },
+  {
+   "id": "50003200623454",
+   "name": "rektorátní kostel sv. Josefa",
+   "status": "unverifiable",
+   "source": "http://www.farnostmostrava.cz",
+   "note": "farnostmostrava.cz za WEDOS ochranou (401), neobcházeno."
+  },
+  {
+   "id": "50002888523502",
+   "name": "farní kostel sv. Cyrila a Metoděje",
+   "status": "unverifiable",
+   "source": "https://www.farnostchlebovicestaric.cz/",
+   "note": "Web farnosti večer 1. 11.: https neplatný řetězec certifikátů, http 503; nic pro 2. 11."
+  },
+  {
+   "id": "50002203155819",
+   "name": "kaple Narození P. Marie",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "5000431978444",
+   "name": "farní kostel Nejsvětějšího Srdce Ježíšova",
+   "status": "unverifiable",
+   "source": "http://www.farnosttesin.cz",
+   "note": "farnosttesin.cz 403 Cloudflare (wall); WebSearch nic pro 2. 11. 2026."
+  },
+  {
+   "id": "50003850168402",
+   "name": "filiální kostel sv. Hedviky",
+   "status": "unverifiable",
+   "source": "http://www.farnosttesin.cz",
+   "note": "farnosttesin.cz 403 Cloudflare (wall); WebSearch nic pro 2. 11. 2026."
+  },
+  {
+   "id": "5000166886538",
+   "name": "filiální kostel sv. Josefa, Dělníka",
+   "status": "unverifiable",
+   "source": "http://www.farnosttesin.cz",
+   "note": "farnosttesin.cz 403 Cloudflare (wall); WebSearch nic pro 2. 11. 2026."
+  },
+  {
+   "id": "5000261633994",
+   "name": "filiální kostel sv. Antonína",
+   "status": "unverifiable",
+   "source": "http://www.farnosttesin.cz",
+   "note": "farnosttesin.cz 403 Cloudflare (wall); WebSearch nic pro 2. 11. 2026."
+  },
+  {
+   "id": "50003752212686",
+   "name": "filiální kostel sv. Providentia Dei",
+   "status": "unverifiable",
+   "source": "http://www.farnosttesin.cz",
+   "note": "farnosttesin.cz 403 Cloudflare (wall); WebSearch nic pro 2. 11. 2026."
+  },
+  {
+   "id": "6000845381875",
+   "name": "bohoslužebné místo Fakultní nemocnice Bory",
+   "status": "unverifiable",
+   "note": "no change; rkfp.cz newest novinky still 2026-10-30 (ohlášky 25. 10.)"
+  },
+  {
+   "id": "60004144286998",
+   "name": "farní kostel sv. Jana Nepomuckého Plzeň-Bory",
+   "status": "unverifiable",
+   "note": "no change; rkfp.cz newest novinky still 2026-10-30 (ohlášky 25. 10.)"
+  },
+  {
+   "id": "60002592350969",
+   "name": "bohoslužebné místo hospic sv. Lazara Plzeň",
+   "status": "unverifiable",
+   "note": "no change; plzen.op.cz lists 2. 11. 18:00 only for the church, hospic not named"
+  },
+  {
+   "id": "60003695485881",
+   "name": "kaple Navštívení Panny Marie Plzeň-Litice",
+   "status": "unverifiable",
+   "note": "no change; koinonia.cz still only září–říjen 2026 schedule"
+  },
+  {
+   "id": "60003306847512",
+   "name": "farní kostel Všech svatých Plzeň-Roudná",
+   "status": "unverifiable",
+   "note": "no change; kalendář akcí shows only 'úterý 2. 11. od 15 hod. na boleveckém hřbitově' (a different year, not this church)"
+  },
+  {
+   "id": "6000810448326",
+   "name": "kaple bl. Hroznaty Plzeň",
+   "status": "unverifiable",
+   "note": "no change; farnostbartolomej.cz Dušičky notice does not name kaple bl. Hroznaty"
+  },
+  {
+   "id": "6000108822207",
+   "name": "bohoslužebné místo KVK centrum Plzeň",
+   "status": "unverifiable",
+   "source": "http://fma.cz/pcs",
+   "note": "wall: fma.cz returns 403 this evening."
+  },
+  {
+   "id": "60001377147911",
+   "name": "kaple Pastoračního centra (v 1. patře budovy)",
+   "status": "unverifiable",
+   "source": "http://fma.cz/pcs",
+   "note": "wall: fma.cz returns 403 this evening."
+  },
+  {
+   "id": "40002434709079",
+   "name": "farní kostel sv. Cyrila a Metoděje",
+   "status": "unverifiable",
+   "source": "http://farnostsuchevrbne.cz",
+   "note": "wall: http://farnostsuchevrbne.cz still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "40004076167711",
+   "name": "farní kostel sv. Jana Nepomuckého",
+   "status": "unverifiable",
+   "source": "http://www.jannepomuckycb.cz/",
+   "note": "wall: http://www.jannepomuckycb.cz/ still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "4000321099435",
+   "name": "filiální kostel Božského Srdce Páně",
+   "status": "unverifiable",
+   "source": "http://www.dekanstvicb.cz",
+   "note": "wall: http://www.dekanstvicb.cz still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "40001918869747",
+   "name": "filiální kostel Panny Marie Královny Andělů",
+   "status": "unverifiable",
+   "source": "http://www.dekanstvicb.cz",
+   "note": "wall: http://www.dekanstvicb.cz still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "40004083000934",
+   "name": "filiální kostel Panny Marie Růžencové",
+   "status": "unverifiable",
+   "source": "http://www.dekanstvicb.cz",
+   "note": "wall: http://www.dekanstvicb.cz still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "40001267036903",
+   "name": "filiální kostel sv. Prokopa a sv. Jana Křtitele",
+   "status": "unverifiable",
+   "source": "http://www.dekanstvicb.cz",
+   "note": "wall: http://www.dekanstvicb.cz still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "40001498870501",
+   "name": "filiální kostel sv. Rodiny",
+   "status": "unverifiable",
+   "source": "http://www.dekanstvicb.cz",
+   "note": "wall: http://www.dekanstvicb.cz still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "40003163697922",
+   "name": "filiální kostel sv. Václava",
+   "status": "unverifiable",
+   "source": "http://www.dekanstvicb.cz",
+   "note": "wall: http://www.dekanstvicb.cz still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "40003533219162",
+   "name": "kaple sv. Josefa",
+   "status": "unverifiable",
+   "source": "http://www.dekanstvicb.cz",
+   "note": "wall: http://www.dekanstvicb.cz still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "40003960606682",
+   "name": "katedrála sv. Mikuláše",
+   "status": "unverifiable",
+   "source": "http://www.dekanstvicb.cz",
+   "note": "wall: http://www.dekanstvicb.cz still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "40003868814513",
+   "name": "klášterní kostel Obětování Panny Marie",
+   "status": "unverifiable",
+   "source": "http://www.dekanstvicb.cz",
+   "note": "wall: http://www.dekanstvicb.cz still Cloudflare 'Just a moment' (403) on evening 1. 11.; bcb.cz lists nothing for 2. 11.; web search found no 2026 source."
+  },
+  {
+   "id": "6000164980990",
+   "name": "bohoslužebné místo Domov pro seniory Amica Centrum Cheb",
+   "status": "unverifiable",
+   "source": "https://www.farnostcheb.cz/",
+   "note": "wall: farnostcheb.cz still 403 on evening 1. 11.; no other 2026 source."
+  },
+  {
+   "id": "6000755148494",
+   "name": "bohoslužebné místo Domov pro seniory Skalka Cheb",
+   "status": "unverifiable",
+   "source": "https://www.farnostcheb.cz/",
+   "note": "wall: farnostcheb.cz still 403 on evening 1. 11.; no other 2026 source."
+  },
+  {
+   "id": "60002001664052",
+   "name": "bohoslužebné místo Domov pro seniory Spáleniště Cheb",
+   "status": "unverifiable",
+   "source": "https://www.farnostcheb.cz/",
+   "note": "wall: farnostcheb.cz still 403 on evening 1. 11.; no other 2026 source."
+  },
+  {
+   "id": "60002768794126",
+   "name": "farní kostel sv. Mikuláše a sv. Alžběty Cheb",
+   "status": "unverifiable",
+   "source": "https://www.farnostcheb.cz/",
+   "note": "wall: farnostcheb.cz still 403 on evening 1. 11.; no other 2026 source."
+  },
+  {
+   "id": "6000758658495",
+   "name": "filiální kostel sv. Václava, (řeckokatolický) Cheb",
+   "status": "unverifiable",
+   "source": "http://www.reckokatolikkv.estranky.cz/",
+   "note": "wall: site still shows „Stránky jsou blokovány“ on evening 1. 11.; no other 2026 source."
+  },
+  {
+   "id": "6000395929546",
+   "name": "kaple sv. Jana, farní sál Cheb",
+   "status": "unverifiable",
+   "source": "https://www.farnostcheb.cz/",
+   "note": "wall: farnostcheb.cz still 403 on evening 1. 11.; no other 2026 source."
+  },
+  {
+   "id": "60002121320247",
+   "name": "farní kostel sv. Ondřeje (řeckokatolický) Karlovy Vary",
+   "status": "unverifiable",
+   "source": "http://www.reckokatolikkv.estranky.cz/",
+   "note": "wall: site still shows „Stránky jsou blokovány“ on evening 1. 11.; no other 2026 source."
+  },
+  {
+   "id": "60002346474070",
+   "name": "farní kostel sv. Maří Magdalény Karlovy Vary",
+   "status": "unverifiable",
+   "note": "no change — farnost-kv.cz re-checked: Dušičky news is from 2021 (1.11 = pondělí), no 2026 item."
+  },
+  {
+   "id": "1000658",
+   "name": "farní kostel sv. Jakuba Staršího",
+   "status": "unverifiable",
+   "source": "https://www.farnostpribram.cz/",
+   "note": "wall: farnostpribram.cz Cloudflare challenge (403) on evening 1. 11.; no other 2026 source."
+  },
+  {
+   "id": "40003662982740",
+   "name": "filiální kostel Povýšení sv.  Kříže",
+   "status": "unverifiable",
+   "source": "https://www.farnost-pisek.cz/l/listopadove-poboznosti-v-dusickovem-tydnu-2026/",
+   "source_date": "aktualita 01.11.2026",
+   "note": "Aktualita body not readable as text this evening (title only); full pořad bohoslužeb on agendafarnosti.cz is behind Cloudflare (403, wall). Cannot confirm or refute."
+  },
+  {
+   "id": "4000712934772",
+   "name": "filiální kostel sv. Václava",
+   "status": "wrong",
+   "source": "https://www.farnost-strakonice.cz/wp-content/uploads/2026/10/Bohosluzbyamodlitbyzazemrele-2026.doc",
+   "source_date": "Bohoslužby a modlitby za zemřelé ve Strakonicích 2026 (post https://www.farnost-strakonice.cz/bohosluzby-a-modlitby-za-zemrele-ve-strakonicich-2026/, file created 22. 10. 2026)",
+   "note": "Re-fetched this evening: the .doc and post returned HTTP 200 (no wall). Site has nothing on 2. 11.; source announces Mass 16:30 at kostel sv. Václava.",
+   "fixed_in": "#85"
+  },
+  {
+   "id": "60003466849742",
+   "name": "farní kostel Narození Panny Marie Klatovy",
+   "status": "unverifiable",
+   "note": "no change — farnostklatovy.cz ohlášky category re-checked: no new post since Dušičkové pobožnosti PDF."
+  },
+  {
+   "id": "60004225777632",
+   "name": "filiální kostel sv. Václava Kydliny",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "80002555155416",
+   "name": "kostel farní Nanebevzetí Panny Marie",
+   "status": "unverifiable",
+   "note": "no change — Jihlava ohlášky 1. 11. 2026 re-read: no Mass times for 2. 11."
+  },
+  {
+   "id": "80003778363996",
+   "name": "nemocniční kaple sv. Anežky a sv. Zdislavy",
+   "status": "unverifiable",
+   "note": "no change — Jihlava ohlášky 1. 11. 2026 re-read: no Mass times for 2. 11."
+  },
+  {
+   "id": "80004290852259",
+   "name": "kostel filiální Nejsvětější Trojice",
+   "status": "unverifiable",
+   "note": "no change — trebicmartin.cz incl. page Hřbitovní kostel re-checked: no named 2. 11. Mass."
+  },
+  {
+   "id": "70003220367104",
+   "name": "farní kostel Panny Marie Pomocnice křesťanů",
+   "status": "unverifiable",
+   "note": "wall: farní web stále Cloudflare 403 (re-check 1. 11. večer), neobcházeno; jiný datovaný zdroj 2026 nenalezen."
+  },
+  {
+   "id": "70003752459776",
+   "name": "farní kostel sv. Filipa a Jakuba",
+   "status": "unverifiable",
+   "note": "wall: farní web stále Cloudflare 403 (re-check 1. 11. večer), neobcházeno; jiný datovaný zdroj 2026 nenalezen."
+  },
+  {
+   "id": "70001078208995",
+   "name": "farní kostel sv. Mikuláše",
+   "status": "unverifiable",
+   "note": "wall: farní web stále Cloudflare 403 (re-check 1. 11. večer), neobcházeno; jiný datovaný zdroj 2026 nenalezen."
+  },
+  {
+   "id": "70003672097991",
+   "name": "kaple Panny Marie Růžencové",
+   "status": "unverifiable",
+   "note": "wall: farní web stále Cloudflare 403 (re-check 1. 11. večer), neobcházeno; jiný datovaný zdroj 2026 nenalezen."
+  },
+  {
+   "id": "7000347947147",
+   "name": "kaple sv. Václava",
+   "status": "unverifiable",
+   "note": "wall: farní web stále Cloudflare 403 (re-check 1. 11. večer), neobcházeno; jiný datovaný zdroj 2026 nenalezen."
+  },
+  {
+   "id": "2000388",
+   "name": "děkanský kostel Povýšení sv. Kříže, Děčín",
+   "status": "unverifiable",
+   "note": "no change — farnost-decin.cz re-checked: only rosary 15:00 at Folknáře cemetery on 2. 11."
+  },
+  {
+   "id": "2000390",
+   "name": "Domov pro seniory (Kamenická), Děčín",
+   "status": "unverifiable",
+   "note": "no change — farnost-decin.cz re-checked: only rosary 15:00 at Folknáře cemetery on 2. 11."
+  },
+  {
+   "id": "2000389",
+   "name": "filiální kostel sv. Václava a Blažeje, Děčín",
+   "status": "unverifiable",
+   "note": "no change — farnost-decin.cz re-checked: only rosary 15:00 at Folknáře cemetery on 2. 11."
+  },
+  {
+   "id": "2000553",
+   "name": "děkanský kostel sv. Jana Křtitele, Teplice",
+   "status": "unverifiable",
+   "note": "no change — farnost-teplice.cz/porad_bohosluzeb still „Ohlášky doposud nebyly zveřejněny“."
+  },
+  {
+   "id": "2000135",
+   "name": "farní kostel Nejsvětějšího Srdce Páně, Teplice-Trnovany",
+   "status": "unverifiable",
+   "note": "no change — farnost-teplice.cz/porad_bohosluzeb still „Ohlášky doposud nebyly zveřejněny“."
+  },
+  {
+   "id": "2000136",
+   "name": "farní kostel sv. Alžběty Uherské, Teplice-Šanov",
+   "status": "unverifiable",
+   "note": "no change — farnost-teplice.cz/porad_bohosluzeb still „Ohlášky doposud nebyly zveřejněny“."
+  },
+  {
+   "id": "20002174",
+   "name": "komunitní kaple, Živý dům Teplice",
+   "status": "unverifiable",
+   "note": "no change — farnost-teplice.cz/porad_bohosluzeb still „Ohlášky doposud nebyly zveřejněny“."
+  },
+  {
+   "id": "2000274",
+   "name": "katedrála sv. Štěpána, Litoměřice",
+   "status": "unverifiable",
+   "note": "no change — svaty-stepan.cz ohlášky 1. 11. 2026: only cemetery devotion 15:00 on 2. 11., no Mass time."
+  },
+  {
+   "id": "2000275",
+   "name": "klášterní kostel sv. Jakuba Staršího, Litoměřice",
+   "status": "unverifiable",
+   "note": "no change — farnost-litomerice.cz: newest ohlášky still 25. 10. 2026."
+  },
+  {
+   "id": "2000599",
+   "name": "kaple sv. Zdislavy, Charitní domov sv. Zdislava, Litoměřice",
+   "status": "unverifiable",
+   "note": "no change — farnost-litomerice.cz: newest ohlášky still 25. 10. 2026."
+  },
+  {
+   "id": "7000742269400",
+   "name": "kaple sv. Martina",
+   "status": "confirmed",
+   "source": "https://12ed88d5ee.clvaw-cdnwnd.com/b906d477756d955e1429226984953b76/200000875-b33d8b33da/Bohoslu%C5%BEby%20farnost%20Troubky%20v%2045.%20t%C3%BDdnu%20od%201.11.%20do%208.11.2026.pdf?ph=12ed88d5ee",
+   "source_date": "Římskokatolická farnost Troubky od 1.11. do 8.11.2026",
+   "note": "Celotýdenní pořad farnosti Troubky: 2. 11. jediná mše 17:30 v Troubkách, v Henčlově nic (Henčlov až 8. 11. 11:00) – shoda s prázdným webem."
+  },
+  {
+   "id": "70003557979559",
+   "name": "klášterní kostel Zvěstování Panny Marie - Uherské Hradiště ",
+   "status": "unverifiable",
+   "source": "https://www.frantiskani.uh.cz/ohlasky/",
+   "note": "frantiskani.uh.cz/ohlasky (večer 1. 11.) stále ohlášky 25. 10.; nic datovaného s časem na 2. 11.; farnostuh.cz za Cloudflare (wall)."
+  },
+  {
+   "id": "70001018857804",
+   "name": "farní kostel Narození Panny Marie",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "70001377899936",
+   "name": "farní kostel sv. Františka Xaverského",
+   "status": "unverifiable",
+   "note": "wall: farnostuh.cz Cloudflare 403 „Just a moment…“ (re-check 1. 11. večer), neobcházeno."
+  },
+  {
+   "id": "7000328419118",
+   "name": "kaple Panny Marie Růžencové ",
+   "status": "unverifiable",
+   "note": "wall: farnostuh.cz Cloudflare 403 „Just a moment…“ (re-check 1. 11. večer), neobcházeno."
+  },
+  {
+   "id": "70001614328931",
+   "name": "farní kostel Nanebevzetí Panny Marie",
+   "status": "unverifiable",
+   "note": "wall: farnostkromeriz.cz Cloudflare 403 „Just a moment…“ (re-check 1. 11. večer), neobcházeno; jiný datovaný zdroj nenalezen."
+  },
+  {
+   "id": "7000422193122",
+   "name": "farní kostel Všech svatých",
+   "status": "unverifiable",
+   "note": "wall: farnostkromeriz.cz Cloudflare 403 „Just a moment…“ (re-check 1. 11. večer), neobcházeno; jiný datovaný zdroj nenalezen."
+  },
+  {
+   "id": "70004008045003",
+   "name": "farní kostel sv. Mořice",
+   "status": "unverifiable",
+   "note": "wall: farnostkromeriz.cz Cloudflare 403 „Just a moment…“ (re-check 1. 11. večer), neobcházeno; jiný datovaný zdroj nenalezen."
+  },
+  {
+   "id": "70004122944448",
+   "name": "filiální kostel sv. Jana Křtitele",
+   "status": "unverifiable",
+   "note": "wall: farnostkromeriz.cz Cloudflare 403 „Just a moment…“ (re-check 1. 11. večer), neobcházeno; jiný datovaný zdroj nenalezen."
+  },
+  {
+   "id": "30002894081173",
+   "name": "farní kostel sv. Petra a Pavla, apoštolů",
+   "status": "unverifiable",
+   "note": "wall: farnosttrutnov.cz / farnosttrutnov2.cz 403 bot challenge (re-check 1. 11. večer), neobcházeno."
+  },
+  {
+   "id": "30001703208923",
+   "name": "farní kostel sv. Václava, mučedníka",
+   "status": "unverifiable",
+   "note": "wall: farnosttrutnov.cz / farnosttrutnov2.cz 403 bot challenge (re-check 1. 11. večer), neobcházeno."
+  },
+  {
+   "id": "30001936926843",
+   "name": "farní kostel Narození Panny Marie",
+   "status": "unverifiable",
+   "note": "wall: farnosttrutnov.cz / farnosttrutnov2.cz 403 bot challenge (re-check 1. 11. večer), neobcházeno."
+  },
+  {
+   "id": "30004150892219",
+   "name": "farní kostel Božského Srdce Páně",
+   "status": "unverifiable",
+   "note": "wall: farnosthkpp.cz Cloudflare 403 (re-check 1. 11. večer), neobcházeno; katedrála HK pořad 1.–8. 11. tuto farnost nepokrývá."
+  },
+  {
+   "id": "300047281587",
+   "name": "farní kostel sv. Anny",
+   "status": "unverifiable",
+   "note": "wall: farnosthkpp.cz Cloudflare 403 (re-check 1. 11. večer), neobcházeno; katedrála HK pořad 1.–8. 11. tuto farnost nepokrývá."
+  },
+  {
+   "id": "30003345693160",
+   "name": "filiální kostel (bývalý farní) sv. Petra, apoštola",
+   "status": "unverifiable",
+   "note": "wall: farnosthkpp.cz Cloudflare 403 (re-check 1. 11. večer), neobcházeno; katedrála HK pořad 1.–8. 11. tuto farnost nepokrývá."
+  },
+  {
+   "id": "30001737240976",
+   "name": "kaple sv. Josefa",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "3000490312234",
+   "name": "meditační místnost ve Fakultní nemocnici",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "70003866394229",
+   "name": "rektorátní kostel  Panny Marie Sněžné",
+   "status": "unverifiable",
+   "note": "no change — farnostsnezenka.cz re-checked: nothing for 2. 11. 2026."
+  },
+  {
+   "id": "70002911938763",
+   "name": "farní kostel Panny Marie Pomocnice, Olomouc - Nová Ulice",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "70003987000813",
+   "name": "farní kostel sv. Barbory, panny a mučednice",
+   "status": "unverifiable",
+   "note": "no change — svatykopecek.cz re-checked: nothing dated for 2. 11. 2026."
+  },
+  {
+   "id": "70001547322326",
+   "name": "farní kostel sv. Ondřeje, apoštola",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "70002372912122",
+   "name": "kaple sv. Jana a Pavla, mučedníků",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "70002363370894",
+   "name": "farní kostel sv. Štěpána, prvomučedníka",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "70001624227742",
+   "name": "farní kostel sv. Urbana, papeže a mučedníka",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "70001904262728",
+   "name": "kaple Nejsvětějšího Srdce Páně (Nejsvětějšího Srdce Ježíšova)",
+   "status": "unverifiable",
+   "note": "no change — farnost-hnevotin.webnode.cz re-checked: nothing for November 2026."
+  },
+  {
+   "id": "7000490410528",
+   "name": "farní kostel sv. Cyrila a Metoděje",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "200049",
+   "name": "Domov pro seniory Krásné Březno, Ústí nad Labem",
+   "status": "unverifiable",
+   "note": "no change — farnost-usti.cz ohlášky 1. 11. 2026 re-read: 2. 11. only Skorotice cemetery 16:00, concert 19:15, UJEP prayer 12:00; this church not named."
+  },
+  {
+   "id": "200048",
+   "name": "farní kostel sv. Floriána, Ústí nad Labem-Krásné Březno",
+   "status": "unverifiable",
+   "note": "no change — farnost-usti.cz ohlášky 1. 11. 2026 re-read: 2. 11. only Skorotice cemetery 16:00, concert 19:15, UJEP prayer 12:00; this church not named."
+  },
+  {
+   "id": "2000779",
+   "name": "farní kostel sv. Josefa, Ústí nad Labem-Předlice",
+   "status": "unverifiable",
+   "note": "no change — farnost-usti.cz ohlášky 1. 11. 2026 re-read: 2. 11. only Skorotice cemetery 16:00, concert 19:15, UJEP prayer 12:00; this church not named."
+  },
+  {
+   "id": "200050",
+   "name": "farní kostel sv. Šimona a Judy, Ústí nad Labem-Mojžíř",
+   "status": "unverifiable",
+   "note": "no change — farnost-usti.cz ohlášky 1. 11. 2026 re-read: 2. 11. only Skorotice cemetery 16:00, concert 19:15, UJEP prayer 12:00; this church not named."
+  },
+  {
+   "id": "2000797",
+   "name": "klášterní kostel sv. Vojtěcha, Ústí nad Labem",
+   "status": "unverifiable",
+   "note": "no change — farnost-usti.cz ohlášky 1. 11. 2026 re-read: 2. 11. only Skorotice cemetery 16:00, concert 19:15, UJEP prayer 12:00; this church not named."
+  },
+  {
+   "id": "30004136579885",
+   "name": "společenská místnost v domově pro seniory - Reynkova ",
+   "status": "unverifiable",
+   "note": "no change — farnosthb.cz re-checked: no change."
+  },
+  {
+   "id": "30003180476548",
+   "name": "farní kostel Nalezení svatého kříže",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "20007",
+   "name": "filiální kostel sv. Máří Magdalény, Česká Lípa",
+   "status": "unverifiable",
+   "source": "http://www.farnostceskalipa.cz",
+   "note": "farnostceskalipa.cz bez aktuálních ohlášek 2026; veřejný Google kalendář tentokrát vrátil HTTP 429 (neopakováno) a je stejně jen ze stálého pořadu. Ráno: kalendář nemá v pondělí 2. 11. žádnou mši – web ukazuje 17:30, kandidát na ruční kontrolu."
+  },
+  {
+   "id": "2000547",
+   "name": "filiální kostel Nalezení sv. Kříže, Liberec",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "30002087262690",
+   "name": "farní kostel Panny Marie Sedmibolestné",
+   "status": "unverifiable",
+   "note": "Řeckokatolická farnost Pardubice: webnode bez obsahu 2026, Facebook jen s přihlášením (wall); žádný zdroj."
+  },
+  {
+   "id": "80002048382917",
+   "name": "kaple Panny Marie Bolestné",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "80003596326230",
+   "name": "kostel farní Panny Marie Bolestné",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "80003478397422",
+   "name": "kostel farní sv. Hippolyta",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "8000864966089",
+   "name": "kostel farní sv. Zikmunda",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "8000666071963",
+   "name": "kostel farní sv. Markéty",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  },
+  {
+   "id": "80001786675167",
+   "name": "kostel filiální Panny Marie Bolestné",
+   "status": "unverifiable",
+   "note": "no change — not re-fetched (no parish web / prior source already complete for parish)"
+  }
+ ]
+}
