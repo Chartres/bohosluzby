@@ -1,0 +1,133 @@
+{
+ "headline": "Second Dušičky pass on 1 Nov: 340 churches checked against today's parish announcements. 40 were wrong for 2 Nov, and 37 of them are fixed and live in three batches. The first batch went live at about 09:10 CET. Both feast-page rules hold live, so the pages weren't changed.",
+ "shipped": [
+  {
+   "title": "Dušičky 2026 second pass, batch 1: 26 sourced corrections for 2 Nov",
+   "pr": "https://github.com/Chartres/bohosluzby/pull/79",
+   "merged": true,
+   "live_checked": "2026-11-01 ~08:12 UTC at 390 px. /dusicky/olomouc/ shows the cathedral 07:00 'mimořádná', sv. Mořic 16:00 and Nové Sady 17:15 on 2 Nov. /kostel/70001386081579/ (Olomouc cathedral) shows 'zítra' 07:00 and 18:00 'pontifikální, celebruje arcibiskup'. /dusicky/karvina/ shows Fryštát 08:00 polsky and 18:00."
+  },
+  {
+   "title": "Dušičky 2026 second pass, batch 2: 2 sourced corrections for 2 Nov (Praha sv. Jakub, Liberec sv. Antonín)",
+   "pr": "https://github.com/Chartres/bohosluzby/pull/80",
+   "merged": true,
+   "live_checked": "2026-11-01 ~08:17 UTC at 390 px. /dusicky/praha/ and /kostel/100027/ show 2 Nov 18:00 'Mozartovo Requiem' with the latinsky chip next to the 06:45 in kaple sv. Anny."
+  },
+  {
+   "title": "Dušičky 2026 second pass, batch 3: 9 sourced corrections for 2 Nov (Břevnov, Plzeň Domeček, Písek, Zlámanka, Nový Jičín, Havlíčkův Brod, Chrudim)",
+   "pr": "https://github.com/Chartres/bohosluzby/pull/81",
+   "merged": true,
+   "live_checked": "2026-11-01 ~08:26 UTC at 390 px. /dusicky/havlickuv-brod/ shows 2 Nov with only 18:00 at sv. Vojtěch ('po ní dušičková pobožnost na hřbitově'). NPM's weekly 18:00 is gone from 2 Nov."
+  }
+ ],
+ "data_check": {
+  "checked": 340,
+  "wrong": 40,
+  "fixed": 37,
+  "still_unverifiable": 204,
+  "notes": [
+   "Clock note: the container clock and the Pages server's Date header agreed (start 07:52 UTC, batch 1 merged ~08:10 UTC, so about 09:10 CET). GitHub's check-run timestamps read about an hour later. The three merges are bb62806, 8a5046c and c606245 on main.",
+   "Scope: 291 churches from the 28 Oct sample (all 209 marked unverifiable, plus the 82 confirmed for 1 Nov only), the 8 leads from 28 Oct, and 45 churches in the 12 largest towns outside the sample. sv. Vojtěch in Havlíčkův Brod was added because a checked parish's notice moved a Mass there. Unit = a church. The 9th lead, Olomouc-Nové Sady, was settled in the sample (fixed: 17:15).",
+   "28 Oct sample: 84 confirmed, 31 wrong, 30 fixed, 176 still unverifiable. Of the 209 priority-1 churches, 39 now have a 2026 source (25 confirmed, 14 wrong). Of the 82 priority-2 churches, 18 had wrong 2 Nov times; most were a Dušičky Mass the registry lacks (Olomouc cathedral, Svatý Kopeček, Hodolany, Poruba, Svinov, Karviná-Fryštát, Jablonec, Liberec sv. Antonín and others).",
+   "Outside the sample (Písek, Trutnov, Kroměříž, Uherské Hradiště, Český Těšín, Litoměřice, Nový Jičín, Chrudim, Havlíčkův Brod, Krnov, Strakonice, Klatovy): 10 confirmed, 7 wrong, 7 fixed (counting sv. Vojtěch), 28 still unverifiable. The repo has no population data, so I took the order from my own knowledge of Czech town sizes.",
+   "Wrong but not fixed (3): Plzeň Greek-Catholic sv. Mikuláš and Praha-Spořilov differ only on the morning of 1 Nov, which was over before a fix could ship. Strakonice sv. Václav 16:30 on 2 Nov is held because the reviewer hit a bot wall (HTTP 466) and couldn't confirm the source.",
+   "Held back and counted as unverifiable, because the source didn't meet the 28 Oct rule. Praha-Podolí 15:00: farnostbranik.cz showed the reviewer a firewall page, and the quote's punctuation is loose. Třebíč Horka-Domky: the sheet says only 'Hřbitov'. Brno-Slatina: the schedule has no year. Klatovy 17:00: the PDF says only 'KLATOVY'. Kvasice: 'hřbitovní kostel' could be either church.",
+   "Fixes: data/corrections.json, 37 new entries checked 2026-11-01 (106 in total). Each has church id, date, add or drop, source URL, source date, a verbatim quote and the check date. node data/corrections.mjs applied them. data/corrections.test.mjs proved they land, locally and in CI on each PR. Data only; no code changed.",
+   "Review: each batch had an independent subagent re-fetch every source and check the 2026 date, the quote, the church, the time and add/drop. Batch 1: 26/26 OK. Batch 2: Podolí blocked, removed. Batch 3: Strakonice unreachable, removed. Images (posters, JPG ohlášky) were read by eye.",
+   "Kladno-Kročehlavy drop of 08:05 on 2 Nov is a no-op: the registry row is for the 3rd Monday and already carried 'kromě 2. 11. 2026'. I kept it as a record of the source.",
+   "Bot walls, unchanged, and I didn't work around any of them. Cloudflare or 403: Lhotka, Hostivař, Kbely, Stodůlky, Hloubětín; all five Zlín parishes; Brno-Komín and Žabovřesky; ČB děkanství, sv. Jan Nepomucký and Suché Vrbné; HK Pražské Předměstí; Příbram; Cheb; Havířov; Frýdek; Ostrava-Přívoz; Moravská Ostrava (WEDOS 401); Greek-Catholic KV; Kroměříž, Uherské Hradiště, Český Těšín (farnosttesin.cz, agendafarnosti.cz), both Trutnov sites; Strakonice (466). About 50 of the sample's unverifiable rows are walls, not missing notices.",
+   "Parishes with nothing for 2026 yet: Opava minorites and the Panny Marie parish (konkatedrála, sv. Vojtěch, sv. Kříž); Krnov, whose newest ohlášky are for 11.–18. 10.; Henčlov (schedule ends 1 Nov); Louky nad Olší; Děčín I (undated standing schedule says Monday 7:00, the site says 07:30). In Praha, 56 sample churches are still unverifiable.",
+   "Registry problems seen, not changed. Kylešovice (Opava): weekday Masses are suspended 18 Oct–22 Nov (priest's surgery). Sněženka (Olomouc): 1 Nov 10:00 row looks stale. Hodkovičky shows its once-a-year pilgrimage 9:30 on 1 Nov. Praha sv. Duch 9:30 has a stale summer-only note. Jihlava sv. Ignác's Greek-Catholic 10:00 is listed twice. Plzeň Greek-Catholic Sundays are 9:30/11:00 all November, and Wednesdays 18:00 (registry 9:00/10:30, 18:30). Plzeň NPM's first-Monday note 'bohoslužba slova' is wrong for 2 Nov: it's a Mass, and the Liturgy of the Word moved to 9 Nov. Spořilov's Sunday 08:30 is missing. Kolín: the parish says the Monday morning Mass is at sv. Bartoloměj, the site has it at Nejsv. Trojice. New parish sites missing from the registry: farnost-svatahora.cz (svata-hora.cz is a rental site now), farnost-teplice.cz. Liberec arciděkanství works over https; only http is walled.",
+   "Per-church results with source and note: docs/review/2026-11-01-dusicky-check.json."
+  ]
+ },
+ "feast_pages": {
+  "static": true,
+  "dated_rows": true,
+  "changes": "None needed. Live /dusicky/, /dusicky/praha/ and /dusicky/jihlava/ load no app bundle: no module script and no /assets/*.js. The only script is the inline page_view beacon (static:true), plus one stylesheet and the manifest link. Dated rows: in 6 live town pages (Praha, Brno, Ostrava, Jihlava, Opava, Znojmo), 445 of 478 rows belong to churches whose registry date is older than 18 months (before 2025-05-01), and every one carries 'rozpis ověřen naposledy D. M. YYYY, ověřte u farnosti'. No fresh church has the date. 0 mismatches. Code: isStale (src/domain/registry.ts) used by feastCityPage (src/domain/feast.ts), covered by feast.test.ts 'lists a church whose schedule is older than 18 months with its date on the row'."
+ },
+ "decisions": [
+  {
+   "question": "Which file is the 28 Oct data_check? The brief names docs/review/2026-10-28.json, which doesn't exist.",
+   "options": ["docs/review/2026-10-29.json (data_check of the 28 Oct check, run overnight 28/29 Oct)", "docs/review/2026-10-28-pass2.json"],
+   "default_taken": "2026-10-29.json plus 2026-10-29-dusicky-check.json",
+   "why": "It is the only file with a data_check block. Its counts (395 checked, 209 unverifiable, 30 towns, 9 leads) match the brief."
+  },
+  {
+   "question": "1 Nov corrections on the day itself?",
+   "options": ["fix any 1 Nov difference", "only Masses at 12:00 or later", "none"],
+   "default_taken": "only 12:00 or later (none qualified)",
+   "why": "A fix to a morning Mass would go live after it. The 1 Nov morning differences found (Plzeň Greek-Catholic, Spořilov) are in the notes."
+  },
+  {
+   "question": "A correction whose source the independent reviewer couldn't reach (bot wall), though the first checker read it",
+   "options": ["ship on the first read", "hold back"],
+   "default_taken": "hold back (Podolí, Strakonice)",
+   "why": "The merge rule asks for a review of the sources against the entries. Re-adding is a one-line data change if Pavol wants the looser rule."
+  },
+  {
+   "question": "Source that gives the time but doesn't name the church",
+   "options": ["infer the church from context (other church named separately, standing rota)", "need the church named or the parish to have one church"],
+   "default_taken": "need it named (Horka-Domky, Klatovy, Kvasice held). Břevnov went in once the parish's own calendar gave the basilica's address for the 16:00 Mass",
+   "why": "Same rule as 28 Oct. A wrong place is worse than a missing row."
+  },
+  {
+   "question": "Plzeň Domeček: drop the stale 17:30 only, or also add the November rota's 18:00?",
+   "options": ["drop 17:30 and add 18:00", "drop 17:30 only"],
+   "default_taken": "drop only",
+   "why": "17:30 is wrong on every source. The parish's special 2 Nov list doesn't name Domeček, and that evening's 18:00 is announced at Všech svatých (Roudná)."
+  },
+  {
+   "question": "Merge with the android CI job still running?",
+   "options": ["wait for every job", "merge on the gate (typecheck · test · build = the test job)"],
+   "default_taken": "merge on the gate for #79 and #80; #81 had all jobs green",
+   "why": "AGENTS.md: 'Block only on these.' The diff is data only, so the Android shell is untouched."
+  },
+  {
+   "question": "sv. Jakub's Latin Mass: language in the note or in the lang field?",
+   "options": ["note 'latinsky, Mozartovo Requiem'", "lang 'latinsky' + note 'Mozartovo Requiem'"],
+   "default_taken": "lang field",
+   "why": "The page shows lang as a chip. With both, it would say latinsky twice."
+  },
+  {
+   "question": "node_modules is committed as a symlink to itself; npm ci replaces it locally",
+   "options": ["commit the deletion", "leave it, mark it assume-unchanged locally"],
+   "default_taken": "leave it (local git update-index --assume-unchanged only)",
+   "why": "It is outside this data pass. See proposals."
+  }
+ ],
+ "proposals": [
+  {
+   "name": "The 'kromě 2. 11. 2026' text shows on other days' rows",
+   "options": ["leave it until the next registry refresh drops it", "hide 'kromě <date>' parts of the note on the feast pages and in the day list when the row is shown for a different date", "show it only on the church's weekly ordo"],
+   "recommendation": "Hide it outside the weekly ordo. On /dusicky/havlickuv-brod/ the 1 Nov 18:00 row reads 'mše svatá · kromě 2. 11. 2026', which is true but noise on that day. It's a small change in detail() or parseNote's display, and the wording is yours to approve."
+  },
+  {
+   "name": "Re-check tonight or early on 2 Nov",
+   "options": ["no", "one more pass at about 18:00 on 1 Nov over the 204 still unverifiable, for parishes that post ohlášky after the evening Mass", "a browser pass for the ~25 bot-walled sites"],
+   "recommendation": "One evening pass over the 30 largest towns' unverifiable churches. Several checkers saw parishes with nothing posted yet this morning. It's cheap, and fixes still land before Monday's first Masses."
+  },
+  {
+   "name": "Registry data-quality list for ČBK",
+   "options": ["keep in notes", "add the registry problems in data_check.notes to the ČBK data-quality list (Kylešovice, Sněženka, Plzeň Greek-Catholic, Plzeň NPM note, Spořilov, Kolín, Děčín, new parish URLs)"],
+   "recommendation": "Add them to the list. Sending it is outreach, so that part is yours."
+  },
+  {
+   "name": "Remove the tracked node_modules symlink",
+   "options": ["git rm --cached node_modules (it is in .gitignore already)", "leave it"],
+   "recommendation": "Remove it in a one-line chore PR. Every fresh session's npm ci shows it as deleted, and the stop hook then nags."
+  }
+ ],
+ "next": [
+  "Pavol: open /dusicky/praha/ and /dusicky/olomouc/ on your phone. The read-back was 390 px emulation.",
+  "No TestFlight or store build was dispatched (brief). The corrections reach installed apps through the data shards and service worker, with no new build.",
+  "The 3 Nov rebuild: corrections dated 1 and 2 Nov are skipped after their date, and the 'kromě 2. 11. 2026' notes stay in the shards until the next registry refresh (data/extract.mjs).",
+  "Next towns by population outside the sample, not yet checked: Kopřivnice, Bohumín, Žďár nad Sázavou, Vyškov, Kutná Hora, Jirkov, Žatec, Brandýs n. L.-St. Boleslav, Náchod, Mělník, Louny, Kralupy.",
+  "Domeček 18:00 and Strakonice 16:30 can be added in one line each if Pavol accepts the looser readings above."
+ ],
+ "screenshots": [
+  "docs/review/shots/2026-11-01-kostel-olomouc-katedrala-390.png",
+  "docs/review/shots/2026-11-01-kostel-praha-sv-jakub-390.png",
+  "docs/review/shots/2026-11-01-dusicky-havlickuv-brod-390.png"
+ ]
+}

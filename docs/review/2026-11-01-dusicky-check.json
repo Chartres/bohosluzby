@@ -1,0 +1,4793 @@
+{
+ "about": "Dušičky 2026 second pass, 1 Nov: what the site showed for 1–2 Nov against each parish's 2026 announcement. Sample = the 28 Oct sample (priority 1: unverifiable on 28 Oct; 2: confirmed for 1 Nov only); outside = the 12 largest towns outside it; lead = the 28 Oct leads. Fixes: data/corrections.json (checked 2026-11-01).",
+ "churches": [
+  {
+   "id": "10003",
+   "name": "filiální kostel sv. Jiří, Praha-Hrad",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/",
+   "source_date": "kalendář 1.–4. 11. 2026",
+   "note": "Cathedral calendar (re-checked 1.11) lists only cathedral Masses (1.11 8:30, 10:00; 2.11 7:00 sv. Vojtěch chapel, 18:00); nothing for sv. Jiří. Site shows nothing — consistent.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "10002",
+   "name": "kapitulní kostel Všech svatých, Praha-Hrad",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/",
+   "source_date": "kalendář 1.–4. 11. 2026",
+   "note": "Cathedral calendar covers only the cathedral; no 2026 listing for Všech svatých (15:30 on site). kapitula.cz has nothing.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "10004",
+   "name": "klášterní kostel sv. Benedikta, Praha-Hradčany",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/",
+   "source_date": null,
+   "note": "No 2026 announcement for sv. Benedikt (Hradčany); cathedral calendar does not cover it.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "10005",
+   "name": "Vojenský kostel sv. Jana Nepomuckého, Praha-Hradčany",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/",
+   "source_date": null,
+   "note": "No 2026 announcement; cathedral calendar does not cover it. Site shows nothing — consistent.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000149",
+   "name": "farní kostel Krista Krále, Praha-Vysočany",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://drive.google.com/file/d/1QVUYmrJA2zUZ2ipGAzLPxNd8AB7jD88Z/view (linked from https://www.farnostvysocany.cz/aktuality)",
+   "source_date": "Nedělní ohlášky 1.11.2026",
+   "note": "Image PDF (read visually). Table covers 1–8 Nov for Prosek/Vysočany/Libeň/D. Chabry/Čakovice; Vysočany 1.11 only 10:00, 2.11 nothing. Matches site.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "100027",
+   "name": "klášterní bazilika sv. Jakuba Staršího, Praha-Staré Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://praha.minorite.cz/ohl%C3%A1%C5%A1ky",
+   "source_date": "ohlášky 1. 11. 2026 (Slavnost Všech svatých)",
+   "note": "Minorite convent's own ohlášky: 2.11 6:45 (sv. Anna, on site) plus 18:00 Latin Mass with Mozart Requiem in the basilica — missing on site. 1.11 times not stated (only standing Sun 8:30, 10:30).",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "1000106",
+   "name": "farní kostel Nanebevzetí Panny Marie, Praha-Modřany",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "http://www.modranskafarnost.cz",
+   "source_date": null,
+   "note": "Re-checked 1.11: archive still ends Září 2026, no Oct/Nov posts; web search nothing.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "10002789",
+   "name": "kaple sv. Bartoloměje, Praha-Hodkovičky",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "http://www.modranskafarnost.cz",
+   "source_date": null,
+   "note": "Re-checked 1.11: no Oct/Nov 2026 posts. Site's 9:30 'poutní (jen v neděli po 24. srpnu)' on 1.11 looks like a misapplied once-a-year row — data issue, but no source to correct it.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100035",
+   "name": "klášterní kostel Narození Páně, Praha-Hradčany",
+   "town": "praha",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://kapucini.cz/ohlasky-z-hradcan/",
+   "source_date": "ohlášky 01. 11. 2026",
+   "note": "Weekly table for PMKA + Loreta: Loreta only 1.11 19:00; on 2.11 only 17:00 at PMKA, nothing at Loreta. Matches site (1.11 19:00, 2.11 none).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "100034",
+   "name": "klášterní kostel Panny Marie Královny andělů, Praha-Hradčany",
+   "town": "praha",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://kapucini.cz/ohlasky-z-hradcan/",
+   "source_date": "ohlášky 01. 11. 2026",
+   "note": "PMKA 1.11 8:30, 2.11 17:00 — matches site.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000104",
+   "name": "farní kostel Narození Panny Marie, Praha-Michle",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.michlehabrovka.cz/aktivity/aktuality/2026/10/ohlasky-ze-slavnosti-vsech-svatych-1-listopadu-2026/",
+   "source_date": "ohlášky 1. 11. 2026",
+   "note": "1.11 ohlášky (posted 31.10) again mention only 'večerní mše' on 2.11 with no time or church; no Mass times for 1.11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000105",
+   "name": "filiální kostel sv. Františka z Assisi, Praha-Krč",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.michlehabrovka.cz/aktivity/aktuality/2026/10/ohlasky-ze-slavnosti-vsech-svatych-1-listopadu-2026/",
+   "source_date": "ohlášky 1. 11. 2026",
+   "note": "No time/church for the 2.11 evening Mass. Note: '17:30 v Krči katecheze dětí' on 2.11 may clash with site's Monday 17:30 Mass in Krč — not conclusive, so no correction.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100048",
+   "name": "farní kostel Nejsvětější Trojice, Praha-Košíře",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnostkosire.webnode.cz/",
+   "source_date": null,
+   "note": "Still newest ohlášky 04.10.2026; farní zpravodaj kfl1026.pdf has nothing for 1–2 Nov.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100049",
+   "name": "filiální kostel sv. Jana Nepomuckého, Praha-Košíře",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnostkosire.webnode.cz/",
+   "source_date": null,
+   "note": "Still newest ohlášky 04.10.2026; farní zpravodaj kfl1026.pdf has nothing for 1–2 Nov.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100050",
+   "name": "kaple Nanebevzetí Panny Marie, Praha-Košíře",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnostkosire.webnode.cz/",
+   "source_date": null,
+   "note": "Still newest ohlášky 04.10.2026; farní zpravodaj kfl1026.pdf has nothing for 1–2 Nov.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000883",
+   "name": "Prostor ticha",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnostkosire.webnode.cz/",
+   "source_date": null,
+   "note": "Still newest ohlášky 04.10.2026; farní zpravodaj kfl1026.pdf has nothing for 1–2 Nov.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100039",
+   "name": "farní kostel Nejsvětější Trojice, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "source_date": null,
+   "note": "Týn site: Podskalí only in standing schedule (Neděle 9:00); 2026 1./2.11 list covers only Havel, Haštal, Týn.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100040",
+   "name": "farní kostel sv. Jana Nepomuckého, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "No 2026 announcement found (Na Skalce, German-speaking community; only standing Sun 11:00 on prague.eu).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100041",
+   "name": "klášterní kostel Panny Marie Bolestné, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "http://www.tyn.cz/cz/index.php?stranka=p-marie-bolestna-na-slupi",
+   "source_date": null,
+   "note": "Only standing 'neděle 9:30' on tyn.cz; no dated 2026 source.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000879",
+   "name": "klášterní kostel sv. Kosmy a Damiána, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "No 2026 source found for the liturgies at sv. Kosmas a Damián.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000878",
+   "name": "opatský kostel Panny Marie a sv. Jeronýma, sv. Cyrila a Metoděje, sv. Vojtěcha a Prokopa, Praha-Nové Město (Emauzy)",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.emauzy.cz/",
+   "source_date": null,
+   "note": "emauzy.cz shows only an undated standing schedule ('10:00 mše svatá (denně)'); no dated 2026 announcement.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100098",
+   "name": "farní kostel Nejsvětějšího Srdce Páně, Praha-Vinohrady",
+   "town": "praha",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://srdcepane.cz/bohosluzby/",
+   "source_date": "rozpis bohoslužeb 30. 10. – 8. 11. (2026, pondělí 2.11.)",
+   "note": "Table now runs to 8.11. 2.11: 8, 18, 20 h — matches site (08:00, 18:00, 20:00). 1.11: 9, 11, 18, 20 — matches.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000103",
+   "name": "farní kostel Panny Marie Královny míru, Praha-Lhotka",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "http://www.lhoteckafarnost.cz",
+   "source_date": null,
+   "note": "Still 403 Cloudflare challenge on 1.11; not bypassed.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000887",
+   "name": "nemocniční kaple sv. Václava, Praha-Krč",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "http://www.lhoteckafarnost.cz",
+   "source_date": null,
+   "note": "Still 403 Cloudflare challenge on 1.11; not bypassed.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100017",
+   "name": "farní kostel Panny Marie Sněžné, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "http://www.pms.ofm.cz/wp/index.php/_ohlasky/",
+   "source_date": "ohlášky týden 1.–8. 11. 2026",
+   "note": "Current ohlášky name the days but give no Mass times for 1.11/2.11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100016",
+   "name": "filiální kostel Nejsvětější Trojice, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Greek-Catholic liturgies (Spálená); web search found no 2026 parish announcements.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000112",
+   "name": "farní kostel Stětí sv. Jana Křtitele, Praha-Hostivař",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnosthostivar.cz",
+   "source_date": null,
+   "note": "Still 403 Cloudflare challenge on 1.11; not bypassed.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000113",
+   "name": "filiální kostel Narození Panny Marie, Praha-Záběhlice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnosthostivar.cz",
+   "source_date": null,
+   "note": "Still 403 Cloudflare challenge on 1.11; not bypassed.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000116",
+   "name": "farní kostel Všech svatých, Praha-Uhříněves",
+   "town": "praha",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://uhrineveska.farnost.cz/clanek/30-nedele-v-mezidobi-25-rijna-2026-1-listopadu-2026-1631",
+   "source_date": "ohlášky 25. 10. – 1. 11. 2026",
+   "note": "1.11 still matches. No newer ohlášky posted; 2.11 not covered (only standing 'Pondělí: Uhříněves 18:00'), so 2.11 unverified.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000156",
+   "name": "farní kostel sv. Alžběty, Praha-Kbely",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnostkbely.cz/",
+   "source_date": null,
+   "note": "farnostkbely.cz and kbely.farnost.cz both 403 Cloudflare challenge on 1.11; not bypassed.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100037",
+   "name": "farní kostel sv. Apolináře, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "No website; web search finds no 2026 announcement (only prague.eu standing info: Vietnamese Mass Sun 7:30).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100038",
+   "name": "filiální kostel Nanebevzetí Panny Marie, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "No 2026 announcement found for Karlov.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "10001731",
+   "name": "kaple Malých sester Ježíšových, Praha 14 - Černý Most",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnostkyje.cz/v2/farnost/farni-ohlasky/",
+   "source_date": "ohlášky 30. neděle v mezidobí (25. 10. 2026)",
+   "note": "Newest ohlášky still 25.10; nothing for the Malé sestry chapel on 1–2 Nov (its Mass is 2nd/4th Tuesday). Site shows nothing — consistent.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000891",
+   "name": "Katolická oáza, Praha-Černý Most",
+   "town": "praha",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://farnostkyje.cz/v2/farnost/farni-ohlasky/",
+   "source_date": "ohlášky 30. neděle v mezidobí (25. 10. 2026)",
+   "note": "1.11 18:00 matches. No newer ohlášky. For 2.11 the parish announces only the 18:00 service in sv. Bartoloměj (Kyje), not Oáza — consistent with site showing nothing at Oáza, but not an explicit full schedule.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000132",
+   "name": "klášterní kaple sv. Karla Boromejského",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnost-karlin.cz/rss_kalendar.php",
+   "source_date": null,
+   "note": "Karlín calendar (fetched 1.11) lists only the church sv. Cyrila a Metoděje (2.11 18:00 there); the Vítkova chapel never appears, so its 2.11 18:30 can't be confirmed or refuted.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100076",
+   "name": "filiální kostel sv. Jana Nepomuckého, Praha-Dejvice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnostnebusice.cz/uncategorized/ohlasky/",
+   "source_date": null,
+   "note": "Newest Nebušice ohlášky still 18.10.2026; nothing for 1/2 Nov.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100022",
+   "name": "farní kostel sv. Ducha, Praha-Staré Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality",
+   "source_date": "aktuality (Oct/Nov 2026)",
+   "note": "Týn 2026 list for 1./2.11 omits sv. Duch; sv. Duch page has only standing 'neděle 9:30' (summer 2026 dates only). Not a dated source. Site's 9:30 note '(pouze 19. 7., 2. 8., 16. 8. a 30. 8.)' is the stale summer restriction — consider data issue.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100074",
+   "name": "farní kostel sv. Fabiána a Šebestiána, Praha-Liboc",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.rkfliboc.cz/images/Bohosluzby/2026-31.ne-mez.jpg (from https://www.rkfliboc.cz/bohosluzby)",
+   "source_date": "Pořad bohoslužeb v týdnu od 1.11. do 8.11. 2026",
+   "note": "Weekly schedule image (read visually). 1.11 Mass 8:30 only, 2.11 17:30 — matches site.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "100047",
+   "name": "filiální kostel sv. Vavřince, Praha-Jinonice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.centrumbarrandov.cz/rss_kalendar.php (parish calendar, also on https://www.centrumbarrandov.cz/)",
+   "source_date": "farní kalendář, stav 1. 11. 2026",
+   "note": "Parish event calendar lists every parish service by date: Jinonice 1.11 Mass 16:00; 2.11 only a cemetery devotion (no Mass) — matches site (1.11 16:00, 2.11 none).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "10002309",
+   "name": "kaple v Domově pro seniory Háje",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.kcmt.cz/nedelni-ohlasky/nedelni-ohlasky-1-11-2026/",
+   "source_date": "Nedělní ohlášky 1. 11. 2026",
+   "note": "Parish lists its 2.11 Masses: only KCMT 6:45 and sv. František 18:00 — none in the Háje senior-home chapel; site shows nothing → consistent. 1.11 not covered.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "10001799",
+   "name": "Kaple v Domově pro seniory Chodov",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.kcmt.cz/nedelni-ohlasky/nedelni-ohlasky-1-11-2026/",
+   "source_date": "Nedělní ohlášky 1. 11. 2026",
+   "note": "Parish lists its 2.11 Masses: only KCMT 6:45 and sv. František 18:00 — none in the Chodov senior-home chapel; site shows nothing → consistent. 1.11 not covered.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "100024",
+   "name": "farní kostel sv. Františka z Assisi, Praha-Staré Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.krizovnici.eu/uploads/1792913838_Po%C5%99ad%20bohoslu%C5%BEeb.pdf",
+   "source_date": "Pořad bohoslužeb 25.10. – 01.11. 2026 (PDF 25. 10. 2026)",
+   "note": "1 Nov 09:30 matches. Sheet ends 1 Nov; no 01.–08.11. sheet published yet, so 2 Nov unverified.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "10002788",
+   "name": "katedrála sv. Klimenta v Praze",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Greek-Catholic cathedral; no dated 2026 source (web search finds only standing schedule; the sv. František pořad 25.10.–1.11. does not cover it).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100059",
+   "name": "farní kostel sv. Jakuba Staršího, Praha-Stodůlky",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnoststodulky.cz still 403 (Cloudflare) on 1. 11.; not bypassed; web search found nothing for 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100061",
+   "name": "filiální kostel sv. Prokopa, Praha-Stodůlky",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnoststodulky.cz still 403 (Cloudflare) on 1. 11.; not bypassed; no 2026 source.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100030",
+   "name": "klášterní kostel sv. Bartoloměje, Praha-Staré Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "praha.op.cz (sv. Jiljí) ohlášky 1. 11. 2026 and rozpis cover only sv. Jiljí; nothing on sv. Bartoloměj.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100014",
+   "name": "farní kostel sv. Jindřicha a Kunhuty, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "svatyjindrich.cz farní ohlášky still the Misijní neděle (18. 10. 2026) issue; no 1./2. 11. times.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100015",
+   "name": "filiální kostel sv. Kříže, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "No 2026 announcement for sv. Kříž; svatyjindrich.cz ohlášky still Misijní neděle issue (18. 10. 2026).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000139",
+   "name": "farní kostel sv. Jiří, Praha-Hloubětín",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosthloubetin.cz still 403 (Cloudflare) on 1. 11.; not bypassed; no other 2026 source.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100094",
+   "name": "bazilika sv. Ludmily, Praha-Vinohrady",
+   "town": "praha",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://ludmilavinohrady.cz/2026/cim-zijeme-v-nasi-bazilice-sv-ludmily-od-slavnosti-vsech-svatych-ke-tricate-druhe-nedeli-v-mezidobi/",
+   "source_date": "ohlášky 1. 11. 2026 (+ post 2. listopadu and Program listopad 2026 PDF)",
+   "note": "2 Nov: extra Masses 09:00 and 11:00 (\"Mimořádné mše sv. v bazilice od 9.00 a 11.00 hod., odpoledne pravidelná mše sv. od 16.30\"); site shows only 16:30. 1 Nov: sources only mention 11:00 (already confirmed 28 Oct); 9:00/16:30 not addressed, no 1 Nov afternoon correction.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "100064",
+   "name": "bazilika sv. Markéty, Praha-Břevnov",
+   "town": "Praha 6",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-brevnov.cz/2026/10/slavnost-vsech-svatych-1-listopadu-2026/ + https://calendar.google.com/calendar/ical/rm36gfgtbirgkqgemkstjfd8lk%40group.calendar.google.com/public/basic.ics",
+   "source_date": "ohlášky publ. 31. 10. 2026 + farní Google kalendář 'Mimořádné bohoslužby' (vložen na farnost-brevnov.cz/kalendar/)",
+   "note": "Kalendář farnosti rozhoduje místo: mše 2. 11. v 16:00 (15:00 UTC, po konci letního času) je na adrese Markétská 1 = bazilika; hřbitov má jen modlitbu v 15:00. 7:00 a 18:00 už web má; chybí 16:00.",
+   "scope": "lead",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "100065",
+   "name": "filiální kostel Panny Marie Vítězné, Praha-Řepy",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-brevnov.cz/2026/10/slavnost-vsech-svatych-1-listopadu-2026/",
+   "source_date": "ohlášky Slavnost Všech svatých, publ. 31. 10. 2026",
+   "note": "Site shows nothing on 2 Nov; ohlášky announce 17:00 Mass at Bílá Hora. No 1 Nov times given.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "10001756",
+   "name": "fakultní kaple Panny Marie – Sedes Sapientiae",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "November 2026 rozpis of the Dejvice parish lists only sv. Matěj, sv. Václav, Nejsv. Trojice; Sedes Sapientiae chapel not covered.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100084",
+   "name": "filiální kostel Nejsvětější Trojice, Praha-Sedlec",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://cmshost01.blob.core.windows.net/cms/media/ncali545.3hl/mesicni.pdf",
+   "source_date": "Rozpis bohoslužeb na listopad 2026 (PDF created 31. 10. 2026), linked from matejstranti.com/cs/mesicni-rozpis-bohosluzeb",
+   "note": "Nejsv. Trojice column empty on 1 and 2 Nov = no Mass; site shows none. Matches.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "100069",
+   "name": "filiální kostel sv. Vojtěcha, Praha-Dejvice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "November 2026 Dejvice parish rozpis lists only sv. Matěj, sv. Václav, Nejsv. Trojice. Church own site sv-vojtech.eu: latest ohlášky 25.10.2026 contain no 1./2.11 Mass times.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100071",
+   "name": "kaple sv. Michala, Praha-Dejvice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "November 2026 rozpis of the Dejvice parish lists only sv. Matěj, sv. Václav, Nejsv. Trojice; kaple sv. Michala not covered.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100068",
+   "name": "klášterní kostel sv. Václava, Praha-Dejvice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://cmshost01.blob.core.windows.net/cms/media/ncali545.3hl/mesicni.pdf",
+   "source_date": "Rozpis bohoslužeb na listopad 2026 (PDF created 31. 10. 2026), linked from matejstranti.com/cs/mesicni-rozpis-bohosluzeb",
+   "note": "Matches site for both days.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "100067",
+   "name": "farní kostel sv. Matěje, Praha-Dejvice",
+   "town": "praha",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://cmshost01.blob.core.windows.net/cms/media/ncali545.3hl/mesicni.pdf",
+   "source_date": "Rozpis bohoslužeb na listopad 2026 (PDF created 31. 10. 2026), linked from matejstranti.com/cs/mesicni-rozpis-bohosluzeb",
+   "note": "1 Nov matches. 2 Nov: 17:00 Mass at sv. Matěj (also in weekly ohlášky 1. 11.: 'Pondělí 2.11. … 17:00 za všechny naše zemřelé'); site shows none.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "1000109",
+   "name": "farní kostel sv. Michaela Archanděla, Praha-Podolí",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostbranik.cz/vzpominka-na-vsechny-verne-zemrele/",
+   "source_date": "post 2. listopadu 2026 – Vzpomínka na všechny věrné zemřelé (farnost Braník, which also serves Podolí)",
+   "note": "Site shows nothing on 2 Nov. Read as: cemetery prayers 13:30, Mass 15:00 in sv. Michael (punctuation slightly ambiguous). farnostprahapodoli.cz has nothing dated. | held back: source behind a WAF for the reviewer; quote punctuation loose",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100077",
+   "name": "farní kostel sv. Norberta, Praha-Střešovice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "norbertstresovice.cz: newest Informace k neděli still 18. 10. 2026 (1. 11. / 25. 10. URLs 404); nothing for 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000893",
+   "name": "klášterní kaple Panny Marie Andělské, Praha-Břevnov",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "norbertstresovice.cz: newest ohlášky still 18. 10. 2026; nothing for 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000888",
+   "name": "nemocniční kaple Milosrdného Samaritána",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "norbertstresovice.cz: newest ohlášky still 18. 10. 2026; nothing for 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100018",
+   "name": "farní kostel sv. Petra, Praha-Nové Město",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostpetr.cz/l/mse-svata-pri-vzpomince-na-vsechny-verne-zemrele/",
+   "source_date": "aktualita 28. 10. 2026 (poster image)",
+   "note": "Times are in the post image (text body empty, which is why 28 Oct missed it). Site shows no Mass on 2 Nov.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "1000129",
+   "name": "farní kostel sv. Petra a Pavla, Praha-Bohnice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostbohnice.cz ohlášky: newest is Mše svaté od 18. 10. do 25. 10. 2026; nothing published for 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000130",
+   "name": "filiální kostel sv. Václava, Praha-Bohnice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostbohnice.cz ohlášky: newest is 18.–25. 10. 2026; nothing for 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000882",
+   "name": "nemocniční kaple sv. Lazara, Praha-Bohnice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostbohnice.cz ohlášky: newest is 18.–25. 10. 2026; nothing on sv. Lazar.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100099",
+   "name": "farní kostel sv. Prokopa, Praha-Braník",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostbranik.cz/vzpominka-na-vsechny-verne-zemrele/",
+   "source_date": "post 2. listopadu 2026 – Vzpomínka na všechny věrné zemřelé",
+   "note": "2 Nov 18:00 matches site. 1 Nov not covered (site now reachable with curl, 200).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000133",
+   "name": "farní kostel sv. Terezie od Dítěte Ježíše, Praha-Kobylisy",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://terezicka.cz/wp-content/uploads/2026/10/2026-11-01_Ohlasky.docx.pdf",
+   "source_date": "Ohlášky kobyliské farnosti v týdnu 1. - 8. 11. 2026",
+   "note": "Mass intentions list matches site Masses on both days (1 Nov 07:30/09:00/10:30/18:30; 2 Nov 06:30/18:30).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "100012",
+   "name": "farní kostel sv. Tomáše, Praha-Malá Strana",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "augustiniani.cz: no 2026 ohlášky/bulletin (latest media Sept 2026); nothing for 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "10007",
+   "name": "filiální kostel sv. Mikuláše, Praha-Malá Strana",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "augustiniani.cz: no 2026 ohlášky/bulletin (latest media Sept 2026); no other 2026 Mass source for sv. Mikuláš.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100010",
+   "name": "klášterní kostel Panny Marie pod řetězem, Praha-Malá Strana",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "augustiniani.cz: no 2026 ohlášky/bulletin (latest media Sept 2026); no 2026 source found.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100011",
+   "name": "klášterní kostel Panny Marie Vítězné a sv. Antonína Pad., Praha-Malá Strana",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "pragjesu.cz: only a Mozart Requiem concert on 2. 11. 2026 and the standing rozvrh; no dated 2026 Mass schedule for 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100013",
+   "name": "klášterní kostel sv. Josefa, Praha-Malá Strana",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "augustiniani.cz: no 2026 ohlášky/bulletin (latest media Sept 2026); no 2026 source found.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "10009",
+   "name": "klášterní kostel sv. Karla Boromejského, Praha-Malá Strana",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "augustiniani.cz: no 2026 ohlášky/bulletin (latest media Sept 2026); no 2026 source found.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000136",
+   "name": "farní kostel sv. Vojtěcha, Praha-Libeň",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostliben-vysocany.cz: no page/post/media updated since July 2026 (WP API checked); nothing for 1./2. 11. 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000884",
+   "name": "nemocniční kaple ve Fakultní nemocnici Bulovka",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostliben-vysocany.cz not updated since July 2026; nothing on Bulovka chapel for 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000107",
+   "name": "farní kostel sv. Václava, Praha-Nusle",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostnusle.websnadno.cz notice: \"2. 11. 2026 … mše sv. a pobožnost za zemřelé v kostele sv. Pankráce v 18 h.\" — names sv. Pankrác only; nothing for sv. Václav on 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "100042",
+   "name": "farní kostel sv. Štěpána, Praha-Nové Město",
+   "town": "praha",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.kostelignac.cz/wp-content/uploads/2026/10/1101-1108.jpg",
+   "source_date": "Služby v kostele sv. Ignáce 1.11. – 8.11. 2026 (uploaded 31. 10. 2026)",
+   "note": "Weekly service sheet (image) of the parish lists sv. Štěpán Masses in the Další column: only Sundays 11:00; none on Mon 2 Nov. Matches site (1 Nov 11:00, 2 Nov none).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000120",
+   "name": "farní kostel sv. Mikuláše, Praha-Vršovice",
+   "town": "praha",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://ce585eeb-6a1e-4dbb-a436-aa92fed45711.usrfiles.com/ugd/ce585e_af934f1a2b0d4644aeee8819cd0c00e5.pdf",
+   "source_date": "farní časopis Vinice, listopad 2026 (+ Oznámení neděle 1.–8. listopadu)",
+   "note": "November 2026 issue gives the parish Mass schedule: no Sunday or Monday Mass at sv. Mikuláš; the 2 Nov Mass is at sv. Václav. Site shows nothing at sv. Mikuláš on either day = match. (Schedule is the standing pořad printed in the dated Nov 2026 issue.)",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000124",
+   "name": "farní kostel sv. Vojtěcha, Praha-Na Balkáně",
+   "town": "praha",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnost-nabalkane.cz/images/dokumenty/NedelniStranka/NedelniStranka.pdf",
+   "source_date": "Nedělní stránka 25. 10. 2026 (still the current issue on 1. 11.)",
+   "note": "1 Nov single Mass consistent with site (11:00, confirmed 28 Oct). No newer bulletin; nothing about 2 Nov Mass — 2 Nov unverifiable.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80002825887276",
+   "name": "bazilika Nanebevzetí Panny Marie",
+   "town": "Staré Brno, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Re-check 1. 11.: opatstvibrno.cz má nejnovější ohlášky 25. 10. 2026 bez časů mší na 1./2. 11.; jen nedatovaný pořad.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "8000400661509",
+   "name": "kaple Pána Ježíše v Getsemanech",
+   "town": "Komín, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostkomin.cz stále za Cloudflare (403) – neobcházeno; jiný zdroj 2026 nenalezen.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80003767518802",
+   "name": "kaple Panny Marie Pomocnice",
+   "town": "Líšeň, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnostlisen.cz/",
+   "source_date": "ohlášky 1. 11. 2026",
+   "note": "Ohlášky 1. 11. 2026 Kostelíček nezmiňují; web nic neukazuje.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80001358846480",
+   "name": "kaple sv. Alžběty",
+   "town": "Štýřice, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Re-check 1. 11.: opatstvibrno.cz – nejnovější ohlášky 25. 10. 2026, kapli sv. Alžběty ani časy 1./2. 11. neuvádějí.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80003324435852",
+   "name": "kaple sv. Floriána",
+   "town": "Bosonohy, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Farnost Troubsko bez webu; nic z roku 2026 nenalezeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80001764582261",
+   "name": "kaple sv. Ludmily",
+   "town": "Lesná, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnostbrnolesna.cz/bohosluzby-a-ohlasky/",
+   "source_date": "pořad bohoslužeb 1.–8. 11. 2026",
+   "note": "Pořad 1.–8. 11. 2026 (Ne 8:00, 10:00; Po 18:00) neuvádí místo, kapli sv. Ludmily nejmenuje; kaple má jen páteční 16:00. Nelze potvrdit, web nic neukazuje.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "8000561303283",
+   "name": "kaple sv. Václava",
+   "town": "Žabovřesky, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "salesianizabovresky.cz stále Cloudflare 403 – neobcházeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80003857885295",
+   "name": "kostel farní Nanebevzetí Panny Marie",
+   "town": "Zábrdovice (Brno-Židenice), Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Re-check 1. 11.: zabrdovice.cz – nejnovější ohlášky stále 25. 10. 2026, bez časů na 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "8000353103581",
+   "name": "kostel farní Nejsvětějšího Srdce Páně",
+   "town": "Husovice, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Re-check 1. 11.: farnost-husovice.cz – nejnovější ohlášky 18. 10. 2026 (RSS i rubrika), o 1./2. 11. nic.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "8000388666746",
+   "name": "kostel farní Panny Marie Pomocnice",
+   "town": "Žabovřesky, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "salesianizabovresky.cz stále Cloudflare 403 – neobcházeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80002633679889",
+   "name": "kostel farní sv. Jiljí",
+   "town": "Líšeň, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnostlisen.cz/",
+   "source_date": "ohlášky 1. 11. 2026",
+   "note": "Ohlášky 1. 11. 2026 zmiňují jen mši v 10:00 (sedí), úplný pořad 1. ani 2. 11. neuvádějí.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80001476711697",
+   "name": "kostel farní sv. Vavřince",
+   "town": "Řečkovice, Brno",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://farnostreckovice.cz/2026/10/31/ohlasky-1-11-2026/",
+   "source_date": "ohlášky 1. 11. 2026",
+   "note": "Ohlášky farnosti Řečkovice (kostel sv. Vavřince); 2. 11. mše v 7:00 a 18:00, web má jen 18:00. 1. 11. časy mší ohlášky neuvádějí.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "80003489995421",
+   "name": "kostel farní sv. Vavřince",
+   "town": "Komín, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostkomin.cz stále za Cloudflare (403) – neobcházeno; jiný zdroj 2026 nenalezen.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80003351415025",
+   "name": "kostel farní Zvěstování Panny Marie",
+   "town": "Tuřany, Brno",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostturany.cz/ohlasky/",
+   "source_date": "ohlášky 1. 11. 2026, pořad bohoslužeb 1.–8. 11. 2026",
+   "note": "Farní web farnostturany.cz (v rejstříku chybí). 1. 11. 7:30, 10:00; 2. 11. 18:00 — shoduje se.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80002420699120",
+   "name": "kostel filiální Neposkvrněného početí Panny Marie",
+   "town": "Soběšice, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Re-check 1. 11.: farnost-husovice.cz – nejnovější ohlášky 18. 10. 2026, o 1./2. 11. nic.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80002813858383",
+   "name": "kostel rektorátní Nanebevzetí Panny Marie",
+   "town": "Brno-město, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "ujezuitu.cz: jen nedatovaný rozvrh. Kalendář svatyjakub.cz (listopad 2026) potvrzuje jen 1. 11. 7:30 „Ranní mše – v jezuitském kostele“; 10:00/12:15/21:00 a 2. 11. neověřeny.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80002709686873",
+   "name": "kostel rektorátní sv. Leopolda a Václava",
+   "town": "Štýřice, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Re-check 1. 11.: opatstvibrno.cz – nejnovější ohlášky 25. 10. 2026 bez časů; nic z roku 2026 o 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80002862217569",
+   "name": "kostel rektorátní sv. Michaela archanděla",
+   "town": "Brno-město, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Re-check 1. 11.: svatymichalbrno.cz (aktuality, bohoslužby) nic o 1./2. 11. 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80003038961411",
+   "name": "kostel rektorátní Svaté Rodiny",
+   "town": "Veveří, Brno",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Kalendář svatyjakub.cz (listopad 2026) kostel sv. Rodiny nezmiňuje; jiný zdroj 2026 nenalezen.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80002555155416",
+   "name": "kostel farní Nanebevzetí Panny Marie",
+   "town": "Jihlava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Minorité Jihlava: ohlášky na 1. 11. 2026 jen liturgický týden a modlitba na hřbitově v 15:00, bez časů mší; časy jen v nedatovaném programu.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80003778363996",
+   "name": "nemocniční kaple sv. Anežky a sv. Zdislavy",
+   "town": "Jihlava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Ohlášky minoritů 1. 11. 2026 nemocniční kapli nezmiňují; web nic neukazuje.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80004290852259",
+   "name": "kostel filiální Nejsvětější Trojice",
+   "town": "Horka-Domky, Třebíč",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://drive.google.com/file/d/1cQjDm3uJwTGZpOcZHYoHvMequVeY5CcI/view",
+   "source_date": "Informace třebíčských farností 1. listopadu 2026 (XXXV/21) + 18. října 2026 (XXXV/20, týden do 1. 11.)",
+   "note": "„Hřbitov“ v pořadu = hřbitovní kostel Nejsv. Trojice (Horka-Domky); potvrzuje to zápis pastorační rady i 1. sobota 7. 11. v 8:00 „Hřbitov“ (odpovídá řádku webu). Římskokat. mše 1. 11. v 18:00 a 2. 11. v 16:00 na webu chybí. Řeckokat. 7:30 v listu farnosti není — nechávám. | held back: sheet says only \"Hřbitov\", church not named",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70003220367104",
+   "name": "farní kostel Panny Marie Pomocnice křesťanů",
+   "town": "Zlín",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostsdbzlin.cz stále Cloudflare 403 – neobcházeno; jiný zdroj 2026 nenalezen.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70003752459776",
+   "name": "farní kostel sv. Filipa a Jakuba",
+   "town": "Zlín",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostzlin.cz stále Cloudflare 403 – neobcházeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70001078208995",
+   "name": "farní kostel sv. Mikuláše",
+   "town": "Malenovice, Zlín",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostmalenovice.cz stále Cloudflare 403 – neobcházeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70003672097991",
+   "name": "kaple Panny Marie Růžencové",
+   "town": "Salaš, Zlín",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostbreznice.cz stále Cloudflare 403 – neobcházeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "7000347947147",
+   "name": "kaple sv. Václava",
+   "town": "Kudlov, Zlín",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostzlin.cz stále Cloudflare 403 – neobcházeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80002048382917",
+   "name": "kaple Panny Marie Bolestné",
+   "town": "Popice, Znojmo",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Bez webu; ohlášky farnostznojmo.cz (do 1. 11.) Popice nezmiňují; nic z roku 2026 pro 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80003596326230",
+   "name": "kostel farní Panny Marie Bolestné",
+   "town": "Načeratice, Znojmo",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Bez webu; nic z roku 2026 nenalezeno (ani zpravodaj FATYM/Přímětice Načeratice neuvádí).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80003478397422",
+   "name": "kostel farní sv. Hippolyta",
+   "town": "Znojmo",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Znojmo-Hradiště bez webu; web search nic z roku 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "8000666071963",
+   "name": "kostel farní sv. Markéty",
+   "town": "Přímětice, Znojmo",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.fatym.com/download.php?soubor=6777",
+   "source_date": "Dušičkový zpravodaj FATYMu Vranov n. D. a farnosti Přímětice 2026",
+   "note": "Zpravodaj 2026 uvádí 1. 11. jen pobožnost na hřbitově v 16:15 (ne mši) a pro všední dny odkazuje na ohlášky na farnostprimetice.cz — ty se načítají dynamicky (iframe), přes curl nedostupné. Časy mší 1./2. 11. neověřeny.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "8000864966089",
+   "name": "kostel farní sv. Zikmunda",
+   "town": "Popice, Znojmo",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Bez webu; nic z roku 2026 pro 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80001786675167",
+   "name": "kostel filiální Panny Marie Bolestné",
+   "town": "Mramotice, Znojmo",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.fatym.com/download.php?soubor=6777",
+   "source_date": "Dušičkový zpravodaj FATYMu Vranov n. D. a farnosti Přímětice 2026",
+   "note": "Zpravodaj 2026 má pro Mramotice jen pobožnost na hřbitově 1. 11. v 14:45, mši neuvádí; ohlášky farnostprimetice.cz nedostupné (dynamický iframe). Neověřeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80003965730084",
+   "name": "kostel filiální sv. Jana Křtitele",
+   "town": "Znojmo",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnostznojmo.cz/stah.php?id=2&z",
+   "source_date": "ohlášky farností Znojmo – sv. Mikuláš a sv. Kříž 25. 10.–1. 11. 2026",
+   "note": "1. 11. u sv. Jana Křtitele mše není (sedí s prázdným výpisem); 2. 11. (web 8:00) nepokryto — PDF zatím končí 1. 11.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80002981053517",
+   "name": "kaple sv. Jana Boska",
+   "town": "Líšeň, Brno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostnovalisen.cz/2026/10/31/ohlasky-na-nedeli-1-11-2026/",
+   "source_date": "ohlášky na neděli 1. 11. 2026",
+   "note": "Farnost Nová Líšeň: 1. 11. 8:30; v pondělí 2. 11. žádná mše (pořad pondělí vůbec neuvádí, jde rovnou na úterý) — shoduje se.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80002687584866",
+   "name": "kostel farní sv. Augustina",
+   "town": "Stránice, Brno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.augustinbrno.cz/bohosluzby",
+   "source_date": "pořad 26. 10.–1. 11. 2026",
+   "note": "1. 11. sedí; pořad zatím končí 1. 11. — 2. 11. nepokryto.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80003287724522",
+   "name": "kostel farní sv. Jakuba",
+   "town": "Brno-město, Brno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.svatyjakub.cz/bohosluzby/",
+   "source_date": "farní kalendář, listopad 2026 (staženo 1. 11. 2026)",
+   "note": "Kalendář farnosti na listopad 2026: 1. 11. 9:30 a 19:00 (SK), 2. 11. jen 19:00 — shoduje se.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80004204845001",
+   "name": "kostel farní sv. Jana Nepomuckého",
+   "town": "Starý Lískovec (Brno-Starý Lískovec), Brno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostliskovec.cz/wp-content/uploads/2026/10/0002-6.jpg",
+   "source_date": "Johánek – pořad bohoslužeb v týdnu od 1.11. do 8.11. 2026",
+   "note": "Pořad (2. strana Johánka, obrázek) dává 1. 11. 7:30, 9:30 a 2. 11. 18:00 — shoduje se. (1. strana zmiňuje jen „od 16:00 možnost osobní vzpomínky“, odtud dřívější nejasnost.)",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80003256232140",
+   "name": "kostel farní sv. Jiljí",
+   "town": "Komárov, Brno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "http://www.farnost-komarov.cz/index.php/nedelni-ohlasky",
+   "source_date": "ohlášky 25. 10.–1. 11. 2026",
+   "note": "1. 11. sedí; web farnosti dosud bez ohlášek na týden od 1. 11. — 2. 11. nepokryto (stav 1. 11. dopoledne).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80001321353920",
+   "name": "kostel filiální sv. Klementa Marie Hofbauera",
+   "town": "Horní Heršpice, Brno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "http://www.farnost-komarov.cz/index.php/nedelni-ohlasky",
+   "source_date": "ohlášky 25. 10.–1. 11. 2026",
+   "note": "1. 11. v Horních Heršpicích nic (shoduje se); 2. 11. nepokryto, nové ohlášky zatím nevyšly.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80001507647896",
+   "name": "kostel filiální sv. Kříže",
+   "town": "Slatina, Brno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.kostelslatina.cz/",
+   "source_date": "pořad bohoslužeb 1.–8. 11. (web kostela, stav 1. 11. 2026; rok neuveden, dny v týdnu odpovídají 2026, stránka jinak k šk. roku 2026/27)",
+   "note": "1. 11. 8:30 sedí; 2. 11. mše v 18:00, web neukazuje nic. (Pořad píše „čtvrtek 4.11.“ — překlep, 4. 11. 2026 je středa.) | held back: schedule has no year",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "80001443561900",
+   "name": "kostel filiální sv. Markéty",
+   "town": "Přízřenice, Brno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnost-modrice.cz/wp-content/uploads/2026/10/ohlasky_listopad_2026_1.pdf",
+   "source_date": "pořad bohoslužeb 24. 10.–1. 11. 2026 (ohlášky 1. 11. 2026)",
+   "note": "1. 11. v Přízřenicích žádná mše (shoduje se). Ohlášky 1. 11. 2026 jsou stejné PDF končící 1. 11. — 2. 11. nepokryto.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80003720327824",
+   "name": "kostel rektorátní sv. Maří Magdalény",
+   "town": "Brno-město, Brno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.mari-magdalena.cz/",
+   "source_date": "aktuální přehled bohoslužeb 26. 10.–1. 11. 2026",
+   "note": "1. 11. bez mše (sedí); přehled končí 1. 11. — 2. 11. nepokryto. (28. 10.: kapucínské ohlášky zmiňují Dušičkový den u sv. Maří 3. 11. s mší v 19:00.)",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80003291460480",
+   "name": "středisko Archa",
+   "town": "Bystrc, Brno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.faby.cz/attachments/article/860/Slavnost%20V%C5%A1ech%20svat%C3%BDch%2026.pdf",
+   "source_date": "ohlášky 1. 11. 2026 (Slavnost Všech svatých)",
+   "note": "Pořad 1.–8. 11. označuje mše v Arše zvlášť („Archa“); 1. ani 2. 11. tam žádná není — shoduje se s prázdným výpisem.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80003820872696",
+   "name": "kostel filiální sv. Ignáce",
+   "town": "Jihlava",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.svjakub.cz/bohosluzby/2026-45/",
+   "source_date": "pořad bohoslužeb 1.–8. 11. 2026 (45. týden)",
+   "note": "Římskokatolické: 1. 11. 8:30 sedí, 2. 11. u sv. Ignáce nic (sedí). Řeckokatolická liturgie 10:00 (1. 11.) v pořadu farnosti není — neověřena; web ji navíc ukazuje dvakrát (dva řádky 10:00).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80002339041818",
+   "name": "kostel filiální sv. Jana Křtitele",
+   "town": "Jihlava",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.svjakub.cz/bohosluzby/2026-45/",
+   "source_date": "pořad bohoslužeb 1.–8. 11. 2026 (45. týden)",
+   "note": "1. 11. 8:00 sedí; 2. 11. u sv. Jana Křtitele mše není — shoduje se.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80002679619819",
+   "name": "kostel farní Proměnění Páně",
+   "town": "Jejkov, Třebíč",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.jejkov.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb 1.–8. 11. 2026 (45. týden)",
+   "note": "Farnost Třebíč-Jejkov (jeden kostel): 1. 11. 7:30, 9:00; 2. 11. 18:00 — shoduje se.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "8000216699117",
+   "name": "kostel farní sv. Prokopa",
+   "town": "Podklášteří, Třebíč",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://drive.google.com/file/d/1cQjDm3uJwTGZpOcZHYoHvMequVeY5CcI/view",
+   "source_date": "Informace třebíčských farností 1. listopadu 2026 (XXXV/21)",
+   "note": "1. 11. 7:00 a 10:00 (Bazilika) sedí (list XXXV/20); 2. 11. mše v 18:00 v kryptě baziliky, web neukazuje nic.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "7000886836792",
+   "name": "farní kostel Narození Panny Marie",
+   "town": "Štípa, Zlín",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.stipa.cz/wp-content/uploads/2026/10/01112026.pdf",
+   "source_date": "pořad bohoslužeb 1.–8. 11. 2026",
+   "note": "1. 11. 9:45 sedí; 2. 11. ve Štípě mše v 7:30 a 18:00 (Hvozdná v závorce zvlášť), web neukazuje nic.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "70001446097637",
+   "name": "kaple sv. Cyrila a Metoděje",
+   "town": "Velíková, Zlín",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://falukov.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb 1.–8. 11. 2026 (45. týden)",
+   "note": "Pořad uvádí místa; ve Velíkové 1. ani 2. 11. žádná mše — shoduje se s prázdným výpisem.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "8000315768367",
+   "name": "kostel farní sv. Jakuba Staršího",
+   "town": "Konice, Znojmo",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostlouka.cz/storage/aktuality/2026_10_25_Ohlasky_new2.jpg",
+   "source_date": "pořad bohoslužeb – týden od 25.10.2026 do 1.11.2026 (vč. Po 2. 11.)",
+   "note": "1. 11. 11:30 sedí; 2. 11. v Konicích mše není (pořad uvádí místa) — shoduje se.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80001868742090",
+   "name": "kostel farní sv. Mikuláše",
+   "town": "Znojmo",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnostznojmo.cz/stah.php?id=2&z",
+   "source_date": "ohlášky farností Znojmo – sv. Mikuláš a sv. Kříž 25. 10.–1. 11. 2026",
+   "note": "1. 11. 9:00 sedí; PDF k 1. 11. dopoledne stále jen do 1. 11. — 2. 11. nepokryto.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "8000567053899",
+   "name": "kostel farní sv. Václava a Panny Marie",
+   "town": "Znojmo",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostlouka.cz/storage/aktuality/2026_10_25_Ohlasky_new2.jpg",
+   "source_date": "pořad bohoslužeb – týden od 25.10.2026 do 1.11.2026 (vč. Po 2. 11.)",
+   "note": "1. 11. 8:00 sedí; 2. 11. mše v 17:30 v kryptě kostela v Louce, web neukazuje nic.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "80004012293462",
+   "name": "kostel filiální sv. Alžběty",
+   "town": "Znojmo",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnostznojmo.cz/stah.php?id=2&z",
+   "source_date": "ohlášky farností Znojmo – sv. Mikuláš a sv. Kříž 25. 10.–1. 11. 2026",
+   "note": "1. 11. 11:00 sedí; 2. 11. nepokryto (nové ohlášky zatím nevyšly).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "80002883545226",
+   "name": "kostel filiální sv. Michala",
+   "town": "Znojmo",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnostznojmo.cz/stah.php?id=2&z",
+   "source_date": "ohlášky farností Znojmo – sv. Mikuláš a sv. Kříž 25. 10.–1. 11. 2026",
+   "note": "1. 11. 18:00 sedí; 2. 11. nepokryto.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70002911938763",
+   "name": "farní kostel Panny Marie Pomocnice, Olomouc - Nová Ulice",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Svatomořický zpravodaj č. 35 (1. 11. 2026) Novou Ulici nezmiňuje; jiný zdroj pro 2026 nenalezen.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70003987000813",
+   "name": "farní kostel sv. Barbory, panny a mučednice",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [],
+   "source": "http://www.svatykopecek.cz/PageDecision.asp?ID=169",
+   "source_date": null,
+   "note": "Stránka farnosti Chválkovice na svatykopecek.cz má jen pravidelný pořad (Ne 8:00); děkanátní přehled Dušiček 2026 uvádí jen pobožnost na hřbitově 15:00. Žádný datovaný pořad mší 1./2. 11.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70003317187611",
+   "name": "farní kostel sv. Michala, archanděla",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "http://svatymichal.cz/cs/oznamenii.html",
+   "source_date": "Oznámení – program v 31. týdnu mezidobí (1.–8. 11. 2026)",
+   "note": "Pořad mší 31. týdne nyní zveřejněn; 1. 11. 09:00 a 2. 11. 16:00 odpovídají.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70001547322326",
+   "name": "farní kostel sv. Ondřeje, apoštola",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [],
+   "source": "http://svatymichal.cz/cs/oznamenii.html",
+   "source_date": "oznámení sv. Michala 1.–8. 11. 2026",
+   "note": "Jen dušičková pobožnost na hřbitově 16:00 (není mše); časy mší ve Slavoníně na 1./2. 11. nikde nezveřejněny.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70002363370894",
+   "name": "farní kostel sv. Štěpána, prvomučedníka",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://o1.agendafarnosti.cz/katedralaolomouc.cz/img/media/akce/2026/dusickove_poboznostin_2026.pdf",
+   "source_date": "Dušičkové pobožnosti v Olomouci a okolí 2026",
+   "note": "Na 1./2. 11. 2026 žádný datovaný údaj; stránka farnosti jen pravidelný pořad (Ne 10:00).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70001624227742",
+   "name": "farní kostel sv. Urbana, papeže a mučedníka",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Holice bez webu; WebSearch nic pro 2026; v děkanátním přehledu Dušiček 2026 chybí.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "7000188176879",
+   "name": "filiální kostel sv. Kateřiny Alexandrijské",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "http://svatymichal.cz/cs/oznamenii.html",
+   "source_date": "Oznámení – program v 31. týdnu mezidobí (1.–8. 11. 2026)",
+   "note": "1. 11. 11:00 odpovídá; 2. 11. podle úplného týdenního pořadu farnosti u sv. Kateřiny mše není (shoda s prázdným webem).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70001904262728",
+   "name": "kaple Nejsvětějšího Srdce Páně (Nejsvětějšího Srdce Ježíšova)",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Web farnosti Hněvotín (webnode) nemá ohlášky/pořad pro listopad 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70002372912122",
+   "name": "kaple sv. Jana a Pavla, mučedníků",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Nemilany (farnost Slavonín): žádný datovaný pořad pro 1./2. 11. 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "7000575251802",
+   "name": "kaple sv. Jana Sarkandra",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "http://svatymichal.cz/cs/oznamenii.html",
+   "source_date": "Oznámení – program v 31. týdnu mezidobí (1.–8. 11. 2026)",
+   "note": "1. 11. 15:00 odpovídá; 2. 11. v kapli sv. J. Sarkandra mše není (první až Út 3. 11. 16:00) – shoda.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70003866394229",
+   "name": "rektorátní kostel  Panny Marie Sněžné",
+   "town": "olomouc",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnostsnezenka.cz/aktuality/",
+   "source_date": null,
+   "note": "Akademická farnost (farnostsnezenka.cz): aktuality do 26. 10. 2026 bez zmínky o 1./2. 11.; jen pravidelný pořad (Ne 19:00, Po 13:00). Podezřelé: web ukazuje na 1. 11. i 10:00 „(svátky 18.00 hod)“, což pravidelný pořad farnosti nezná – nejspíš zastaralý řádek v registru.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003300815000",
+   "name": "farní kostel sv. Ducha",
+   "town": "opava",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://opava.minorite.cz/ohlasky-30-nedele-v-mezidobi-25-rijna-2026/",
+   "source_date": "ohlášky 25. 10. 2026",
+   "note": "K 1. 11. 8:30 UTC minorité nové ohlášky nezveřejnili; ohlášky 25. 10. zmiňují slavnost jen kvůli odpustkům, bez časů mší; plán bohoslužeb je jen pravidelný.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50001870444019",
+   "name": "farní kostel sv. Jana Nepomuckého",
+   "town": "opava",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://farnostkylesovice.cz/2026/10/11/farni-ohlasky-28-nedele-mezidobi/",
+   "source_date": "Farní ohlášky 28. neděle mezidobí, 11. 10. 2026",
+   "note": "2. 11. (pondělí) mše není – shoda s prázdným webem. Čas nedělní mše 1. 11. ohlášky neuvádějí (web 09:00, neověřeno). Pozor: do 22. 11. žádné všední mše – pokud web ukazuje všední mše v Kylešovicích, jsou chybné.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "50002474184720",
+   "name": "filiální kostel sv. Hedviky",
+   "town": "opava",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://farnostopava.cz/wp-content/uploads/2026/10/2026-10.pdf",
+   "source_date": "Cesta – zpravodaj farnosti Panny Marie Opava, č. 10/2026 (říjen)",
+   "note": "2. 11. 2026 mše v 18:00 u sv. Hedviky; web na 2. 11. nic. 1. 11. zdroj neuvádí (web má 08:30/10:00 s poznámkou o pouti – nejspíš chybné opakování, ale nedoloženo).",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "50001833104466",
+   "name": "filiální kostel sv. Jana Křtitele",
+   "town": "opava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Minorité Opava: žádné ohlášky s časy na 1./2. 11. 2026 (poslední 25. 10. bez časů).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003569858872",
+   "name": "filiální kostel sv. Vojtěcha",
+   "town": "opava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Farnost PM Opava: ohlášky 30. neděle (26. 10.) ani zpravodaj Cesta 10/2026 časy mší u sv. Vojtěcha na 1./2. 11. neuvádějí; ohlášky ze 1. 11. a Cesta 11/2026 zatím nevyšly.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50002203155819",
+   "name": "kaple Narození P. Marie",
+   "town": "opava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Doména farnosti je unesená (spam); WebSearch farnost Velké Hoštice pro 2026 nenašel.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000302314694",
+   "name": "kaple Nejsvětějšího Srdce Marianum",
+   "town": "opava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Minorité Opava: žádné ohlášky s časy na 1./2. 11. 2026 (poslední 25. 10. bez časů).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50001796167609",
+   "name": "kaple sv. Kříže",
+   "town": "opava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Farnost PM Opava: ohlášky 26. 10. ani Cesta 10/2026 časy mší v kapli sv. Kříže na 1./2. 11. neuvádějí.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003402307703",
+   "name": "konkatedrála Nanebevzetí P. Marie",
+   "town": "opava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Farnost PM Opava: ohlášky 26. 10. ani Cesta 10/2026 časy mší v konkatedrále na 1./2. 11. neuvádějí (jen dušičkové pobožnosti 1. 11. v 15:00 na hřbitovech).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "7000490410528",
+   "name": "farní kostel sv. Cyrila a Metoděje",
+   "town": "prostejov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "zesov.dpv.cz stále bez obsahu; nic pro 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70003702726499",
+   "name": "farní kostel sv. Petra a Pavla ",
+   "town": "prostejov",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://petrpavel.dpv.cz/wp-content/uploads/sites/3/2026/11/Bohosluzby-01-11-2026.pdf",
+   "source_date": "Přehled bohoslužeb 1.11.2026 – 8.11.2026",
+   "note": "1. 11. 09:00 + 18:30 a 2. 11. 18:30 – shoda.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70002926252551",
+   "name": "filiální kostel sv. Jana Nepomuckého",
+   "town": "prostejov",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://petrpavel.dpv.cz/wp-content/uploads/sites/3/2026/11/Bohosluzby-01-11-2026.pdf",
+   "source_date": "Přehled bohoslužeb 1.11.2026 – 8.11.2026",
+   "note": "Úplný týdenní přehled farnosti: u sv. Jana Nepomuckého mše 1. ani 2. 11. není (až So 7. 11.) – shoda s prázdným webem.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70003306529547",
+   "name": "farní kostel Navštívení Panny Marie - bazilika minor",
+   "town": "olomouc",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "http://www.svatykopecek.cz/PageDecision.asp?Page=Bohosluzby",
+   "source_date": "pořad bohoslužeb 1.–8. 11. 2026",
+   "note": "1. 11. odpovídá. 2. 11.: 09:00 odpovídá, chybí večerní mše 18:00 (6:30 je v kapli sester premonstrátek, ne v bazilice).",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "70002953393905",
+   "name": "farní kostel Panny Marie Pomocnice křesťanů",
+   "town": "olomouc",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.katedralaolomouc.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 1.11. do 8.11.2026 + ohlášky 1. 11. 2026",
+   "note": "1. 11. 08:30 odpovídá; 2. 11. chybí mše 18:00.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "70002148043530",
+   "name": "farní kostel sv. Cyrila a Metoděje",
+   "town": "olomouc",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-olomouc-hejcin.cz/ohlasky?download=271:porad-bohosluzeb-od-1-11-2026",
+   "source_date": "Pořad bohoslužeb v týdnu od 1. do 8.11. 2026 + ohlášky 1.11.2026",
+   "note": "1. 11. mše 07:00 a 10:00 (17:30 večer chval, ne mše); 2. 11. mše 17:30 – shoda s webem.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70003341376687",
+   "name": "farní kostel sv. Filipa a Jakuba",
+   "town": "olomouc",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.katedralaolomouc.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 1.11. do 8.11.2026 + ohlášky 1. 11. 2026",
+   "note": "1. 11. 09:35 odpovídá; 2. 11. chybí mše 17:15 (po ní pobožnost na hřbitově).",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "7000995485767",
+   "name": "farní kostel sv. Mořice a druhů",
+   "town": "olomouc",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://moric-olomouc.cz/static/media/Svatomoricky_zpravodaj_2026-35.pdf",
+   "source_date": "Svatomořický zpravodaj č. 35, 1. 11. 2026",
+   "note": "2. 11.: 08:00 odpovídá, chybí odpolední mše 16:00. (1. 11. potvrzeno už 28. 10.)",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "70002072608814",
+   "name": "kaple Neposkvrněného Početí Panny Marie Povel",
+   "town": "olomouc",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.katedralaolomouc.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 1.11. do 8.11.2026 + ohlášky 1. 11. 2026",
+   "note": "Úplný farní pořad 1.–8. 11. nemá na Povelu mši ani 1. ani 2. 11. (jen růženec v pondělí 18:00) – shoda s prázdným webem.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70001766410173",
+   "name": "klášterní kostel Neposkvrněného Početí Panny Marie - Dominikáni",
+   "town": "olomouc",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://olomouc.op.cz/bohosluzby",
+   "source_date": "Aktuální rozpis bohoslužeb (ne 1. 11. – ne 8. 11. 2026)",
+   "note": "Dominikáni: 1. 11. 09:30+18:00 a 2. 11. 06:00+18:00 – shoda.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70001386081579",
+   "name": "metropolitní katedrální chrám  sv. Václava - katedrála Olomouc",
+   "town": "olomouc",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.katedralaolomouc.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 1.11. do 8.11.2026 + ohlášky 1. 11. 2026",
+   "note": "1. 11. odpovídá (08:00, 10:00). 2. 11. web nemá nic, pořad uvádí mši 07:00 a pontifikální mši 18:00 (po ní pobožnost za zemřelé v kapli sv. Jana Křtitele).",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "7000777213808",
+   "name": "rektorátní kostel  sv. Anny Olomouc",
+   "town": "olomouc",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.katedralaolomouc.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 1.11. do 8.11.2026 + ohlášky 1. 11. 2026",
+   "note": "1. 11. žádná mše u sv. Anny (shoda). 2. 11. se ranní mše 07:00 koná v katedrále, ne u sv. Anny (u sv. Anny až od úterý 3. 11.).",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "70001675278656",
+   "name": "filiální kostel sv. Michaela archanděla - Šířava",
+   "town": "prerov",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnostprerov.cz/include/stahnout_soubor.php?soubor=11334",
+   "source_date": "Pořad bohoslužeb v týdnu od 1. XI. do 8. XI. 2026 (zveřejněno 31.10.2026)",
+   "note": "1. 11. 07:30 odpovídá; 2. 11. podle úplného pořadu farností Přerov/Předmostí v Šířavě mše není (shoda s prázdným webem).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70001298100904",
+   "name": "kaple Povýšení svatého Kříže",
+   "town": "prerov",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnostprerov.cz/include/stahnout_soubor.php?soubor=11334",
+   "source_date": "Pořad bohoslužeb v týdnu od 1. XI. do 8. XI. 2026 (zveřejněno 31.10.2026)",
+   "note": "Úplný pořad 1.–8. 11. nemá v Dluhonicích žádnou mši 1. ani 2. 11. (shoda s prázdným webem).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70002868641354",
+   "name": "kaple sv. Jana a Pavla",
+   "town": "prerov",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnostprerov.cz/include/stahnout_soubor.php?soubor=11334",
+   "source_date": "Pořad bohoslužeb v týdnu od 1. XI. do 8. XI. 2026 (zveřejněno 31.10.2026)",
+   "note": "Úplný pořad 1.–8. 11. nemá v Čekyni žádnou mši 1. ani 2. 11. (shoda s prázdným webem).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70001530980136",
+   "name": "kaple sv. Jana Sarkandra",
+   "town": "prerov",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnostprerov.cz/include/stahnout_soubor.php?soubor=11334",
+   "source_date": "Pořad bohoslužeb v týdnu od 1. XI. do 8. XI. 2026 (zveřejněno 31.10.2026)",
+   "note": "Úplný pořad 1.–8. 11. nemá v Újezdci žádnou mši 1. ani 2. 11. (shoda s prázdným webem).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "7000742269400",
+   "name": "kaple sv. Martina",
+   "town": "prerov",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnosttroubky.cz/bohosluzby-a-ohlasky/",
+   "source_date": "pořad farnosti Troubky od 25.10. do 1.11.2026",
+   "note": "Nejnovější pořad končí 1. 11. (v Henčlově mše není – shoda); pořad na týden s 2. 11. zatím nezveřejněn.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70003580648474",
+   "name": "farní kostel sv. Bartoloměje",
+   "town": "prostejov",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://vrahovice.dpv.cz/2026/11/01/porad-bohosluzeb-1-11-2026/",
+   "source_date": "Pořad bohoslužeb 1. 11. 2026 (týden 1.–8. 11.), uveřejněno 1. 11. 2026",
+   "note": "1. 11. 09:15 odpovídá; 2. 11. je mše jen v Držovicích, ve Vrahovicích žádná (shoda s prázdným webem).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70003984064065",
+   "name": "kaple sv. Otýlie",
+   "town": "prostejov",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://vrahovice.dpv.cz/2026/11/01/porad-bohosluzeb-1-11-2026/",
+   "source_date": "Pořad bohoslužeb 1. 11. 2026 (týden 1.–8. 11.), uveřejněno 1. 11. 2026",
+   "note": "Úplný týdenní pořad farnosti nemá v Čechůvkách mši 1. ani 2. 11. (shoda s prázdným webem).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "6000164980990",
+   "name": "bohoslužebné místo Domov pro seniory Amica Centrum Cheb",
+   "town": "Cheb",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnostcheb.cz stále 403; WebSearch bez 2026 zdroje.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "6000755148494",
+   "name": "bohoslužebné místo Domov pro seniory Skalka Cheb",
+   "town": "Skalka, Cheb",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnostcheb.cz stále 403; WebSearch bez 2026 zdroje.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60002001664052",
+   "name": "bohoslužebné místo Domov pro seniory Spáleniště Cheb",
+   "town": "Cheb",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnostcheb.cz stále 403; WebSearch bez 2026 zdroje.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60002768794126",
+   "name": "farní kostel sv. Mikuláše a sv. Alžběty Cheb",
+   "town": "Cheb",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnostcheb.cz stále 403; WebSearch bez 2026 zdroje.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "6000758658495",
+   "name": "filiální kostel sv. Václava, (řeckokatolický) Cheb",
+   "town": "Cheb",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: reckokatolikkv.estranky.cz stále „Stránky jsou blokovány“; jiný 2026 zdroj nenalezen.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "6000395929546",
+   "name": "kaple sv. Jana, farní sál Cheb",
+   "town": "Cheb",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnostcheb.cz stále 403; WebSearch bez 2026 zdroje.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003793263134",
+   "name": "basilica minor Navštívení P.Marie",
+   "town": "Frýdek, Frýdek-Místek",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnostmistek.cz/userFiles/ohlasky-1-11-2026.jpg",
+   "source_date": "ohlášky Místek 1. 11. 2026",
+   "note": "farnostfrydek.cz stále 403 (Cloudflare). Místecké ohlášky zmiňují jen mši v obřadní síni na hřbitově ve Frýdku (ne v bazilice).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50001936550202",
+   "name": "farní kostel sv. Jana Křtitele",
+   "town": "Frýdek, Frýdek-Místek",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnostmistek.cz/userFiles/ohlasky-1-11-2026.jpg",
+   "source_date": "ohlášky Místek 1. 11. 2026",
+   "note": "farnostfrydek.cz stále 403 (Cloudflare); nic o kostele sv. Jana Křtitele.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000545920074",
+   "name": "filiální kostel sv. Šimona a Judy",
+   "town": "Lískovec, Frýdek-Místek",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostfrydek.cz stále 403 (Cloudflare).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50002114377606",
+   "name": "farní kostel sv. Anny",
+   "town": "Město, Havířov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnosthavirov.cz stále 403 (Cloudflare); WebSearch nic pro 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50004011355510",
+   "name": "farní kostel sv. Jana Křtitele",
+   "town": "Prostřední Suchá, Havířov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnosthavirov.cz stále 403 (Cloudflare); WebSearch nic pro 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "500098886534",
+   "name": "farní kostel sv. Markéty",
+   "town": "Bludovice, Havířov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnosthavirov.cz stále 403 (Cloudflare); WebSearch nic pro 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60001931991337",
+   "name": "farní kostel Povýšení sv. Kříže Karlovy Vary - Rybáře",
+   "town": "Rybáře, Karlovy Vary",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnost-rybare.cz/wp-content/uploads/2026/10/RYBKA-26-listopad-1.pdf",
+   "source_date": "zpravodaj Rybka, listopad 2026",
+   "note": "1. 11. 9:00 odpovídá; 2. 11. 18:00, web nic.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "60002346474070",
+   "name": "farní kostel sv. Maří Magdalény Karlovy Vary",
+   "town": "Karlovy Vary",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnost-kv.cz má jen stálý pořad a novinky z 2021; žádný 2026 zdroj.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60002121320247",
+   "name": "farní kostel sv. Ondřeje (řeckokatolický) Karlovy Vary",
+   "town": "Karlovy Vary",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: reckokatolikkv.estranky.cz stále „Stránky jsou blokovány“; jiný 2026 zdroj nenalezen.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60002359536100",
+   "name": "filiální kostel sv. Kateřiny Olšová Vrata",
+   "town": "Olšová Vrata, Karlovy Vary",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnost-rybare.cz/wp-content/uploads/2026/10/RYBKA-26-listopad-1.pdf",
+   "source_date": "zpravodaj Rybka, listopad 2026",
+   "note": "Úplný měsíční rozpis farností Rybáře a Stanovice: Olšová Vrata 1. a 2. 11. bez mše (až 8. 11. v 15:00); web také nic.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "5000701667328",
+   "name": "farní kostel Povýšení sv. Kříže",
+   "town": "Fryštát, Karviná",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-karvina.cz/docs/ohlasky.pdf",
+   "source_date": "ohlášky 1. 11. 2026",
+   "note": "1. 11. bez časů mší (jen odpolední pobožnosti na hřbitovech). 2. 11. dvě mše ve farním kostele, web neukazuje nic.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "50002769535261",
+   "name": "farní kostel sv. Barbory",
+   "town": "Louky, Karviná",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://farnoststonava.cz/porzadek-nabozenstw-laki-nad-olza/",
+   "source_date": null,
+   "note": "Stránka Ogłoszenia parafialne je prázdná (WP API: žádné příspěvky po 12/2025, žádné PDF ohlášek). Stálý pořad (stránka upravena 2. 3. 2026, nedatovaný): 'Niedziela – Msza św. o godz. 7. 30 na przemian w języku czeskim i polskim; Piątek – Msza św. o godz. 15. 30' – neděle 7:30 vs. 8:30 na webu; o pondělí 2. 11. nic. Web na 2. 11. nic neukazuje – nelze potvrdit ani vyvrátit.",
+   "scope": "lead",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50004238997267",
+   "name": "farní kostel sv. Petra z Alkantary",
+   "town": "Doly, Karviná",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnost-karvina.cz/docs/ohlasky.pdf",
+   "source_date": "ohlášky 1. 11. 2026",
+   "note": "Ohlášky 1. 11. 2026 Doly nezmiňují; 1. 11. bez časů.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003373078368",
+   "name": "filiální kostel sv. Marka",
+   "town": "Fryštát, Karviná",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-karvina.cz/docs/ohlasky.pdf",
+   "source_date": "ohlášky 1. 11. 2026",
+   "note": "Ohlášky výslovně uvádějí, že obě pondělní mše (vč. polské 8:00, obvykle u sv. Marka) budou v hlavní lodi farního kostela Povýšení sv. Kříže, ne u sv. Marka. 1. 11. (řeckokat. liturgie 8:00) nepokryto.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "50001236725907",
+   "name": "farní kostel Nanebevzetí P. Marie",
+   "town": "Michálkovice, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: žádný 2026 zdroj (bez webu / web bez ohlášek); WebSearch nic.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50004252208943",
+   "name": "farní kostel Neposkvrněného početí P. Marie",
+   "town": "Přívoz, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnostprivoz.cz stále 403 (Cloudflare).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003581604635",
+   "name": "farní kostel sv. Anny",
+   "town": "Polanka nad Odrou, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: žádný 2026 zdroj (bez webu / web bez ohlášek); WebSearch nic.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000571536838",
+   "name": "farní kostel sv. Františka a Viktora",
+   "town": "Hrušov, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: žádný 2026 zdroj (bez webu / web bez ohlášek); WebSearch nic.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000738128641",
+   "name": "farní kostel sv. Josef, P. Marie Karmel.",
+   "town": "Slezská Ostrava, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Bez vlastního webu; farnostmostrava.cz za WEDOS (401). doo.cz uvádí jen 1. 11. 15:30 pobožnost za zemřelé na Slezské Ostravě (bez mše).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000500450288",
+   "name": "farní kostel sv. Kateřiny Alexandrijské, panny a mučednice",
+   "town": "Hrabová, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: žádný 2026 zdroj (bez webu / web bez ohlášek); WebSearch nic.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50002171140296",
+   "name": "farní kostel sv. Mikuláše",
+   "town": "Poruba, Ostrava",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.fporuba.cz/ohlasky",
+   "source_date": "ohlášky 1. 11. 2026 (Slavnost Všech svatých)",
+   "note": "2. 11. Poruba 6:30 a 18:00; web má jen 18:00. 1. 11. časy neuvedeny.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "50002289288737",
+   "name": "farní kostel sv. Pavla, apoštola",
+   "town": "Vítkovice, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: žádný 2026 zdroj (bez webu / web bez ohlášek); WebSearch nic.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000332839200",
+   "name": "farní kostel Všech svatých",
+   "town": "Hošťálkovice, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: rkfhostalkovice.cz (rámy) bez ohlášek/pořadu pro 1.–2. 11. 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000911872019",
+   "name": "filiální kostel sv. Hedviky",
+   "town": "Krásné Pole, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnostpustkovec.cz/bohosluzby-krasne-pole/",
+   "source_date": null,
+   "note": "Pro Krásné Pole stále jen říjnový rozpis (obrázek Bohosluzby-rijen); 1.–2. 11. neuvedeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003324086625",
+   "name": "filiální kostel sv. Václava",
+   "town": "Moravská Ostrava, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnostmostrava.cz za WEDOS ochranou (401); neobcházeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000784905915",
+   "name": "kaple sv. Urbana",
+   "town": "Lhotka, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: rkfhostalkovice.cz (rámy) bez ohlášek/pořadu pro 1.–2. 11. 2026.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50002208677124",
+   "name": "katedrála Božského Spasitele",
+   "town": "Moravská Ostrava, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.doo.cz/",
+   "source_date": "kalendář biskupa (doo.cz), stav 1. 11. 2026",
+   "note": "farnostmostrava.cz za WEDOS ochranou (401). Kalendář biskupa na doo.cz: „2. 11. 2026 od 18:00 do 19:00 Památka zemřelých v ostravské katedrále“ – potvrzuje 18:00, ale úplný pořad dne (7:30) nelze ověřit.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003200623454",
+   "name": "rektorátní kostel sv. Josefa",
+   "town": "Moravská Ostrava, Ostrava",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: farnostmostrava.cz za WEDOS ochranou (401); neobcházeno.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "6000845381875",
+   "name": "bohoslužebné místo Fakultní nemocnice Bory",
+   "town": "Jižní Předměstí, Plzeň",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Ohlášky Bory 25. 10. 2026 nemocniční kapli nezmiňují; novější nezveřejněny.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60002592350969",
+   "name": "bohoslužebné místo hospic sv. Lazara Plzeň",
+   "town": "Východní Předměstí (Plzeň 2-Slovany), Plzeň",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Rozpis dominikánů (plzen.op.cz) pro 1. a 2. 11. uvádí jen mše v kostele (1. 11. 9:00, 10:30, 18:00; 2. 11. 18:00); hospic v rozpisu vůbec nefiguruje, takže nepokrývá. Web také nic.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "6000108822207",
+   "name": "bohoslužebné místo KVK centrum Plzeň",
+   "town": "Skvrňany, Plzeň",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: fma.cz ohlášky stále končí 2021; žádný 2026 zdroj.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60001289900425",
+   "name": "farní kostel sv. Mikuláše, (řeckokatolický) Plzeň",
+   "town": "Plzeň",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostbartolomej.cz/documents/202610/tajixuzgtn.pdf",
+   "source_date": "Věstník plzeňských farností 11/2026 (publ. 31. 10. 2026)",
+   "note": "1. 11.: liturgie 9:30 a 11:00, web ukazuje 9:00/10:30 – ranní časy už nelze opravit (pravidlo ≥12:00), proto bez korekce pro 1. 11. 2. 11.: žádná liturgie v listopadovém pořádku, web nic neukazuje = sedí. Trvalá chyba registru: neděle 09:30/11:00 (i 8., 15., 22., 29. 11.), ne 09:00/10:30; St 4. 11. a 11. 11. v 18:00 (registr St 18:30).",
+   "scope": "lead",
+   "status": "wrong",
+   "fixed": false
+  },
+  {
+   "id": "6000810448326",
+   "name": "kaple bl. Hroznaty Plzeň",
+   "town": "Vnitřní Město, Plzeň",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Kalendář farnostbartolomej.cz pro 1.–2. 11. kapli bl. Hroznaty neuvádí (řeckokat. liturgie tam ve St/1. pá jen dle stálého pořadu); web nic – nic k ověření.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60003695485881",
+   "name": "kaple Navštívení Panny Marie Plzeň-Litice",
+   "town": "Litice (Plzeň 6-Litice), Plzeň",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.koinonia.cz/",
+   "source_date": null,
+   "note": "1. 11. stále jen rozpis září–říjen 2026; listopad nezveřejněn.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60001377147911",
+   "name": "kaple Pastoračního centra (v 1. patře budovy)",
+   "town": "Skvrňany, Plzeň",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "1. 11.: fma.cz ohlášky stále končí 2021; žádný 2026 zdroj.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "6000625607785",
+   "name": "kaple sv. Františka z Assisi (domeček) Plzeň",
+   "town": "Plzeň",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostbartolomej.cz/documents/202610/tajixuzgtn.pdf",
+   "source_date": "Věstník plzeňských farností 11/2026 (publ. 31. 10. 2026)",
+   "note": "Listopadový rozpis 2026: pondělní mše v Domečku v 18:00, ne 17:30. Pro 2. 11. farnost zvlášť ohlašuje mši 15:00 Bolevec (hřbitovní kaple) a 18:00 Roudná (kostel Všech svatých); Domeček 2. 11. výslovně nezmiňuje – 17:30 jistě neplatí, 18:00 jen dle pravidelného listopadového rozpisu (souběh s Roudnou v 18:00, ověřit).",
+   "scope": "lead",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "50002888523502",
+   "name": "farní kostel sv. Cyrila a Metoděje",
+   "town": "Chlebovice, Frýdek-Místek",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://drive.google.com/file/d/1kPb9lrxOrqnCzlOX6OazR2CdzAmWxqui/view",
+   "source_date": "pořad z 28. 10. (1. 11. 9:00 potvrzeno)",
+   "note": "2. 11.: web farnosti /bohosluzby/ vyžaduje JavaScript, novější pořad nedostupný; https má neplatný řetězec certifikátů. 1. 11. 9:00 potvrzeno dříve.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000573662622",
+   "name": "farní kostel sv. Jana Boska",
+   "town": "Šumbark, Havířov",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostsumbark.cz/ohlasky-1-listopadu-slavnost-vsech-svatych/",
+   "source_date": "ohlášky 1. listopadu 2026 (publ. 29. 10. 2026)",
+   "note": "2. 11. mše v 16:30, web nic. 1. 11. podle ohlášek 25. 10. 8:30 a 10:15 odpovídá.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "50002641496945",
+   "name": "farní kostel Krista Krále",
+   "town": "Svinov, Ostrava",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnostsvinov.cz/ohlasky/",
+   "source_date": "ohlášky neděle 1. listopadu 2026",
+   "note": "1. 11. odpovídá; 2. 11. 7:00 a 17:30, web nic.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "50001620087447",
+   "name": "farní kostel Nanebevzetí P. Marie",
+   "town": "Třebovice, Ostrava",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "http://www.farnosttrebovice.cz/wp-content/uploads/2026/10/%E2%80%8E44_O-I_Slavnost_vsech_svatych.%E2%80%8E1-778x1024.jpeg",
+   "source_date": "pořad 1.–8. 11. 2026 (Slavnost Všech svatých)",
+   "note": "Obrázek ohlášek na stránce Aktuální bohoslužby a ohlášky.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "50003131450377",
+   "name": "farní kostel sv. Cyrila a Metoděje",
+   "town": "Pustkovec, Ostrava",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostpustkovec.cz/wp-content/uploads/2026/10/Porad-bo26-page-0011.jpg",
+   "source_date": "pořad v týdnu od 1.11.2026 do 8.11.2026",
+   "note": "",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "5000850895617",
+   "name": "farní kostel sv. Marka, evangelisty",
+   "town": "Heřmanice, Ostrava",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnosthermanice.cz/porad_bohosluzeb",
+   "source_date": "datovaný pořad 31.10.–29.11.2026",
+   "note": "Datovaný pořad (uvádí i všední mše, např. 1. pátek) nemá na 2. 11. žádnou mši; web také nic. Shoda, ale 2. 11. jen z absence.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "50001759715869",
+   "name": "kaple sv. Petra a Pavla",
+   "town": "Antošovice, Ostrava",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-silherovice.cz/media/posts/2/responsive/OZN-45.26-Vsech-svatych-A-01.11.2026-1-md.jpg",
+   "source_date": "Farní oznámení 1. 11. 2026",
+   "note": "A = Antošovice. 1. 11. 7:30 odpovídá; 2. 11. 16:45 v Antošovicích, web nic.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "60004144286998",
+   "name": "farní kostel sv. Jana Nepomuckého Plzeň-Bory",
+   "town": "Jižní Předměstí, Plzeň",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.rkfp.cz/cs/novinky/2026-10-30-nedele-v-mezidobi",
+   "source_date": "ohlášky 25. 10. 2026",
+   "note": "1. 11. jako v neděli (odpovídá). 2. 11. mše na Borech neuvedena; novější ohlášky zatím nejsou.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60003306847512",
+   "name": "farní kostel Všech svatých Plzeň-Roudná",
+   "town": "Severní Předměstí, Plzeň",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://frantiskani-plzen.farnost.cz/?page=kalendarakci",
+   "source_date": "kalendář akcí 2026",
+   "note": "1. 11. 9:00 odpovídá; 2. 11. ani kalendář, ani stránka Týden s naší farností nic neuvádí.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "20006",
+   "name": "bazilika minor Všech svatých, Česká Lípa",
+   "town": "Česká Lípa",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://calendar.google.com/calendar/ical/farnost.ceskalipa%40gmail.com/public/basic.ics",
+   "source_date": "public parish Google calendar (linked from farnostceskalipa.cz), event instance 1. 11. 2026",
+   "note": "Parish calendar (not ohlášky) has a dated 1.11.2026 instance: bazilika 10:00 poutní mše — matches. Nothing at the basilica on 2.11 (site none), but calendar's Mondays aren't filled in yet, so 2.11 not strictly confirmed.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "20008",
+   "name": "filiální kostel Narození Panny Marie, Česká Lípa",
+   "town": "Česká Lípa",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://calendar.google.com/calendar/ical/farnost.ceskalipa%40gmail.com/public/basic.ics",
+   "source_date": "public parish Google calendar, event instance 1. 11. 2026",
+   "note": "1.11 17:30 matches (dated calendar instance).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "20007",
+   "name": "filiální kostel sv. Máří Magdalény, Česká Lípa",
+   "town": "Česká Lípa",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://calendar.google.com/calendar/ical/farnost.ceskalipa%40gmail.com/public/basic.ics",
+   "source_date": "public parish Google calendar",
+   "note": "Calendar: no Mass at sv. Máří Magdaléna on 1.11 (matches site), and no Monday Mass at all on 2.11 (recurring Masses here are Tue–Sat). Site shows 2.11 17:30 — not supported by calendar but no explicit announcement either; ohlášky page stale (2012). Possible extra/incorrect row.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40002434709079",
+   "name": "farní kostel sv. Cyrila a Metoděje ",
+   "town": "České Budějovice 5, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://farnostsuchevrbne.cz: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40004076167711",
+   "name": "farní kostel sv. Jana Nepomuckého ",
+   "town": "České Budějovice 7, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://www.jannepomuckycb.cz/: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "4000321099435",
+   "name": "filiální kostel Božského Srdce Páně ",
+   "town": "České Budějovice 3, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://www.dekanstvicb.cz: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40001918869747",
+   "name": "filiální kostel Panny Marie Královny Andělů ",
+   "town": "České Budějovice 6, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://www.dekanstvicb.cz: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40004083000934",
+   "name": "filiální kostel Panny Marie Růžencové ",
+   "town": "České Budějovice 6, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://www.dekanstvicb.cz: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40001267036903",
+   "name": "filiální kostel sv. Prokopa a sv. Jana Křtitele ",
+   "town": "České Budějovice 3, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://www.dekanstvicb.cz: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40001498870501",
+   "name": "filiální kostel sv. Rodiny ",
+   "town": "České Budějovice 1, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://www.dekanstvicb.cz: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40003163697922",
+   "name": "filiální kostel sv. Václava ",
+   "town": "České Budějovice 3, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://www.dekanstvicb.cz: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40003533219162",
+   "name": "kaple sv. Josefa ",
+   "town": "České Budějovice 3, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://www.dekanstvicb.cz: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40003960606682",
+   "name": "katedrála sv. Mikuláše ",
+   "town": "České Budějovice 1, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://www.dekanstvicb.cz: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40003868814513",
+   "name": "klášterní kostel Obětování Panny Marie ",
+   "town": "České Budějovice 1, České Budějovice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Parish site http://www.dekanstvicb.cz: Cloudflare 'Just a moment' challenge (403) on http and https, re-checked 1 Nov — not bypassed; no other 2026 source found (diocese bcb.cz lists nothing for 1./2.11).",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000388",
+   "name": "děkanský kostel Povýšení sv. Kříže, Děčín",
+   "town": "Děčín",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnost-decin.cz/",
+   "source_date": null,
+   "note": "Žádné datované ohlášky na 1.–2. 11. 2026 (web má jen článek o odpustcích 31. 10. a akci Zapal svíčku bez časů). Homepage má jen stálý pořad 'Mše svaté: Kostel Povýšení Sv. Kříže Po, Út, Čt, Pá - 7.00 hod. St - / So - 7.30 hod, Ne - 9.00 hod.' – pondělí 7:00, web ukazuje 7:30 (registr řádek Po/Čt/So 07:30 zřejmě zastaralý). Bez datovaného zdroje nenavrhuji korekci; silný kandidát na ruční opravu.",
+   "scope": "lead",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000390",
+   "name": "Domov pro seniory (Kamenická), Děčín",
+   "town": "Děčín",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnost-decin.cz (1 Nov) still only the standing schedule (Kostel Povýšení sv. Kříže Po–Pá 7.00, So 7.30, Ne 9.00; sv. Václav a Blažej St 18:00) — undated, doesn't count. NB standing Monday is 7.00 vs site 07:30.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000389",
+   "name": "filiální kostel sv. Václava a Blažeje, Děčín",
+   "town": "Děčín",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnost-decin.cz (1 Nov) still only the standing schedule (Kostel Povýšení sv. Kříže Po–Pá 7.00, So 7.30, Ne 9.00; sv. Václav a Blažej St 18:00) — undated, doesn't count. NB standing Monday is 7.00 vs site 07:30.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "30004150892219",
+   "name": "farní kostel Božského Srdce Páně",
+   "town": "Pražské Předměstí, Hradec Králové",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosthkpp.cz: Cloudflare challenge (403), re-checked 1 Nov. Neighbouring katedrála HK pořad 1.–8. 11. 2026 mentions only cemetery prayers (Kukleny 2.11 16:15, Plotiště 1.11 10:45), no Masses for this parish.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "300047281587",
+   "name": "farní kostel sv. Anny",
+   "town": "Kukleny, Hradec Králové",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosthkpp.cz: Cloudflare challenge (403), re-checked 1 Nov. Neighbouring katedrála HK pořad 1.–8. 11. 2026 mentions only cemetery prayers (Kukleny 2.11 16:15, Plotiště 1.11 10:45), no Masses for this parish.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "30003345693160",
+   "name": "filiální kostel (bývalý farní) sv. Petra, apoštola",
+   "town": "Plotiště nad Labem, Hradec Králové",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosthkpp.cz: Cloudflare challenge (403), re-checked 1 Nov. Neighbouring katedrála HK pořad 1.–8. 11. 2026 mentions only cemetery prayers (Kukleny 2.11 16:15, Plotiště 1.11 10:45), no Masses for this parish.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "30001737240976",
+   "name": "kaple sv. Josefa",
+   "town": "Hradec Králové",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Katedrála HK pořad bohoslužeb 1.–8. 11. 2026 (katedralahradec.cz/porad_bohosluzeb, full week) lists katedrála, Panna Maria and sv. Kliment only — this chapel is not listed at all, so its Masses aren't covered.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "30004267504494",
+   "name": "kaple v Domově U Biřičky",
+   "town": "Nový Hradec Králové, Hradec Králové",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "http://www.antonin.cz/Media/ContentItems/8313_08313/261101-slavnost-vsech-svatych.pdf",
+   "source_date": "ohlášky Slavnost Všech svatých 1. 11. 2026 (publ. 31.10.2026)",
+   "note": "Full parish week lists Domov Na Biřičce Mass only Wed 4.11 14:00; none on 1. or 2.11 — matches site (none).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "3000490312234",
+   "name": "meditační místnost ve Fakultní nemocnici",
+   "town": "Nový Hradec Králové, Hradec Králové",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Katedrála HK pořad bohoslužeb 1.–8. 11. 2026 (katedralahradec.cz/porad_bohosluzeb, full week) lists katedrála, Panna Maria and sv. Kliment only — this chapel is not listed at all, so its Masses aren't covered.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000333",
+   "name": "arciděkanský kostel sv. Antonína Velikého, Liberec",
+   "town": "Liberec",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://admin-storage.munipolis.com/arcidekanstvi-lbc/page-builder/media/d78d5a7c-48a4-4221-8fea-822ed4da5ad6.jpg",
+   "source_date": "pořad '25. října - 2. listopadu 2026' (image on https://arcidekanstvi-lbc.cz/p/aktualni-bohosluzby-a-oznameni; https host reachable, the http one is WAF-blocked)",
+   "note": "1.11 9:00/18:00 match. 2.11: two Masses (9:00, 18:00) at sv. Antonín; site shows none.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "2000547",
+   "name": "filiální kostel Nalezení sv. Kříže, Liberec",
+   "town": "Liberec",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://admin-storage.munipolis.com/arcidekanstvi-lbc/page-builder/media/d78d5a7c-48a4-4221-8fea-822ed4da5ad6.jpg",
+   "source_date": "pořad '25. října - 2. listopadu 2026'",
+   "note": "Latin arciděkanství table never lists Nalezení sv. Kříže (incl. regular Sundays), so the 10:00 Greek-Catholic liturgy isn't covered.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000336",
+   "name": "kaple Panny Marie U Obrázku, Liberec",
+   "town": "Liberec",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://admin-storage.munipolis.com/arcidekanstvi-lbc/page-builder/media/d78d5a7c-48a4-4221-8fea-822ed4da5ad6.jpg",
+   "source_date": "pořad '25. října - 2. listopadu 2026' (arciděkanství Liberec)",
+   "note": "Full arciděkanství table (incl. DD, hospic) has no Mass at kaple U Obrázku on 1. or 2.11 — matches site (none).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "30002087262690",
+   "name": "farní kostel Panny Marie Sedmibolestné",
+   "town": "Bílé Předměstí (Pardubice I), Pardubice",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Greek-catholic parish webnode site has no 2026 content (© 2012-2021); Facebook page needs login. No source.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "30001326639880",
+   "name": "filiální kostel (bývalý farní) sv. Jana Křtitele",
+   "town": "Zelené Předměstí (Pardubice I), Pardubice",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnost-pardubice.cz/bohosluzby/aktualni-bohosluzby/",
+   "source_date": "Bohoslužby v týdnu od 1. 11. do 8. 11. 2026 (farnost-pardubice.cz, ohlášky 29. 10. 2026)",
+   "note": "Weekly list of all parish Masses: 2.11 at sv. Jan Křtitel 6:30 and 12:00; site has only 12:00 (weekly row 06:30 excludes Monday). No Mass here 1.11 (matches).",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "1000658",
+   "name": "farní kostel sv. Jakuba Staršího",
+   "town": "Příbram",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostpribram.cz: Cloudflare challenge (403) on 1 Nov; no other 2026 source.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "1000663",
+   "name": "poutní bazilika Nanebevzetí Panny Marie, Příbram-Svatá Hora",
+   "town": "Příbram",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://farnost-svatahora.cz/storage/pages/attachments/01M5SW67603Y41S26JZJ9AT08F.pdf",
+   "source_date": "Rozpis celebrujících kněží 26. 10. – 1. 11. 2026 (ohlášky 25. 10. 2026)",
+   "note": "Parish moved to farnost-svatahora.cz (registry's svata-hora.cz now redirects to a rental site). 1.11 Masses 9:00/11:00/17:00 match. Week with 2.11 not yet posted — 2.11 (9:00, 17:00) unverified.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "2000553",
+   "name": "děkanský kostel sv. Jana Křtitele, Teplice",
+   "town": "Teplice",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnost-teplice.cz/nadchazejici_udalosti",
+   "source_date": "parish calendar (auto-generated from regular schedule, 1.11.2026–31.8.2027)",
+   "note": "Teplice parish has a newer site farnost-teplice.cz (registry points to salesianiteplice.cz). Its pořad says 'Ohlášky doposud nebyly zveřejněny'. Calendar is generated from the standing schedule (not an announcement); it lists no Monday Mass on 2.11 anywhere and fits the site. 1.11 08:30 already past at fetch time.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000135",
+   "name": "farní kostel Nejsvětějšího Srdce Páně, Teplice-Trnovany",
+   "town": "Teplice",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnost-teplice.cz/nadchazejici_udalosti",
+   "source_date": "parish calendar (auto-generated from regular schedule)",
+   "note": "Calendar (standing-schedule based, not ohlášky) shows TT 9:30 and 18:00 on 1.11 and nothing on 2.11 — consistent with site; ohlášky not published.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000136",
+   "name": "farní kostel sv. Alžběty Uherské, Teplice-Šanov",
+   "town": "Teplice",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnost-teplice.cz/nadchazejici_udalosti",
+   "source_date": "parish calendar (auto-generated from regular schedule)",
+   "note": "Calendar (standing-schedule based) shows Šanov 10:30 on 1.11, nothing on 2.11 — consistent with site; no ohlášky published.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "20002174",
+   "name": "komunitní kaple, Živý dům Teplice",
+   "town": "Teplice",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnost-teplice.cz/nadchazejici_udalosti",
+   "source_date": "parish calendar",
+   "note": "Živý dům chapel not in parish calendar for 1./2.11; site shows nothing. No ohlášky published.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "200049",
+   "name": "Domov pro seniory Krásné Březno, Ústí nad Labem",
+   "town": "Ústí nad Labem",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Served from Střekov/neighbouring parish without a findable website; farnost-usti.cz 2026 ohlášky (25. 10.) don't mention it. No 2026 source.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "200048",
+   "name": "farní kostel sv. Floriána, Ústí nad Labem-Krásné Březno",
+   "town": "Ústí nad Labem",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Served from Střekov/neighbouring parish without a findable website; farnost-usti.cz 2026 ohlášky (25. 10.) don't mention it. No 2026 source.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000779",
+   "name": "farní kostel sv. Josefa, Ústí nad Labem-Předlice",
+   "town": "Ústí nad Labem",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Served from Střekov/neighbouring parish without a findable website; farnost-usti.cz 2026 ohlášky (25. 10.) don't mention it. No 2026 source.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "200050",
+   "name": "farní kostel sv. Šimona a Judy, Ústí nad Labem-Mojžíř",
+   "town": "Ústí nad Labem",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Served from Střekov/neighbouring parish without a findable website; farnost-usti.cz 2026 ohlášky (25. 10.) don't mention it. No 2026 source.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000797",
+   "name": "klášterní kostel sv. Vojtěcha, Ústí nad Labem",
+   "town": "Ústí nad Labem",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Greek-Catholic liturgy; Latin arciděkanství ohlášky (25. 10. 2026) don't cover it; no GC parish source found.",
+   "scope": "sample",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40001054678661",
+   "name": "Domov pro seniory Hvízdal ",
+   "town": "České Budějovice 2, České Budějovice",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://ctyrak.cz/ohlasky/",
+   "source_date": "Rozpis bohoslužeb v týdnu 1. 11. – 8. 11. 2026",
+   "note": "Full weekly rozpis: DD Hvízdal Mass only Sat 7.11 16:00; none on 1. or 2.11 — matches site (none).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "40003232027596",
+   "name": "Domov pro seniory Máj ",
+   "town": "České Budějovice 2, České Budějovice",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://ctyrak.cz/ohlasky/",
+   "source_date": "Rozpis bohoslužeb v týdnu 1. 11. – 8. 11. 2026",
+   "note": "Full weekly rozpis: DD Máj Mass only Sat 7.11 15:00; none on 1. or 2.11 — matches site (none).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "40001185797652",
+   "name": "farní kostel sv. Vojtěcha ",
+   "town": "České Budějovice 2, České Budějovice",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://ctyrak.cz/ohlasky/",
+   "source_date": "Rozpis bohoslužeb v týdnu 1. 11. – 8. 11. 2026",
+   "note": "Full weekly rozpis: 1.11 8:00/10:00/18:00, 2.11 18:00 only — matches site.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "30002964794493",
+   "name": "farní kostel sv. Antonína, poustevníka",
+   "town": "Nový Hradec Králové, Hradec Králové",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "http://www.antonin.cz/Media/ContentItems/8313_08313/261101-slavnost-vsech-svatych.pdf",
+   "source_date": "ohlášky Slavnost Všech svatých 1. 11. 2026 (publ. 31.10.2026)",
+   "note": "Full parish week: sv. Antonín 1.11 8:30, nothing on 2.11 (only 18:30 at sv. Jan Křtitel Na Zámečku) — matches site.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "2000322",
+   "name": "děkanský kostel Nejsvětějšího Srdce Ježíšova, Jablonec nad Nisou",
+   "town": "Jablonec nad Nisou",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "http://www.farnostjablonec.cz/porad_bohosluzeb",
+   "source_date": "Pořad bohoslužeb od 1.11. do 8.11.2026 - 45. týden + ohlášky 1. 11. 2026",
+   "note": "2.11: Masses at 7:00 and 18:00; site lacks 07:00. 1.11 9:30/18:00 match (14:30 Greek-Catholic liturgy not in the Latin pořad, left as is).",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "2000343",
+   "name": "filiální kostel Nejsvětější Trojice, Mšeno nad Nisou",
+   "town": "Jablonec nad Nisou",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "http://www.farnostjablonec.cz/porad_bohosluzeb",
+   "source_date": "Pořad bohoslužeb od 1.11. do 8.11.2026 - 45. týden",
+   "note": "Full weekly pořad: Mšeno only Tue 3.11 18:00; nothing on 1. or 2.11 — matches site (none).",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000387",
+   "name": "farní kostel sv. Václava, Kladno-Rozdělov",
+   "town": "Kladno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "http://www.farnostrozdelov.cz",
+   "source_date": "homepage weekly program (26. 10. – 1. 11. 2026)",
+   "note": "1.11 08:30 matches. 2.11 still not announced; only poster 'pondělí 2. listopadu od 16 hodin' candles at the Rozdělov cemetery cross (no Mass). Site's 18:00 on 2.11 unverified.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000384",
+   "name": "filiální kostel Nejsvětějšího Srdce Ježíšova, Kladno-Kročehlavy",
+   "town": "Kladno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostkladno.cz/nadchazejici_porad_bohosluzeb",
+   "source_date": "Pořad bohoslužeb od 2.11. do 8.11.2026 - 45. týden (+ pořad 26.10.–1.11.2026 at https://www.farnostkladno.cz/porad_bohosluzeb)",
+   "note": "Full parish day listing: Kročehlavy on 2.11 only 18:00. Site also shows 08:05 school Mass (rule '3. pondělí v měsíci' — 2.11 is the 1st Monday, so it shouldn't show). 1.11 08:30 matches.",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "1000388",
+   "name": "filiální kostel sv. Mikuláše, Kladno-Švermov",
+   "town": "Kladno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostkladno.cz/nadchazejici_porad_bohosluzeb",
+   "source_date": "Pořady bohoslužeb 26.10.–1.11. and 2.11.–8.11.2026",
+   "note": "1.11 10:30 Hnidousy; nothing on 2.11 — matches.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000389",
+   "name": "filiální kostel sv. Mikuláše, Kladno-Vrapice",
+   "town": "Kladno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostkladno.cz/nadchazejici_porad_bohosluzeb",
+   "source_date": "Pořady bohoslužeb 26.10.–1.11. and 2.11.–8.11.2026",
+   "note": "1.11 8:30 Vrapice; nothing on 2.11 — matches.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "10002821",
+   "name": "Kaple sv. Matky Terezy, Kladno",
+   "town": "Kladno",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostkladno.cz/nadchazejici_porad_bohosluzeb",
+   "source_date": "Pořad bohoslužeb od 2.11. do 8.11.2026 - 45. týden",
+   "note": "Parish site names this chapel 'Kaple sv. Matky Terezy, fara arciděkanství'; 2.11 12:00 Mass there, site shows none. 1.11 none (matches). Page is the 'nadcházející' pořad (warns it may change).",
+   "scope": "sample",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "1000473",
+   "name": "farní kostel sv. Bartoloměje, Kolín",
+   "town": "Kolín",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnostkolin.cz/ohlasky-30-nedele-v-mezidobi-5/",
+   "source_date": "Ohlášky od 25. října do 1. listopadu 2026",
+   "note": "1.11 8:00 matches. 2.11 ohlášky not out. NB: same ohlášky say weekday morning Masses Mon–Sat are 'i nadále' at sv. Bartoloměj (Mon 26.10 8:00 Sv. Bartoloměj), but site puts Monday 08:00 at Nejsv. Trojice and none at Bartoloměj — likely registry outdated, but not dated for 2.11. Parish standing schedule (farnostkolin.cz/bohosluzby, undated) also says 'Pondělí 08:00 Sv. Bartoloměj'.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000474",
+   "name": "filiální kostel Nejsvětější Trojice, Kolín",
+   "town": "Kolín",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnostkolin.cz/ohlasky-30-nedele-v-mezidobi-5/",
+   "source_date": "Ohlášky od 25. října do 1. listopadu 2026",
+   "note": "1.11 18:00 matches. 2.11 not covered; site shows 08:00 here on Monday but parish says morning Masses are at sv. Bartoloměj for now (26.10: 8:00 Bartoloměj, 11:30 Trojice) — 08:00 probably belongs to Bartoloměj; not verifiable for 2.11 by strict rule. Parish standing schedule (farnostkolin.cz/bohosluzby, undated) also says 'Pondělí 08:00 Sv. Bartoloměj'.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000493",
+   "name": "filiální kostel sv. Martina, Zibohlavy",
+   "town": "Kolín",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnostkolin.cz/ohlasky-30-nedele-v-mezidobi-5/",
+   "source_date": "Ohlášky od 25. října do 1. listopadu 2026",
+   "note": "No Zibohlavy Mass on 1.11 — matches site (none); 2.11 not covered.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000475",
+   "name": "filiální kostel sv. Víta, Kolín",
+   "town": "Kolín",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnostkolin.cz/ohlasky-30-nedele-v-mezidobi-5/",
+   "source_date": "Ohlášky od 25. října do 1. listopadu 2026",
+   "note": "1.11 9:30 matches; 2.11 not covered.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "2000334",
+   "name": "filiální kostel sv. Bonifáce, Liberec-Dolní Hanychov",
+   "town": "Liberec",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://rochlice.cz/2026/10/25/ohlasky-na-30-nedeli-v-mezidobi-25-10-2026/",
+   "source_date": "ohlášky 25. 10. 2026 (week to 1. 11.)",
+   "note": "1.11 Hanychov 8:30 matches. 2.11 only Rochlice mentioned (not Hanychov); 1. 11. ohlášky not posted yet. Site shows none on 2.11 — consistent but not explicit.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "30002792090083",
+   "name": "farní kostel sv. Bartoloměje, apoštola",
+   "town": "Zelené Předměstí (Pardubice I), Pardubice",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnost-pardubice.cz/bohosluzby/aktualni-bohosluzby/",
+   "source_date": "Bohoslužby v týdnu od 1. 11. do 8. 11. 2026 (farnost-pardubice.cz, ohlášky 29. 10. 2026)",
+   "note": "1.11 7:00/9:00/19:00 and 2.11 18:00 match.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "300093027632",
+   "name": "farní kostel sv. Václava, mučedníka",
+   "town": "Rosice (Pardubice VII), Pardubice",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnost-pardubice.cz/bohosluzby/aktualni-bohosluzby/",
+   "source_date": "Bohoslužby v týdnu od 1. 11. do 8. 11. 2026 (farnost-pardubice.cz, ohlášky 29. 10. 2026)",
+   "note": "Combined Pardubice+Rosice list: Rosice 1.11 8:00; no Mass in Rosice 2.11 — matches site.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "3000760001274",
+   "name": "filiální kostel (bývalý farní) sv. Jana Nepomuckého",
+   "town": "Lány na Důlku, Pardubice",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnost-pardubice.cz/bohosluzby/aktualni-bohosluzby/",
+   "source_date": "Bohoslužby v týdnu od 1. 11. do 8. 11. 2026 (farnost-pardubice.cz, ohlášky 29. 10. 2026)",
+   "note": "1.11 9:30 Lány na Důlku; none on 2.11 — matches.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "30001419785349",
+   "name": "filiální kostel sv. Jiljí, opata",
+   "town": "Pardubičky, Pardubice",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnost-pardubice.cz/bohosluzby/aktualni-bohosluzby/",
+   "source_date": "Bohoslužby v týdnu od 1. 11. do 8. 11. 2026 (farnost-pardubice.cz, ohlášky 29. 10. 2026)",
+   "note": "1.11 17:00; none on 2.11 — matches.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "30001531273825",
+   "name": "klášterní kostel Zvěstování Panně Marii",
+   "town": "Zelené Předměstí (Pardubice I), Pardubice",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnost-pardubice.cz/bohosluzby/aktualni-bohosluzby/",
+   "source_date": "Bohoslužby v týdnu od 1. 11. do 8. 11. 2026 (farnost-pardubice.cz, ohlášky 29. 10. 2026)",
+   "note": "1.11 10:00; none on 2.11 — matches.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000664",
+   "name": "farní kostel sv. Vojtěcha, Příbram-Březové Hory",
+   "town": "Příbram",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://farnostbrezovehory.eu/wp-content/uploads/2026/10/Porad-bohosluzeb-30.-nedele-v-mezidobi.pdf",
+   "source_date": "farní ohlášení 30. neděle v mezidobí 25. 10. 2026 (týden 26.10.–1.11.)",
+   "note": "1.11 9:00 matches; 1. 11. ohlášení (week incl. 2.11) not posted yet — 2.11 07:30 unverified.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "4000478790638",
+   "name": "farní kostel Proměnění Páně",
+   "town": "Tábor",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "http://www.farnost-tabor.cz/program.pdf",
+   "source_date": "Pořad bohoslužeb od 25. 10. do 1. 11. 2026 - 44. týden",
+   "note": "1.11 9:30 matches. Next week's pořad (with 2.11) not posted yet; only 'prosby … budou čteny při dušičkových bohoslužbách' without times.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "40001479218157",
+   "name": "filiální kostel Narození Panny Marie",
+   "town": "Tábor",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "http://www.farnost-tabor.cz/program.pdf",
+   "source_date": "Pořad bohoslužeb od 25. 10. do 1. 11. 2026 - 44. týden",
+   "note": "1.11 18:00 matches (09:00 Ukrainian GC liturgy not in the RC pořad). 2.11 not covered.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "200064",
+   "name": "Domov pro seniory Dobětice, Ústí nad Labem",
+   "town": "Ústí nad Labem",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "http://www.farnost-usti.cz/farni-ohlasky-z-nedele-25-10-2026/",
+   "source_date": "farní ohlášky z neděle 25. 10. 2026",
+   "note": "No Mass at DS Dobětice on 1.11 — matches site (none). 1. 11. ohlášky not posted yet; 2.11 not covered.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "200063",
+   "name": "Domov pro seniory Severní Terasa, Ústí nad Labem",
+   "town": "Ústí nad Labem",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "http://www.farnost-usti.cz/farni-ohlasky-z-nedele-25-10-2026/",
+   "source_date": "farní ohlášky z neděle 25. 10. 2026",
+   "note": "No Mass at DS Severní Terasa on 1.11 — matches site (none); 2.11 not covered.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "2000778",
+   "name": "farní kostel sv. Václava, Skorotice",
+   "town": "Ústí nad Labem",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "http://www.farnost-usti.cz/farni-ohlasky-z-nedele-25-10-2026/",
+   "source_date": "farní ohlášky z neděle 25. 10. 2026 + pozvánka 30. 10. 2026",
+   "note": "No Mass in Skorotice on 1.11 (matches). 2.11: only a 16:00 cemetery commemoration announced (not stated as Mass) — no Mass to add; not strictly confirmed for 2.11.",
+   "scope": "sample",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "4000837321586",
+   "name": "farní kostel Narození Panny Marie",
+   "town": "pisek",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-pisek.cz/l/listopadove-poboznosti-v-dusickovem-tydnu-2026/",
+   "source_date": "aktualita 01.11.2026 (obrázek „Listopadové pobožnosti v Dušičkovém týdnu 2026“)",
+   "note": "Dušičkový přehled (obrázek tabulky) uvádí v pondělí 2. 11. mši v 18:00 v děkanském kostele; web nemá nic. 1. 11. pro tento kostel neuvádí (tabulka jen mimořádné pobožnosti). Agenda farnosti (pořad bohoslužeb) za Cloudflare.",
+   "scope": "outside",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "40003662982740",
+   "name": "filiální kostel Povýšení sv.  Kříže",
+   "town": "pisek",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnost-pisek.cz/l/listopadove-poboznosti-v-dusickovem-tydnu-2026/",
+   "source_date": "aktualita 01.11.2026",
+   "note": "Dušičkový přehled farnosti kostel Povýšení sv. Kříže nezmiňuje (na 1. 11. tam je jen koncert); plný pořad bohoslužeb (agendafarnosti.cz) je za Cloudflare. Nelze potvrdit ani vyvrátit.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "30002894081173",
+   "name": "farní kostel sv. Petra a Pavla, apoštolů",
+   "town": "trutnov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosttrutnov.cz i farnosttrutnov2.cz za botí zdí (INTERNET CZ „Wait a moment… Enable JavaScript“, 403); jiný datovaný zdroj 2026 nenalezen (web search).",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "30001703208923",
+   "name": "farní kostel sv. Václava, mučedníka",
+   "town": "trutnov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosttrutnov.cz i farnosttrutnov2.cz za botí zdí (INTERNET CZ „Wait a moment… Enable JavaScript“, 403); jiný datovaný zdroj 2026 nenalezen (web search).",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "30001936926843",
+   "name": "farní kostel Narození Panny Marie",
+   "town": "trutnov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosttrutnov.cz i farnosttrutnov2.cz za botí zdí (INTERNET CZ „Wait a moment… Enable JavaScript“, 403); jiný datovaný zdroj 2026 nenalezen (web search).",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70003715701555",
+   "name": "farní kostel sv. Jiří",
+   "town": "kromeriz",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnostkvasice.cz/bohosluzby-a-ohlasky",
+   "source_date": "rozpis bohoslužeb + ohlášky, týden 2026-45 (ohlášky 1. 11. 2026; data z veřejné Google tabulky stránky)",
+   "note": "1. 11. 07:30 sedí. 2. 11. pondělní mše ve Zlámance (17:00) se výslovně ruší.",
+   "scope": "outside",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "70001614328931",
+   "name": "farní kostel Nanebevzetí Panny Marie",
+   "town": "kromeriz",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostkromeriz.cz za Cloudflare (403 „Just a moment…“); web search nic z 2026. Program Mladifestu 2026 (mladifest.cz) uvádí 1. 11. „10:00 Mše svatá“ bez uvedení kostela – nepočítá se.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "7000422193122",
+   "name": "farní kostel Všech svatých",
+   "town": "kromeriz",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostkromeriz.cz za Cloudflare (403 „Just a moment…“); web search nic z 2026. Program Mladifestu 2026 (mladifest.cz) uvádí 1. 11. „10:00 Mše svatá“ bez uvedení kostela – nepočítá se.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70004008045003",
+   "name": "farní kostel sv. Mořice",
+   "town": "kromeriz",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostkromeriz.cz za Cloudflare (403 „Just a moment…“); web search nic z 2026. Program Mladifestu 2026 (mladifest.cz) uvádí 1. 11. „10:00 Mše svatá“ bez uvedení kostela – nepočítá se.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "700039906354",
+   "name": "farní kostel sv. Petra a Pavla ",
+   "town": "kromeriz",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnostkvasice.cz/bohosluzby-a-ohlasky",
+   "source_date": "rozpis bohoslužeb, týdny 2026-44/45 (ohlášky 1. 11. 2026)",
+   "note": "1. 11. 10:30 sedí; 2. 11. v Těšnovicích žádná mše (celý rozpis farnosti uvádí jen Kvasice) – shodné s webem (nic).",
+   "scope": "outside",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "70004122944448",
+   "name": "filiální kostel sv. Jana Křtitele",
+   "town": "kromeriz",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostkromeriz.cz za Cloudflare (403 „Just a moment…“); web search nic z 2026. Program Mladifestu 2026 (mladifest.cz) uvádí 1. 11. „10:00 Mše svatá“ bez uvedení kostela – nepočítá se.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70003557979559",
+   "name": "klášterní kostel Zvěstování Panny Marie - Uherské Hradiště ",
+   "town": "uherske-hradiste",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.frantiskani.uh.cz/ohlasky/",
+   "source_date": "ohlášky 25. 10. 2026 (aktualizováno 24. 10.)",
+   "note": "Ohlášky potvrzují večerní mši 1. 11., ale bez času; veřejný Google kalendář kláštera má jen opakované řady (Ne 7:00 a 18:00, Po 7:30, 2026/27) bez výjimek na 1.–2. 11. – stálý rozpis, nepočítá se. Pořad bohoslužeb farnostuh.cz za Cloudflare.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70001018857804",
+   "name": "farní kostel Narození Panny Marie",
+   "town": "uherske-hradiste",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Farnost UH-Sady nemá v registru web; web search nenašel ohlášky 2026.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70001377899936",
+   "name": "farní kostel sv. Františka Xaverského",
+   "town": "uherske-hradiste",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostuh.cz (vč. porad_bohosluzeb.php) za Cloudflare (403); jiný datovaný zdroj 2026 nenalezen.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "70003607735784",
+   "name": "kaple sv. Anežky České",
+   "town": "uherske-hradiste",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnostkunovice.cz/wp-content/uploads/2026/10/bohosluzby_45.jpg",
+   "source_date": "Pořad bohoslužeb farnosti Kunovice 1. 11. – 8. 11. 2026 (45. týden), na stránce Ohlášky",
+   "note": "1. 11. Míkovice 09:00 sedí; 2. 11. jen Kunovice (K 18:00), v Míkovicích nic – shodné s webem.",
+   "scope": "outside",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "7000328419118",
+   "name": "kaple Panny Marie Růžencové ",
+   "town": "uherske-hradiste",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnostuh.cz (vč. porad_bohosluzeb.php) za Cloudflare (403); jiný datovaný zdroj 2026 nenalezen.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000431978444",
+   "name": "farní kostel Nejsvětějšího Srdce Ježíšova",
+   "town": "cesky-tesin",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosttesin.cz za Cloudflare (403 „Just a moment…“); jiný datovaný zdroj 2026 nenalezen.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003850168402",
+   "name": "filiální kostel sv. Hedviky",
+   "town": "cesky-tesin",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosttesin.cz za Cloudflare (403 „Just a moment…“); jiný datovaný zdroj 2026 nenalezen.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000166886538",
+   "name": "filiální kostel sv. Josefa, Dělníka",
+   "town": "cesky-tesin",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosttesin.cz za Cloudflare (403 „Just a moment…“); jiný datovaný zdroj 2026 nenalezen.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000261633994",
+   "name": "filiální kostel sv. Antonína",
+   "town": "cesky-tesin",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosttesin.cz za Cloudflare (403 „Just a moment…“); jiný datovaný zdroj 2026 nenalezen.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003752212686",
+   "name": "filiální kostel sv. Providentia Dei",
+   "town": "cesky-tesin",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "farnosttesin.cz za Cloudflare (403 „Just a moment…“); jiný datovaný zdroj 2026 nenalezen.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000278",
+   "name": "děkanský kostel Všech svatých, Litoměřice",
+   "town": "litomerice",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01"
+   ],
+   "source": "https://www.farnost-litomerice.cz/clanky/Ohlasky-nedele-25-rijna-2026.html",
+   "source_date": "ohlášky 25. 10. 2026",
+   "note": "1. 11. 09:00 potvrzeno (poutní mše); 18:00 v ohláškách nezmíněno, ale na webu farnosti je mezi 'nejbližšími událostmi' jako pravidelná nedělní (stálá položka). Ohlášky 1. 11. 2026 zatím nevyvěšeny; 2. 11. 18:00 nepotvrzeno (zmíněna jen pobožnost na hřbitově v 15:00, bez mše).",
+   "scope": "outside",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "2000274",
+   "name": "katedrála sv. Štěpána, Litoměřice",
+   "town": "litomerice",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.svaty-stepan.cz/",
+   "source_date": "ohlášky 25. 10. 2026",
+   "note": "Ohlášky 25. 10. říkají 'beze změn' bez časů (nepočítá se – jako obvykle); 2. 11. jen hřbitovní pobožnost 15:00, mše neuvedena. Ohlášky 1. 11. zatím nejsou.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000275",
+   "name": "klášterní kostel sv. Jakuba Staršího, Litoměřice",
+   "town": "litomerice",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnost-litomerice.cz/clanky/Ohlasky-nedele-25-rijna-2026.html",
+   "source_date": "ohlášky 25. 10. 2026",
+   "note": "Ohlášky farnosti tridentskou mši u sv. Jakuba 1. 11. nezmiňují; jiný datovaný zdroj nenalezen.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "2000599",
+   "name": "kaple sv. Zdislavy, Charitní domov sv. Zdislava, Litoměřice",
+   "town": "litomerice",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnost-litomerice.cz/clanky/Ohlasky-nedele-25-rijna-2026.html",
+   "source_date": "ohlášky 25. 10. 2026",
+   "note": "Ohlášky 25. 10. pondělní mši v kapli sv. Zdislavy (2. 11.) nezmiňují; ohlášky 1. 11. zatím nejsou.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50001518652567",
+   "name": "farní kostel Nanebevzetí P. Marie",
+   "town": "novy-jicin",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://drive.google.com/file/d/1KzYAyTdu138NwcADPx6IhmydrP7y90Jh/preview (embedded at https://fnj.cz/ohlasky-farnosti-novy-jicin/)",
+   "source_date": "ohlášky 1. 11. 2026 (pořad bohoslužeb 1.–8. 11. 2026)",
+   "note": "1.11 matches (7:30, 10:00). 2.11: evening Mass 18:00 moved to the parish church (FK) from NT.",
+   "scope": "outside",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "50001548186367",
+   "name": "kaple Bolestné P. Marie Španělská kaple",
+   "town": "novy-jicin",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://drive.google.com/file/d/1KzYAyTdu138NwcADPx6IhmydrP7y90Jh/preview (embedded at https://fnj.cz/ohlasky-farnosti-novy-jicin/)",
+   "source_date": "ohlášky 1. 11. 2026 (pořad bohoslužeb 1.–8. 11. 2026)",
+   "note": "ŠK = Španělská kaple. 1.11 18:30 matches; 2.11 no Mass in ŠK, site shows none.",
+   "scope": "outside",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "50002767305298",
+   "name": "filiální kostel Nejsvětější Trojice",
+   "town": "novy-jicin",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://drive.google.com/file/d/1KzYAyTdu138NwcADPx6IhmydrP7y90Jh/preview (embedded at https://fnj.cz/ohlasky-farnosti-novy-jicin/)",
+   "source_date": "ohlášky 1. 11. 2026 (pořad bohoslužeb 1.–8. 11. 2026)",
+   "note": "NT = Nejsvětější Trojice; its usual Monday 18:00 moves to the parish church on 2.11 (no Mass at NT). Previous week's ohlášky show NT 18:00 on Mon 26.10, so this is a one-off move.",
+   "scope": "outside",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "30002686572911",
+   "name": "farní kostel Nanebevzetí Panny Marie",
+   "town": "havlickuv-brod",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnosthb.cz/Ohlasky/Ohlasky.pdf",
+   "source_date": "Pořad bohoslužeb Havlíčkův Brod 1. – 8. 11. 2026",
+   "note": "1.11 matches (9:00, 18:00). 2.11 the only Mass is 18:00 at sv. Vojtěch, none at NPM.",
+   "scope": "outside",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "30004136579885",
+   "name": "společenská místnost v domově pro seniory - Reynkova ",
+   "town": "havlickuv-brod",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnosthb.cz/Ohlasky/Ohlasky.pdf",
+   "source_date": "Pořad bohoslužeb Havlíčkův Brod 1. – 8. 11. 2026",
+   "note": "Parish pořad bohoslužeb 1.–8. 11. lists only NPM and sv. Vojtěch; the Reynkova senior home Sunday 15:00 is not mentioned either way.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "3000146908370",
+   "name": "farní kostel Nanebevzetí Panny Marie",
+   "town": "chrudim",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-chrudim.cz/bohosluzby.php",
+   "source_date": "Bohoslužby tohoto týdne, 1.–8. 11. 2026 (web farnosti, ohlášky z neděle 1. 11. 2026)",
+   "note": "NPM 1.11 8:30, 2.11 18:00 — matches.",
+   "scope": "outside",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "30001655217931",
+   "name": "filiální kostel sv. Kateřiny, panny a mučednice",
+   "town": "chrudim",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-chrudim.cz/bohosluzby.php",
+   "source_date": "Bohoslužby tohoto týdne, 1.–8. 11. 2026 (web farnosti, ohlášky z neděle 1. 11. 2026)",
+   "note": "Sv. Kateřina 1.11 18:00 matches; no Mass there on 2.11, site shows none.",
+   "scope": "outside",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "3000907797062",
+   "name": "kaple na faře",
+   "town": "chrudim",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-chrudim.cz/bohosluzby.php",
+   "source_date": "Bohoslužby tohoto týdne, 1.–8. 11. 2026 (web farnosti, ohlášky z neděle 1. 11. 2026)",
+   "note": "Weekly parish listing gives all Masses for 2.11; the 18:00 is in NPM (main church, with choir), not the fara chapel. Sv. Michael / Sv. Kříž Masses are other churches not in this input.",
+   "scope": "outside",
+   "status": "wrong",
+   "fixed": true
+  },
+  {
+   "id": "40003712842820",
+   "name": "farní kostel Panny Marie Bolestné",
+   "town": "strakonice",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-strakonice.cz/wp-content/uploads/2026/10/Bohosluzbyamodlitbyzazemrele-2026.doc (post https://www.farnost-strakonice.cz/bohosluzby-a-modlitby-za-zemrele-ve-strakonicich-2026/, 26. 10. 2026); also https://www.farnost-strakonice.cz/kalendar-bohosluzeb/",
+   "source_date": "Bohoslužby a modlitby za zemřelé ve Strakonicích 2026 (posted 26. 10. 2026) + parish Google calendar Nov 2026",
+   "note": "Podsrp 1.11 8:00 matches; no Mass at Podsrp on 2.11 (doc + calendar), site shows none.",
+   "scope": "outside",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "40003148089774",
+   "name": "farní kostel sv. Markéty",
+   "town": "strakonice",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-strakonice.cz/wp-content/uploads/2026/10/Bohosluzbyamodlitbyzazemrele-2026.doc (post https://www.farnost-strakonice.cz/bohosluzby-a-modlitby-za-zemrele-ve-strakonicich-2026/, 26. 10. 2026); also https://www.farnost-strakonice.cz/kalendar-bohosluzeb/",
+   "source_date": "Bohoslužby a modlitby za zemřelé ve Strakonicích 2026 (posted 26. 10. 2026) + parish Google calendar Nov 2026",
+   "note": "sv. Markéta 1.11 9:30 matches; 2.11 the only Strakonice Mass is 16:30 at sv. Václav; calendar has nothing at Markéta on 2.11 (next 3.11 17:30).",
+   "scope": "outside",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "4000712934772",
+   "name": "filiální kostel sv. Václava",
+   "town": "strakonice",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-strakonice.cz/wp-content/uploads/2026/10/Bohosluzbyamodlitbyzazemrele-2026.doc (post https://www.farnost-strakonice.cz/bohosluzby-a-modlitby-za-zemrele-ve-strakonicich-2026/, 26. 10. 2026); also https://www.farnost-strakonice.cz/kalendar-bohosluzeb/",
+   "source_date": "Bohoslužby a modlitby za zemřelé ve Strakonicích 2026 (posted 26. 10. 2026) + parish Google calendar Nov 2026",
+   "note": "2.11 Dušičky Mass 16:30 at sv. Václav (cemetery church) missing on site. 1.11: site shows 12:00 (weekly row flagged irregular), but neither the Dušičky list nor the parish calendar (which has no Sunday Masses at sv. Václav in November at all) has it — drop. | held back: source behind a bot wall (466) for the reviewer",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "40001179489202",
+   "name": "filiální kostel sv. Prokopa",
+   "town": "strakonice",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnost-strakonice.cz/kalendar-bohosluzeb/",
+   "source_date": "parish Google calendar, listopad 2026",
+   "note": "1.11 17:30 matches (calendar; the Dušičky doc lists only morning Masses for 1.11). No Mass at sv. Prokop on 2.11.",
+   "scope": "outside",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "60003960668214",
+   "name": "filiální kostel Neposkvrněného početí Panny Marie a sv. Ignáce (jezuitský) Klatovy",
+   "town": "klatovy",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnostklatovy.cz/wp-content/uploads/2026/10/dusicky_2026.pdf (post https://farnostklatovy.cz/2026/10/dusickove-poboznosti/, 26. 10. 2026)",
+   "source_date": "Rozpis bohoslužeb od soboty 31. října do úterý 3. listopadu 2026",
+   "note": "PDF says only 'KLATOVY', not which church; the parish's own standing table (farnostklatovy.cz/bohosluzby-klatovske-farnosti/) puts Sunday 10:00 in the Jesuit church and 18:00 in the děkanský, so 10:00 here matches. No 2.11 Mass in the Jesuit church per that split; site shows none.",
+   "scope": "outside",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "60003466849742",
+   "name": "farní kostel Narození Panny Marie Klatovy",
+   "town": "klatovy",
+   "priority": 1,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnostklatovy.cz/wp-content/uploads/2026/10/dusicky_2026.pdf (post https://farnostklatovy.cz/2026/10/dusickove-poboznosti/, 26. 10. 2026)",
+   "source_date": "Rozpis bohoslužeb od soboty 31. října do úterý 3. listopadu 2026",
+   "note": "CAUTION: PDF names only 'KLATOVY', not the church. Attributed to the děkanský (Narození PM) church because the parish table has all Klatovy weekday Masses and Sun 18:00 there. 1.11 18:00 matches; 2.11 adds an extra 17:00 Mass (Mondays normally only 7:30). If the orchestrator wants a named church, treat 2.11 as unverifiable. | held back: PDF says only \"KLATOVY\", church not named",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60004225777632",
+   "name": "filiální kostel sv. Václava Kydliny",
+   "town": "klatovy",
+   "priority": 1,
+   "days_checked": [],
+   "source": "https://www.farnostplanice.cz/clanky/bohosluzby.html",
+   "source_date": null,
+   "note": "Plánice parish site has only an undated standing schedule (NEDĚLE … 11.00 Kydliny) and farní listy from 2018; nothing for 2026. Klatovy Dušičky PDF does not cover Kydliny.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "5000683596230",
+   "name": "farní kostel sv. Martina",
+   "town": "krnov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Latest ohlášky on farnostkrnov.cz are for 11.–18. 10. 2026 (posted 10. 10.); nothing for 25. 10. or 1. 11. week, no Dušičky post. Web search found nothing 2026.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003886509820",
+   "name": "rektorátní kostel Panny Marie Sedmibolestné poutní chrám",
+   "town": "krnov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Latest ohlášky on farnostkrnov.cz are for 11.–18. 10. 2026 (posted 10. 10.); nothing for 25. 10. or 1. 11. week, no Dušičky post. Web search found nothing 2026.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50004026231769",
+   "name": "rektorátní kostel Narození Panny Marie klášter minoritů",
+   "town": "krnov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Latest ohlášky on farnostkrnov.cz are for 11.–18. 10. 2026 (posted 10. 10.); nothing for 25. 10. or 1. 11. week, no Dušičky post. Web search found nothing 2026.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "50003089146140",
+   "name": "farní kostel sv. Benedikta",
+   "town": "krnov",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Krnov-Kostelec (sv. Benedikt) has no web of its own; farnostkrnov.cz ohlášky stop at 11.–18. 10. 2026. Nothing for 2026 Dušičky found.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "30003180476548",
+   "name": "farní kostel Nalezení svatého kříže",
+   "town": "havlickuv-brod",
+   "priority": 1,
+   "days_checked": [],
+   "source": null,
+   "source_date": null,
+   "note": "Farnost Svatý Kříž (near Havlíčkův Brod) has no web in registry; not in the HB pořad bohoslužeb 1.–8. 11. 2026; web search found nothing 2026.",
+   "scope": "outside",
+   "status": "unverifiable",
+   "fixed": false
+  },
+  {
+   "id": "60002727640371",
+   "name": "filiální kostel Nanebevzetí Panny Marie, (u františkánů) Plzeň",
+   "town": "Plzeň",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.farnostbartolomej.cz/news/383-dusicky-2026",
+   "source_date": "aktualita Dušičky 2026, publ. 1. 11. 2026 (+ Věstník 11/2026)",
+   "note": "Časy 12:00 a 17:00 sedí. 12:00 je MŠE sv. (ne bohoslužba slova): Věstník 11/2026 posouvá bohoslužbu slova na 2. pondělí (9. 11.): 'C) — 2. pondělí v měsíci (9. 11.) bohoslužba slova se svatým přijímáním'. Poznámka v registru ('1. pondělí … pouze bohoslužba slova') je pro 2. 11. mylná – zvážit poznámku/typ. 1. 11.: Věstník – Ne 8:00, 10:30 vietnamsky, 20:00 = sedí.",
+   "scope": "lead",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "10001",
+   "name": "katedrála sv. Víta, Václava a Vojtěcha, Praha-Hradčany",
+   "town": "Praha 1",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/",
+   "source_date": "kalendář bohoslužeb katedrály, listopad 2026 (staženo 1. 11. 2026)",
+   "note": "Mše sedí oba dny (1. 11.: 8:30, 10:00; 2. 11.: 7:00, 18:00). Jen k nahlášení: web ukazuje 1. 11. v 17:00 nešpory (uncertain), kalendář katedrály na 1. 11. žádné nešpory nemá (8. a 15. 11. ano – 'Kapitulní zpívané nešpory' 17:00). Nešpory nejsou mše – bez korekce; případně skrýt 17:00 pro 1. 11. 2026. 7. 11. v 18:00 'Dušičkové hudební nešpory'.",
+   "scope": "lead",
+   "status": "confirmed",
+   "fixed": false
+  },
+  {
+   "id": "1000110",
+   "name": "farní kostel sv. Anežky České a sv. patronů českých, Praha-Spořilov",
+   "town": "Praha 4",
+   "priority": 2,
+   "days_checked": [
+    "2026-11-01",
+    "2026-11-02"
+   ],
+   "source": "https://farnost-sporilov.cz/ohlasky/Oznamy_2026_11_01.doc",
+   "source_date": "ohlášky Neděle 1. listopadu 2026 (doc uložen 31. 10. 2026)",
+   "note": "2. 11.: mše 18:00 = sedí s webem. 1. 11.: web ukazuje jen 10:30, chybí 8:30 – ranní, už nelze opravit (jen hlášení). Pozor trvale: neděle 8:30 v registru/na webu chybí (týká se i dalších nedělí; 8. 11. pouť – mše 10:30 s biskupem Baxantem).",
+   "scope": "lead",
+   "status": "wrong",
+   "fixed": false
+  }
+ ]
+}
