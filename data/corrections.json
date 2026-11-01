@@ -1686,6 +1686,123 @@
    "source_date": "Věstník plzeňských farností 11/2026 (publ. 31. 10. 2026)",
    "quote": "Rozpis pravidelných bohoslužeb PONDĚLÍ • mše sv. v 18 hod. v Domečku … Pořad pravidelných bohoslužeb — listopad 2026 … Domeček — Komenského ul. 17 [PO] 18:00",
    "checked": "2026-11-01"
+  },
+  {
+   "id": "4000837321586",
+   "church": "farní kostel Narození Panny Marie",
+   "town": "pisek",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnost-pisek.cz/l/listopadove-poboznosti-v-dusickovem-tydnu-2026/",
+   "source_date": "aktualita 01.11.2026 (obrázek „Listopadové pobožnosti v Dušičkovém týdnu 2026“)",
+   "quote": "2.11. (pondělí) | 18.00 | děkanský kostel Narození Panny Marie v Písku | mše sv.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "70003715701555",
+   "church": "farní kostel sv. Jiří",
+   "town": "kromeriz",
+   "date": "2026-11-02",
+   "drop": [
+    "17:00"
+   ],
+   "source": "https://farnostkvasice.cz/bohosluzby-a-ohlasky",
+   "source_date": "rozpis bohoslužeb + ohlášky, týden 2026-45 (ohlášky 1. 11. 2026; data z veřejné Google tabulky stránky)",
+   "quote": "1.11. Neděle | Slavnost Všech svatých | 7,30 Zlámanka – Za + Františku a Augustina Skácelovy … | 2.11. Pondělí | Vzpomínka na všechny věrné zemřelé | 18,00 Kvasice - Za všechny + | 18,55 Kvasice - Dušičková pobožnost … Změna mše sv.: V pondělí 2. listopadu nebude mše sv. ve Zlámance, ale v Kvasicích v hřbitovním kostele v 18,00 hodin z důvodu dušičkové pobožnosti.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "50001518652567",
+   "church": "farní kostel Nanebevzetí P. Marie",
+   "town": "novy-jicin",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://drive.google.com/file/d/1KzYAyTdu138NwcADPx6IhmydrP7y90Jh/preview (embedded at https://fnj.cz/ohlasky-farnosti-novy-jicin/)",
+   "source_date": "ohlášky 1. 11. 2026 (pořad bohoslužeb 1.–8. 11. 2026)",
+   "quote": "NE 1.11. SLAVNOST VŠECH SVATÝCH FK 7:30 … 10:00 … PO 2.11. VZPOMÍNKA NA VŠECHNY VĚRNÉ ZEMŘELÉ FK 6:45 … FK 18:00 … Zítřejší mše svaté budou obě ve farním kostele: ráno v 6:45 a večer v 18 hodin.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "50002767305298",
+   "church": "filiální kostel Nejsvětější Trojice",
+   "town": "novy-jicin",
+   "date": "2026-11-02",
+   "drop": [
+    "18:00"
+   ],
+   "source": "https://drive.google.com/file/d/1KzYAyTdu138NwcADPx6IhmydrP7y90Jh/preview (embedded at https://fnj.cz/ohlasky-farnosti-novy-jicin/)",
+   "source_date": "ohlášky 1. 11. 2026 (pořad bohoslužeb 1.–8. 11. 2026)",
+   "quote": "PO 2.11. … FK 6:45 … FK 18:00 … Zítřejší mše svaté budou obě ve farním kostele: ráno v 6:45 a večer v 18 hodin.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "30002686572911",
+   "church": "farní kostel Nanebevzetí Panny Marie",
+   "town": "havlickuv-brod",
+   "date": "2026-11-02",
+   "drop": [
+    "18:00"
+   ],
+   "source": "https://www.farnosthb.cz/Ohlasky/Ohlasky.pdf",
+   "source_date": "Pořad bohoslužeb Havlíčkův Brod 1. – 8. 11. 2026",
+   "quote": "Ne 1. 11. Slavnost Všech svatých 9:00 NPM … 18:00 NPM … Po 2. 11. Vzpomínka na všechny věrné zemřelé 18:00 VOJTĚCH … V pondělí 2. 11. (na Dušičky) bude večerní mše sv. v 18 hod v kostele sv. Vojtěcha – po ní bude následovat konat dušičková pobožnost na tamním hřbitově.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "3000907797062",
+   "church": "kaple na faře",
+   "town": "chrudim",
+   "date": "2026-11-02",
+   "drop": [
+    "18:00"
+   ],
+   "source": "https://www.farnost-chrudim.cz/bohosluzby.php",
+   "source_date": "Bohoslužby tohoto týdne, 1.–8. 11. 2026 (web farnosti, ohlášky z neděle 1. 11. 2026)",
+   "quote": "Pondělí 2. 11. 2026 - Vzpomínka na všechny věrné zemřelé 7:30 Sv. Michael Na úmysl papeže. 16:00 Sv. Kříž Za zemřelé. 18:00 NPM Na dobrý úmysl. Sbor zpívá Hniličkovo Requiem.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "4000712934772",
+   "church": "filiální kostel sv. Václava",
+   "town": "strakonice",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "16:30",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnost-strakonice.cz/wp-content/uploads/2026/10/Bohosluzbyamodlitbyzazemrele-2026.doc (post https://www.farnost-strakonice.cz/bohosluzby-a-modlitby-za-zemrele-ve-strakonicich-2026/, 26. 10. 2026); also https://www.farnost-strakonice.cz/kalendar-bohosluzeb/",
+   "source_date": "Bohoslužby a modlitby za zemřelé ve Strakonicích 2026 (posted 26. 10. 2026) + parish Google calendar Nov 2026",
+   "quote": "1. listopadu NEDĚLE Slavnost VŠECH SVATÝCH … 8:00 Podsrp … 9:30 Strakonice - Sv. Markéta … 2. listopadu PONDĚLÍ … 16:00 Strakonice - hřbitov - modlitba u kříže … 16:30 Strakonice - kostel sv. Václava mše sv. … 17:00 Katovice | calendar: Mše sv. Strakonice - sv. Václav 2. 11. 2026, 16:30 - 17:30",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "30003250579801",
+   "church": "hřbitovní kostel sv. Vojtěcha, biskupa a mučedníka",
+   "town": "havlickuv-brod",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv.",
+     "po ní dušičková pobožnost na hřbitově"
+    ]
+   ],
+   "source": "https://www.farnosthb.cz/Ohlasky/Ohlasky.pdf",
+   "source_date": "Pořad bohoslužeb Havlíčkův Brod 1. – 8. 11. 2026",
+   "quote": "Ne 1. 11. Slavnost Všech svatých 9:00 NPM … 18:00 NPM … Po 2. 11. Vzpomínka na všechny věrné zemřelé 18:00 VOJTĚCH … V pondělí 2. 11. (na Dušičky) bude večerní mše sv. v 18 hod v kostele sv. Vojtěcha – po ní bude následovat konat dušičková pobožnost na tamním hřbitově.",
+   "checked": "2026-11-01"
   }
  ]
 }
