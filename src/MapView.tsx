@@ -460,6 +460,8 @@ export default function MapView({
       let anyWitness = false
       let anyNonMass = false
       let anyOtherDay = false
+      // grey chips exist only on "hned"; on an ordo day the toggle means nothing
+      const hide = hideOtherDay && day === 'now'
       // A church's chip: its next matching service as the seznam would show it
       const chipFor = (church: Church) => {
         const next = matched.get(church.id)
@@ -469,7 +471,7 @@ export default function MapView({
         // different day, so only "hned" gets the weekday + grey treatment
         const otherDay = day === 'now' && !samePragueDay(next.start, now)
         if (otherDay) anyOtherDay = true
-        if (otherDay && hideOtherDay) return undefined
+        if (otherDay && hide) return undefined
         const label = otherDay ? `${fmtWeekdayShort(next.start)} ${chipTime(next.start)}` : chipTime(next.start)
         return { next, start: next.start, otherDay, nonMass: !isMass(next.service.type), label }
       }
@@ -479,7 +481,7 @@ export default function MapView({
           if (!bounds.contains([church.lat, church.lng])) continue
           const chip = chipFor(church)
           // the legend toggle hides what doesn't match now, faded dots included
-          if (!chip && hideOtherDay) continue
+          if (!chip && hide) continue
           const next = chip?.next
           const label = chip?.label ?? ''
           const otherDay = chip?.otherDay ?? false
@@ -509,40 +511,54 @@ export default function MapView({
         } else {
           const latlng = map.unproject(L.point(cl.x, cl.y), zoom)
           if (!bounds.contains(latlng)) continue
-          const chips = cl.items.map(chipFor)
-          const pick = pickGroupChip(chips, cas, hideOtherDay)
-          // the legend toggle hides groups with nothing for now, faded dots included
-          if (pick.kind === 'none' && hideOtherDay) continue
+          const all = cl.items.map(chipFor)
+          // with the toggle on, the group is only the churches it still shows:
+          // the badge counts them and the deepest-zoom list names only them
+          const members = hide ? cl.items.filter((_, i) => all[i]) : cl.items
+          const chips = hide ? all.filter(Boolean) : all
+          const pick = pickGroupChip(chips, cas)
+          if (pick.kind === 'none' && hide) continue
           const chip = pick.kind === 'chip' ? chips[pick.index]! : undefined
           if (chip?.nonMass) anyNonMass = true
-          const n = cl.items.length
-          sig.push(`${cl.x},${cl.y}:${n}|${chip ? `${chip.label}|${chip.otherDay}|${chip.nonMass}` : ''}`)
+          const n = members.length
+          // every member's chip is in the signature: the list popover reads them,
+          // so a tick that changes a non-picked member must repaint too
+          sig.push(`${cl.x},${cl.y}:${n}|${chip?.label ?? ''}|${chips.map((c) => (c ? `${c.label}/${c.otherDay}/${c.nonMass}` : '-')).join(',')}`)
           adds.push(() => {
-            const marker = L.marker(latlng, {
+            // a group the toggle thinned to one church is that church's own chip, at its place
+            const one = n === 1 ? members[0] : undefined
+            const marker = L.marker(one ? L.latLng(one.lat, one.lng) : latlng, {
               // a group with no match draws as the faded dot its churches become
               // on zoom — a grey "3" that dissolved into dots read as "they
               // disappear" (řeckokatolické in Brno, 2026-10-25)
-              icon: chip ? groupIcon(chip.label, n, chip.otherDay, chip.nonMass) : fadedIcon(),
-              title: churchCount(n),
+              icon: chip
+                ? n === 1
+                  ? chipIcon(chip.label, 0, chip.otherDay, false, chip.nonMass)
+                  : groupIcon(chip.label, n, chip.otherDay, chip.nonMass)
+                : fadedIcon(),
+              title: one ? one.name : churchCount(n),
               keyboard: false,
             })
               .on('click', () =>
-                zoom >= GROUP_MAX_ZOOM
-                  ? openGroupPopover(cl.items, latlng, chips)
+                one
+                  ? void openPopover(one)
+                  : zoom >= GROUP_MAX_ZOOM
+                  ? openGroupPopover(members, latlng, chips)
                   : map.setView(latlng, Math.min(zoom + 2, GROUP_MAX_ZOOM)),
               )
               .addTo(layer)
-            marker.getElement()?.setAttribute('aria-label', chip ? `${churchCount(n)}, ${chip.label}` : churchCount(n))
+            marker.getElement()?.setAttribute('aria-label', one ? one.name : chip ? `${churchCount(n)}, ${chip.label}` : churchCount(n))
           })
         }
       }
+      // legend state first: it must follow the clock even when no marker changes
+      setNonMassShown(anyNonMass)
+      setOtherDayShown(day === 'now' && anyOtherDay)
       const key = sig.join(';')
       if (fromTick && key === lastSig) return
       lastSig = key
       layer.clearLayers()
       for (const add of adds) add()
-      setNonMassShown(anyNonMass)
-      setOtherDayShown(anyOtherDay)
       setWitnessShown(anyWitness) // React bails out if unchanged — deps exclude it, so no re-subscribe
       // back from a church opened here: reopen its popover once. Cleared only
       // when acted on, so a StrictMode remount or a not-yet-loaded index
@@ -604,7 +620,7 @@ export default function MapView({
         </span>
         {/* the grey row doubles as the toggle (Pavol, 2026-11-01): it explains the
             grey chips and hides them. Offered only while grey chips can exist. */}
-        {onToggleOtherDay && (otherDayShown || hideOtherDay) ? (
+        {onToggleOtherDay && day === 'now' && (otherDayShown || hideOtherDay) ? (
           <button
             type="button"
             className={`map-legend-row map-legend-toggle${hideOtherDay ? ' map-legend-toggle--off' : ''}`}

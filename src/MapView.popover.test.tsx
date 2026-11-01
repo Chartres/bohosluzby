@@ -258,6 +258,28 @@ describe('map groups of churches', () => {
     expect(hidden.container.querySelector('.map-dot--faded')).toBeNull()
     expect(hidden.container.querySelector('.map-chip')).toBeNull()
   })
+
+  it('the toggle thins a group to what it still shows: one church left → its own chip, no badge', async () => {
+    setup({ ...sunday([['18:00', 'česky', 0, 'mše sv.']]), '2': TEN })
+    const afternoon = new Date('2026-10-18T14:00:00Z') // 16:00 Prague: kostel 1's 18:00 is still today, kostel 2's 10:00 is next week
+    const { container } = render(
+      <MapView {...base} churches={[a, b]} onOpen={() => {}} now={afternoon} hideOtherDay onToggleOtherDay={() => {}} />,
+    )
+    await waitFor(() => expect(container.querySelector('.map-chip')?.textContent).toBe('18:00'))
+    expect(stack(container)).toBeNull()
+    expect(container.querySelector('.map-stack-count')).toBeNull()
+  })
+
+  it('on an ordo day there is no grey, so the toggle is not offered and changes nothing', async () => {
+    setup({ ...THREE, '2': THREE['1'] })
+    const filters: Filters = { ...NO_FILTERS, greek: true } // nothing matches → faded dot
+    const { container } = render(
+      <MapView {...base} churches={[a, b]} day={0} filters={filters} onOpen={() => {}}
+        now={new Date('2026-10-18T04:00:00Z')} hideOtherDay onToggleOtherDay={() => {}} />,
+    )
+    await waitFor(() => expect(container.querySelector('.map-dot--faded')).not.toBeNull())
+    expect(container.querySelector('.map-legend-toggle')).toBeNull()
+  })
 })
 
 // Pavol, 2026-10-25 (2A): a church with more fitting services that day says so on

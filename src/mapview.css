@@ -164,10 +164,11 @@
   border: 0;
   cursor: pointer;
 }
-.map-legend-toggle::after {
-  content: '';
-  position: absolute;
-  inset: -10px -8px;
+/* a taller row, not an overlapping halo: a halo over the neighbouring rows
+   or the map edge would eat taps and drags meant for them */
+.map-legend-toggle {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 .map-legend-toggle:focus-visible {
   outline: 2px solid var(--season);
