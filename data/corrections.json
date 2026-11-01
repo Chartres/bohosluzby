@@ -1183,6 +1183,458 @@
    "source_date": "akce 2. 11. 2026 (biskupství brněnské)",
    "quote": "V den Vzpomínky na všechny věrné zemřelé v pondělí 2. listopadu bude v 17.30 hodin biskup Vojtěch Cikrle slavit bohoslužbu v katedrále sv. Petra a Pavla.",
    "checked": "2026-10-29"
+  },
+  {
+   "id": "100094",
+   "church": "bazilika sv. Ludmily, Praha-Vinohrady",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "09:00",
+     "mše sv."
+    ],
+    [
+     "11:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://ludmilavinohrady.cz/2026/cim-zijeme-v-nasi-bazilice-sv-ludmily-od-slavnosti-vsech-svatych-ke-tricate-druhe-nedeli-v-mezidobi/",
+   "source_date": "ohlášky 1. 11. 2026 (+ post 2. listopadu and Program listopad 2026 PDF)",
+   "quote": "Zítra je Památka všech věrných zemřelých. Mše sv. jsou v 9, v 11 a v 16.30 hodin.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "100064",
+   "church": "bazilika sv. Markéty, Praha-Břevnov",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "16:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnost-brevnov.cz/2026/10/slavnost-vsech-svatych-1-listopadu-2026/",
+   "source_date": "ohlášky Slavnost Všech svatých, publ. 31. 10. 2026",
+   "quote": "Pondělí: vzpomínka Všech věrných zemřelých. Mše svaté v 7.00, 16.00 a 18.00. … Mše svatá na Bílé Hoře v 17.00.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "100065",
+   "church": "filiální kostel Panny Marie Vítězné, Praha-Řepy",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnost-brevnov.cz/2026/10/slavnost-vsech-svatych-1-listopadu-2026/",
+   "source_date": "ohlášky Slavnost Všech svatých, publ. 31. 10. 2026",
+   "quote": "Pondělí: vzpomínka Všech věrných zemřelých. … Mše svatá na Bílé Hoře v 17.00.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "100067",
+   "church": "farní kostel sv. Matěje, Praha-Dejvice",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://cmshost01.blob.core.windows.net/cms/media/ncali545.3hl/mesicni.pdf",
+   "source_date": "Rozpis bohoslužeb na listopad 2026 (PDF created 31. 10. 2026), linked from matejstranti.com/cs/mesicni-rozpis-bohosluzeb",
+   "quote": "ROZPIS BOHOSLUŽEB NA LISTOPAD 2026 … Sv. Matěj … 1.11. neděle 8:00; 10:00 … 2.11. pondělí 17:00",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "100018",
+   "church": "farní kostel sv. Petra, Praha-Nové Město",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv.",
+     "Mozart: Requiem"
+    ]
+   ],
+   "source": "https://www.farnostpetr.cz/l/mse-svata-pri-vzpomince-na-vsechny-verne-zemrele/",
+   "source_date": "aktualita 28. 10. 2026 (poster image)",
+   "quote": "W. A. Mozart REQUIEM – Pondělí 2. 11. 2026 v 18:00 hod. při mši svaté za zemřelé v kostele sv. Petra Na Poříčí",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "80001476711697",
+   "church": "kostel farní sv. Vavřince",
+   "town": "Řečkovice, Brno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "07:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://farnostreckovice.cz/2026/10/31/ohlasky-1-11-2026/",
+   "source_date": "ohlášky 1. 11. 2026",
+   "quote": "Mše sv. v týdnu budou navíc v pondělí 2. 11. v 7:00 a v 18:00. (Vzpomínka na všechny věrné zemřelé, tzv. Dušičky)",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "8000216699117",
+   "church": "kostel farní sv. Prokopa",
+   "town": "Podklášteří, Třebíč",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv.",
+     "v kryptě baziliky"
+    ]
+   ],
+   "source": "https://drive.google.com/file/d/1cQjDm3uJwTGZpOcZHYoHvMequVeY5CcI/view",
+   "source_date": "Informace třebíčských farností 1. listopadu 2026 (XXXV/21)",
+   "quote": "V pondělí 2. 11. bude sloužena mše svatá za všechny zemřelé v kryptě baziliky sv. Prokopa. … Pondělí 2. listopadu … 18:00 Bazilika Za všechny zemřelé",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "7000886836792",
+   "church": "farní kostel Narození Panny Marie",
+   "town": "Štípa, Zlín",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "07:30",
+     "mše sv."
+    ],
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.stipa.cz/wp-content/uploads/2026/10/01112026.pdf",
+   "source_date": "pořad bohoslužeb 1.–8. 11. 2026",
+   "quote": "NEDĚLE 1.11. 9,45 Za * a + rodinu Stöhrovu… PONDĚLÍ VZPOMÍNKA NA VŠECHNY VĚRNÉ ZEMŘELÉ 2.11. 7,30 ZA DUŠE V OČISTCI (Hvozdná – 16,00 mše svatá - NA ÚMYSL SVATÉHO OTCE) 18,00 ZA + Antonína Minaříka…",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "8000567053899",
+   "church": "kostel farní sv. Václava a Panny Marie",
+   "town": "Znojmo",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:30",
+     "mše sv.",
+     "v kryptě"
+    ]
+   ],
+   "source": "https://www.farnostlouka.cz/storage/aktuality/2026_10_25_Ohlasky_new2.jpg",
+   "source_date": "pořad bohoslužeb – týden od 25.10.2026 do 1.11.2026 (vč. Po 2. 11.)",
+   "quote": "Neděle 1. 11. Slavnost všech svatých 8:00 Znojmo – Louka … Pondělí 2. 11. Vzpomínka na všechny věrné zemřelé 8:00 Havraníky · 17:30 Znojmo – Louka (krypta) · 18:30 Šatov",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "50002474184720",
+   "church": "filiální kostel sv. Hedviky",
+   "town": "opava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://farnostopava.cz/wp-content/uploads/2026/10/2026-10.pdf",
+   "source_date": "Cesta – zpravodaj farnosti Panny Marie Opava, č. 10/2026 (říjen)",
+   "quote": "Pouť ke sv. Hedvice, patronce diecéze Opava, kostel sv. Hedviky Neděle 11. října 2026: … Další mše svaté v kostele sv. Hedviky: 16. října (Slavnost sv. Hedviky) – v 6 a v 7 hodin 2. listopadu (Vzpomínka na všechny věrné zemřelé) – v 18 hodin",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "70003306529547",
+   "church": "farní kostel Navštívení Panny Marie - bazilika minor",
+   "town": "olomouc",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "http://www.svatykopecek.cz/PageDecision.asp?Page=Bohosluzby",
+   "source_date": "pořad bohoslužeb 1.–8. 11. 2026",
+   "quote": "Neděle 1. 11. 2026 SLAVNOST VŠECH SVATÝCH 7:30 … 10:00 … 15:00 … Pondělí 2. 11. 2026 Památka všech věrných zemřelých 6:30 Mše svatá v kapli sester premonstrátek 9:00 Za duše v očistci 18:00 Za duše v očistci zemřelých příbuzných a přátel",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "70002953393905",
+   "church": "farní kostel Panny Marie Pomocnice křesťanů",
+   "town": "olomouc",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.katedralaolomouc.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 1.11. do 8.11.2026 + ohlášky 1. 11. 2026",
+   "quote": "08:30 Hodolany Za živé a zemřelé členy živého růžence … PONDĚLÍ 2.11.2026 … 18:00 Hodolany Za + Bohumila Zdařila … HODOLANY: Mše svatá je zítra v pondělí v 18 hodin při památce za věrné zemřelé.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "70003341376687",
+   "church": "farní kostel sv. Filipa a Jakuba",
+   "town": "olomouc",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "17:15",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.katedralaolomouc.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 1.11. do 8.11.2026 + ohlášky 1. 11. 2026",
+   "quote": "09:35 Nové Sady … PONDĚLÍ 2.11.2026 … 17:15 Nové Sady Na poděkování za 17 let manželství … Pobožnost za zemřelé bude zítra v pondělí 2.11. po večerní mši svaté na hřbitově.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "7000995485767",
+   "church": "farní kostel sv. Mořice a druhů",
+   "town": "olomouc",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "16:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://moric-olomouc.cz/static/media/Svatomoricky_zpravodaj_2026-35.pdf",
+   "source_date": "Svatomořický zpravodaj č. 35, 1. 11. 2026",
+   "quote": "V pondělí 2.11., na Památku všech věrných zemřelých, se mše svaté konají v 8 a 16 hodin.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "70001386081579",
+   "church": "metropolitní katedrální chrám  sv. Václava - katedrála Olomouc",
+   "town": "olomouc",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "07:00",
+     "mše sv."
+    ],
+    [
+     "18:00",
+     "mše sv.",
+     "pontifikální, celebruje arcibiskup"
+    ]
+   ],
+   "source": "https://www.katedralaolomouc.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 1.11. do 8.11.2026 + ohlášky 1. 11. 2026",
+   "quote": "NEDĚLE 1.11.2026 … 08:00 katedrála … 10:00 katedrála Pontifikální mše svatá … PONDĚLÍ 2.11.2026 … 07:00 katedrála Za zemřelé kněze … 18:00 katedrála Pontifikální mše sv. celebruje arcibiskup Josef Nuzík",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "7000777213808",
+   "church": "rektorátní kostel  sv. Anny Olomouc",
+   "town": "olomouc",
+   "date": "2026-11-02",
+   "drop": [
+    "07:00"
+   ],
+   "source": "https://www.katedralaolomouc.cz/porad_bohosluzeb",
+   "source_date": "pořad bohoslužeb od 1.11. do 8.11.2026 + ohlášky 1. 11. 2026",
+   "quote": "PONDĚLÍ 2.11.2026 … 07:00 katedrála Za zemřelé kněze … KATEDRÁLA: Zítra je vzpomínka na všechny věrné zemřelé, mše sv. ranní v 7 hodin bude v katedrále.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "60001931991337",
+   "church": "farní kostel Povýšení sv. Kříže Karlovy Vary - Rybáře",
+   "town": "Rybáře, Karlovy Vary",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://farnost-rybare.cz/wp-content/uploads/2026/10/RYBKA-26-listopad-1.pdf",
+   "source_date": "zpravodaj Rybka, listopad 2026",
+   "quote": "LISTOPAD 2026 – KARLOVY VARY-RYBÁŘE A STANOVICE 1. Neděle Slavnost Všech svatých Rybáře: mše sv. v 9:00, Březová: mše sv. v 11.00 2. Pondělí Vzpomínka na všechny věrné zemřelé Rybáře: mše sv. v kostele 18:00",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "5000701667328",
+   "church": "farní kostel Povýšení sv. Kříže",
+   "town": "Fryštát, Karviná",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "08:00",
+     "mše sv.",
+     "",
+     "polsky"
+    ],
+    [
+     "18:00",
+     "mše sv.",
+     "",
+     "česky"
+    ]
+   ],
+   "source": "https://www.farnost-karvina.cz/docs/ohlasky.pdf",
+   "source_date": "ohlášky 1. 11. 2026",
+   "quote": "pondělí – Vzpomínka na všechny věrné zemřelé. Mše svaté budou v 8:00 (pl) a 18:00 (cz), obě v hlavní lodi farního kostela",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "50003373078368",
+   "church": "filiální kostel sv. Marka",
+   "town": "Fryštát, Karviná",
+   "date": "2026-11-02",
+   "drop": [
+    "08:00"
+   ],
+   "source": "https://www.farnost-karvina.cz/docs/ohlasky.pdf",
+   "source_date": "ohlášky 1. 11. 2026",
+   "quote": "pondělí – Vzpomínka na všechny věrné zemřelé. Mše svaté budou v 8:00 (pl) a 18:00 (cz), obě v hlavní lodi farního kostela",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "50002171140296",
+   "church": "farní kostel sv. Mikuláše",
+   "town": "Poruba, Ostrava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "06:30",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.fporuba.cz/ohlasky",
+   "source_date": "ohlášky 1. 11. 2026 (Slavnost Všech svatých)",
+   "quote": "Zítra v pondělí je Vzpomínka na Všechny věrné zemřelé. Mše svaté budou v Porubě v 6:30 a v 18 hodin, ve Vřesině v 17 hodin.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "5000573662622",
+   "church": "farní kostel sv. Jana Boska",
+   "town": "Šumbark, Havířov",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "16:30",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostsumbark.cz/ohlasky-1-listopadu-slavnost-vsech-svatych/",
+   "source_date": "ohlášky 1. listopadu 2026 (publ. 29. 10. 2026)",
+   "quote": "Svátky v týdnu: Po VZPOMÍNKA NA VŠECHNY VĚRNÉ ZEMŘELÉ … Pořad bohoslužeb Po 16,30 hodin … Ne 8,30 hodin a 10,15 hodin",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "50002641496945",
+   "church": "farní kostel Krista Krále",
+   "town": "Svinov, Ostrava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "07:00",
+     "mše sv."
+    ],
+    [
+     "17:30",
+     "mše sv."
+    ]
+   ],
+   "source": "https://farnostsvinov.cz/ohlasky/",
+   "source_date": "ohlášky neděle 1. listopadu 2026",
+   "quote": "Pořad bohoslužeb Ne 1.11. – 8.00 a 10.00 Po 2.11. – 7.00 a 17.30",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "50001759715869",
+   "church": "kaple sv. Petra a Pavla",
+   "town": "Antošovice, Ostrava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "16:45",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnost-silherovice.cz/media/posts/2/responsive/OZN-45.26-Vsech-svatych-A-01.11.2026-1-md.jpg",
+   "source_date": "Farní oznámení 1. 11. 2026",
+   "quote": "Neděle 1. 11. 2026 … 07.30 A … Pondělí 2. 11. 2026 VZPOMÍNKA NA VŠECHNY VĚRNÉ ZEMŘELÉ 16.45 A Za † prarodiče a ostatní † příbuzné ▪ 18.00 Š",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "30001326639880",
+   "church": "filiální kostel (bývalý farní) sv. Jana Křtitele",
+   "town": "Zelené Předměstí (Pardubice I), Pardubice",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "06:30",
+     "mše sv."
+    ]
+   ],
+   "source": "https://farnost-pardubice.cz/bohosluzby/aktualni-bohosluzby/",
+   "source_date": "Bohoslužby v týdnu od 1. 11. do 8. 11. 2026 (farnost-pardubice.cz, ohlášky 29. 10. 2026)",
+   "quote": "Pondělí 2. 11. Vzpomínka na všechny věrné zemřelé 6:30 sv. Jan Křtitel Za živé a zemřelé z rodů Poslušných a Wagneterových … 12:00 sv. Jan Křtitel Za zemřelého pana Vladimíra a duše v očistci … 18:00 sv. Bartoloměj",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "2000322",
+   "church": "děkanský kostel Nejsvětějšího Srdce Ježíšova, Jablonec nad Nisou",
+   "town": "Jablonec nad Nisou",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "07:00",
+     "mše sv."
+    ]
+   ],
+   "source": "http://www.farnostjablonec.cz/porad_bohosluzeb",
+   "source_date": "Pořad bohoslužeb od 1.11. do 8.11.2026 - 45. týden + ohlášky 1. 11. 2026",
+   "quote": "PO 2.11. VZPOMÍNKA NA VŠECHNY VĚRNÉ ZEMŘELÉ 07:00 děkanský kostel Nejsvětějšího Srdce Ježíšova, Jablonec nad Nisou … 18:00 děkanský kostel … | V pondělí je Vzpomínka na všechny věrné zemřelé, mše svatá bude v 7 a v 18 hodin.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "1000384",
+   "church": "filiální kostel Nejsvětějšího Srdce Ježíšova, Kladno-Kročehlavy",
+   "town": "Kladno",
+   "date": "2026-11-02",
+   "drop": [
+    "08:05"
+   ],
+   "source": "https://www.farnostkladno.cz/nadchazejici_porad_bohosluzeb",
+   "source_date": "Pořad bohoslužeb od 2.11. do 8.11.2026 - 45. týden (+ pořad 26.10.–1.11.2026 at https://www.farnostkladno.cz/porad_bohosluzeb)",
+   "quote": "PONDĚLÍ 2.11.2026 VZPOMÍNKA NA VŠECHNY VĚRNÉ ZEMŘELÉ 12:00 Kaple na faře arciděkanství … 16:00 Kladenské hřbitovy Mše svatá 18:00 Kročehlavy Mše svatá Intence obsazena 18:00 sv. Jana Křtitele, Dubí | NEDĚLE 1.11.2026 … 08:30 Kročehlavy Mše svatá",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "10002821",
+   "church": "Kaple sv. Matky Terezy, Kladno",
+   "town": "Kladno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "12:00",
+     "mše sv.",
+     "za všechny zemřelé"
+    ]
+   ],
+   "source": "https://www.farnostkladno.cz/nadchazejici_porad_bohosluzeb",
+   "source_date": "Pořad bohoslužeb od 2.11. do 8.11.2026 - 45. týden",
+   "quote": "PONDĚLÍ 2.11.2026 VZPOMÍNKA NA VŠECHNY VĚRNÉ ZEMŘELÉ 12:00 Kaple na faře arciděkanství Mše svatá Za všechny zemřelé.",
+   "checked": "2026-11-01"
   }
  ]
 }
