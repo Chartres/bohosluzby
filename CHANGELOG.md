@@ -14,7 +14,7 @@ Format: what a user notices first, then what an agent needs to know.
   From zoom 15 only near-overlaps stack; at zoom 18 a group lists its churches. The
   legend's "jiný den · skrýt" hides the grey chips and the faded dots (sticky 12 h, "zrušit
   vše" resets; only on hned). The popover names today's services the choice leaves out
-  ("dnes: 21:00 · mimo kolem 16:00"). Logic: `src/domain/mapGroup.ts`.
+  ("Dnes ještě: 21:00 (mimo zvolený čas)", only on hned). Logic: `src/domain/mapGroup.ts`.
 - **Dušičky second data pass** (1 Nov, #79–#81, data only): 37 sourced corrections for 2 Nov
   in `data/corrections.json` (now 106), each with source URL, date and verbatim quote;
   per-church results in `docs/review/2026-11-01-dusicky-check.json`.

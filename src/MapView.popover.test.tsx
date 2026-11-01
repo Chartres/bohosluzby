@@ -209,12 +209,24 @@ describe('popover names today’s services the choice leaves out', () => {
   }
   const sundayAfternoon = new Date('2026-10-18T12:00:00Z') // Sunday 14:00 Prague
 
-  it('kolem 16:00: Friday shown, plus "dnes: 21:00 · mimo kolem 16:00"', async () => {
+  it('kolem 16:00: Friday shown, plus "Dnes ještě: 21:00 (mimo zvolený čas)"', async () => {
     setup(TYN)
     const { container } = render(<MapView {...base} cas="16:00" onOpen={() => {}} now={sundayAfternoon} />)
     await openPopover(container)
     expect(container.querySelector('.map-pop-line')!.textContent).toMatch(/pátek/)
-    expect(container.querySelector('.map-pop-today')!.textContent).toBe('dnes: 21:00 · mimo kolem 16:00')
+    expect(container.querySelector('.map-pop-today')!.textContent).toBe('Dnes ještě: 21:00 (mimo zvolený čas)')
+  })
+
+  it('zítra: a single chosen day never mentions today', async () => {
+    setup(TYN)
+    const { container } = render(<MapView {...base} day={1} cas="16:00" onOpen={() => {}} now={sundayAfternoon} />)
+    await new Promise((r) => setTimeout(r, 300))
+    const chip = container.querySelector('.leaflet-marker-icon.map-chip-wrap') as HTMLElement | null
+    if (chip) {
+      chip.click()
+      await new Promise((r) => setTimeout(r, 200))
+    }
+    expect(container.querySelector('.map-pop-today')).toBeNull()
   })
 
   it('no line when the shown day is today', async () => {

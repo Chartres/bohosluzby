@@ -223,8 +223,9 @@ export const cs = {
   map_otherday_hide: 'skrýt bohoslužby v jiný den',
   map_otherday_hide_short: 'skrýt',
   map_otherday_show_short: 'zobrazit',
-  map_outside_prefix: 'mimo',
-  map_outside_word: 'zadání',
+  map_today_still: 'Dnes ještě',
+  map_outside_time: 'mimo zvolený čas',
+  map_outside_choice: 'mimo zadání',
   map_otherday_show: 'zobrazit bohoslužby v jiný den',
   detail_parish_web: 'Web farnosti',
 
@@ -451,8 +452,9 @@ export const en: Record<Key, string> = {
   map_otherday_hide: 'hide services on another day',
   map_otherday_hide_short: 'hide',
   map_otherday_show_short: 'show',
-  map_outside_prefix: 'outside',
-  map_outside_word: 'your choice',
+  map_today_still: 'Still today',
+  map_outside_time: 'outside the chosen time',
+  map_outside_choice: 'outside your choice',
   map_otherday_show: 'show services on another day',
   detail_parish_web: 'Parish website',
 

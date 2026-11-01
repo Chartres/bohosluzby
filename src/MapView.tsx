@@ -23,7 +23,7 @@ import { massKey, type Aggregate } from './domain/feedback'
 import { aggregateFor, churchHasTags, divergentChips, hasAggregate, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { witnessPillsHtml } from './WitnessPills'
 import { WITNESS_ENABLED } from './lib/flags'
-import { t, aroundLabel, churchCount, confirmedByPilgrims, langLabel } from './i18n'
+import { t, churchCount, confirmedByPilgrims, langLabel } from './i18n'
 
 /** Popover timetable rows; a longer day ends in "+N další ›" to the church page. */
 const POP_ROWS = 4
@@ -294,10 +294,12 @@ export default function MapView({
           if (later.length) {
             const today = document.createElement('p')
             today.className = 'map-pop-today'
-            const outside = cas && /^\d{2}:\d{2}$/.test(cas) ? aroundLabel(cas) : t('map_outside_word')
-            today.textContent =
-              `${t('day_today')}: ${later.slice(0, 3).map((u) => fmtTime(u.start)).join(', ')}` +
-              ` · ${t('map_outside_prefix')} ${outside}`
+            // "Dnes ještě: 21:00 (mimo zvolený čas)" — Pavol, 2026-11-01: "dnes 21:00
+            // mimo kolem 16:00" read as a puzzle; the filter row already names the choice
+            today.textContent = `${t('map_today_still')}: ${later
+              .slice(0, 3)
+              .map((u) => fmtTime(u.start))
+              .join(', ')} (${t(cas ? 'map_outside_time' : 'map_outside_choice')})`
             el.append(today)
           }
         }
