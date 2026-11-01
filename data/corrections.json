@@ -1639,22 +1639,6 @@
    "checked": "2026-11-01"
   },
   {
-   "id": "1000109",
-   "church": "farní kostel sv. Michaela Archanděla, Praha-Podolí",
-   "town": "praha",
-   "date": "2026-11-02",
-   "add": [
-    [
-     "15:00",
-     "mše sv."
-    ]
-   ],
-   "source": "https://www.farnostbranik.cz/vzpominka-na-vsechny-verne-zemrele/",
-   "source_date": "post 2. listopadu 2026 – Vzpomínka na všechny věrné zemřelé (farnost Braník, which also serves Podolí)",
-   "quote": "modlitby za zemřelé … budou na Podolském hřbítově v pondělí 2.11. V 13:30 a od 15:00 bude Mše sv. za všechny věrné zemřelé v kostele sv. Michaela Archanděla v Podolí.",
-   "checked": "2026-11-01"
-  },
-  {
    "id": "2000333",
    "church": "arciděkanský kostel sv. Antonína Velikého, Liberec",
    "town": "Liberec",
