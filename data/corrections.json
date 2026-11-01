@@ -1205,22 +1205,6 @@
    "checked": "2026-11-01"
   },
   {
-   "id": "100064",
-   "church": "bazilika sv. Markéty, Praha-Břevnov",
-   "town": "praha",
-   "date": "2026-11-02",
-   "add": [
-    [
-     "16:00",
-     "mše sv."
-    ]
-   ],
-   "source": "https://www.farnost-brevnov.cz/2026/10/slavnost-vsech-svatych-1-listopadu-2026/",
-   "source_date": "ohlášky Slavnost Všech svatých, publ. 31. 10. 2026",
-   "quote": "Pondělí: vzpomínka Všech věrných zemřelých. Mše svaté v 7.00, 16.00 a 18.00. … Mše svatá na Bílé Hoře v 17.00.",
-   "checked": "2026-11-01"
-  },
-  {
    "id": "100065",
    "church": "filiální kostel Panny Marie Vítězné, Praha-Řepy",
    "town": "praha",
