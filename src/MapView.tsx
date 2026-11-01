@@ -23,7 +23,7 @@ import { massKey, type Aggregate } from './domain/feedback'
 import { aggregateFor, churchHasTags, divergentChips, hasAggregate, loadAggregates, rankChurchTags } from './lib/feedbackStore'
 import { witnessPillsHtml } from './WitnessPills'
 import { WITNESS_ENABLED } from './lib/flags'
-import { t, churchCount, confirmedByPilgrims, langLabel } from './i18n'
+import { t, aroundLabel, churchCount, confirmedByPilgrims, langLabel } from './i18n'
 
 /** Popover timetable rows; a longer day ends in "+N další ›" to the church page. */
 const POP_ROWS = 4
@@ -74,6 +74,9 @@ const groupIcon = (label: string, count: number, otherDay: boolean, nonMass: boo
       `<span class="map-stack-count">${count}</span></span>`,
     iconSize: [30, 30],
   })
+/** Draw order on overlap: what matches now over grey "another day", grey over
+ * faded dots — a grey stack hid a gold one at zoom 13 (review shots, 2026-11-01). */
+const tierZ = (chip: { otherDay: boolean } | undefined) => (chip ? (chip.otherDay ? 0 : 1000) : -1000)
 const originIcon = () =>
   L.divIcon({ className: 'map-origin-wrap', html: '<span class="map-origin"></span>', iconSize: [30, 30] })
 
@@ -185,6 +188,8 @@ export default function MapView({
       icon: originIcon(),
       keyboard: false,
       interactive: false,
+      // above the chips: a stack drawn over "you are here" hid it (e2e map-mixed-375)
+      zIndexOffset: 10000,
     }).addTo(map)
     layerRef.current = L.layerGroup().addTo(map)
     mapRef.current = map
@@ -280,6 +285,22 @@ export default function MapView({
           ordo.append(row)
         })
         el.append(ordo)
+        // the shown day isn't today, yet the church still has services today
+        // that the choice leaves out (Týn: 21:00 vs kolem 16:00 — Pavol,
+        // 2026-11-01): say so, or the jump to Friday reads as a missing Mass
+        if (day === 'now' && next && !samePragueDay(next.start, now)) {
+          const later = selectUpcoming(now, origin, [church], byId, NO_FILTERS, null, 0, { limit: Infinity })
+            .filter((u) => u.start.getTime() > now.getTime() && samePragueDay(u.start, now))
+          if (later.length) {
+            const today = document.createElement('p')
+            today.className = 'map-pop-today'
+            const outside = cas && /^\d{2}:\d{2}$/.test(cas) ? aroundLabel(cas) : t('map_outside_word')
+            today.textContent =
+              `${t('day_today')}: ${later.slice(0, 3).map((u) => fmtTime(u.start)).join(', ')}` +
+              ` · ${t('map_outside_prefix')} ${outside}`
+            el.append(today)
+          }
+        }
         if (all.length > POP_ROWS) {
           const more = document.createElement('button')
           more.type = 'button'
@@ -502,6 +523,7 @@ export default function MapView({
               icon: next ? chipIcon(label, more, otherDay, witnessed, nonMass) : fadedIcon(),
               title: church.name,
               keyboard: false,
+              zIndexOffset: tierZ(chip),
             })
               .on('click', () => void openPopover(church))
               .addTo(layer)
@@ -538,6 +560,7 @@ export default function MapView({
                 : fadedIcon(),
               title: one ? one.name : churchCount(n),
               keyboard: false,
+              zIndexOffset: tierZ(chip),
             })
               .on('click', () =>
                 one
@@ -630,6 +653,8 @@ export default function MapView({
           >
             <span className="map-legend-chip map-legend-chip--otherday" aria-hidden="true" />
             <span className="map-legend-toggle-label">{t('map_legend_otherday')}</span>
+            {/* the verb makes the row read as a control (Pavol, 2026-11-01: easy to miss) */}
+            <span className="map-legend-toggle-verb">· {t(hideOtherDay ? 'map_otherday_show_short' : 'map_otherday_hide_short')}</span>
           </button>
         ) : (
           <span className="map-legend-row">

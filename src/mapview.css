@@ -464,3 +464,16 @@
 .ordo-map .leaflet-control-attribution a {
   color: var(--color-ink-faded);
 }
+
+/* "dnes: 21:00 · mimo kolem 16:00" — today's services the choice leaves out,
+   under the shown day's ordo; quiet ink, it explains rather than offers */
+.map-pop-today {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--color-ink-faded);
+}
+/* the toggle's verb: rubric, the app's functional colour for state hints */
+.map-legend-toggle-verb {
+  color: var(--color-rubric);
+  font-weight: 600;
+}

@@ -192,6 +192,39 @@ describe('map clusters with no match', () => {
   })
 })
 
+// Pavol, 2026-11-01 (Týn): with "kolem 16:00" the popover jumped to Friday's
+// 15:00 and never mentioned tonight's 21:00 — it read as a missing Mass.
+describe('popover names today’s services the choice leaves out', () => {
+  beforeEach(() => resetMapMemory())
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+  const TYN = {
+    '1': { u: '2026-06-01', p: '', pa: '', c: [], s: [
+      ['7', '09:30', 'česky', 0, 'mše sv.', ''],
+      ['7', '21:00', 'česky', 0, 'mše sv.', ''],
+      ['5', '15:00', 'česky', 0, 'mše sv.', ''],
+    ] },
+  }
+  const sundayAfternoon = new Date('2026-10-18T12:00:00Z') // Sunday 14:00 Prague
+
+  it('kolem 16:00: Friday shown, plus "dnes: 21:00 · mimo kolem 16:00"', async () => {
+    setup(TYN)
+    const { container } = render(<MapView {...base} cas="16:00" onOpen={() => {}} now={sundayAfternoon} />)
+    await openPopover(container)
+    expect(container.querySelector('.map-pop-line')!.textContent).toMatch(/pátek/)
+    expect(container.querySelector('.map-pop-today')!.textContent).toBe('dnes: 21:00 · mimo kolem 16:00')
+  })
+
+  it('no line when the shown day is today', async () => {
+    setup(TYN)
+    const { container } = render(<MapView {...base} cas="21:00" onOpen={() => {}} now={sundayAfternoon} />)
+    await openPopover(container)
+    expect(container.querySelector('.map-pop-today')).toBeNull()
+  })
+})
+
 // Pavol, 2026-11-01: with "kolem 16:00" the black count circles looked the same
 // whether or not anything there matched. A group now shows the time chip of its
 // best church, stacked, with a round badge counting CHURCHES — distinct from the
