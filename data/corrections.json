@@ -1657,6 +1657,35 @@
    "source_date": "pořad '25. října - 2. listopadu 2026' (image on https://arcidekanstvi-lbc.cz/p/aktualni-bohosluzby-a-oznameni; https host reachable, the http one is WAF-blocked)",
    "quote": "Neděle 1. 11. … Slavnost Všech svatých Liberec – sv. Antonín Veliký 09.00 mše sv. … Liberec – sv. Antonín Veliký 18.00 mše sv. | Pondělí 2. 11. Vzpomínka na všechny věrné zemřelé Liberec – sv. Antonín Veliký 09.00 mše sv. … Liberec – sv. Antonín Veliký 18.00 mše sv.",
    "checked": "2026-11-01"
+  },
+  {
+   "id": "100064",
+   "church": "bazilika sv. Markéty, Praha-Břevnov",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "16:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://calendar.google.com/calendar/ical/rm36gfgtbirgkqgemkstjfd8lk%40group.calendar.google.com/public/basic.ics",
+   "source_date": "farní Google kalendář 'Mimořádné bohoslužby' (vložen na farnost-brevnov.cz/kalendar/), událost vytvořena 24. 10. 2026; ohlášky publ. 31. 10. 2026",
+   "quote": "ohlášky: Pondělí: vzpomínka Všech věrných zemřelých. Mše svaté v 7.00, 16.00 a 18.00. … Odpoledne v 15.00 bude modlitba za zemřelé na hřbitově | kalendář: DTSTART:20261102T150000Z SUMMARY:Mše svatá Břevnov LOCATION:Markétská 1, 169 00 Praha 6-Břevnov",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "6000625607785",
+   "church": "kaple sv. Františka z Assisi (domeček) Plzeň",
+   "town": "plzen",
+   "date": "2026-11-02",
+   "drop": [
+    "17:30"
+   ],
+   "source": "https://www.farnostbartolomej.cz/documents/202610/tajixuzgtn.pdf",
+   "source_date": "Věstník plzeňských farností 11/2026 (publ. 31. 10. 2026)",
+   "quote": "Rozpis pravidelných bohoslužeb PONDĚLÍ • mše sv. v 18 hod. v Domečku … Pořad pravidelných bohoslužeb — listopad 2026 … Domeček — Komenského ul. 17 [PO] 18:00",
+   "checked": "2026-11-01"
   }
  ]
 }
