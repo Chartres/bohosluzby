@@ -1619,6 +1619,44 @@
    "source_date": "Pořad bohoslužeb od 2.11. do 8.11.2026 - 45. týden",
    "quote": "PONDĚLÍ 2.11.2026 VZPOMÍNKA NA VŠECHNY VĚRNÉ ZEMŘELÉ 12:00 Kaple na faře arciděkanství Mše svatá Za všechny zemřelé.",
    "checked": "2026-11-01"
+  },
+  {
+   "id": "100027",
+   "church": "klášterní bazilika sv. Jakuba Staršího, Praha-Staré Město",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv.",
+     "Mozartovo Requiem",
+     "latinsky"
+    ]
+   ],
+   "source": "https://praha.minorite.cz/ohl%C3%A1%C5%A1ky",
+   "source_date": "ohlášky 1. 11. 2026 (Slavnost Všech svatých)",
+   "quote": "zítra, v pondělí 2. listopadu Vzpomínku na všechny věrné zemřelé, bude mše svatá v 6:45 v kapli sv. Anny, a večer v 18 hodin v bazilice latinská mše, při níž zazní Mozartovo Requiem v podání Svatojakubského sboru a orchestru…",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "2000333",
+   "church": "arciděkanský kostel sv. Antonína Velikého, Liberec",
+   "town": "Liberec",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "09:00",
+     "mše sv."
+    ],
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://admin-storage.munipolis.com/arcidekanstvi-lbc/page-builder/media/d78d5a7c-48a4-4221-8fea-822ed4da5ad6.jpg",
+   "source_date": "pořad '25. října - 2. listopadu 2026' (image on https://arcidekanstvi-lbc.cz/p/aktualni-bohosluzby-a-oznameni; https host reachable, the http one is WAF-blocked)",
+   "quote": "Neděle 1. 11. … Slavnost Všech svatých Liberec – sv. Antonín Veliký 09.00 mše sv. … Liberec – sv. Antonín Veliký 18.00 mše sv. | Pondělí 2. 11. Vzpomínka na všechny věrné zemřelé Liberec – sv. Antonín Veliký 09.00 mše sv. … Liberec – sv. Antonín Veliký 18.00 mše sv.",
+   "checked": "2026-11-01"
   }
  ]
 }
