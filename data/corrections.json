@@ -1787,6 +1787,54 @@
    "source_date": "Pořad bohoslužeb Havlíčkův Brod 1. – 8. 11. 2026",
    "quote": "Ne 1. 11. Slavnost Všech svatých 9:00 NPM … 18:00 NPM … Po 2. 11. Vzpomínka na všechny věrné zemřelé 18:00 VOJTĚCH … V pondělí 2. 11. (na Dušičky) bude večerní mše sv. v 18 hod v kostele sv. Vojtěcha – po ní bude následovat konat dušičková pobožnost na tamním hřbitově.",
    "checked": "2026-11-01"
+  },
+  {
+   "id": "1000109",
+   "church": "farní kostel sv. Michaela Archanděla, Praha-Podolí",
+   "town": "praha",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "15:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostbranik.cz/vzpominka-na-vsechny-verne-zemrele/",
+   "source_date": "příspěvek „2. listopadu 2026 Vzpomínka na všechny věrné zemřelé“ (farnost Braník, spravuje i Podolí)",
+   "quote": "2. listopadu 2026 Vzpomínka na všechny věrné zemřelé … modlitby za zemřelé, svěcení hrobů a modlitby u hrobů (na požádání) budou na Podolském hřbítově v pondělí 2.11. V 13:30 a od 15:00 bude Mše sv. za všechny věrné zemřelé v kostele sv. Michaela Archanděla v Podolí.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "4000712934772",
+   "church": "filiální kostel sv. Václava",
+   "town": "strakonice",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "16:30",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnost-strakonice.cz/kalendar-bohosluzeb/",
+   "source_date": "kalendář bohoslužeb farnosti, listopad 2026; též https://www.farnost-strakonice.cz/wp-content/uploads/2026/10/Bohosluzbyamodlitbyzazemrele-2026.doc (příspěvek 26. 10. 2026)",
+   "quote": "Mše sv. Strakonice - sv. Václav 2. 11. 2026 , 16:30 - 17:30 Kostel sv. Václava, Strakonice · (doc) 2. listopadu PONDĚLÍ … 16:30 Strakonice - kostel sv. Václava mše sv.",
+   "checked": "2026-11-01"
+  },
+  {
+   "id": "5000911872019",
+   "church": "filiální kostel sv. Hedviky",
+   "town": "ostrava",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.farnostpustkovec.cz/wp-content/uploads/2026/11/Bohosluzby-listopad-page-0013.jpg",
+   "source_date": "pořad bohoslužeb – listopad (nahráno 11/2026; Neděle 1.11., Pondělí 2.11. = 2026)",
+   "quote": "FILIÁLNÍ KOSTEL SVATÉ HEDVIKY V KRÁSNÉM POLI POŘAD BOHOSLUŽEB – LISTOPAD … Pondělí 2.11. Vzpomínka na všechny věrné zemřelé 18:00 Za zemřelé",
+   "checked": "2026-11-01"
   }
  ]
 }
