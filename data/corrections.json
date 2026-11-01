@@ -1835,6 +1835,22 @@
    "source_date": "pořad bohoslužeb – listopad (nahráno 11/2026; Neděle 1.11., Pondělí 2.11. = 2026)",
    "quote": "FILIÁLNÍ KOSTEL SVATÉ HEDVIKY V KRÁSNÉM POLI POŘAD BOHOSLUŽEB – LISTOPAD … Pondělí 2.11. Vzpomínka na všechny věrné zemřelé 18:00 Za zemřelé",
    "checked": "2026-11-01"
+  },
+  {
+   "id": "80001507647896",
+   "church": "kostel filiální sv. Kříže",
+   "town": "brno",
+   "date": "2026-11-02",
+   "add": [
+    [
+     "18:00",
+     "mše sv."
+    ]
+   ],
+   "source": "https://www.kostelslatina.cz/",
+   "source_date": "pořad bohoslužeb 1.–8. 11.; datováno kalendářem kostela https://calendar.google.com/calendar/ical/kostelslatinacz%40gmail.com/public/basic.ics (událost 2026-11-02 18:00, „Dušičky“)",
+   "quote": "Pořad bohoslužeb v našem kostele: neděle 1.11. mše svatá 8.30 Slavnost všech svatých pondělí 2.11. mše svatá 18.00 Památka zesnulých po mši svaté následuje pobožnost na hřbitově · (kalendář) DTSTART:20261102T170000Z DESCRIPTION:Dušičky SUMMARY:Mše svatá: Za zemřelé farníky, zemřelé kněze ve farnosti a duše v …",
+   "checked": "2026-11-01"
   }
  ]
 }
