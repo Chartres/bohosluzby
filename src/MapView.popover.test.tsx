@@ -190,14 +190,73 @@ describe('map clusters with no match', () => {
     expect(container.querySelector('.map-cluster')).toBeNull()
     expect(container.querySelectorAll('.map-dot--faded')).toHaveLength(1) // one mark for the pair
   })
-  it('a group holding a match keeps its count circle', async () => {
-    const a: Church = { ...church, id: '1' }
-    const b: Church = { ...church, id: '2', name: 'kostel 2', lat: church.lat + 0.0005 }
+})
+
+// Pavol, 2026-11-01: with "kolem 16:00" the black count circles looked the same
+// whether or not anything there matched. A group now shows the time chip of its
+// best church, stacked, with a round badge counting CHURCHES — distinct from the
+// "+N" superscript, which counts more Masses in ONE church.
+describe('map groups of churches', () => {
+  const a: Church = { ...church, id: '1' }
+  const b: Church = { ...church, id: '2', name: 'kostel 2', lat: church.lat + 0.0005 }
+  const TEN = sunday([['10:00', 'česky', 0, 'mše sv.']])['1']
+  beforeEach(() => resetMapMemory())
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+  const stack = (c: HTMLElement) => c.querySelector('.map-stack') as HTMLElement | null
+
+  it('a group holding a match shows a stacked season chip with the church count', async () => {
     setup({ ...THREE, '2': THREE['1'] })
     const { container } = render(
       <MapView {...base} churches={[a, b]} onOpen={() => {}} now={new Date('2026-10-18T04:00:00Z')} />,
     )
-    await waitFor(() => expect(container.querySelector('.map-cluster')?.textContent).toBe('2'))
+    await waitFor(() => expect(stack(container)).not.toBeNull())
+    expect(stack(container)!.querySelector('.map-chip')!.textContent).toBe('7:00')
+    expect(stack(container)!.querySelector('.map-stack-count')!.textContent).toBe('2')
+    expect(stack(container)!.classList.contains('map-stack--otherday')).toBe(false)
+    // the Masses superscript belongs to single churches, never to a group
+    expect(container.querySelector('.map-chip-more')).toBeNull()
+  })
+
+  it('kolem 10:00: the chip shows the time nearest 10:00 among the churches', async () => {
+    setup({ ...THREE, '2': TEN })
+    const { container } = render(
+      <MapView {...base} churches={[a, b]} cas="10:00" onOpen={() => {}} now={new Date('2026-10-18T04:00:00Z')} />,
+    )
+    await waitFor(() => expect(stack(container)).not.toBeNull())
+    expect(stack(container)!.querySelector('.map-chip')!.textContent).toBe('10:00')
+  })
+
+  it('only later days → a grey stack; the legend toggle hides it and the faded rest', async () => {
+    setup({ ...THREE, '2': TEN })
+    const late = new Date('2026-10-18T20:00:00Z') // Sunday 22:00 Prague: next Mass is next Sunday
+    const onToggle = vi.fn()
+    const shown = render(
+      <MapView {...base} churches={[a, b]} onOpen={() => {}} now={late} onToggleOtherDay={onToggle} />,
+    )
+    await waitFor(() => expect(stack(shown.container)?.classList.contains('map-stack--otherday')).toBe(true))
+    const toggle = await waitFor(() => {
+      const el = shown.container.querySelector('.map-legend-toggle') as HTMLButtonElement | null
+      expect(el).not.toBeNull()
+      return el!
+    })
+    expect(toggle.getAttribute('aria-pressed')).toBe('false')
+    toggle.click()
+    expect(onToggle).toHaveBeenCalledOnce()
+    shown.unmount()
+
+    const hidden = render(
+      <MapView {...base} churches={[a, b]} onOpen={() => {}} now={late} hideOtherDay onToggleOtherDay={onToggle} />,
+    )
+    await waitFor(() =>
+      expect(hidden.container.querySelector('.map-legend-toggle')?.getAttribute('aria-pressed')).toBe('true'),
+    )
+    await new Promise((r) => setTimeout(r, 30))
+    expect(stack(hidden.container)).toBeNull()
+    expect(hidden.container.querySelector('.map-dot--faded')).toBeNull()
+    expect(hidden.container.querySelector('.map-chip')).toBeNull()
   })
 })
 

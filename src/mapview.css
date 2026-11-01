@@ -153,6 +153,32 @@
   background: color-mix(in srgb, var(--color-ink-faded) 55%, var(--color-paper));
   border-color: var(--color-paper);
 }
+/* the grey row is also the toggle: tappable (the legend is otherwise
+   pointer-events: none), a halo for the thumb, struck through while hidden */
+.map-legend-toggle {
+  position: relative;
+  pointer-events: auto;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  border: 0;
+  cursor: pointer;
+}
+.map-legend-toggle::after {
+  content: '';
+  position: absolute;
+  inset: -10px -8px;
+}
+.map-legend-toggle:focus-visible {
+  outline: 2px solid var(--season);
+  outline-offset: 1px;
+}
+.map-legend-toggle--off .map-legend-toggle-label {
+  text-decoration: line-through;
+}
+.map-legend-toggle--off .map-legend-chip {
+  opacity: 0.35;
+}
 .map-legend-chip--nonmass {
   background: var(--color-paper);
   border: 1.5px solid var(--season);
@@ -208,22 +234,74 @@
   opacity: 0.9;
 }
 
-/* clusters: ink CIRCLES with a count — a different shape AND color from the
-   rectangular season-green time chips, so "6" can never read as a mass time */
-.map-cluster {
+/* several churches at one spot (domain/mapGroup): the best of them as a time
+   chip, drawn as a small stack (a second chip edge 3px behind — an offset box,
+   not a shadow) with a round ink badge counting the CHURCHES. The "+N"
+   superscript stays reserved for more Masses in one church (Pavol, 2026-11-01). */
+.map-stack {
+  position: relative;
+  display: inline-grid;
+}
+.map-stack > .map-chip,
+.map-stack-back {
+  grid-area: 1 / 1;
+}
+.map-stack-back {
+  position: relative;
+  transform: translate(3px, 3px);
+  background: color-mix(in srgb, var(--season) 62%, var(--color-paper));
+  border: 1.5px solid var(--color-paper);
+  border-radius: 2px;
+}
+.map-stack--otherday .map-stack-back {
+  background: color-mix(in srgb, var(--color-ink-faded) 32%, var(--color-paper));
+}
+.map-stack--nonmass .map-stack-back {
+  background: var(--color-paper);
+  border-color: var(--season);
+}
+.map-stack--nonmass.map-stack--otherday .map-stack-back {
+  border-color: var(--color-ink-faded);
+}
+/* round — the one circle on the map, so a count never reads as a time */
+.map-stack-count {
+  position: absolute;
+  z-index: 1;
+  top: -9px;
+  right: -11px;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
   background: var(--color-ink);
   color: var(--color-paper);
   border: 1.5px solid var(--color-paper);
-  border-radius: 50%;
+  border-radius: 9px;
   font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.66rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
-/* every church in the bucket is irrelevant to the selection → paper, not ink */
+.map-chip-wrap:hover .map-stack .map-chip {
+  outline: 1px solid var(--season);
+  outline-offset: 1px;
+}
+/* the deepest-zoom list of a group: church names as plain ink links */
+.map-pop-group-name {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--color-ink);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--color-hairline);
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
 /* "you are here": a quiet surveyor's ring in ink */
 .map-origin-wrap {
   display: grid;

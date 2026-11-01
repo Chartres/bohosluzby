@@ -220,6 +220,8 @@ export const cs = {
   map_legend_match: 'vyhovuje zadání',
   map_legend_otherday: 'jiný den',
   map_legend_nonmass: 'není mše (růženec, adorace…)',
+  map_otherday_hide: 'skrýt bohoslužby v jiný den',
+  map_otherday_show: 'zobrazit bohoslužby v jiný den',
   detail_parish_web: 'Web farnosti',
 
   // ---- first-run intro guide ----
@@ -442,6 +444,8 @@ export const en: Record<Key, string> = {
   map_legend_match: 'matches your choice',
   map_legend_otherday: 'another day',
   map_legend_nonmass: 'not a Mass (rosary, adoration…)',
+  map_otherday_hide: 'hide services on another day',
+  map_otherday_show: 'show services on another day',
   detail_parish_web: 'Parish website',
 
   intro_rubric: 'welcome',
