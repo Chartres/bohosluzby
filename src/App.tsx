@@ -125,6 +125,7 @@ const onlineStore = {
 
 const FILTERS_KEY = 'bohosluzby:filters'
 const CAS_KEY = 'bohosluzby:cas'
+const HIDE_OTHERDAY_KEY = 'bohosluzby:map-hide-otherday'
 
 // Sticky filters/kdy expire after a while — you open this app wanting "right
 // now", not last night's "večer" still narrowing the list. 12h comfortably
@@ -251,6 +252,14 @@ export default function App() {
   const [dataRefreshing, setDataRefreshing] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
   const [filters, setFilters] = useState<Filters>(loadFilters)
+  // map legend toggle: hide grey "another day" chips — sticky like the filters
+  const [hideOtherDay, setHideOtherDay] = useState(() => loadSticky<boolean>(HIDE_OTHERDAY_KEY) === true)
+  const toggleOtherDay = () => {
+    const next = !hideOtherDay
+    setHideOtherDay(next)
+    saveSticky(HIDE_OTHERDAY_KEY, next)
+    track('key_action', { action: 'filter', hideOtherDay: next })
+  }
   const [picking, setPicking] = useState(false) // "změnit": search panel over the list, origin kept
   const [navTarget, setNavTarget] = useState<NavTarget | null>(null) // "trasa" chooser sheet
   // Tick every minute so time-sensitive memos (season, holy, rows) stay current.
@@ -570,6 +579,7 @@ export default function App() {
       const next = loadFilters()
       return JSON.stringify(next) === JSON.stringify(cur) ? cur : next
     })
+    setHideOtherDay(loadSticky<boolean>(HIDE_OTHERDAY_KEY) === true)
     const resumed = new Date()
     const saved = parseCas(loadSticky<string>(CAS_KEY))
     // a saved kdy expires on the same clock as the filters; a URL-only one (shared
@@ -691,6 +701,8 @@ export default function App() {
     updateFilters({ ...NO_FILTERS })
     setParams({ cas: null, den: null }) // one navigate — setCas+setDay would race on `search`
     removeKey(CAS_KEY)
+    setHideOtherDay(false)
+    removeKey(HIDE_OTHERDAY_KEY)
     track('key_action', { action: 'filters_reset' })
   }
 
@@ -1098,6 +1110,8 @@ export default function App() {
                       onNavigate={setNavTarget}
                       fill={mapMode}
                       now={now}
+                      hideOtherDay={hideOtherDay}
+                      onToggleOtherDay={toggleOtherDay}
                     />
                   </Suspense>
                 </div>

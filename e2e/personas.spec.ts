@@ -48,6 +48,18 @@ test('P3 Tomáš: lunch-window mass — kolem 12:00 fits the 11:45–13:00 box',
   await expect(seznam.getByText('16:30')).toHaveCount(0)
   await shot(page, 'persona-tomas-lunch-window')
 
+  // the same question on the map (Pavol, 2026-11-01): a group of churches answers it
+  // too — a stacked time chip with a church count, never a bare count circle that
+  // looks the same whether or not anything fits his window
+  await page.getByRole('button', { name: 'mapa' }).click()
+  await page.getByTestId('mapa').waitFor()
+  await expect(page.locator('.map-chip').filter({ hasText: /^12:00/ }).first()).toBeVisible()
+  await expect(page.locator('.map-cluster')).toHaveCount(0)
+  for (const label of await page.locator('.map-stack .map-chip').allTextContents())
+    expect(label).toMatch(/\d{1,2}:\d{2}$/)
+  await shot(page, 'persona-tomas-map')
+  await page.getByRole('button', { name: 'seznam' }).click()
+
   // reliability check before he commits his only window: freshness line on detail
   await page.getByText('kostel Nejsvětějšího Salvátora').click()
   await expect(page.getByText(/naposledy ověřeno/)).toBeVisible()

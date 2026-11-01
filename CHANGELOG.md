@@ -5,6 +5,19 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **Map groups show a time, not just a count** (Pavol 2026-11-01: "I search for 16h masses,
+  and those multi church numbers look the same whether there is or is not a mass satisfying
+  my filters"). A group of nearby churches is the time chip of its best church (today
+  before another day, a Mass before other services, nearest to "kolem", else earliest),
+  drawn as a stack with a round badge counting churches; the "⁺N" superscript stays "more
+  Masses in this church". Gold / grey / faded dot as the legend says, gold drawn on top.
+  From zoom 15 only near-overlaps stack; at zoom 18 a group lists its churches. The
+  legend's "jiný den · skrýt" hides the grey chips and the faded dots (sticky 12 h, "zrušit
+  vše" resets; only on hned). The popover names today's services the choice leaves out
+  ("Dnes ještě: 21:00 (mimo zvolený čas)", only on hned). Logic: `src/domain/mapGroup.ts`.
+- **Dušičky second data pass** (1 Nov, #79–#81, data only): 37 sourced corrections for 2 Nov
+  in `data/corrections.json` (now 106), each with source URL, date and verbatim quote;
+  per-church results in `docs/review/2026-11-01-dusicky-check.json`.
 - **Title feast from the parish where the name is ambiguous** (Pavol 2026-10-30): plain
   "sv. Jakuba", two-title churches and Navštívení P. M. stay silent unless the parish's own
   website or bulletin names the feast. 32 of 150 such churches are now confirmed, each with
