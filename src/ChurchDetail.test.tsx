@@ -80,6 +80,14 @@ const SHARD = {
     c: [],
     s: [['135', '15:00', 'česky', 0, 'mše sv.', 'V červenci, srpnu a září není páteční mše sv.']],
   },
+  // church "9": a weekly Mass with a dated exclusion (data/corrections.mjs)
+  '9': {
+    u: '2026-06-01',
+    p: '',
+    pa: '',
+    c: [],
+    s: [['1', '18:00', 'česky', 0, 'mše sv.', 'zimní čas, kromě 2. 11. 2026']],
+  },
 }
 
 // Church "1"/"5" have a photo entry; "8" has one without a credit; "2"/"3"/"4" none.
@@ -307,6 +315,11 @@ describe('weekday-specific notes', () => {
     const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
     expect(within(schedule).getAllByText('15:00')).toHaveLength(3)
     expect(within(schedule).getAllByText('V červenci, srpnu a září není páteční mše sv.')).toHaveLength(1)
+  })
+  it('keeps a dated exclusion on the weekly ordo — the one place it is news', async () => {
+    render(<ChurchDetail church={church('9', '50-14')} onBack={() => {}} />)
+    const schedule = await screen.findByRole('region', { name: 'Pořad bohoslužeb' })
+    expect(within(schedule).getByText(/kromě 2\. 11\. 2026/)).toBeInTheDocument()
   })
 })
 

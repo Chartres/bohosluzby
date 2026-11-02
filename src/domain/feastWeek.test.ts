@@ -43,6 +43,10 @@ describe('servicesOnDate', () => {
     expect(servicesOnDate(s, '2026-11-01').map((x) => `${x.date} ${x.time}`)).toEqual(['2026-11-01 10:00', '2026-11-01 18:00'])
     expect(servicesOnDate(s, '2026-11-02').map((x) => x.time)).toEqual(['07:00', '17:00'])
   })
+  it("shows a row on 1 Nov without its '2 Nov excluded' note", () => {
+    const s = svc({ regular: [row('17', '18:00', 'na faře, kromě 2. 11. 2026')] })
+    expect(servicesOnDate(s, '2026-11-01')[0].note).toBe('na faře')
+  })
   it('a one-off repeating the weekly Mass prints once', () => {
     const s = svc({
       regular: [row('1', '18:00')],

@@ -54,7 +54,7 @@ const SHARD_50_14 = {
     c: [],
     s: [
       ['5', '19:00', 'česky', 0, 'růženec', ''],
-      ['5', '19:30', 'Latine', 0, 'mše sv.', 'tridentská'],
+      ['5', '19:30', 'Latine', 0, 'mše sv.', 'tridentská, kromě 24. 7. 2026'], // a dated exclusion (data/corrections.mjs)
       // the registry lists the same Sunday slot twice (real pattern: seasonal variants)
       ['7', '10:00', 'česky', 0, 'mše sv.', ''],
       ['7', '10:00', 'česky', 0, 'mše sv.', 'varianta'],
@@ -352,6 +352,10 @@ describe('Marie finds the nearest mass', () => {
     openControls()
     expect(seznam().getByText('latinsky')).toBeInTheDocument()
     expect(screen.queryByText('Latine')).not.toBeInTheDocument()
+    // a dated exclusion is noise on a day the Mass does take place: the row keeps
+    // the rest of its note ("tridentská"), the weekly ordo keeps the whole note
+    expect(seznam().getByText(/tridentská/)).toBeInTheDocument()
+    expect(seznam().queryByText(/kromě 24\. 7\. 2026/)).not.toBeInTheDocument()
     // barrier-free icon from the index (aria-labelled, inline — row height unchanged)
     expect(screen.getAllByRole('img', { name: 'bezbariérový přístup' }).length).toBeGreaterThan(0)
     // Brno (>30 km) is not in the list

@@ -13,7 +13,7 @@ import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueDay, pragueIsoDate } from './domain/occurrences'
-import { noteShownOnDay } from './domain/notes'
+import { noteShownOnDay, withoutDatedExclusions } from './domain/notes'
 import { currentLiturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
 import { dayFromParam, dayOptions, dayToParam, litForChoice } from './domain/days'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domain/format'
@@ -1497,8 +1497,8 @@ function ServiceList({
                   {r.church.city && `${r.church.city} · `}
                   {fmtDistance(r.distanceKm)}
                   {r.service.type && ` · ${r.service.type}`}
-                  {/* a note naming another of the service's weekdays ("…není páteční mše") stays off this day's row */}
-                  <NoteText note={noteShownOnDay(r.service.note, 'days' in r.service ? r.service.days : '', isoDayOf(r.start)) ? r.service.note : ''} />
+                  {/* a note naming another of the service's weekdays ("…není páteční mše") stays off this day's row; a dated exclusion ("kromě 2. 11. 2026") is noise on a day it runs */}
+                  <NoteText note={noteShownOnDay(r.service.note, 'days' in r.service ? r.service.days : '', isoDayOf(r.start)) ? withoutDatedExclusions(r.service.note) : ''} />
                   {r.church.barrierFree && (
                     <>
                       {' · '}
