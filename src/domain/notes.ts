@@ -207,9 +207,13 @@ function parseSegment(seg: string): Pred | 'none' | null {
     return NEGATION.test(s) ? not(schoolYear) : schoolYear
   if (/^(?:pouze\s+|jen\s+)?(?:o|v|během)\s+(?:době\s+|období\s+)?(?:letních\s+)?prázdnin(?:ách)?$/.test(s)) return julyAugust
 
-  // advent ("v adventu rorátní" = a rorate mass — advent-only by definition)
-  // "pouze/jen" only restates the inclusion; "během" = "v"; "v době adventní" = advent
-  if (/^(?:pouze\s+|jen\s+)?(?:v|během)\s+(?:době\s+adventní|adventu(?:\s+rorátní)?)$/.test(s)) return advent
+  // "v adventu rorátní" describes the Advent form of a Mass held all year ("in
+  // Advent it is a roráty Mass"): every registry row with it is type "mše sv.", and
+  // the parish confirms e.g. Spořilov's Sunday 08:30 outside Advent. A description,
+  // not a condition. Roráty-only rows are type "rorátní mše sv." + "v adventu".
+  if (/^v\s+adventu\s+rorátní$/.test(s)) return 'none'
+  // advent: "pouze/jen" only restates the inclusion; "během" = "v"; "v době adventní" = advent
+  if (/^(?:pouze\s+|jen\s+)?(?:v|během)\s+(?:době\s+adventní|adventu)$/.test(s)) return advent
   if (
     /^(?:pouze\s+|jen\s+)?(?:v|během)\s+(?:době\s+|období\s+)?postní(?:\s+době)?$/.test(s) ||
     /^(?:pouze\s+|jen\s+)?(?:v|během)\s+postu$/.test(s)

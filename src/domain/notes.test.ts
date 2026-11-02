@@ -301,10 +301,22 @@ describe('long-tail variants', () => {
     expect(runs('mimo červenec - srpen', '2026-07-06')).toBe(false)
     expect(runs('mimo červenec - srpen', '2026-06-06')).toBe(true)
   })
-  it('v adventu rorátní = advent-only', () => {
-    expect(runs('v adventu rorátní', '2026-12-06')).toBe(true)
-    expect(runs('v adventu rorátní', '2026-07-06')).toBe(false)
+  // "v adventu rorátní" on a plain Mass row describes the Advent form of a Mass
+  // held all year ("in Advent it is a roráty Mass"). All 8 registry rows with this
+  // note are type "mše sv.". Reading it as advent-only hid Spořilov's Sunday 08:30
+  // (confirmed by the parish, 1 Nov 2026) and its Wed–Fri 18:00 outside Advent.
+  // A roráty-only row is written as type "rorátní mše sv." + note "v adventu".
+  it('v adventu rorátní = a variant, not a restriction: the Mass runs all year', () => {
+    for (const iso of ['2026-11-08', '2026-12-06', '2027-03-07', '2027-07-04']) expect(runs('v adventu rorátní', iso)).toBe(true)
     expect(noteUncertain('v adventu rorátní')).toBe(false)
+  })
+  it('the real restriction still holds: rorátní row "v adventu" + its pair "kromě adventu …" (sv. Ignác, 06:15)', () => {
+    expect(runs('v adventu', '2026-12-07')).toBe(true)
+    expect(runs('v adventu', '2026-11-09')).toBe(false)
+    expect(runs('kromě adventu a letních prázdnin', '2026-12-07')).toBe(false)
+    expect(runs('kromě adventu a letních prázdnin', '2026-11-09')).toBe(true)
+    expect(runs('v adventu, v kapli na faře', '2026-11-09')).toBe(false)
+    expect(runs('pouze v adventu', '2026-11-08')).toBe(false)
   })
   it('mimo dobu postní', () => {
     expect(runs('mimo dobu postní', '2026-02-20')).toBe(false) // Lent 2026: 18 Feb – 4 Apr

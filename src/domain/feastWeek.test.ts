@@ -47,6 +47,14 @@ describe('servicesOnDate', () => {
     const s = svc({ regular: [row('17', '18:00', 'na faře, kromě 2. 11. 2026')] })
     expect(servicesOnDate(s, '2026-11-01')[0].note).toBe('na faře')
   })
+  it('Praha-Spořilov (1000110): Sunday 08:30 "v adventu rorátní" is on an ordinary November Sunday and in Advent', () => {
+    const s = svc({
+      regular: [row('7', '08:30', 'v adventu rorátní'), row('7', '10:30', 'pro rodiny s dětmi, mimo červenec až srpen'), row('345', '18:00', 'v adventu rorátní')],
+    })
+    expect(servicesOnDate(s, '2026-11-08').map((x) => x.time)).toEqual(['08:30', '10:30'])
+    expect(servicesOnDate(s, '2026-11-04').map((x) => x.time)).toEqual(['18:00'])
+    expect(servicesOnDate(s, '2026-12-06').map((x) => `${x.time} ${x.note}`)).toEqual(['08:30 v adventu rorátní', '10:30 pro rodiny s dětmi, mimo červenec až srpen'])
+  })
   it('a one-off repeating the weekly Mass prints once', () => {
     const s = svc({
       regular: [row('1', '18:00')],
