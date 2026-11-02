@@ -12,6 +12,12 @@
    "pr": "https://github.com/Chartres/bohosluzby/pull/86",
    "merged": true,
    "live_checked": "2026-11-01 ~17:16 UTC (18:16 CET) at 390 px. /kostel/80001507647896/ shows 'tomorrow 18:00 mše sv.' /dusicky/brno/ lists Slatina 18:00 on 2 Nov as 'mimořádná'."
+  },
+  {
+   "title": "2 Nov follow-up (flywheel #119): hide dated 'kromě D. M. YYYY' on rows shown for a date (feast pages, day list, church feast-week block; the weekly ordo keeps it) + ČBK data-quality list docs/registry-quality-hlaseni.md (not sent)",
+   "pr": "https://github.com/Chartres/bohosluzby/pull/88",
+   "merged": true,
+   "live_checked": "2026-11-02 ~06:57 UTC (07:57 CET) at 390 px, no horizontal scroll. /dusicky/havlickuv-brod/: the 1 Nov 18:00 Nanebevzetí P. Marie row reads 'mše svatá' (before: 'mše svatá · kromě 2. 11. 2026'), and no Dušičky page has the phrase. Day list (Plzeň, ?den=nedele): the u františkánů 14:00 row reads 'mše svatá v vietnamském jazyce', without 'kromě 1. 11. 2026'. /kostel/60002727640371/ weekly ordo still shows '14:00 … v vietnamském jazyce, kromě 1. 11. 2026'. CI: test + android green. Independent diff review: no blocking findings. It ran the helper on all 1,656 distinct registry notes: 15 change, and only the excluded date's runsOn differs."
   }
  ],
  "data_check": {
@@ -37,57 +43,120 @@
  "decisions": [
   {
    "question": "Podolí and Strakonice: this morning's reviewer couldn't reach the source. Tonight the same sources load. Ship on them, or require a second, different source?",
-   "options": ["ship if the independent reviewer can read the source tonight", "require a second source on a different site"],
+   "options": [
+    "ship if the independent reviewer can read the source tonight",
+    "require a second source on a different site"
+   ],
    "default_taken": "ship if the reviewer can read it (the reviewer did: OK on both)",
    "why": "The rule is 'a source both checkers can read'. Strakonice also has a second confirmation on the parish calendar page. Podolí's own site has nothing dated, so the Braník post is the only source. Taking a row out is a one-entry revert."
   },
   {
    "question": "Krásné Pole's November JPG prints no year",
-   "options": ["count it as 2026 (weekdays fit, 29.11 = 1. neděle adventní, uploaded under /2026/11/)", "hold it like this morning's undated Brno-Slatina schedule"],
+   "options": [
+    "count it as 2026 (weekdays fit, 29.11 = 1. neděle adventní, uploaded under /2026/11/)",
+    "hold it like this morning's undated Brno-Slatina schedule"
+   ],
    "default_taken": "count it as 2026",
    "why": "It's a dated monthly programme, not a standing schedule. 29 Nov as the 1st Sunday of Advent fits 2026, not 2020. The reviewer agreed."
   },
   {
    "question": "Brno-Slatina was held this morning because the page shows no year",
-   "options": ["ship, using the church's own Google Calendar event dated 2026-11-02 18:00 for the year", "keep holding"],
+   "options": [
+    "ship, using the church's own Google Calendar event dated 2026-11-02 18:00 for the year",
+    "keep holding"
+   ],
    "default_taken": "ship",
    "why": "The calendar gives the dated record the rule asks for, and it matches the page."
   },
   {
    "question": "Notices that give 2 Nov times without naming the church (Třebíč 'na hřbitově', Klatovy 'KLATOVY', Líšeň, Lesná, Nebušice, Dejvice)",
-   "options": ["infer the church", "need it named"],
+   "options": [
+    "infer the church",
+    "need it named"
+   ],
    "default_taken": "need it named (none added)",
    "why": "Same rule as 28 Oct and this morning. A wrong place is worse than a missing row."
   },
   {
    "question": "Plzeň Domeček 18:00",
-   "options": ["add it from the regular November rota", "leave it out"],
+   "options": [
+    "add it from the regular November rota",
+    "leave it out"
+   ],
    "default_taken": "leave it out",
    "why": "The parish's own 2 Nov list doesn't name Domeček. The same friars have Roudná at 18:00."
   },
   {
    "question": "Note text on the added rows",
-   "options": ["copy the source's phrase (e.g. 'za všechny věrné zemřelé')", "plain 'mše sv.' with no note"],
+   "options": [
+    "copy the source's phrase (e.g. 'za všechny věrné zemřelé')",
+    "plain 'mše sv.' with no note"
+   ],
    "default_taken": "plain 'mše sv.'",
    "why": "79 of the existing entries use it, and the row wording is Pavol's call."
   },
   {
    "question": "Merge with the android CI job still running",
-   "options": ["wait for every job", "merge on the gate (the test job: typecheck · test · build)"],
+   "options": [
+    "wait for every job",
+    "merge on the gate (the test job: typecheck · test · build)"
+   ],
    "default_taken": "merge on the gate (#85, #86)",
    "why": "AGENTS.md says 'Block only on these.' The diffs are data only."
   },
   {
    "question": "Stop early or keep re-checking until 22:00",
-   "options": ["stop after two sweeps (about 18:20 CET)", "wait and re-sweep later"],
+   "options": [
+    "stop after two sweeps (about 18:20 CET)",
+    "wait and re-sweep later"
+   ],
    "default_taken": "stop after two sweeps",
    "why": "The second sweep found nothing new. Waiting for later posts would need scheduling tools, which the brief rules out."
   },
   {
    "question": "node_modules is committed as a symlink, and npm ci replaced it locally",
-   "options": ["commit the deletion", "leave it, assume-unchanged locally"],
+   "options": [
+    "commit the deletion",
+    "leave it, assume-unchanged locally"
+   ],
    "default_taken": "leave it",
    "why": "Same as this morning; it's outside the data pass."
+  },
+  {
+   "question": "Spořilov on the ČBK list? This morning's note said its Sunday 08:30 is missing.",
+   "options": [
+    "list it for ČBK",
+    "leave it off: the registry has 08:30; the app hides it"
+   ],
+   "default_taken": "leave it off and record it as an app bug",
+   "why": "The registry row is ['7','08:30',…,'v adventu rorátní']. parseNote reads 'v adventu rorátní' as 'only in Advent' (runsOn 8 Nov = false, 6 Dec = true), so the app hides Spořilov's regular Sunday 08:30 and its Wed–Fri 18:00 outside Advent. That's ours to fix, not ČBK's."
+  },
+  {
+   "question": "Where the ČBK list lives",
+   "options": [
+    "hand-edit docs/registry-quality.md",
+    "a separate hand-kept file linked from it"
+   ],
+   "default_taken": "separate file docs/registry-quality-hlaseni.md, with the link added in data/registry-quality.mjs too",
+   "why": "registry-quality.md is regenerated by the script, which would overwrite hand edits."
+  },
+  {
+   "question": "Old registry notes that are dated exclusions too (e.g. 'kromě 22.12.2019')",
+   "options": [
+    "hide them on dated views too",
+    "only hide ours"
+   ],
+   "default_taken": "hide them (same regex)",
+   "why": "The date is past, and parseNote already treats it as a dated exclusion. Which days a service runs is unchanged."
+  },
+  {
+   "question": "Merge #88 on the gate, or wait for android too",
+   "options": [
+    "gate only",
+    "wait for every job"
+   ],
+   "default_taken": "waited for every job",
+   "why": "App code changed, and it ships in the Android bundle."
   }
  ],
  "next": [
@@ -95,6 +164,9 @@
   "Pavol's call: relax the 'church named' rule for single-cemetery-church towns? Třebíč Horka-Domky 16:00 and Klatovy 17:00 are the clearest cases.",
   "Pavol's call: a browser pass for the about 70 walled churches (České Budějovice, Zlín, Cheb and others). They are walls, not missing notices.",
   "Add tonight's registry problems (Děčín sv. Kříž 7:00 vs 07:30, Česká Lípa sv. Máří Magdaléna Monday 17:30) to the ČBK data-quality list. Sending it is outreach, so that part is Pavol's.",
-  "After 2 Nov: the dated one-offs expire on their own (corrections for past dates are skipped). No clean-up needed."
+  "After 2 Nov: the dated one-offs expire on their own (corrections for past dates are skipped). No clean-up needed.",
+  "Fix the 'v adventu rorátní' parse (Spořilov, and any 'v adventu …' note that describes a variant, not a restriction). The regular Mass is hidden outside Advent today. Needs a TDD change in src/domain/notes.ts; scope it against all registry notes first.",
+  "Sending docs/registry-quality-hlaseni.md to ČBK is Pavol's call (decision page).",
+  "Still with Pavol, untouched: submitting iOS 1.5 (build 89) for review. I dispatched no store build for #88."
  ]
 }
