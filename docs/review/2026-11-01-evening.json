@@ -18,6 +18,12 @@
    "pr": "https://github.com/Chartres/bohosluzby/pull/88",
    "merged": true,
    "live_checked": "2026-11-02 ~06:57 UTC (07:57 CET) at 390 px, no horizontal scroll. /dusicky/havlickuv-brod/: the 1 Nov 18:00 Nanebevzetí P. Marie row reads 'mše svatá' (before: 'mše svatá · kromě 2. 11. 2026'), and no Dušičky page has the phrase. Day list (Plzeň, ?den=nedele): the u františkánů 14:00 row reads 'mše svatá v vietnamském jazyce', without 'kromě 1. 11. 2026'. /kostel/60002727640371/ weekly ordo still shows '14:00 … v vietnamském jazyce, kromě 1. 11. 2026'. CI: test + android green. Independent diff review: no blocking findings. It ran the helper on all 1,656 distinct registry notes: 15 change, and only the excluded date's runsOn differs."
+  },
+  {
+   "title": "2 Nov follow-up 2 (flywheel #119): 'v adventu rorátní' is a variant, not an advent-only restriction. Spořilov's Sunday 08:30 and Wed–Fri 18:00, and 5 more rows at sv. Ignác, Břevnov and Chodov, show all year again.",
+   "pr": "https://github.com/Chartres/bohosluzby/pull/90",
+   "merged": true,
+   "live_checked": "2026-11-02 ~10:22 UTC (11:22 CET) at 390 px, no horizontal scroll, after the bundle hash changed (index-B1UbyZMp → index-DT4QHFGD). /kostel/1000110/: NEDĚLE 08:30 'mše sv. · v adventu rorátní' and 10:30; STŘEDA/ČTVRTEK/PÁTEK 18:00; no row struck through as paused. Day list ?den=nedele (Sunday 8 Nov) from Spořilov: '08:30 farní kostel sv. Anežky České a sv. patronů českých, Praha-Spořilov · 400 m · mše sv. · v adventu rorátní'. CI: test + android green. Independent diff review: no blocking findings."
   }
  ],
  "data_check": {
@@ -37,7 +43,8 @@
    "Nothing posted for 2 Nov yet (by about 18:20 CET): Teplice ('Ohlášky doposud nebyly zveřejněny'), Opava minorites, farnost-litomerice.cz, Zábrdovice, Husovice, Soběšice, Plzeň-Bory, Košíře, Modřany, sv. Jindřich, Bohnice, Střešovice, Na Balkáně, sv. Vojtěch Dejvice, the Augustinians at Malá Strana, and most Olomouc-area chapels. Krnov, Jihlava and Litoměřice cathedral posted ohlášky with no 2 Nov Mass times.",
    "Registry problems seen, not changed: Děčín sv. Kříž's undated schedule says Monday 7.00, while the site has 07:30. Česká Lípa sv. Máří Magdaléna shows 17:30 on 2 Nov, but this morning's calendar check found no Monday Mass there. The Slatina page has a typo, 'čtvrtek 4.11.', which should be 5.11 (the ICS has the 5th).",
    "Review: each batch had an independent subagent re-fetch every source and check the 2026 date, church, time and quote. Batch 1: 3/3 OK. Batch 2: 1/1 OK. Images and .doc files were read directly (by eye or after converting to text). Data only; no code changed. data/corrections.test.mjs passed locally and in CI. corrections.json now has 110 entries.",
-   "Per-church results with source and note: docs/review/2026-11-01-evening-check.json."
+   "Per-church results with source and note: docs/review/2026-11-01-evening-check.json.",
+   "Season-phrase census for #90: 144 registry rows, 96 distinct notes mention advent, Lent, Easter or Christmas. Advent: 'v adventu' ×10, 'pouze v adventu' ×1 and 'v adventu, v kapli na faře' ×1, all on type 'rorátní mše sv.', are restrictions and unchanged. 'v adventu rorátní' ×8, all on type 'mše sv.', are variants: they were wrongly hidden outside Advent and are now shown all year. 'v adventu od 7:00 hodin roráty' ×2, 'v adventu v 6:30' ×1 and 'v adventu 2019' ×1 were already uncertain (shown, note printed) and are unchanged. 'kromě/mimo adventu …' ×10 are restrictions and unchanged. Lent and Easter phrases hide nothing wrongly; 'Od Velikonoc do 14. 9.' and 'od Božího Hodu velikonočního do … Krista Krále' are under-read (run all year) and left alone. Across all 1,650 distinct registry notes, day by day for a year, only 'v adventu rorátní' changes."
   ]
  },
  "decisions": [
@@ -157,6 +164,15 @@
    ],
    "default_taken": "waited for every job",
    "why": "App code changed, and it ships in the Android bundle."
+  },
+  {
+   "question": "Show the 'v adventu rorátní' note only in Advent, or all year?",
+   "options": [
+    "all year (the text is true on any date)",
+    "only during Advent (new date-aware display logic)"
+   ],
+   "default_taken": "all year",
+   "why": "It reads as 'in Advent: roráty', so it's correct on any date. Hiding note text by date would be new display logic for one phrase."
   }
  ],
  "next": [
@@ -167,6 +183,8 @@
   "After 2 Nov: the dated one-offs expire on their own (corrections for past dates are skipped). No clean-up needed.",
   "Fix the 'v adventu rorátní' parse (Spořilov, and any 'v adventu …' note that describes a variant, not a restriction). The regular Mass is hidden outside Advent today. Needs a TDD change in src/domain/notes.ts; scope it against all registry notes first.",
   "Sending docs/registry-quality-hlaseni.md to ČBK is Pavol's call (decision page).",
-  "Still with Pavol, untouched: submitting iOS 1.5 (build 89) for review. I dispatched no store build for #88."
+  "Still with Pavol, untouched: submitting iOS 1.5 (build 89) for review. I dispatched no store build for #88.",
+  "Chodov, kaple sv. Terezie (1000895), Thursday 06:45 'v adventu rorátní' (registry 2018) is the one row where an advent-only reading is still plausible. If the parish's schedule says advent-only, fix it with a per-row correction, not by changing the parser back.",
+  "Optional: read 'Od Velikonoc do 14. 9.' and 'od Božího Hodu velikonočního do Slavnosti Ježíše Krista Krále' as ranges. Today they run all year, which never hides a Mass but can list one out of season."
  ]
 }
