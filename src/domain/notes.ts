@@ -461,3 +461,18 @@ export function noteShownOnDay(note: string, days: string, day: number | string)
   const own = NAMED_DAYS.filter(([d, re]) => days.includes(String(d)) && re.test(note)).map(([d]) => String(d))
   return own.length === 0 || own.includes(String(day))
 }
+
+// A whole "kromě D. M. YYYY" segment, with the separator before it.
+// Lookahead only — no lookbehind (iOS 15 WebKit, see parseNote).
+const DATED_EXCL_PART = /(?:^|\s*[,;]\s*)kromě\s+\d{1,2}\.\s*\d{1,2}\.\s*\d{4}\.?(?=\s*[,;]|\s*$)/gi
+
+/** The note without its dated exclusions ("kromě 2. 11. 2026", data/corrections.mjs),
+ * for a row shown on one date: it never falls on the excluded day, so there the
+ * phrase is noise. The church's weekly ordo keeps the full note. */
+export function withoutDatedExclusions(note: string): string {
+  if (!note || !/kromě/i.test(note)) return note
+  return note
+    .replace(DATED_EXCL_PART, '')
+    .replace(/^\s*[,;]\s*/, '')
+    .trim()
+}

@@ -4,7 +4,7 @@
 // days. The name of 2 Nov is the missal's ("Vzpomínka na všechny věrné
 // zemřelé") — the parishes' own wording; "Dušičky" is the folk name.
 import type { ChurchServices, ExtraService } from './data'
-import { parseNote } from './notes'
+import { parseNote, withoutDatedExclusions } from './notes'
 import { pragueToday } from './occurrences'
 
 export const ALL_SAINTS = 'Slavnost Všech svatých'
@@ -51,6 +51,6 @@ export function servicesOnDate(svc: ChurchServices, iso: string): ExtraService[]
   const weekly = svc.regular
     .filter((s) => s.days.includes(dow) && parseNote(s.note).runsOn(y, m, d))
     .filter((s) => !extras.some((x) => toMin(x.time) === toMin(s.time) && mass(x.type) === mass(s.type) && x.lang === s.lang && x.greek === s.greek))
-    .map(({ days: _days, ...s }) => ({ ...s, date: iso }))
+    .map(({ days: _days, ...s }) => ({ ...s, note: withoutDatedExclusions(s.note), date: iso }))
   return [...weekly, ...extras].sort((a, b) => toMin(a.time) - toMin(b.time))
 }

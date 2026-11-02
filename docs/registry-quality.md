@@ -7,6 +7,9 @@ Datum aktualizace říká, kdy farnost záznam naposledy změnila — ne že jso
 Starý záznam může být správný; jen ho nikdo dlouho nepotvrdil, a aplikace proto
 u něj zobrazuje výzvu „ověřte si u farnosti“.
 
+Konkrétní ručně ověřené nesrovnalosti (kostel, co uvádí rejstřík, co farnost):
+[`registry-quality-hlaseni.md`](registry-quality-hlaseni.md).
+
 | Ukazatel | Počet | Podíl |
 | --- | --- | --- |
 | Kostely s pořadem bohoslužeb | 4000 | 100 % |

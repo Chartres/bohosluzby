@@ -2,7 +2,7 @@
 // provably doesn't run ("mimo červenec a srpen"). Only provable exclusions
 // exclude; unparseable conditional notes stay visible and are flagged uncertain.
 import { describe, expect, it } from 'vitest'
-import { parseNote, noteUncertain, noteShownOnDay } from './notes'
+import { parseNote, noteUncertain, noteShownOnDay, withoutDatedExclusions } from './notes'
 
 const runs = (note: string, iso: string) => {
   const [y, m, d] = iso.split('-').map(Number)
@@ -432,5 +432,27 @@ describe('one excluded date (data/corrections.mjs)', () => {
     expect(runs(note, '2026-11-02')).toBe(false)
     expect(runs(note, '2026-11-09')).toBe(runs('kromě měsíce května', '2026-11-09'))
     expect(noteUncertain(note)).toBe(noteUncertain('kromě měsíce května'))
+  })
+})
+
+// A dated exclusion (data/corrections.mjs: "kromě 2. 11. 2026") is only news on
+// the church's weekly ordo. A row shown for a date never falls on the excluded
+// day, so on the feast pages and the day list the phrase is noise.
+describe('withoutDatedExclusions — for rows shown on one date', () => {
+  it('drops a lone dated exclusion', () => {
+    expect(withoutDatedExclusions('kromě 2. 11. 2026')).toBe('')
+  })
+  it('drops it from the end and keeps the rest of the note as written', () => {
+    expect(withoutDatedExclusions('zimní čas, kromě 2. 11. 2026')).toBe('zimní čas')
+    expect(withoutDatedExclusions('kromě měsíce května, kromě 2. 11. 2026')).toBe('kromě měsíce května')
+    expect(withoutDatedExclusions('p; během adventu není, kromě 2. 11. 2026')).toBe('p; během adventu není')
+  })
+  it('drops several, wherever they sit', () => {
+    expect(withoutDatedExclusions('kromě 1. 11. 2026, na faře, kromě 2. 11. 2026.')).toBe('na faře')
+  })
+  it('leaves month, holiday and weekday exclusions alone', () => {
+    expect(withoutDatedExclusions('kromě července a srpna')).toBe('kromě července a srpna')
+    expect(withoutDatedExclusions('kromě 1. soboty v měsíci')).toBe('kromě 1. soboty v měsíci')
+    expect(withoutDatedExclusions('')).toBe('')
   })
 })

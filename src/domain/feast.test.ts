@@ -55,6 +55,11 @@ describe('servicesOn — what the registry says for one date', () => {
     expect(got[1].uncertain).toBe(true)
   })
 
+  it('leaves the dated exclusion out of the note, keeps the rest, reads it for uncertainty', () => {
+    const e = entry([['7', '18:00', 'česky', 0, '', 'zimní čas, kromě 2. 11. 2026']])
+    expect(servicesOn(e, '2026-11-01')[0].note).toBe('zimní čas')
+  })
+
   it('prints a weekly row once when the parish re-entered it as a one-off for the day', () => {
     const e = entry([['7', '8:00', 'česky', 0, '', '']], [['2026-11-01', '08:00', 'česky', 0, '', 'slavnost']])
     expect(servicesOn(e, '2026-11-01')).toHaveLength(1)
@@ -148,6 +153,17 @@ describe('feastCityPage — /dusicky/<city>/', () => {
     })
     expect(p.title).toContain('mše svatá Hlinsko (Skuteč)')
     expect(p.body).not.toContain('</a>, Hlinsko')
+  })
+
+  it("drops a row's dated exclusion on the other feast day (Havlíčkův Brod, 1 Nov 18:00)", () => {
+    const p = feastCityPage({
+      city: { name: 'Havlíčkův Brod', slug: 'havlickuv-brod', churches: [{ id: '4', name: 'kostel Nanebevzetí P. Marie', city: 'Havlíčkův Brod' }] },
+      entries: { '4': entry([['1234567', '18:00', 'česky', 0, '', 'kromě 2. 11. 2026']]) },
+      today: '2026-10-27',
+    })
+    expect(p.body).toContain('18:00')
+    expect(p.body).not.toContain('kromě 2. 11. 2026')
+    expect(p.body).not.toMatch(/mše svatá · <\/|mše svatá · ·/)
   })
 
   it('counts its services, so a town with none on both days gets no page', () => {

@@ -6,7 +6,7 @@
 // weekday whose note doesn't provably exclude it, plus one-offs dated that day.
 // Node imports this via type stripping: explicit .ts specifiers.
 import type { RawEntry } from './churchPage.ts'
-import { parseNote } from './notes.ts'
+import { parseNote, withoutDatedExclusions } from './notes.ts'
 import { isConfession, isStale, normalizeLang } from './registry.ts'
 import { churchUrl, SITE_ORIGIN } from './site.ts'
 import { DIOCESES } from './diocese.ts'
@@ -82,7 +82,7 @@ export function servicesOn(entry: RawEntry | undefined, iso: string): FeastServi
     type: r[4].trim(),
     lang: normalizeLang(r[2]),
     greek: r[3] === 1,
-    note: r[5].trim(),
+    note: withoutDatedExclusions(r[5].trim()),
     extra,
     uncertain: !extra && parseNote(r[5]).uncertain,
   })
