@@ -152,6 +152,44 @@ describe('month ranges (období od … do …)', () => {
   })
 })
 
+// Movable bounds: the registry has "Od Velikonoc do 14. 9." and "od Božího Hodu
+// velikonočního do Slavnosti Ježíše Krista Krále (včetně)". Read as ranges, not
+// all year. Easter 2026 = 5 Apr, 2027 = 28 Mar; Christ the King 2026 = 22 Nov
+// (the Sunday before Advent, which starts 29 Nov).
+describe('ranges with movable feasts (Velikonoce, Krista Krále)', () => {
+  it('Od Velikonoc do 14. 9.', () => {
+    const n = 'Od Velikonoc do 14. 9.'
+    expect(runs(n, '2026-04-04')).toBe(false)
+    expect(runs(n, '2026-04-05')).toBe(true)
+    expect(runs(n, '2026-09-14')).toBe(true)
+    expect(runs(n, '2026-09-15')).toBe(false)
+    expect(runs(n, '2026-12-06')).toBe(false)
+    expect(runs(n, '2027-03-27')).toBe(false) // Easter moves each year
+    expect(runs(n, '2027-03-28')).toBe(true)
+    expect(noteUncertain(n)).toBe(false)
+  })
+  it('od Božího Hodu velikonočního do Slavnosti Ježíše Krista Krále (včetně)', () => {
+    const n = 'od Božího Hodu velikonočního do Slavnosti Ježíše Krista Krále (včetně)'
+    expect(runs(n, '2026-11-08')).toBe(true)
+    expect(runs(n, '2026-11-22')).toBe(true) // včetně
+    expect(runs(n, '2026-11-29')).toBe(false) // 1st Sunday of Advent
+    expect(runs(n, '2027-01-03')).toBe(false)
+    expect(runs(n, '2027-03-21')).toBe(false)
+    expect(runs(n, '2027-03-28')).toBe(true)
+    expect(runs(n, '2027-11-21')).toBe(true) // Christ the King 2027
+    expect(runs(n, '2027-11-28')).toBe(false)
+    expect(noteUncertain(n)).toBe(false)
+  })
+  it('a wrapping range uses each year\'s feast: od Krista Krále do Velikonoc', () => {
+    const n = 'od Krista Krále do Velikonoc'
+    expect(runs(n, '2026-11-22')).toBe(true)
+    expect(runs(n, '2027-01-10')).toBe(true)
+    expect(runs(n, '2027-03-28')).toBe(true)
+    expect(runs(n, '2027-04-04')).toBe(false)
+    expect(runs(n, '2026-11-15')).toBe(false)
+  })
+})
+
 describe('summer/winter time (DST)', () => {
   it('letní čas: between last March and last October Sundays', () => {
     expect(runs('letní čas', '2026-07-06')).toBe(true)
