@@ -123,6 +123,8 @@ function rorateRows(id: string, entry: RawEntry, advent: { start: string; end: s
   const out: Row[] = []
   for (const r of entry.s) {
     if (!RORATE.test(`${r[4]} ${r[5]}`) || isConfession(r[4])) continue
+    // "v adventu 2019": the parish wrote it for a past Advent
+    if ([...r[5].matchAll(/\b(20\d\d)\b/g)].some((m) => Number(m[1]) < Number(advent.end.slice(0, 4)))) continue
     const rule = parseNote(r[5])
     const on = [...r[0]].filter((wd) =>
       days.some((d) => {

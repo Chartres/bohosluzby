@@ -66,6 +66,18 @@ describe('seasonCityPage advent — roráty', () => {
     expect(page.body).toContain('rejstřík ČBK, ověřen 1. 5. 2026')
   })
 
+  it('skips a roráty row whose note names a past year ("v adventu 2019")', () => {
+    const p = seasonCityPage({
+      kind: 'advent',
+      city: CITY,
+      entries: { '1': entry([['35', '06:00', 'česky', 0, 'rorátní mše sv.', 'v adventu 2019'], ['24', '06:00', 'česky', 0, 'rorátní mše sv.', 'v adventu 2026']]) },
+      corrections: [],
+      today: '2026-11-03',
+    })
+    expect(p.services).toBe(1)
+    expect(p.body).not.toContain('2019')
+  })
+
   it('is a plain page: title, canonical url, no script, escapes registry text', () => {
     expect(page.url).toBe('https://bohosluzby.dravec.org/advent/brno/')
     expect(page.title).toContain('Roráty 2026')
