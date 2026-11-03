@@ -119,6 +119,13 @@
   "data_over_the_air": "#79–#81, #85, #86: Dušičky corrections reach the app from the site without a build"
  },
  "build_90": {
-  "status": "pending"
+  "decision": "cut: yes",
+  "why": "AGENTS.md: every user-facing change merged to main also goes to TestFlight. #88, #90 and #93 are user-facing but not visual: they change which rows and note text show, not the layout. So the after-shots gate for visual changes doesn't apply. No other Release iOS run was in progress.",
+  "version": "1.5 (90)",
+  "commit": "28f752e (main, includes #88, #90, #93)",
+  "run": "https://github.com/Chartres/bohosluzby/actions/runs/41674264144",
+  "result": "success, 2026-11-03 16:35 UTC. Gate (typecheck + tests) passed; fastlane ios beta: 'Successfully uploaded the new binary to App Store Connect' (upload_to_testflight, VITE_BUILD=90). Processing was not awaited (skip_waiting_for_build_processing), so the build appears in TestFlight once Apple finishes processing, usually within minutes.",
+  "submitted_for_review": false,
+  "note": "Submit for Review stays Pavol's call. Build 89 is still on the 1.5 version; attaching 90 to the version and expiring 89 is his too, if he wants 90 to be the candidate."
  }
 }
