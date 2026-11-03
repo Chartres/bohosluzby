@@ -197,7 +197,7 @@ function rowsHtml(rows: Row[], city: City, names: Map<string, { name: string; ci
 
 const NOTE_ADVENT =
   'Roráty jsou ranní (někde večerní) mše v adventu, často při svíčkách. Rejstřík ČBK je uvádí jen u menšiny kostelů; ' +
-  'doplňujeme je z adventních ohlášek farností a u každého řádku je odkaz na zdroj. Před cestou si čas ověřte u farnosti.'
+  'doplňujeme je z adventních ohlášek farností a u každého řádku je zdroj. Před cestou si čas ověřte u farnosti.'
 const NOTE_VANOCE =
   'Vánoční pořad farnosti zveřejňují v prosinci a do rejstříku ČBK ho většinou nezapisují. ' +
   'Proto tu nejsou běžné týdenní časy: uvádíme jen bohoslužby zapsané přímo na tyto dny, z rejstříku nebo z ohlášek farností (s odkazem). ' +
