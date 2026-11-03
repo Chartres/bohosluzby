@@ -180,6 +180,18 @@ describe('ranges with movable feasts (Velikonoce, Krista Krále)', () => {
     expect(runs(n, '2027-11-28')).toBe(false)
     expect(noteUncertain(n)).toBe(false)
   })
+  it("a range whose other sentence says where the winter Mass goes stays shown, flagged (Štěkeň)", () => {
+    const n = 'v období od velikonoc do 01.11.;  přes zimu jsou mše svaté v kapli kláštera Congregatio Jesu ve Štěkni.'
+    expect(runs(n, '2026-11-08')).toBe(true)
+    expect(noteUncertain(n)).toBe(true)
+  })
+  it('wrap ending at Easter and Christ the King when Christmas is on a Monday (2028)', () => {
+    expect(runs('období od 1. 11. do Velikonoc', '2027-03-28')).toBe(true)
+    expect(runs('období od 1. 11. do Velikonoc', '2027-03-29')).toBe(false)
+    expect(runs('od Krista Krále do Velikonoc', '2028-11-26')).toBe(true)
+    expect(runs('od Krista Krále do Velikonoc', '2028-11-25')).toBe(false)
+    expect(runs('od velikonoční neděle do 31. 10.', '2027-03-28')).toBe(true)
+  })
   it('a wrapping range uses each year\'s feast: od Krista Krále do Velikonoc', () => {
     const n = 'od Krista Krále do Velikonoc'
     expect(runs(n, '2026-11-22')).toBe(true)

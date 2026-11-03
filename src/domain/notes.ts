@@ -174,7 +174,6 @@ function parseInclusion(s: string, negated = false): Pred | null {
   return null
 }
 
-/** "od X do Y" boundary → [month, day] (day defaults per edge). */
 /** A range bound as [month, day] for a given year — fixed dates ignore the year,
  * movable feasts (Velikonoce, Krista Krále) don't. */
 type Bound = (y: number) => [number, number]
@@ -323,7 +322,7 @@ function parseSegment(seg: string): Pred | 'none' | null {
 // Descriptive segments ("pro děti", "s nedělní platností", "č/p") pass silently.
 const CONDITIONAL = new RegExp(
   // 'svát(?:ek|k|c)' not bare 'svát' — "svátost smíření" is not a feast condition
-  `krom|mimo|vyjma|výjimk|pouze|\\bjen\\b|nepravidel|není|nejsou|nekoná|neslouž|nebývá|odpadá|období|prázdnin|čas|týd(?:en|n)|měsíc|advent|postní|škol|sud[ýé]|lich[ýé]|svát(?:ek|k|c)|ohlášen|\\d+\\s*[x×]|${MONTH_RE}`,
+  `krom|mimo|vyjma|výjimk|pouze|\\bjen\\b|nepravidel|není|nejsou|nekoná|neslouž|nebývá|odpadá|období|prázdnin|čas|týd(?:en|n)|měsíc|advent|postní|škol|přes\\s+zimu|sud[ýé]|lich[ýé]|svát(?:ek|k|c)|ohlášen|\\d+\\s*[x×]|${MONTH_RE}`,
 )
 
 // Frequency markers that a sibling segment makes concrete ("1x za měsíc, 1. týden v měsíci").
