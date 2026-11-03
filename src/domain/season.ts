@@ -108,7 +108,8 @@ interface Row {
 }
 
 function sourceHtml(c: SeasonCorrection | undefined, entry: RawEntry): string {
-  if (c) return `<a href="${esc(c.source)}">ohlášky farnosti</a> (${esc(c.source_date)})`
+  if (c && /^https?:\/\//i.test(c.source)) return `<a href="${esc(c.source)}">ohlášky farnosti</a> (${esc(c.source_date)})`
+  if (c) return `ohlášky farnosti (${esc(c.source_date)})`
   return entry.u ? `rejstřík ČBK, ověřen ${esc(dateCz(entry.u))}` : 'rejstřík ČBK'
 }
 
@@ -125,15 +126,20 @@ function rorateRows(id: string, entry: RawEntry, advent: { start: string; end: s
     if (!RORATE.test(`${r[4]} ${r[5]}`) || isConfession(r[4])) continue
     // "v adventu 2019": the parish wrote it for a past Advent
     if ([...r[5].matchAll(/\b(20\d\d)\b/g)].some((m) => Number(m[1]) < Number(advent.end.slice(0, 4)))) continue
+    // a year-round "rorátní" row that never says Advent is a registry label, not roráty
+    if (!/advent/i.test(`${r[4]} ${r[5]}`)) continue
     const rule = parseNote(r[5])
-    const on = [...r[0]].filter((wd) =>
+    // no roráty on an Advent Sunday: a Sunday row is the ordinary Sunday Mass
+    const on = [...r[0]].filter((wd) => wd !== '7').filter((wd) =>
       days.some((d) => {
         const [y, m, dd] = d.split('-').map(Number)
         return String(new Date(utc(d)).getUTCDay() || 7) === wd && rule.runsOn(y, m, dd)
       }),
     )
     if (!on.length) continue
-    out.push({ churchId: id, time: hhmm(r[1]), when: regDays(on.join('')), type: r[4], lang: normalizeLang(r[2]), greek: r[3] === 1, note: r[5].trim(), source: sourceHtml(undefined, entry) })
+    // "v adventu od 7:00 hodin roráty": the note gives the roráty time, the row the weekly one
+    const own = /(?:od|v)\s+(\d{1,2})[:.](\d{2})\s*(?:hod\S*\s+)?roráty/i.exec(r[5])
+    out.push({ churchId: id, time: own ? `${own[1].padStart(2, '0')}:${own[2]}` : hhmm(r[1]), when: regDays(on.join('')), type: r[4], lang: normalizeLang(r[2]), greek: r[3] === 1, note: r[5].trim(), source: sourceHtml(undefined, entry) })
   }
   for (const r of entry.x ?? []) {
     if (r[0] < advent.start || r[0] > advent.end || !RORATE.test(`${r[4]} ${r[5]}`)) continue

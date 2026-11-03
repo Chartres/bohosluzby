@@ -78,6 +78,49 @@ describe('seasonCityPage advent — roráty', () => {
     expect(p.body).not.toContain('2019')
   })
 
+  it('lists the roráty time the note gives, not the weekly time of the row (Chrudim)', () => {
+    const p = seasonCityPage({
+      kind: 'advent',
+      city: CITY,
+      entries: {
+        '1': entry([['6', '07:30', 'česky', 0, '', 'v adventu od 7:00 hodin roráty']]),
+        '2': entry([['6', '07:30', 'česky', 0, '', 'zimní čas, v adventu od 6.30 hodin roráty']]),
+      },
+      corrections: [],
+      today: '2026-11-03',
+    })
+    const times = [...p.body.matchAll(/<span class="t">([^<]+)<\/span>/g)].map((m) => m[1])
+    expect(times).toEqual(['06:30', '07:00'])
+  })
+
+  it('leaves out Sundays (no roráty on an Advent Sunday) and year-round rows that never say Advent', () => {
+    const p = seasonCityPage({
+      kind: 'advent',
+      city: CITY,
+      entries: {
+        '1': entry([['7', '08:30', 'česky', 0, 'mše sv.', 'v adventu rorátní'], ['357', '18:00', 'česky', 0, 'mše sv.', 'v adventu rorátní']]),
+        '2': entry([['12346', '07:30', 'česky', 0, 'rorátní mše sv.', '']]),
+      },
+      corrections: [],
+      today: '2026-11-03',
+    })
+    expect(p.services).toBe(1)
+    expect(p.body).toContain('st, pá')
+    expect(p.body).not.toContain('08:30')
+    expect(p.body).not.toContain('07:30')
+  })
+
+  it('links only http(s) sources', () => {
+    const p = seasonCityPage({
+      kind: 'advent',
+      city: CITY,
+      entries: { '3': entry([], [['2026-12-05', '07:00', 'česky', 0, 'rorátní mše sv.', '']]) },
+      corrections: [{ id: '3', date: '2026-12-05', add: [['7:00', 'rorátní mše sv.']], source: 'javascript:alert(1)', source_date: 'x' }],
+      today: '2026-11-03',
+    })
+    expect(p.body).not.toContain('javascript:')
+  })
+
   it('is a plain page: title, canonical url, no script, escapes registry text', () => {
     expect(page.url).toBe('https://bohosluzby.dravec.org/advent/brno/')
     expect(page.title).toContain('Roráty 2026')
