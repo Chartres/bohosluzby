@@ -10,7 +10,7 @@
 // "uncertain", never to a wrong exclusion. Upgrade path: add patterns as the
 // feedback card surfaces them.
 
-import { liturgicalDay } from './liturgical.ts' // explicit: the Node prerender imports this
+import { easterSunday, liturgicalDay } from './liturgical.ts' // explicit: the Node prerender imports this
 import { pragueToday } from './occurrences.ts'
 
 export interface NoteRule {
@@ -174,18 +174,41 @@ function parseInclusion(s: string, negated = false): Pred | null {
   return null
 }
 
-/** "od X do Y" boundary → [month, day] (day defaults per edge). */
-function parseBound(s: string, edge: 'from' | 'to'): [number, number] | null {
+/** A range bound as [month, day] for a given year — fixed dates ignore the year,
+ * movable feasts (Velikonoce, Krista Krále) don't. */
+type Bound = (y: number) => [number, number]
+
+/** Christ the King: the Sunday before the 1st Sunday of Advent (the 4th Sunday before 25 Dec). */
+function christTheKing(y: number): [number, number] {
+  const xmas = Date.UTC(y, 11, 25)
+  const dow = new Date(xmas).getUTCDay() || 7
+  const t = new Date(xmas - (dow + 28) * 86_400_000)
+  return [t.getUTCMonth() + 1, t.getUTCDate()]
+}
+
+function parseBound(s: string, edge: 'from' | 'to'): Bound | null {
   const konce = /^kon(?:ce|ec)\s+/.test(s)
-  const t = s.replace(/^kon(?:ce|ec)\s+/, '').trim()
+  const t = s.replace(/^kon(?:ce|ec)\s+/, '').replace(/\s*\(včetně\)$/, '').trim()
+  // movable feasts: "Velikonoc", "Božího Hodu velikonočního", "Slavnosti Ježíše Krista Krále"
+  if (/^(?:velikonoc|velikonoční\s+neděle|božího\s+hodu\s+velikonočního)$/.test(t)) return (y) => {
+    const e = easterSunday(y)
+    return [e.month, e.day]
+  }
+  if (/^(?:slavnosti\s+)?(?:ježíše\s+)?krista\s+krále$/.test(t)) return christTheKing
   const m = MONTH[t]
   // For 'to' edge: return 31 — a sentinel always ≥ the real last day, so
   // Feb 29 in a leap year passes the range check (M2). For 'from' edge with
   // konce: use daysInMonth with non-leap 2023; all non-Feb months are exact
   // and Feb 'from' uses day 28 which still includes Feb 29 (k≥228).
-  if (m) return [m, konce && edge === 'from' ? daysInMonth(2023, m) : edge === 'from' ? 1 : 31]
+  if (m) {
+    const b: [number, number] = [m, konce && edge === 'from' ? daysInMonth(2023, m) : edge === 'from' ? 1 : 31]
+    return () => b
+  }
   const dm = /^(\d{1,2})\.\s*(\d{1,2})\.?$/.exec(t)
-  if (dm) return [Number(dm[2]), Number(dm[1])]
+  if (dm) {
+    const b: [number, number] = [Number(dm[2]), Number(dm[1])]
+    return () => b
+  }
   return null
 }
 
@@ -230,8 +253,9 @@ function parseSegment(seg: string): Pred | 'none' | null {
     const from = parseBound(range[1], 'from')
     const to = parseBound(range[2], 'to')
     if (from && to) {
-      const [fk, tk] = [from[0] * 100 + from[1], to[0] * 100 + to[1]]
-      return (_y, m, d) => {
+      return (y, m, d) => {
+        const [f, e] = [from(y), to(y)]
+        const [fk, tk] = [f[0] * 100 + f[1], e[0] * 100 + e[1]]
         const k = m * 100 + d
         return fk <= tk ? k >= fk && k <= tk : k >= fk || k <= tk
       }
@@ -298,7 +322,7 @@ function parseSegment(seg: string): Pred | 'none' | null {
 // Descriptive segments ("pro děti", "s nedělní platností", "č/p") pass silently.
 const CONDITIONAL = new RegExp(
   // 'svát(?:ek|k|c)' not bare 'svát' — "svátost smíření" is not a feast condition
-  `krom|mimo|vyjma|výjimk|pouze|\\bjen\\b|nepravidel|není|nejsou|nekoná|neslouž|nebývá|odpadá|období|prázdnin|čas|týd(?:en|n)|měsíc|advent|postní|škol|sud[ýé]|lich[ýé]|svát(?:ek|k|c)|ohlášen|\\d+\\s*[x×]|${MONTH_RE}`,
+  `krom|mimo|vyjma|výjimk|pouze|\\bjen\\b|nepravidel|není|nejsou|nekoná|neslouž|nebývá|odpadá|období|prázdnin|čas|týd(?:en|n)|měsíc|advent|postní|škol|přes\\s+zimu|sud[ýé]|lich[ýé]|svát(?:ek|k|c)|ohlášen|\\d+\\s*[x×]|${MONTH_RE}`,
 )
 
 // Frequency markers that a sibling segment makes concrete ("1x za měsíc, 1. týden v měsíci").
