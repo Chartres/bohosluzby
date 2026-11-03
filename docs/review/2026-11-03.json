@@ -25,12 +25,60 @@
   ]
  },
  "decisions": [
-  {"question": "12 range notes go from uncertain (shown all year) to certain (hidden out of range)", "options": ["read them as ranges", "keep them uncertain"], "default_taken": "read as ranges", "why": "Each is a plain date range, and the summer/winter pairs show the parishes mean it."},
-  {"question": "How to keep Štěkeň's winter Mass visible", "options": ["'přes zimu' as a condition word", "'zim…' as a condition word"], "default_taken": "'přes zimu'", "why": "'zim…' flipped 8 other notes, one of them a correct winter-only reading."},
-  {"question": "Christmas page: list weekly rows that fall on 24–26 Dec?", "options": ["list them", "only rows dated for the day"], "default_taken": "only dated rows", "why": "710 ordinary Thursday-evening rows aren't Christmas Eve information."},
-  {"question": "Roráty page: Sunday rows and rows that never mention Advent", "options": ["list them", "leave them out"], "default_taken": "leave them out", "why": "Roráty aren't said on Advent Sundays. A year-round 'rorátní' row is a registry label, not the Advent roráty."},
-  {"question": "Roráty time when the note names one ('v adventu od 7:00 hodin roráty')", "options": ["row time", "note time"], "default_taken": "note time", "why": "The row time is the weekly Mass. Listing it would send people 30–60 minutes late (review finding)."},
-  {"question": "Draft pages in the sitemap or linked from the app?", "options": ["yes", "no"], "default_taken": "no", "why": "Shipping them is Pavol's call."}
+  {
+   "question": "12 range notes go from uncertain (shown all year) to certain (hidden out of range)",
+   "options": [
+    "read them as ranges",
+    "keep them uncertain"
+   ],
+   "default_taken": "read as ranges",
+   "why": "Each is a plain date range, and the summer/winter pairs show the parishes mean it."
+  },
+  {
+   "question": "How to keep Štěkeň's winter Mass visible",
+   "options": [
+    "'přes zimu' as a condition word",
+    "'zim…' as a condition word"
+   ],
+   "default_taken": "'přes zimu'",
+   "why": "'zim…' flipped 8 other notes, one of them a correct winter-only reading."
+  },
+  {
+   "question": "Christmas page: list weekly rows that fall on 24–26 Dec?",
+   "options": [
+    "list them",
+    "only rows dated for the day"
+   ],
+   "default_taken": "only dated rows",
+   "why": "710 ordinary Thursday-evening rows aren't Christmas Eve information."
+  },
+  {
+   "question": "Roráty page: Sunday rows and rows that never mention Advent",
+   "options": [
+    "list them",
+    "leave them out"
+   ],
+   "default_taken": "leave them out",
+   "why": "Roráty aren't said on Advent Sundays. A year-round 'rorátní' row is a registry label, not the Advent roráty."
+  },
+  {
+   "question": "Roráty time when the note names one ('v adventu od 7:00 hodin roráty')",
+   "options": [
+    "row time",
+    "note time"
+   ],
+   "default_taken": "note time",
+   "why": "The row time is the weekly Mass. Listing it would send people 30–60 minutes late (review finding)."
+  },
+  {
+   "question": "Draft pages in the sitemap or linked from the app?",
+   "options": [
+    "yes",
+    "no"
+   ],
+   "default_taken": "no",
+   "why": "Shipping them is Pavol's call."
+  }
  ],
  "call_for_pavol": "Ship the roráty view before 29 Nov? Recommendation: yes, after pass 1 (22–28 Nov), with the towns the pass fills; not on registry data alone (3 towns).",
  "remains": "Flywheel Standard §6c: what remains when the user's own AI does the obvious part (search a parish site, read one notice) is a checked, dated, sourced schedule for all ~4,000 churches at once. That means notes parsed into the exact days a Mass runs, cross-checked against the parishes' own notices before each feast, and served as a light page that loads at a cemetery gate with one bar of signal.",
@@ -39,5 +87,45 @@
   "Before pass 1: a small TDD change so a corrections entry can carry several dates (roráty are about 15–20 dates per church). It's described in docs/SEASON-PAGES.md.",
   "Pass 2 (půlnoční) on 14–23 Dec, if the Christmas view is wanted.",
   "Still with Pavol: Supabase SQL, the iOS 1.5 submission, sending the ČBK list."
- ]
+ ],
+ "features_cs": [
+  "Mapa: skupina blízkých kostelů ukazuje čas nejbližší vhodné mše, ne jen počet kostelů; číslo v kroužku říká, kolik kostelů skupina má.",
+  "Mapa: „jiný den · skrýt“ v legendě schová šedé časy a bledé tečky; v bublině kostela „Dnes ještě: 21:00 (mimo zvolený čas)“.",
+  "U dalších 32 kostelů je titulární svátek (pouť), ověřený z webu nebo zpravodaje farnosti.",
+  "Seznam dne už neukazuje u mše poznámku „kromě 2. 11. 2026“ v den, kdy se mše koná; v týdenním pořadu kostela zůstává.",
+  "Mše „v adventu rorátní“ (např. Spořilov v neděli 8:30) se ukazují celý rok, ne jen v adventu.",
+  "Letní a zimní pořady „od Velikonoc do …“ a „od 1. 11. do Velikonoc“ se střídají podle data místo celoročního zobrazení s varováním."
+ ],
+ "features_en": [
+  "Map: a group of nearby churches shows the time of its best matching Mass, not just a number; the badge says how many churches it holds.",
+  "Map: \"jiný den · skrýt\" in the legend hides the grey times and faded dots; a church's popover adds \"Dnes ještě: 21:00 (mimo zvolený čas)\".",
+  "32 more churches show their title feast (pouť), checked against the parish's own website or bulletin.",
+  "The day list no longer shows \"kromě 2. 11. 2026\" on a Mass on the days it does take place; the church's weekly schedule still has it.",
+  "Masses noted \"v adventu rorátní\" (e.g. Spořilov, Sunday 8:30) now show all year, not only in Advent.",
+  "Summer and winter schedules (\"od Velikonoc do …\", \"od 1. 11. do Velikonoc\") switch by date instead of showing all year with a warning."
+ ],
+ "features_note": "Lines 1–3 are in build 89 (9e36a8a) and in build 90. Lines 4–6 came after build 89 (#88, #90, #93) and are only in build 90. The Dušičky corrections (#79–#86) are data: the app pulls them over the air from the site, so they already reach 1.4 and 1.5 without a build.",
+ "not_in_build": {
+  "build_89_commit": "9e36a8a (iOS: version 1.5, #84)",
+  "live_on_web_not_in_89": [
+   "#88: hide dated 'kromě D. M. YYYY' on rows shown for a date (day list, feast pages, church feast block)",
+   "#90: 'v adventu rorátní' read as a variant; Spořilov Sun 08:30 and Wed–Fri 18:00, plus 6 rows at sv. Ignác, Břevnov and Chodov, show all year",
+   "#93: Easter / Christ the King bounds in 'od … do …' ranges (13 notes, about 48 rows)"
+  ],
+  "web_only_not_app": [
+   "#76: /dusicky/ hub map (static web page)",
+   "#94: roráty/Vánoce pages (draft, not merged)"
+  ],
+  "data_over_the_air": "#79–#81, #85, #86: Dušičky corrections reach the app from the site without a build"
+ },
+ "build_90": {
+  "decision": "cut: yes",
+  "why": "AGENTS.md: every user-facing change merged to main also goes to TestFlight. #88, #90 and #93 are user-facing but not visual: they change which rows and note text show, not the layout. So the after-shots gate for visual changes doesn't apply. No other Release iOS run was in progress.",
+  "version": "1.5 (90)",
+  "commit": "28f752e (main, includes #88, #90, #93)",
+  "run": "https://github.com/Chartres/bohosluzby/actions/runs/41674264144",
+  "result": "success, 2026-11-03 16:35 UTC. Gate (typecheck + tests) passed; fastlane ios beta: 'Successfully uploaded the new binary to App Store Connect' (upload_to_testflight, VITE_BUILD=90). Processing was not awaited (skip_waiting_for_build_processing), so the build appears in TestFlight once Apple finishes processing, usually within minutes.",
+  "submitted_for_review": false,
+  "note": "Submit for Review stays Pavol's call. Build 89 is still on the 1.5 version; attaching 90 to the version and expiring 89 is his too, if he wants 90 to be the candidate."
+ }
 }
