@@ -80,6 +80,7 @@ export const cs = {
   footer_asof_prefix: 'aktuální k',
   footer_free: 'zdarma, bez reklam',
   footer_support: 'Podpořit',
+  footer_privacy: 'Soukromí',
   footer_data: 'Data: rejstřík',
 
   // ---- liturgical seasons ----
@@ -317,6 +318,7 @@ export const en: Record<Key, string> = {
   footer_asof_prefix: 'current as of',
   footer_free: 'free, no ads',
   footer_support: 'Support',
+  footer_privacy: 'Privacy',
   footer_data: 'Data: registry',
 
   season_ordinary: 'ordinary time',

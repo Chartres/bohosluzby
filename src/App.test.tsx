@@ -287,6 +287,13 @@ describe('Marie finds the nearest mass', () => {
     expect(screen.getByRole('contentinfo')).toHaveTextContent('liturgické mezidobí · Data: rejstřík bohosluzby.cirkev.cz')
   })
 
+  it('footer links the privacy policy (Google Play wants it reachable inside the app)', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/aktuální k 3\. 7\. 2026/)
+    expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Soukromí' })).toHaveAttribute('href', 'https://bohosluzby.dravec.org/privacy/')
+  })
+
   it('landing view: the map is the default when online (times ON the map, no tap)', async () => {
     stubGeolocation('granted')
     window.history.replaceState(null, '', '/') // no ?zobrazeni → the default decides

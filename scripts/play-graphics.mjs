@@ -1,13 +1,13 @@
 // Google Play graphics from the same sources as the app icon (resources/icon.png):
-//   store-assets/android/icon-512.png        512×512 (Play's hi-res icon)
-//   store-assets/android/feature-graphic.png 1024×500 (required by Play)
+//   store-assets/android/metadata/cs-CZ/images/icon.png           512×512 (Play's hi-res icon)
+//   store-assets/android/metadata/cs-CZ/images/featureGraphic.png 1024×500 (required by Play)
 // Deterministic, rendered with the repo's Playwright Chromium — same idea as the
 // flywheel og-image generator. Re-run after a brand/tagline change.
 //   node scripts/play-graphics.mjs   (PW_CHROMIUM=/path/to/chromium in sandboxes)
 import { chromium } from '@playwright/test'
 import { mkdirSync, readFileSync } from 'node:fs'
 
-const OUT = 'store-assets/android'
+const OUT = 'store-assets/android/metadata/cs-CZ/images' // fastlane supply layout (scripts/play-listing.mjs)
 mkdirSync(OUT, { recursive: true })
 const icon = `data:image/png;base64,${readFileSync('resources/icon.png').toString('base64')}`
 
@@ -37,11 +37,11 @@ const browser = await chromium.launch({
 try {
   const p1 = await browser.newPage({ viewport: { width: 1024, height: 500 }, deviceScaleFactor: 1 })
   await p1.setContent(feature, { waitUntil: 'load' })
-  await p1.screenshot({ path: `${OUT}/feature-graphic.png`, type: 'png' })
+  await p1.screenshot({ path: `${OUT}/featureGraphic.png`, type: 'png' })
   const p2 = await browser.newPage({ viewport: { width: 512, height: 512 }, deviceScaleFactor: 1 })
   await p2.setContent(iconPage, { waitUntil: 'load' })
-  await p2.screenshot({ path: `${OUT}/icon-512.png`, type: 'png' })
-  console.log(`wrote ${OUT}/feature-graphic.png (1024×500) + ${OUT}/icon-512.png (512×512)`)
+  await p2.screenshot({ path: `${OUT}/icon.png`, type: 'png' })
+  console.log(`wrote ${OUT}/featureGraphic.png (1024×500) + ${OUT}/icon.png (512×512)`)
 } finally {
   await browser.close()
 }
