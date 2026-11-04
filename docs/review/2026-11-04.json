@@ -4,8 +4,8 @@
   {
    "title": "Android release path: internal-track upload via fastlane supply, listing in repo, owner steps",
    "pr": "https://github.com/Chartres/bohosluzby/pull/97",
-   "merged": "see PR",
-   "live_checked": "Release Android was run on the branch with no secrets set. The first run failed: an empty ANDROID_KEYSTORE_PATH broke Gradle, a pre-existing bug that no Release Android run had hit before (this was its first run). After the fix it passed end to end: build, read-back, listing check, and Play upload skipped with its notice. Run 41788818798 is green. A third run checks the review fixes."
+   "merged": true,
+   "live_checked": "Release Android was run on the branch with no secrets set, three times. Run 41788619673 (the first Release Android run ever) failed: an empty ANDROID_KEYSTORE_PATH broke Gradle with 'Cannot convert '' to File'. That was a pre-existing bug that only an unsigned release run could hit, now fixed in android/app/build.gradle. Run 41788818798 (the fix) and run 41789375821 (the review fixes) both passed end to end: build, read-back, listing check, and Play upload skipped with its notice. CI test + android are green. Two independent reviews: the first found 2 blocking problems (the listing push would fail before launch; 'Zdarma' in the short description), both fixed; the re-review found nothing blocking."
   }
  ],
  "automated": [
