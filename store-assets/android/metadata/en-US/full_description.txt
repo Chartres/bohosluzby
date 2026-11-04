@@ -1,0 +1,18 @@
+Kam na mši ("Where to Mass") shows the Catholic Masses nearest to you in the Czech Republic – and, above all, which one you can still make today.
+
+Open the app and you see the services around you: where and when the next Mass starts, how long until it begins and how far it is. No digging through parish websites.
+
+What it does:
+• Nearest Masses by your location, sorted from the one you can still make
+• A map of nearby churches with the Mass time on each
+• Schedules for today, tomorrow and Sunday
+• Works offline – the schedules are on your phone even without signal
+• Add a Mass to your calendar with one tap
+• A reminder before the Mass starts
+• About 4,000 churches and chapels from the official registry of the Czech Bishops' Conference
+
+Free, no ads, no sign-up. You don't need an account.
+
+Your location is used only on your phone to find the nearest churches and is never sent anywhere. You can pick a town by hand instead at any time.
+
+Data source: the official registry of services of the Czech Bishops' Conference (bohosluzby.cirkev.cz). Parishes keep it up to date themselves, so every church shows when its schedule was last verified – check the time with the parish before you travel.

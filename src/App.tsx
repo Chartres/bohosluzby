@@ -1204,6 +1204,13 @@ export default function App() {
           >
             {t('footer_support')}
           </a>
+          {' · '}
+          <a
+            className="-my-3 inline-block py-3 underline decoration-hairline underline-offset-2 hover:text-ink"
+            href="https://bohosluzby.dravec.org/privacy/"
+          >
+            {t('footer_privacy')}
+          </a>
         </p>
       </footer>
       )}
