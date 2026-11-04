@@ -38,31 +38,34 @@ if [ -f "$KS" ]; then
   echo "✗ keystore already exists: $KS (it is already in use; delete it only if you really want a new upload key)"; exit 1
 fi
 
-PASS="$(openssl rand -base64 30 | tr -d '/+=\n' | cut -c1-32)"
-keytool -genkeypair -v \
-  -keystore "$KS" -storepass "$PASS" -keypass "$PASS" \
+KS_PASS="$(openssl rand -base64 30 | tr -d '/+=\n' | cut -c1-32)"
+export KS_PASS # read by keytool through :env, never on its command line
+
+# keep the password first: if a later step fails, the keystore is never stranded
+if command -v security >/dev/null; then
+  security add-generic-password -U -a "$ALIAS" -s "$SERVICE" -w "$KS_PASS" </dev/null
+  where="macOS Keychain, item \"$SERVICE\""
+else
+  ( umask 077; printf '%s\n' "$KS_PASS" > "$OUT_DIR/android-upload.pass" )
+  where="$OUT_DIR/android-upload.pass (only you can read it)"
+fi
+
+if ! err=$(keytool -genkeypair -v \
+  -keystore "$KS" -storepass:env KS_PASS -keypass:env KS_PASS \
   -alias "$ALIAS" -keyalg RSA -keysize 4096 -validity 10000 \
-  -dname "CN=Kam na mši, O=Pavol Dravecký, L=Praha, C=CZ" >/dev/null 2>&1
+  -dname "CN=Kam na mši, O=Pavol Dravecký, L=Praha, C=CZ" 2>&1 >/dev/null); then
+  echo "✗ keytool failed: $err"; exit 1
+fi
 chmod 600 "$KS"
 
 base64 < "$KS" | tr -d '\n' | gh secret set ANDROID_KEYSTORE_BASE64   --repo "$REPO"
-printf '%s' "$PASS"  | gh secret set ANDROID_KEYSTORE_PASSWORD --repo "$REPO"
-printf '%s' "$ALIAS" | gh secret set ANDROID_KEY_ALIAS         --repo "$REPO"
-printf '%s' "$PASS"  | gh secret set ANDROID_KEY_PASSWORD      --repo "$REPO"
-
-if command -v security >/dev/null; then
-  security add-generic-password -U -a "$ALIAS" -s "$SERVICE" -w "$PASS" </dev/null
-  where="macOS Keychain, item \"$SERVICE\""
-else
-  ( umask 077; printf '%s\n' "$PASS" > "$OUT_DIR/android-upload.pass" )
-  where="$OUT_DIR/android-upload.pass (only you can read it)"
-fi
-unset PASS
+printf '%s' "$KS_PASS" | gh secret set ANDROID_KEYSTORE_PASSWORD --repo "$REPO"
+printf '%s' "$ALIAS"   | gh secret set ANDROID_KEY_ALIAS         --repo "$REPO"
+printf '%s' "$KS_PASS" | gh secret set ANDROID_KEY_PASSWORD      --repo "$REPO"
 
 echo "✓ upload keystore: $KS"
 echo "✓ 4 secrets set on $REPO (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD)"
 echo "✓ password kept in: $where"
 echo "  Upload certificate fingerprint (public, for Play Console if it asks):"
-keytool -list -v -keystore "$KS" -storepass "$(
-  if command -v security >/dev/null; then security find-generic-password -a "$ALIAS" -s "$SERVICE" -w; else cat "$OUT_DIR/android-upload.pass"; fi
-)" -alias "$ALIAS" 2>/dev/null | grep -E "SHA256:" | head -1
+keytool -list -v -keystore "$KS" -storepass:env KS_PASS -alias "$ALIAS" 2>/dev/null | grep -E "SHA256:" | head -1
+unset KS_PASS

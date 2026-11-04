@@ -28,7 +28,7 @@ on:
         required: false
         default: ''
       upload_listing:
-        description: Also push the store listing (store-assets/android/metadata) — only after the owner approved the text
+        description: Also push the store listing (store-assets/android/metadata) with this build — only after the owner approved the text
         type: boolean
         required: false
         default: false
@@ -135,7 +135,7 @@ jobs:
           # 16 KB page size (Play blocks updates without it from 1 Feb 2027): today
           # the app ships no native code; if a plugin ever adds a .so, check alignment.
           if unzip -l out/*.apk | grep -q '\.so$'; then
-            "$ANDROID_HOME"/build-tools/36.0.0/zipalign -c -P 16 -v 4 out/*.apk | tail -3 || { echo "::error::native libraries are not 16 KB aligned"; exit 1; }
+            "$ANDROID_HOME"/build-tools/36.0.0/zipalign -c -P 16 -v 4 out/*.apk > zipalign.log || { tail -5 zipalign.log; echo "::error::native libraries are not 16 KB aligned"; exit 1; }
           else
             echo "no native libraries — 16 KB page size requirement met"
           fi
@@ -168,50 +168,45 @@ jobs:
         run: node scripts/play-listing.mjs
 
       - uses: ruby/setup-ruby@v1
-        if: steps.play.outputs.set == 'true' && (steps.ks.outputs.signed == 'true' || inputs.upload_listing)
+        if: steps.ks.outputs.signed == 'true' && steps.play.outputs.set == 'true'
         with:
           ruby-version: '3.3'
 
       - name: fastlane
-        if: steps.play.outputs.set == 'true' && (steps.ks.outputs.signed == 'true' || inputs.upload_listing)
+        if: steps.ks.outputs.signed == 'true' && steps.play.outputs.set == 'true'
         run: gem install fastlane -N -v 2.241.2
 
       # Internal track only. An app that has never been published accepts only
       # draft releases ("Only releases with status draft may be created on draft
       # app"): then the upload is retried as a draft, which the owner rolls out
       # once in Play Console; later uploads go straight to testers.
+      # With upload_listing the same call also pushes text + graphics: supply
+      # attaches listing changes to a release, and before launch the only
+      # release that exists is this internal one (a listing-only call looks
+      # for production and fails).
       - name: Google Play — upload to the internal track
         if: steps.ks.outputs.signed == 'true' && steps.play.outputs.set == 'true'
         env:
           PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
           umask 077; printf '%s' "$PLAY_JSON" > "$RUNNER_TEMP/play.json"
+          SKIP_LISTING=$([ "${{ inputs.upload_listing }}" = "true" ] && echo false || echo true)
           up() {
             fastlane run supply package_name:org.dravec.bohosluzby track:internal \
               aab:"$(ls out/*.aab)" release_status:"$1" json_key:"$RUNNER_TEMP/play.json" \
-              metadata_path:store-assets/android/metadata skip_upload_metadata:true \
-              skip_upload_images:true skip_upload_screenshots:true skip_upload_apk:true 2>&1 | tee supply.log
+              metadata_path:store-assets/android/metadata skip_upload_metadata:"$SKIP_LISTING" \
+              skip_upload_images:"$SKIP_LISTING" skip_upload_screenshots:"$SKIP_LISTING" skip_upload_apk:true 2>&1 | tee supply.log
             return "${PIPESTATUS[0]}"
           }
           if up completed; then
             echo "::notice::Uploaded versionCode ${{ steps.v.outputs.code }} to the internal track (rolled out to internal testers)."
+            if [ "$SKIP_LISTING" = "false" ]; then echo "::notice::Store listing (text + graphics) uploaded from store-assets/android/metadata."; fi
           elif grep -q "draft app" supply.log; then
             up draft
             echo "::notice::The app is not published yet, so versionCode ${{ steps.v.outputs.code }} is a DRAFT on the internal track. Play Console → Testing → Internal testing → Edit release → Review → Start rollout (once)."
           else
             exit 1
           fi
-
-      - name: Google Play — store listing (run by hand with upload_listing)
-        if: inputs.upload_listing && steps.play.outputs.set == 'true'
-        env:
-          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-        run: |
-          umask 077; printf '%s' "$PLAY_JSON" > "$RUNNER_TEMP/play.json"
-          fastlane run supply package_name:org.dravec.bohosluzby json_key:"$RUNNER_TEMP/play.json" \
-            metadata_path:store-assets/android/metadata skip_upload_aab:true skip_upload_apk:true \
-            skip_upload_changelogs:true
-          echo "::notice::Store listing (text + graphics) uploaded from store-assets/android/metadata."
 
       - name: Play upload skipped
         if: steps.ks.outputs.signed != 'true' || steps.play.outputs.set != 'true'

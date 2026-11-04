@@ -38,6 +38,11 @@ Everything else is automated (list at the end). Answers to paste live in
    4. At the mini: `scripts/android-keystore.sh --play-json ~/Downloads/<the-file>.json`,
       then delete the file.
 
+   A newly invited service account can take up to a day before Google stops answering
+   "caller does not have permission"; the next run after that works. If the Cloud
+   project sits under a Workspace organisation, its policy may block JSON keys — use a
+   project under your personal account.
+
    From now on every *Release Android* run (or tag `android-vX.Y.Z`) uploads to the
    internal track by itself.
 6. **App content** — Play Console → *Policy and programs → App content*, paste from
@@ -48,15 +53,18 @@ Everything else is automated (list at the end). Answers to paste live in
    Also *Store settings*: category *Lifestyle*, contact e-mail, website.
 7. **Approve the listing text** — read `store-assets/android/metadata/cs-CZ/*.txt` and
    `en-US/*.txt` and the privacy page (updated 4 Nov). If they're right: *Actions →
-   Release Android → Run workflow* with **upload_listing** ticked; it puts text, icon,
-   feature graphic and screenshots on the listing.
+   Release Android → Run workflow* with **upload_listing** ticked; it builds and uploads a
+   new internal build and, with it, puts text, icon, feature graphic and screenshots on
+   the listing (Play attaches listing changes to a release).
 8. **Only if step 1 said so — closed test, 12 testers, 14 days.** *Testing → Closed
    testing* → *Create track* → *Promote release* from internal → *Testers*: an e-mail list
    (or Google Group) with at least 12 people → *Save* → send them the opt-in link. They opt
    in and keep the app installed for 14 days in a row. Then *Dashboard → Apply for
    production* (Google answers in about 7 days). New personal accounts also verify a
    phone: the *Dashboard* task, in the Play Console app on an Android 10+ phone.
-9. **Production** — *Testing → Internal (or Closed) testing* → the release → *Promote
+9. **Trader status** (all accounts, by 1 Feb 2027): Play Console → *Settings* →
+   *Developer account* → declare trader / non-trader (a free app with no income: non-trader).
+10. **Production** — *Testing → Internal (or Closed) testing* → the release → *Promote
    release → Production* → *Review* → *Start rollout to production*. This is the only
    submit; CI never does it.
 
@@ -71,9 +79,9 @@ Everything else is automated (list at the end). Answers to paste live in
   never been published, Play only accepts draft releases: then the upload retries as a
   draft and says so (roll it out once, as in step 4). Never any other track.
 - **Store listing** (text + graphics) from `store-assets/android/metadata/`, only when run
-  with *upload_listing* (step 7). `scripts/play-listing.mjs` checks Play's limits in
-  `npm test` (title 30, short 80, full 4000 characters; icon 512², feature 1024×500; 2–8
-  screenshots, 16:9–9:16, 320–3840 px).
+  with *upload_listing* (step 7), in the same call as that run's internal upload. `scripts/play-listing.mjs` checks Play's limits in
+  `npm test` (title 30, short 80, full 4000 characters, no price/ranking words in title or
+  short description; icon 512², feature 1024×500; 2–8 screenshots, 16:9–9:16, 320–3840 px).
 - Graphics are generated: `node scripts/play-graphics.mjs` (icon, feature graphic) and
   `npx playwright test e2e/store-shots.spec.ts -g phone --grep-invert iphone` (screenshots).
 - Without the secrets every step that needs them is skipped with a notice; the build
@@ -100,3 +108,7 @@ Everything else is automated (list at the end). Answers to paste live in
   policy limits donation links for non-charities; if review objects, hide it on Android.
 - The exact Console label for the account type (step 1) was read from Google's help
   pages, not a live Console.
+- The icon is an RGB PNG without alpha; Play's spec says 32-bit PNG. Play usually accepts
+  it; if the listing upload complains, re-export with alpha in `scripts/play-graphics.mjs`.
+- The first CI upload sends release notes in cs-CZ and en-US while en-US is not yet a
+  listing language; if Play refuses, run step 7 first (it adds en-US).

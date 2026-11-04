@@ -13,6 +13,9 @@ import { fileURLToPath } from 'node:url'
 
 export const DEFAULT_LOCALE = 'cs-CZ'
 const TEXT_LIMITS = { 'title.txt': 30, 'short_description.txt': 80, 'full_description.txt': 4000 }
+// Play's metadata policy: no price, promotion or ranking claims in the title or short
+// description ("free", "best", "#1", "top", "new"…); the full description may say it.
+const PROMO = /(?:^|[^\p{L}\p{N}#])(zdarma|free|best|nejlepší|top|#1|no\.\s?1|sale|sleva|new|nov[ýáé])(?=$|[^\p{L}\p{N}])/iu
 
 /** Width/height from a PNG's IHDR chunk, or null if it isn't a PNG. */
 export function pngSize(buf) {
@@ -37,6 +40,8 @@ export function checkListing(root) {
       const text = readFileSync(path, 'utf8').replace(/\n+$/, '')
       if (!text.trim()) errors.push(`${locale}/${file} is empty`)
       else if (chars(text) > max) errors.push(`${locale}/${file} has ${chars(text)} characters, Play allows ${max}`)
+      const promo = file !== 'full_description.txt' && PROMO.exec(text)
+      if (promo) errors.push(`${locale}/${file} uses "${promo[1]}" — Play rejects price/ranking words in the title and short description`)
     }
   }
 

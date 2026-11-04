@@ -20,7 +20,7 @@ Google ask the same question the answer is identical; only the form differs.
 | Field | Value | Chars / limit |
 |---|---|---|
 | App name | `Kam na mši – katolické mše` | 26 / 30 |
-| Short description | `Nejbližší mše svatá podle vaší polohy – kterou ještě stihnete. Zdarma, offline.` | 79 / 80 |
+| Short description | `Nejbližší mše svatá podle vaší polohy – kterou ještě stihnete. Funguje offline.` | 79 / 80 (no price words: Play's metadata policy) |
 | Package | `org.dravec.bohosluzby` | fixed forever |
 | Category | Lifestyle | — |
 | Tags (optional) | Religion, Maps, Offline | — |
@@ -60,11 +60,12 @@ Zdroj dat: oficiální rejstřík bohoslužeb České biskupské konference (boh
 | Phone screenshots (2–8) | 1080×1920 PNG, 9:16 | `…/cs-CZ/images/phoneScreenshots/*.png` | `npx playwright test e2e/store-shots.spec.ts -g phone --grep-invert iphone` |
 | 7″ / 10″ tablet | optional; skipped | — | — |
 
-Play rejects screenshots outside 16:9…9:16, so the iPhone 6.9″ shots (2.17:1) cannot
-be reused; the Android device in `store-shots.spec.ts` renders 360×640 @3. en-US has
+Play rejects screenshots whose long side is more than twice the short side (16:9 is the
+recommended ratio, and `scripts/play-listing.mjs` enforces it), so the iPhone 6.9″ shots
+(2.17:1) cannot be reused; the Android device in `store-shots.spec.ts` renders 360×640 @3. en-US has
 no images of its own: Play shows the default language's (cs-CZ) graphics for it.
 
-## Release notes — `store-assets/android/metadata/cs-CZ/changelogs/default.txt`
+## Release notes — `store-assets/android/metadata/{cs-CZ,en-US}/changelogs/default.txt`
 
 fastlane supply sends it with every internal-track upload (≤500 chars). Keep it factual.
 

@@ -9,7 +9,7 @@ import { join } from 'node:path'
 
 const SCRIPT = join(process.cwd(), 'scripts/android-keystore.sh')
 
-function sandbox({ gh = true, security = false } = {}) {
+function sandbox({ gh = true, security = false, ghFails = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'ks-'))
   const bin = join(root, 'bin')
   const log = join(root, 'gh-secrets')
@@ -21,7 +21,7 @@ function sandbox({ gh = true, security = false } = {}) {
   }
   // keytool: -genkeypair writes a fake keystore; -list prints a fingerprint
   stub('keytool', `case "$*" in *-genkeypair*) for a in "$@"; do [ -n "$prev" ] && [ "$prev" = "-keystore" ] && echo fake-jks > "$a"; prev="$a"; done;; *-list*) echo "SHA256: AA:BB:CC";; esac`)
-  if (gh) stub('gh', `if [ "$1 $2" = "secret set" ]; then cat > "${log}/$3"; elif [ "$1 $2" = "auth status" ]; then exit 0; fi`)
+  if (gh) stub('gh', `if [ "$1 $2" = "secret set" ]; then ${ghFails ? 'exit 1' : `cat > "${log}/$3"`}; elif [ "$1 $2" = "auth status" ]; then exit 0; fi`)
   if (security) stub('security', `cat > /dev/null; for a in "$@"; do [ "$prev" = "-w" ] && echo -n "$a" > "${root}/keychain"; prev="$a"; done`)
   return { root, bin, log, out: join(root, 'cfg') }
 }
@@ -60,6 +60,17 @@ describe('android-keystore.sh', () => {
     const file = join(plain.out, 'android-upload.pass')
     expect(existsSync(file)).toBe(true)
     expect(statSync(file).mode & 0o777).toBe(0o600)
+  })
+
+  it('keeps the password before touching GitHub, so a failed gh call never strands the keystore', () => {
+    const sb = sandbox({ ghFails: true })
+    const r = run(sb)
+    expect(r.status).not.toBe(0)
+    expect(existsSync(join(sb.out, 'android-upload.pass'))).toBe(true)
+  })
+
+  it('never puts the password on a command line keytool runs with', () => {
+    expect(readFileSync(SCRIPT, 'utf8')).not.toMatch(/-storepass\s+"\$/)
   })
 
   it('refuses to overwrite an existing keystore', () => {

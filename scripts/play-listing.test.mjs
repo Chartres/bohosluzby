@@ -66,6 +66,13 @@ describe('checkListing', () => {
     expect(checkListing(listing({ short: '  ' }))).toEqual([expect.stringMatching(/short_description\.txt is empty/)])
   })
 
+  it('rejects price and ranking words in the title and short description (Play metadata policy)', () => {
+    expect(checkListing(listing({ short: 'Nejbližší mše svatá. Zdarma, offline.' }))).toEqual([expect.stringMatching(/short_description\.txt.*"Zdarma"/)])
+    expect(checkListing(listing({ title: 'Best Mass app' }))).toEqual([expect.stringMatching(/title\.txt.*"Best"/)])
+    expect(checkListing(listing({ short: 'Mše svatá, která je #1' }))).toEqual([expect.stringMatching(/"#1"/)])
+    expect(checkListing(listing({ full: 'Zdarma, bez reklam.' }))).toEqual([]) // fine in the full description
+  })
+
   it('needs the default language (cs-CZ) with its graphics; other locales may reuse them', () => {
     expect(checkListing(listing({ en: true }))).toEqual([])
     const errors = checkListing(listing({ icon: [500, 500], feature: [1024, 512] }))
