@@ -12,7 +12,8 @@ def resolvedVersionCode = (project.findProperty('versionCode') ?: '1').toString(
 // release build type is still produced, just unsigned — never a fake debug key
 // on a Play upload.
 def ksPath = System.getenv('ANDROID_KEYSTORE_PATH')
-def hasReleaseKeystore = ksPath != null && file(ksPath).exists()
+// an empty value (CI sets the variable even when the secret is absent) means no keystore
+def hasReleaseKeystore = ksPath != null && !ksPath.trim().isEmpty() && file(ksPath).exists()
 
 android {
     namespace = "org.dravec.bohosluzby"
