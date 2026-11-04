@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -41,4 +42,10 @@
          local-notifications plugin also declares this; kept here so the manifest
          reads as the complete permission story. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- No exact alarms: a reminder 30 min before Mass can drift by minutes, and
+         without the permission the plugin schedules an inexact alarm by itself
+         (setExactIfPossible). local-notifications 8.3+ merges SCHEDULE_EXACT_ALARM
+         in; Play wants a declaration for it and android-gates.mjs fails on it. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" tools:node="remove" />
 </manifest>

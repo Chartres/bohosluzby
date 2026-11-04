@@ -30,6 +30,11 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      # release-mobile kit (flywheel docs/standards/release-mobile.md): its own tests,
+      # the store listing within Play's limits, and the target-API gate
+      - run: node --test scripts/*.test.mjs
+      - run: node scripts/play-listing.mjs
+      - run: node scripts/android-gates.mjs --gradle android/variables.gradle
       - name: Store screenshot check (fastlane helper self-test)
         run: ruby ios/App/fastlane/screenshot_ops_test.rb
       - name: Build

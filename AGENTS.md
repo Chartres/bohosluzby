@@ -33,6 +33,7 @@ WebKit < 16.4 can't parse it — one literal blanks the whole app.
 ```bash
 npm run typecheck
 npm test              # Vitest (domain logic + RTL journeys)
+node --test scripts/*.test.mjs   # release-mobile kit (keystore, listing, Android gates)
 npx playwright test   # e2e journeys (Chromium); run locally, not in CI — the map specs need
                       # tile network access (sandboxes without it: run the non-map specs)
 ```
