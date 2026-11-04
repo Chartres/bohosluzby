@@ -1,7 +1,8 @@
 // The app manifest strips the exact-alarm permissions a plugin may merge in
 // (@capacitor/local-notifications 8.3+ adds SCHEDULE_EXACT_ALARM). Reminders fire
-// 30 min before a Mass; minutes of drift are fine, and without the permission the
-// plugin falls back to an inexact alarm (LocalNotificationManager.setExactIfPossible).
+// 30 min before a Mass; without the permission the plugin falls back to an inexact
+// alarm (LocalNotificationManager.setExactIfPossible), and native-actions.ts sets
+// allowWhileIdle so Doze doesn't hold it past the start (src/lib/native-reminder.test.ts).
 // Play wants a declaration for exact alarms; android-gates.mjs fails the build on them.
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'

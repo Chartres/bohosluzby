@@ -6,7 +6,7 @@ holds the answers they paste.
 
 **The listing text and graphics live in `store-assets/android/metadata/`** (fastlane
 supply layout: `cs-CZ/` with text + `images/`, `en-US/` text only).
-`scripts/play-listing.mjs` checks them against Play's limits in `npm test`; the release
+`scripts/play-listing.mjs` checks them against Play's limits in CI (`ci.yml`); the release
 workflow uploads them only when run by hand with `upload_listing`. The text quoted below
 is a copy for reading: the files win.
 

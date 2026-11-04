@@ -80,7 +80,7 @@ Everything else is automated (list at the end). Answers to paste live in
   draft and says so (roll it out once, as in step 4). Never any other track.
 - **Store listing** (text + graphics) from `store-assets/android/metadata/`, only when run
   with *upload_listing* (step 7), in the same call as that run's internal upload. `scripts/play-listing.mjs` checks Play's limits in
-  `npm test` (title 30, short 80, full 4000 characters, no price/ranking words in title or
+  CI (`ci.yml`) (title 30, short 80, full 4000 characters, no price/ranking words in title or
   short description; icon 512², feature 1024×500; 2–8 screenshots, 16:9–9:16, 320–3840 px).
 - Graphics are generated: `node scripts/play-graphics.mjs` (icon, feature graphic) and
   `npx playwright test e2e/store-shots.spec.ts -g phone --grep-invert iphone` (screenshots).

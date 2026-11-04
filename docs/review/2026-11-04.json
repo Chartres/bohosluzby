@@ -108,5 +108,19 @@
   "Pavol: steps 1–10 in docs/ANDROID-RELEASE.md. Steps 1–5 take about 30 minutes and unlock hands-free internal uploads.",
   "Platform session: turn this into the Flywheel Standard Android path. The reusable parts are the workflow, scripts/play-listing.mjs, scripts/android-keystore.sh and the ANDROID-RELEASE.md shape.",
   "Roráty draft #94: unchanged, still Pavol's call."
- ]
+ ],
+ "release_mobile_kit": {
+  "pr": "https://github.com/Chartres/bohosluzby/pull/98",
+  "ask": "Flywheel #134: stamp docs/standards/release-mobile.md's kit into bohosluzby with one pipeline; settle SCHEDULE_EXACT_ALARM; all gates green; Pavol's steps unchanged unless the kit changes one.",
+  "stamped": "flywheel scripts/stamp-release-mobile.mjs --slug bohosluzby --app-id org.dravec.bohosluzby --name \"Kam na mši – katolické mše\" --repo Chartres/bohosluzby --locale cs-CZ, into a scratch folder (the stamper never overwrites), then compared file by file. Taken from the kit: release-android.yml (target-API gate before the build, permission gate on the built manifest), scripts/android-gates.mjs and its test (new), the kit's play-listing.mjs (release notes up to 500, EN/CS/SK price words, TODO check) and android-keystore.sh, with their node:test tests. Kept as the product's: the listing text, docs/store/play-metadata.md, docs/ANDROID-RELEASE.md, play-graphics.mjs, e2e/store-shots.spec.ts. Product names kept where Pavol's steps quote them: artifact kam-na-msi-android-*, Keychain item 'kam-na-msi android upload key', ~/.config/kam-na-msi. One pipeline: the kit's workflow replaced the old one. ci.yml now runs node --test scripts/*.test.mjs, the listing check and the target-API gate; vitest no longer picks up scripts/.",
+  "exact_alarm": {
+   "choice": "removed",
+   "how": "AndroidManifest: SCHEDULE_EXACT_ALARM and USE_EXACT_ALARM with tools:node=\"remove\". Reminders use allowWhileIdle: true.",
+   "why": "A reminder 30 minutes before Mass doesn't need exact timing. Without the permission the plugin falls back to an inexact alarm by itself (LocalNotificationManager.setExactIfPossible: set / setAndAllowWhileIdle), so no Play declaration and no --allow are needed. allowWhileIdle keeps Doze from holding the reminder past the start of Mass, a point the review raised. Today's lockfile pins local-notifications 8.2.0, which doesn't add the permission. The reviewer unpacked 8.3.1 and confirmed it does, so the remove line covers the next update.",
+   "tests": "scripts/manifest-permissions.test.mjs (both remove lines and the tools namespace); src/lib/native-reminder.test.ts (the Android schedule carries allowWhileIdle)."
+  },
+  "gates": "Release Android run 41803803454 on the branch, unsigned: green. Target API at Play's floor, analytics in the bundle, versionName read back, android-gates --badging on the built manifest (no undeclared policy permission), 16 KB (no native libraries), listing within limits. Upload skipped with its notice. Locally: target API ≥ 36 and the listing check pass. CI: node --test (32), vitest (798), typecheck and build.",
+  "pavol_steps": "docs/ANDROID-RELEASE.md unchanged. The kit's template has the same 10 steps, and the names the steps quote were kept. Wording fix only: the listing check runs in CI (ci.yml), not npm test.",
+  "review": "Independent review: no blocking findings. Its notes were taken: allowWhileIdle, and the stale 'npm test' wording."
+ }
 }
