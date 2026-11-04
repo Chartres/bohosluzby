@@ -210,4 +210,4 @@ jobs:
 
       - name: Play upload skipped
         if: steps.ks.outputs.signed != 'true' || steps.play.outputs.set != 'true'
-        run: echo "::notice::Play upload skipped (signed=${{ steps.ks.outputs.signed }}, PLAY_SERVICE_ACCOUNT_JSON set=${{ steps.play.outputs.set }}). The owner's one-time steps are in docs/ANDROID-RELEASE.md."
+        run: echo "::notice::Play upload skipped${{ inputs.upload_listing && ', store listing too' || '' }} (signed=${{ steps.ks.outputs.signed }}, PLAY_SERVICE_ACCOUNT_JSON set=${{ steps.play.outputs.set }}). The owner's one-time steps are in docs/ANDROID-RELEASE.md."
