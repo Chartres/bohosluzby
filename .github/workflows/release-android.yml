@@ -1,21 +1,20 @@
-# Android release (Flywheel Standard §7 — docs/standards/android-app.md).
-# Tag `android-vX.Y.Z` (or run by hand) → web build → cap sync → signed AAB +
+# Android release — flywheel docs/standards/release-mobile.md (template, stamped by
+# flywheel scripts/stamp-release-mobile.mjs; reference run: bohosluzby, Nov 2026).
+# Tag `android-vX.Y.Z` (or run by hand) → web build → cap sync → gates → signed AAB +
 # APK → GitHub Release assets → (when PLAY_SERVICE_ACCOUNT_JSON exists) fastlane
-# supply uploads the AAB to the Google Play INTERNAL testing track — never to
-# closed/open testing or production; promoting a release is the owner's step in
-# Play Console (docs/ANDROID-RELEASE.md). Ships dark without the secrets: the
-# build still runs and the unsigned artifacts are attached, so CI never blocks
-# on credentials that live outside the repo (Standard §3).
-# Listing text + graphics (store-assets/android/metadata, checked by
+# supply uploads the AAB to the Google Play INTERNAL testing track. Never closed/open
+# testing or production: promoting a release is the owner's step in Play Console
+# (docs/ANDROID-RELEASE.md). Ships dark without the secrets: the build still runs and
+# the unsigned artifacts are attached, so CI never blocks on credentials that live
+# outside the repo. Listing text + graphics (store-assets/android/metadata, checked by
 # scripts/play-listing.mjs) go up only when run by hand with upload_listing.
 #
 # Secrets (repo → Settings → Secrets → Actions), all set by scripts/android-keystore.sh:
 #   ANDROID_KEYSTORE_BASE64   the upload keystore, base64
 #   ANDROID_KEYSTORE_PASSWORD · ANDROID_KEY_ALIAS · ANDROID_KEY_PASSWORD
-# Optional (Play Console → Setup → API access → service account JSON):
-#   PLAY_SERVICE_ACCOUNT_JSON
-# Plus the web build's VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY. These are
-# required: without them the analytics guard fails the build (an app sending no events).
+#   PLAY_SERVICE_ACCOUNT_JSON (optional; scripts/android-keystore.sh --play-json FILE)
+# Plus the web build's VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY: without them
+# the analytics guard fails the build (an app sending no events).
 name: Release Android
 
 on:
@@ -38,11 +37,14 @@ permissions:
 
 concurrency:
   group: release-android
-  cancel-in-progress: false
+  cancel-in-progress: false # never kill an upload halfway
 
 jobs:
   build:
+    # Public repo: ubuntu-latest. Private repo: the runner switch from
+    # docs/standards/runners.md (the mini has a JDK; setup-android installs the SDK).
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
       VERSION: ${{ inputs.version != '' && inputs.version || (startsWith(github.ref, 'refs/tags/android-v') && github.ref_name || '') }}
     steps:
@@ -61,6 +63,11 @@ jobs:
       - uses: android-actions/setup-android@v3
         with:
           packages: platform-tools platforms;android-36 build-tools;36.0.0
+
+      # Gate 1: Play refuses uploads below its target API floor (36 since 31 Aug 2026).
+      # Fails here, minutes before a rejected upload would.
+      - name: Target API at Play's floor
+        run: node scripts/android-gates.mjs --gradle android/variables.gradle
 
       - name: Web build (same env as the site — analytics keys are publishable)
         env:
@@ -124,18 +131,22 @@ jobs:
           cp "$apk" "out/kam-na-msi-${v}-${c}.apk"
           ls -la out
 
-      - name: Read back — the bundle carries the expected versionName/versionCode + permissions
+      # Gate 2: read back what was built — versionName, the merged manifest's
+      # permissions (no undeclared policy-sensitive ones), signature, 16 KB alignment.
+      - name: Read back — version, permissions, signature, 16 KB page size
         run: |
-          aapt=$(ls -d "$ANDROID_HOME"/build-tools/36.0.0/aapt2)
-          "$aapt" dump badging out/*.apk | grep -E "^package:|uses-permission" | head -8
-          "$aapt" dump badging out/*.apk | grep -q "versionName='${{ steps.v.outputs.name }}'" || { echo "::error::versionName mismatch"; exit 1; }
+          bt="$ANDROID_HOME/build-tools/36.0.0"
+          "$bt/aapt2" dump badging out/*.apk > badging.txt
+          grep -E "^package:|uses-permission" badging.txt | head -12
+          grep -q "versionName='${{ steps.v.outputs.name }}'" badging.txt || { echo "::error::versionName mismatch"; exit 1; }
+          node scripts/android-gates.mjs --badging badging.txt
           if [ "${{ steps.ks.outputs.signed }}" = "true" ]; then
-            "$ANDROID_HOME"/build-tools/36.0.0/apksigner verify --print-certs out/*.apk | head -3
+            "$bt/apksigner" verify --print-certs out/*.apk | head -3
           fi
-          # 16 KB page size (Play blocks updates without it from 1 Feb 2027): today
-          # the app ships no native code; if a plugin ever adds a .so, check alignment.
+          # Play blocks updates without 16 KB page-size support from 1 Feb 2027. Only
+          # native code (.so) can break it; a Java/Kotlin-only app passes by construction.
           if unzip -l out/*.apk | grep -q '\.so$'; then
-            "$ANDROID_HOME"/build-tools/36.0.0/zipalign -c -P 16 -v 4 out/*.apk > zipalign.log || { tail -5 zipalign.log; echo "::error::native libraries are not 16 KB aligned"; exit 1; }
+            "$bt/zipalign" -c -P 16 -v 4 out/*.apk > zipalign.log || { tail -5 zipalign.log; echo "::error::native libraries are not 16 KB aligned"; exit 1; }
           else
             echo "no native libraries — 16 KB page size requirement met"
           fi
@@ -164,6 +175,7 @@ jobs:
           PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: echo "set=$([ -n "$PLAY_JSON" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
+      # Gate 3: the listing fastlane would upload stays inside Play's limits.
       - name: Store listing within Play's limits
         run: node scripts/play-listing.mjs
 

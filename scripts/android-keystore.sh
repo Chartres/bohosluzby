@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# One-time, at the Mac mini: create the Android UPLOAD keystore for Kam na mši and
+# One-time, at the Mac mini: create the Android UPLOAD keystore for Kam na mši – katolické mše and
 # store it as GitHub Actions secrets for .github/workflows/release-android.yml.
+# Template from flywheel docs/standards/release-mobile.md (reference run: bohosluzby).
 # No secret value is ever printed: the values go straight into `gh secret set`, and
 # the password is kept for you in the macOS Keychain (else a chmod-600 file).
 #
@@ -16,7 +17,8 @@ REPO="${REPO:-Chartres/bohosluzby}"
 ALIAS="${ALIAS:-upload}"
 OUT_DIR="${OUT_DIR:-$HOME/.config/kam-na-msi}"
 KS="$OUT_DIR/android-upload.jks"
-SERVICE="kam-na-msi android upload key"
+SERVICE="${SERVICE:-kam-na-msi android upload key}"
+case "$REPO$OUT_DIR$SERVICE" in *__[A-Z]*__*) echo "✗ this copy was never stamped (placeholders left): run flywheel scripts/stamp-release-mobile.mjs"; exit 1;; esac
 
 need() { command -v "$1" >/dev/null || { echo "✗ $1 not found — $2"; exit 1; }; }
 need gh "install the GitHub CLI (brew install gh) and run: gh auth login"
@@ -53,7 +55,7 @@ fi
 if ! err=$(keytool -genkeypair -v \
   -keystore "$KS" -storepass:env KS_PASS -keypass:env KS_PASS \
   -alias "$ALIAS" -keyalg RSA -keysize 4096 -validity 10000 \
-  -dname "CN=Kam na mši, O=Pavol Dravecký, L=Praha, C=CZ" 2>&1 >/dev/null); then
+  -dname "CN=Kam na mši – katolické mše, O=Pavol Dravecký, C=CZ" 2>&1 >/dev/null); then
   echo "✗ keytool failed: $err"; exit 1
 fi
 chmod 600 "$KS"

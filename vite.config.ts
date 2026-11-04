@@ -62,6 +62,6 @@ export default defineConfig({
     environmentOptions: { jsdom: { url: 'http://localhost/' } },
     setupFiles: ['./vitest.setup.ts'],
     css: true,
-    include: ['src/**/*.{test,spec}.{ts,tsx}', 'data/**/*.test.mjs', 'scripts/**/*.test.mjs'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}', 'data/**/*.test.mjs'], // scripts/*.test.mjs: node --test (release-mobile kit)
   },
 })
