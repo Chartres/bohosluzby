@@ -15,11 +15,16 @@ checklist on 5 parishes (5 Nov, on last year's notices) is in
 1. [ ] **Read.** Read each parish's notices for Christ the King Sunday (22 Nov) and the 1st Sunday
        of Advent (29 Nov, often online during the week before). Use the notice page, the bulletin
        PDF, and the parish calendar.
+       - Find the notices from the site's own index (its notices section, a site search,
+         `sitemap.xml`), not from guessed URLs: the suffixes change from year to year.
+       - Pages that are replaced weekly or monthly (sv. Vít, Chrudim) must be quoted and
+         checked in the week they are up.
        - A site that refuses automated reads (403, captcha, challenge page, JS-only wall) goes on
          the **blocked list** with its URL. Never get around a block: no browser-looking user
          agents, no caches or archives, no contact with the parish.
 2. [ ] **Source rule.** A 2026 notice that names the church, the days and the time. An undated
-       standing schedule doesn't count. If the notice gives a time but no church, hold the row.
+       standing schedule doesn't count. If the notice gives a time but no church ("v kostele" in a parish with several
+       churches), hold the row. Items without a year: `source_date` names the day of reading.
 3. [ ] **Write one record per notice line** in a batch file (not yet in `data/corrections.json`):
        ```json
        {"id": "<registry id>", "church": "…", "town": "<slug>",
@@ -38,7 +43,8 @@ checklist on 5 parishes (5 Nov, on last year's notices) is in
        record the page would not show. It prints each row as the town page will show it.
 5. [ ] **Independent review.** A subagent that did not write the batch re-fetches every source and
        checks the 2026 date, the church, the days, the time and the quote. A source the reviewer
-       can't reach is held, not shipped.
+       can't reach is held, not shipped. Normalise whitespace before searching for a quote:
+       pages use non-breaking spaces.
 6. [ ] **Merge the batch.** Append the records to `data/corrections.json`, then run
        `node data/corrections.mjs` (it writes the dated rows into the shards) and
        `npx vitest run data/` (every record must land). Open a PR, wait for green CI, squash-merge.
@@ -54,6 +60,10 @@ checklist on 5 parishes (5 Nov, on last year's notices) is in
 - [ ] Sitemap and links from the app: only if Pavol says so in the ship hand-back (open question in
       SEASON-PAGES.md). Until then the pages are reachable but not linked.
 - [ ] Hand-back `docs/review/2026-11-28.json`: towns, rows, sources, the blocked list, and what is held.
+
+## After the ship
+- [ ] 1 Dec: re-check sites that list services only a month ahead (sv. Vít) and add what
+      appeared. This is data only, and it goes live over the air.
 
 ## Christmas (14–23 Dec)
 Same steps with a Christmas notice. The records are dated one-offs on 24 Dec (from 15:00), 25 Dec
