@@ -4,7 +4,7 @@
   "items": [
     {
       "id": "time-verbs",
-      "text": "Tap a Mass time for remind me, add to calendar and invite.",
+      "text": "Tap a Mass time to set a reminder, add it to your calendar or invite someone.",
       "alt": "A tap on 12:15 unfolds remind me, add to calendar and invite under the row",
       "media": "/whats-new/1.5.0/time-verbs.en.html",
       "width": 390,
