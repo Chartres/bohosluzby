@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<!-- What's new 1.5.0 (docs/standards/whats-new.md in flywheel): CSS keyframes only, no script, nothing
+     fetched. 4 s loop: grouped churches on the map turn from a bare count into the time that fits, with a count badge. -->
+<style>
+  :root{--paper:#f6f1e5;--map:#ece5d3;--road:#fbf8f0;--gold:#7a5a1e;--grey:#a39b8b;--ink:#1a1712}
+  html,body{margin:0;height:100%;overflow:hidden;font:600 17px/1 'Source Sans 3',system-ui,sans-serif;background:var(--map)}
+  .m{position:relative;height:100%;background:
+    linear-gradient(28deg,transparent 46%,var(--road) 46% 50%,transparent 50%),
+    linear-gradient(-62deg,transparent 60%,var(--road) 60% 63%,transparent 63%),
+    linear-gradient(90deg,transparent 30%,#d9e3dc 30% 36%,transparent 36%),var(--map)}
+  .g{position:absolute}
+  .c,.o{position:absolute;left:0;top:0;white-space:nowrap}
+  .o{width:30px;height:30px;border-radius:50%;background:var(--grey);color:#fff;display:grid;place-items:center;font-size:15px;animation:out 4s infinite}
+  .c{color:#fff;padding:8px 10px;border-radius:2px;background:var(--gold);opacity:0;animation:in 4s infinite;
+     box-shadow:4px 4px 0 -1px var(--paper),4px 4px 0 0 var(--gold),8px 8px 0 -1px var(--paper),8px 8px 0 0 var(--gold)}
+  .c.gr{background:var(--grey);box-shadow:4px 4px 0 -1px var(--paper),4px 4px 0 0 var(--grey)}
+  .c u{position:absolute;right:-12px;top:-12px;width:22px;height:22px;border-radius:50%;background:var(--ink);border:2px solid var(--paper);display:grid;place-items:center;font-size:12px;text-decoration:none}
+  .g2 *{animation-delay:.15s}.g3 *{animation-delay:.3s}
+  @keyframes out{0%,25%{opacity:1;transform:none}35%,90%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:none}}
+  @keyframes in{0%,28%{opacity:0;transform:translateY(6px)}40%,90%{opacity:1;transform:none}100%{opacity:0}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}.o{opacity:0}.c{opacity:1}}
+</style>
+<div class="m" aria-hidden="true">
+  <div class="g" style="left:60px;top:46px"><div class="o">3</div><div class="c">17:00<u>3</u></div></div>
+  <div class="g g2" style="left:230px;top:34px"><div class="o">2</div><div class="c gr">po 17:30<u>2</u></div></div>
+  <div class="g g3" style="left:170px;top:140px"><div class="o">4</div><div class="c">16:30<u>4</u></div></div>
+</div>

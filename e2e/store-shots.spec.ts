@@ -17,7 +17,8 @@ const FASTLANE_CS = 'ios/App/fastlane/screenshots/cs'
 
 // Google Play accepts phone screenshots only between 16:9 and 9:16, so the
 // iPhone 6.9" shots (2.17:1) can't be reused — the Android entry renders the
-// classic 1080×1920 (360×640 @3) into store-assets/android/phone/.
+// classic 1080×1920 (360×640 @3) into fastlane supply's layout,
+// store-assets/android/metadata/cs-CZ/images/phoneScreenshots/ (scripts/play-listing.mjs).
 const DEVICES = [
   { name: 'iphone-6.9', store: 'ios', viewport: { width: 440, height: 956 }, dsf: 3 },
   { name: 'ipad-13', store: 'ios', viewport: { width: 1032, height: 1376 }, dsf: 2 },
@@ -38,7 +39,10 @@ for (const d of DEVICES) {
       test.skip(!!process.env.CI, 'store screenshots are generated locally, not in CI')
       // the first-run intro guide must not overlay the store shots (step 1 uses
       // real bundled data, so mockData's seed hasn't run yet)
-      await page.addInitScript(() => localStorage.setItem('bohosluzby:introSeen', '1'))
+      await page.addInitScript(() => {
+        localStorage.setItem('bohosluzby:introSeen', '1')
+        localStorage.setItem('fw:whats-new', '9999') // no what's-new sheet over the store shots
+      })
       // Sandboxes whose browser can't reach tile.openstreetmap.org (but curl can):
       // PW_TILES_VIA_CURL=1 serves the map tiles through curl. Local-only escape hatch.
       if (process.env.PW_TILES_VIA_CURL)
@@ -46,7 +50,7 @@ for (const d of DEVICES) {
           const body = execFileSync('curl', ['-sf', '-A', 'bohosluzby.dravec.org store screenshots', route.request().url()])
           await route.fulfill({ status: 200, contentType: 'image/png', body })
         })
-      const dir = `store-assets/${d.store}/${d.name}`
+      const dir = d.store === 'android' ? 'store-assets/android/metadata/cs-CZ/images/phoneScreenshots' : `store-assets/${d.store}/${d.name}`
       // 1 — MAP hero (the centerpiece — leads the listing). REAL bundled data
       // (no mock) at a plain-green Sunday 07:00 local (05:00 UTC): the whole
       // day's masses are still ahead, so nearly every church shows a vibrant

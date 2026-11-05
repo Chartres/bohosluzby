@@ -33,6 +33,7 @@ WebKit < 16.4 can't parse it — one literal blanks the whole app.
 ```bash
 npm run typecheck
 npm test              # Vitest (domain logic + RTL journeys)
+node --test scripts/*.test.mjs   # release-mobile kit (keystore, listing, Android gates)
 npx playwright test   # e2e journeys (Chromium); run locally, not in CI — the map specs need
                       # tile network access (sandboxes without it: run the non-map specs)
 ```
@@ -98,7 +99,10 @@ offline. Language values are normalized to Czech lowercase at decode (`normalize
   `ANDROID_*` secrets from a one-time `scripts/android-keystore.sh`; without them it builds
   unsigned and says so. `PLAY_SERVICE_ACCOUNT_JSON` (optional) makes the workflow upload to the
   Play internal track itself. Listing, data-safety and content-rating answers, and the
-  owner-only console steps: `docs/store/play-metadata.md`. Screenshots: the `phone` device in
+  owner-only console steps: `docs/store/play-metadata.md`; the owner's step list, in order:
+  `docs/ANDROID-RELEASE.md`. Uploads go to the **internal** track only (fastlane supply); the
+  listing (`store-assets/android/metadata/`, checked by `scripts/play-listing.mjs`) only with
+  the `upload_listing` input. Screenshots: the `phone` device in
   `e2e/store-shots.spec.ts` (1080×1920); in a sandbox whose browser can't reach the tile server,
   `PW_TILES_VIA_CURL=1` serves the OSM tiles through curl. Local build check: `cd android && ./gradlew assembleDebug`
   (needs `ANDROID_HOME`; CI runs it on every push as the `android` job).

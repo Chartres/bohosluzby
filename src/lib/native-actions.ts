@@ -117,7 +117,9 @@ export async function scheduleMassReminder(
           id,
           title: reminderTitle(type, REMINDER_LEAD_MIN),
           body: `${church.name} — ${service.time}`,
-          schedule: { at },
+          // Android: inexact (no exact-alarm permission, see AndroidManifest) but allowed
+          // to fire in Doze, so a reminder 30 min ahead isn't held past the start
+          schedule: { at, allowWhileIdle: true },
         },
       ],
     })

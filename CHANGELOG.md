@@ -5,6 +5,20 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **What's new sheet** (flywheel `docs/standards/whats-new.md`): a returning reader sees a
+  short sheet once per version, with two items and a CSS animation each
+  (`public/whats-new/1.5.0/`). Release text lives in `whats-new.json` / `whats-new.en.json`;
+  bump `version` in both and rewrite the items with the next user-facing release.
+  `returning` = `bohosluzby:introSeen`; never in a frame or over `?intro=1`.
+- **Privacy link in the footer** ("Soukromí" / "Privacy" → /privacy/): Google Play wants the
+  policy reachable inside the app. The policy now names the iOS and Android apps and lists
+  the anonymous in-app events (including a town picked by hand, never coordinates).
+- **Android release path** (4 Nov, `docs/ANDROID-RELEASE.md`): the Release Android workflow
+  uploads the signed AAB to the Play internal track with fastlane supply (draft fallback
+  while the app is unpublished), pushes the listing from `store-assets/android/metadata/`
+  on demand, and checks 16 KB alignment; `scripts/play-listing.mjs` keeps the listing in
+  Play's limits in `npm test`; `scripts/android-keystore.sh` sets the secrets without
+  printing any value and takes `--play-json` for the service-account key.
 - **Map groups show a time, not just a count** (Pavol 2026-11-01: "I search for 16h masses,
   and those multi church numbers look the same whether there is or is not a mass satisfying
   my filters"). A group of nearby churches is the time chip of its best church (today

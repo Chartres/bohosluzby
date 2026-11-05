@@ -1,17 +1,20 @@
-# Android release (Flywheel Standard §7 — docs/standards/android-app.md).
-# Tag `android-vX.Y.Z` (or run by hand) → web build → cap sync → signed AAB +
-# APK → GitHub Release assets → (when PLAY_SERVICE_ACCOUNT_JSON exists) upload
-# to the Google Play internal track. Ships dark without the secrets: the build
-# still runs and the unsigned artifacts are attached, so CI never blocks on
-# credentials that live outside the repo (Standard §3).
+# Android release — flywheel docs/standards/release-mobile.md (template, stamped by
+# flywheel scripts/stamp-release-mobile.mjs; reference run: bohosluzby, Nov 2026).
+# Tag `android-vX.Y.Z` (or run by hand) → web build → cap sync → gates → signed AAB +
+# APK → GitHub Release assets → (when PLAY_SERVICE_ACCOUNT_JSON exists) fastlane
+# supply uploads the AAB to the Google Play INTERNAL testing track. Never closed/open
+# testing or production: promoting a release is the owner's step in Play Console
+# (docs/ANDROID-RELEASE.md). Ships dark without the secrets: the build still runs and
+# the unsigned artifacts are attached, so CI never blocks on credentials that live
+# outside the repo. Listing text + graphics (store-assets/android/metadata, checked by
+# scripts/play-listing.mjs) go up only when run by hand with upload_listing.
 #
 # Secrets (repo → Settings → Secrets → Actions), all set by scripts/android-keystore.sh:
 #   ANDROID_KEYSTORE_BASE64   the upload keystore, base64
 #   ANDROID_KEYSTORE_PASSWORD · ANDROID_KEY_ALIAS · ANDROID_KEY_PASSWORD
-# Optional (Play Console → Setup → API access → service account JSON):
-#   PLAY_SERVICE_ACCOUNT_JSON
-# Plus the web build's VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY. These are
-# required: without them the analytics guard fails the build (an app sending no events).
+#   PLAY_SERVICE_ACCOUNT_JSON (optional; scripts/android-keystore.sh --play-json FILE)
+# Plus the web build's VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY: without them
+# the analytics guard fails the build (an app sending no events).
 name: Release Android
 
 on:
@@ -23,21 +26,25 @@ on:
         description: versionName (e.g. 1.2.0); defaults to the tag or build.gradle
         required: false
         default: ''
-      track:
-        description: Play track when PLAY_SERVICE_ACCOUNT_JSON is set
+      upload_listing:
+        description: Also push the store listing (store-assets/android/metadata) with this build — only after the owner approved the text
+        type: boolean
         required: false
-        default: internal
+        default: false
 
 permissions:
   contents: write
 
 concurrency:
   group: release-android
-  cancel-in-progress: false
+  cancel-in-progress: false # never kill an upload halfway
 
 jobs:
   build:
+    # Public repo: ubuntu-latest. Private repo: the runner switch from
+    # docs/standards/runners.md (the mini has a JDK; setup-android installs the SDK).
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
       VERSION: ${{ inputs.version != '' && inputs.version || (startsWith(github.ref, 'refs/tags/android-v') && github.ref_name || '') }}
     steps:
@@ -56,6 +63,11 @@ jobs:
       - uses: android-actions/setup-android@v3
         with:
           packages: platform-tools platforms;android-36 build-tools;36.0.0
+
+      # Gate 1: Play refuses uploads below its target API floor (36 since 31 Aug 2026).
+      # Fails here, minutes before a rejected upload would.
+      - name: Target API at Play's floor
+        run: node scripts/android-gates.mjs --gradle android/variables.gradle
 
       - name: Web build (same env as the site — analytics keys are publishable)
         env:
@@ -78,7 +90,7 @@ jobs:
           if [ -z "$name" ]; then
             name=$(sed -n "s/.*findProperty('versionName') ?: '\([^']*\)'.*/\1/p" android/app/build.gradle)
           fi
-          # monotonic; +100 keeps clear of the iOS build numbers (75 at the time of writing)
+          # monotonic build number: Play needs every upload's versionCode higher than the last
           code=$((100 + GITHUB_RUN_NUMBER))
           echo "name=$name" >> "$GITHUB_OUTPUT"
           echo "code=$code" >> "$GITHUB_OUTPUT"
@@ -119,13 +131,24 @@ jobs:
           cp "$apk" "out/kam-na-msi-${v}-${c}.apk"
           ls -la out
 
-      - name: Read back — the bundle carries the expected versionName/versionCode + permissions
+      # Gate 2: read back what was built — versionName, the merged manifest's
+      # permissions (no undeclared policy-sensitive ones), signature, 16 KB alignment.
+      - name: Read back — version, permissions, signature, 16 KB page size
         run: |
-          aapt=$(ls -d "$ANDROID_HOME"/build-tools/36.0.0/aapt2)
-          "$aapt" dump badging out/*.apk | grep -E "^package:|uses-permission" | head -8
-          "$aapt" dump badging out/*.apk | grep -q "versionName='${{ steps.v.outputs.name }}'" || { echo "::error::versionName mismatch"; exit 1; }
+          bt="$ANDROID_HOME/build-tools/36.0.0"
+          "$bt/aapt2" dump badging out/*.apk > badging.txt
+          grep -E "^package:|uses-permission" badging.txt | head -12
+          grep -q "versionName='${{ steps.v.outputs.name }}'" badging.txt || { echo "::error::versionName mismatch"; exit 1; }
+          node scripts/android-gates.mjs --badging badging.txt
           if [ "${{ steps.ks.outputs.signed }}" = "true" ]; then
-            "$ANDROID_HOME"/build-tools/36.0.0/apksigner verify --print-certs out/*.apk | head -3
+            "$bt/apksigner" verify --print-certs out/*.apk | head -3
+          fi
+          # Play blocks updates without 16 KB page-size support from 1 Feb 2027. Only
+          # native code (.so) can break it; a Java/Kotlin-only app passes by construction.
+          if unzip -l out/*.apk | grep -q '\.so$'; then
+            "$bt/zipalign" -c -P 16 -v 4 out/*.apk > zipalign.log || { tail -5 zipalign.log; echo "::error::native libraries are not 16 KB aligned"; exit 1; }
+          else
+            echo "no native libraries — 16 KB page size requirement met"
           fi
 
       - uses: actions/upload-artifact@v4
@@ -152,17 +175,51 @@ jobs:
           PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: echo "set=$([ -n "$PLAY_JSON" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
-      - name: Google Play — upload to ${{ inputs.track || 'internal' }} (only when the service account exists)
+      # Gate 3: the listing fastlane would upload stays inside Play's limits.
+      - name: Store listing within Play's limits
+        run: node scripts/play-listing.mjs
+
+      - uses: ruby/setup-ruby@v1
         if: steps.ks.outputs.signed == 'true' && steps.play.outputs.set == 'true'
-        uses: r0adkll/upload-google-play@v1
         with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: org.dravec.bohosluzby
-          releaseFiles: out/*.aab
-          track: ${{ inputs.track || 'internal' }}
-          status: completed
-          whatsNewDirectory: store-assets/android/whatsnew
+          ruby-version: '3.3'
+
+      - name: fastlane
+        if: steps.ks.outputs.signed == 'true' && steps.play.outputs.set == 'true'
+        run: gem install fastlane -N -v 2.241.2
+
+      # Internal track only. An app that has never been published accepts only
+      # draft releases ("Only releases with status draft may be created on draft
+      # app"): then the upload is retried as a draft, which the owner rolls out
+      # once in Play Console; later uploads go straight to testers.
+      # With upload_listing the same call also pushes text + graphics: supply
+      # attaches listing changes to a release, and before launch the only
+      # release that exists is this internal one (a listing-only call looks
+      # for production and fails).
+      - name: Google Play — upload to the internal track
+        if: steps.ks.outputs.signed == 'true' && steps.play.outputs.set == 'true'
+        env:
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          umask 077; printf '%s' "$PLAY_JSON" > "$RUNNER_TEMP/play.json"
+          SKIP_LISTING=$([ "${{ inputs.upload_listing }}" = "true" ] && echo false || echo true)
+          up() {
+            fastlane run supply package_name:org.dravec.bohosluzby track:internal \
+              aab:"$(ls out/*.aab)" release_status:"$1" json_key:"$RUNNER_TEMP/play.json" \
+              metadata_path:store-assets/android/metadata skip_upload_metadata:"$SKIP_LISTING" \
+              skip_upload_images:"$SKIP_LISTING" skip_upload_screenshots:"$SKIP_LISTING" skip_upload_apk:true 2>&1 | tee supply.log
+            return "${PIPESTATUS[0]}"
+          }
+          if up completed; then
+            echo "::notice::Uploaded versionCode ${{ steps.v.outputs.code }} to the internal track (rolled out to internal testers)."
+            if [ "$SKIP_LISTING" = "false" ]; then echo "::notice::Store listing (text + graphics) uploaded from store-assets/android/metadata."; fi
+          elif grep -q "draft app" supply.log; then
+            up draft
+            echo "::notice::The app is not published yet, so versionCode ${{ steps.v.outputs.code }} is a DRAFT on the internal track. Play Console → Testing → Internal testing → Edit release → Review → Start rollout (once)."
+          else
+            exit 1
+          fi
 
       - name: Play upload skipped
         if: steps.ks.outputs.signed != 'true' || steps.play.outputs.set != 'true'
-        run: echo "::notice::Play upload skipped (signed=${{ steps.ks.outputs.signed }}, PLAY_SERVICE_ACCOUNT_JSON set=${{ steps.play.outputs.set }}). Upload out/*.aab by hand in Play Console, or add the secret (docs/store/play-metadata.md §API)."
+        run: echo "::notice::Play upload skipped${{ inputs.upload_listing && ', store listing too' || '' }} (signed=${{ steps.ks.outputs.signed }}, PLAY_SERVICE_ACCOUNT_JSON set=${{ steps.play.outputs.set }}). The owner's one-time steps are in docs/ANDROID-RELEASE.md."

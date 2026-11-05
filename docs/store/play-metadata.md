@@ -1,9 +1,14 @@
 # Google Play Console — metadata + submission (Android)
 
-Paste-ready listing for **Kam na mši** on Google Play (Capacitor build of the same
-web app as iOS). Primary locale **Czech (cs-CZ)**. Character counts verified against
-Play limits. The binary comes from `.github/workflows/release-android.yml`
-(tag `android-vX.Y.Z` → signed `.aab` on the GitHub Release).
+Listing and App content answers for **Kam na mši** on Google Play (Capacitor build of
+the same web app as iOS). The owner's steps are in `docs/ANDROID-RELEASE.md`; this file
+holds the answers they paste.
+
+**The listing text and graphics live in `store-assets/android/metadata/`** (fastlane
+supply layout: `cs-CZ/` with text + `images/`, `en-US/` text only).
+`scripts/play-listing.mjs` checks them against Play's limits in CI (`ci.yml`); the release
+workflow uploads them only when run by hand with `upload_listing`. The text quoted below
+is a copy for reading: the files win.
 
 Same app, same data, same privacy posture as `ios-metadata.md` — where Apple and
 Google ask the same question the answer is identical; only the form differs.
@@ -15,7 +20,7 @@ Google ask the same question the answer is identical; only the form differs.
 | Field | Value | Chars / limit |
 |---|---|---|
 | App name | `Kam na mši – katolické mše` | 26 / 30 |
-| Short description | `Nejbližší mše svatá podle vaší polohy – kterou ještě stihnete. Zdarma, offline.` | 79 / 80 |
+| Short description | `Nejbližší mše svatá podle vaší polohy – kterou ještě stihnete. Funguje offline.` | 79 / 80 (no price words: Play's metadata policy) |
 | Package | `org.dravec.bohosluzby` | fixed forever |
 | Category | Lifestyle | — |
 | Tags (optional) | Religion, Maps, Offline | — |
@@ -23,7 +28,7 @@ Google ask the same question the answer is identical; only the form differs.
 | Website | `https://bohosluzby.dravec.org` | — |
 | Privacy policy | `https://bohosluzby.dravec.org/privacy` | — |
 
-## Full description (≤4000)
+## Full description (≤4000) — copy of `store-assets/android/metadata/cs-CZ/full_description.txt`
 
 ```
 Kam na mši vám podle vaší polohy ukáže nejbližší katolické mše svaté – a hlavně to, kterou mši dnes ještě stihnete.
@@ -46,38 +51,47 @@ Vaše poloha se používá jen ve vašem telefonu k výpočtu nejbližších kos
 Zdroj dat: oficiální rejstřík bohoslužeb České biskupské konference (bohosluzby.cirkev.cz). Rejstřík doplňují farnosti samy; u každého kostela proto uvádíme datum posledního ověření – před cestou si čas raději ověřte ve farnosti.
 ```
 
-## Graphics
+## Graphics — generated, never hand-edited
 
-| Asset | Size | File |
-|---|---|---|
-| App icon | 512×512 PNG, 32-bit | `store-assets/android/icon-512.png` |
-| Feature graphic (required) | 1024×500 PNG/JPG | `store-assets/android/feature-graphic.png` |
-| Phone screenshots (2–8) | 1080×1920 PNG, 9:16 | `store-assets/android/phone/*.png` (from `e2e/store-shots.spec.ts`) |
-| 7″ / 10″ tablet | optional; skip for v1 | — |
+| Asset | Size | File | Generator |
+|---|---|---|---|
+| App icon | 512×512 PNG | `store-assets/android/metadata/cs-CZ/images/icon.png` | `node scripts/play-graphics.mjs` |
+| Feature graphic (required) | 1024×500 PNG | `…/cs-CZ/images/featureGraphic.png` | `node scripts/play-graphics.mjs` |
+| Phone screenshots (2–8) | 1080×1920 PNG, 9:16 | `…/cs-CZ/images/phoneScreenshots/*.png` | `npx playwright test e2e/store-shots.spec.ts -g phone --grep-invert iphone` |
+| 7″ / 10″ tablet | optional; skipped | — | — |
 
-Play rejects screenshots outside 16:9…9:16, so the iPhone 6.9″ shots (2.17:1) cannot
-be reused — the Android device entry in `store-shots.spec.ts` renders 360×640 @3.
+Play rejects screenshots whose long side is more than twice the short side (16:9 is the
+recommended ratio, and `scripts/play-listing.mjs` enforces it), so the iPhone 6.9″ shots
+(2.17:1) cannot be reused; the Android device in `store-shots.spec.ts` renders 360×640 @3. en-US has
+no images of its own: Play shows the default language's (cs-CZ) graphics for it.
 
-## Release notes — `store-assets/android/whatsnew/whatsnew-cs-CZ`
+## Release notes — `store-assets/android/metadata/{cs-CZ,en-US}/changelogs/default.txt`
 
-Used by the workflow's Play upload step (≤500 chars). Keep it factual, one release.
+fastlane supply sends it with every internal-track upload (≤500 chars). Keep it factual.
 
 ## Data safety (Play → App content → Data safety)
 
-Derived from the analytics client, same three anonymous types as the Apple label.
-Everything else: **not collected**.
+Taken from the code (4 Nov 2026): the analytics client `src/platform/flywheel-client.ts`
+inserts `events` (app, event name, props, random `visitor_id`/`session_id`, time) and,
+only when the user writes it, `feedback` (score, Sean Ellis answer, free text) into
+Supabase over https. Event props carry filter choices, day, church ids, the name of a
+town the user **picked by hand**, and timings — never coordinates (`src/lib/geo.ts`
+computes distances on the device). No accounts, no ads SDK, no advertising ID.
+Required only once the app goes beyond internal testing.
 
 | Question | Answer |
 |---|---|
 | Does your app collect or share any of the required user data types? | **Yes** |
-| Is all of the user data collected by your app encrypted in transit? | **Yes** (https to Supabase) |
-| Do you provide a way for users to request that their data is deleted? | **Yes** — e-mail (the data is an anonymous install id; deletion = delete the row on request) |
-| App activity → **App interactions** | Collected, not shared, **optional** (can't be disabled but is anonymous), purpose Analytics |
-| App info and performance → **Crash logs / Diagnostics** | Collected (the `error` events), not shared, purpose App functionality |
-| Device or other IDs → **Device or other IDs** | Collected (anonymous per-install `visitor_id`), not shared, purpose Analytics |
-| Location | **Not collected** — read on-device only, never transmitted |
-| Personal info, Financial, Health, Messages, Photos, Audio, Files, Calendar, Contacts | Not collected (calendar export writes an .ics via the share sheet; the app never reads the calendar) |
-| Data handling | Not processed ephemerally; no data sold; no third-party SDKs |
+| Is all of the user data collected by your app encrypted in transit? | **Yes** (https) |
+| Do you provide a way for users to request that their data is deleted? | **Yes** — e-mail ahoj@dravec.org (the data is keyed by an anonymous install id) |
+| App activity → **App interactions** | Collected · not shared · **required** (no opt-out) · purpose **Analytics** |
+| App activity → **Other user-generated content** | Collected · not shared · **optional** (the feedback card) · purpose **Analytics** |
+| App info and performance → **Crash logs** and **Diagnostics** | Collected (`error` events) · not shared · required · purpose **Analytics** |
+| Device or other IDs → **Device or other IDs** | Collected (random per-install `visitor_id`) · not shared · required · purpose **Analytics** |
+| Location (approximate, precise) | **Not collected** — read on the device only, never transmitted. A town picked by hand is sent as an app interaction, not as the user's location (see Uncertain in `docs/ANDROID-RELEASE.md`) |
+| Personal info, Financial, Health, Messages, Photos/videos, Audio, Files, Calendar, Contacts, Web browsing | Not collected (calendar export hands an .ics to the share sheet; the app never reads the calendar) |
+| Is data processed ephemerally? | No |
+| Is data sold / shared with third parties? | No (Supabase is our processor, not a third party receiving data) |
 
 ## Content rating questionnaire (IARC)
 
@@ -110,35 +124,9 @@ declaration form needed.
 
 ---
 
-## Submission — what only the account owner can do
+## Submission
 
-1. **Play Console account** — https://play.google.com/console, one-time 25 USD, personal
-   account (seller name = Pavol Dravecký, same posture as Apple). Google may require identity
-   verification (ID + a few days) before the first publish; new personal accounts also
-   need a **closed test with ≥12 testers for 14 days** before production is unlocked.
-   Plan for that: publish to *Closed testing* first, invite family + the parish list.
-2. **Upload key** — run `scripts/android-keystore.sh` once on the Mac (needs `keytool`
-   from any JDK and `gh`). It creates the keystore under `~/.config/kam-na-msi/` and sets
-   the four `ANDROID_*` secrets on the repo. Save the printed password in 1Password.
-3. **Tag a release** — `git tag android-v1.2.0 && git push origin android-v1.2.0`. The
-   workflow attaches `kam-na-msi-1.2.0-<code>.aab` (+ `.apk` for sideloading) to a
-   GitHub Release and reads the bundle back (versionName, permissions, signature).
-4. **Create the app** in Play Console (name, Czech, free, app) and upload that `.aab` on
-   *Testing → Closed testing → Create release*. The first upload enrolls **Play App
-   Signing** automatically (Google keeps the real key; ours is the upload key).
-5. **Store listing** — paste this file: name, short/full description, icon, feature
-   graphic, screenshots, category, contact, privacy URL. Then *App content*: data safety,
-   content rating, target audience, ads, declarations (tables above).
-6. **Roll out** the closed test; after the 14-day/12-tester bar, *Production → Create
-   release* with the same `.aab` (or the next tag).
-
-### Optional: API upload so future releases need no console visit
-
-Play Console → *Setup → API access* → link a Google Cloud project → create a service
-account with **Release manager** on this app → download its JSON → repo secret
-`PLAY_SERVICE_ACCOUNT_JSON`. From then on every `android-v*` tag lands on the internal
-track by itself; promote to production in the console (or change the workflow's `track`
-input). The first `.aab` must still go through the console (step 4).
+The owner's steps, in order and nothing else: `docs/ANDROID-RELEASE.md`.
 
 ## Self-check before the first upload (airplane-mode test on a real phone)
 

@@ -25,6 +25,16 @@
   --season: var(--color-season-green);
 }
 
+/* What's new sheet (src/platform/whats-new.ts) reads --paper, --ink, --accent */
+.fw-wn {
+  --paper: var(--color-paper);
+  --ink: var(--color-ink);
+  --accent: var(--season);
+}
+.fw-wn h2 {
+  font-family: var(--font-display);
+}
+
 html {
   background: var(--color-paper);
   color: var(--color-ink);

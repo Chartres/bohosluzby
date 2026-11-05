@@ -9,6 +9,7 @@ export async function mockData(page: Page, { delayMs = 0 } = {}) {
   await page.addInitScript(() => {
     try {
       localStorage.setItem('bohosluzby:introSeen', '1')
+      localStorage.setItem('fw:whats-new', '9999') // nor the what's-new sheet (e2e/whats-new.spec.ts)
     } catch {
       /* private mode */
     }
