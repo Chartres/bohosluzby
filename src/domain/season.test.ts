@@ -138,6 +138,47 @@ describe('seasonCityPage advent — roráty', () => {
   })
 })
 
+describe('seasonCityPage advent — a roráty notice over the whole Advent (pass 1 record)', () => {
+  // one corrections.json entry: "roráty po–pá v 6:30" from 30 Nov, not on 8 Dec
+  const notice = {
+    id: '3',
+    church: 'kostel sv. Michala',
+    town: 'brno',
+    from: '2026-11-30',
+    to: '2026-12-23',
+    days: '12345',
+    except: ['2026-12-08'],
+    add: [['06:30', 'mše sv.', 'roráty']],
+    source: 'https://example.cz/ohlasky-22-11.pdf',
+    source_date: 'ohlášky 22. 11. 2026',
+  }
+  // what data/corrections.mjs makes of it: one dated row per day, each with the source
+  // (the expansion itself is tested in data/corrections.test.mjs and data/roraty-check.test.mjs)
+  const dates: string[] = []
+  for (let d = 30; d <= 53; d++) {
+    const t = new Date(Date.UTC(2026, 10, d))
+    const iso = t.toISOString().slice(0, 10)
+    if (t.getUTCDay() >= 1 && t.getUTCDay() <= 5 && iso !== '2026-12-08') dates.push(iso)
+  }
+  const { from: _f, to: _t, days: _d, except: _e, ...rest } = notice
+  const corrections = dates.map((date) => ({ ...rest, date }))
+  const shards = { c: { '3': entry([['7', '09:00', 'česky', 0, 'mše sv.', '']], dates.map((d): Row => [d, '06:30', 'česky', 0, 'mše sv.', 'roráty'])) } }
+  const page = seasonCityPage({ kind: 'advent', city: CITY, entries: shards.c, corrections, today: '2026-11-23' })
+
+  it('lands as one row, not one per date: weekdays, first – last, the gap named', () => {
+    const rows = [...page.body.matchAll(/<li>.*?<\/li>/g)]
+    expect(rows).toHaveLength(1)
+    expect(rows[0][0]).toContain('<span class="t">06:30</span>')
+    expect(rows[0][0]).toContain('po–pá 30. 11. – 23. 12., kromě 8. 12.')
+    expect(page.services).toBe(1)
+  })
+
+  it('links the notice and its date as the source', () => {
+    expect(page.body).toContain('<a href="https://example.cz/ohlasky-22-11.pdf">ohlášky farnosti</a> (ohlášky 22. 11. 2026)')
+    expect(page.body).not.toContain('rejstřík ČBK')
+  })
+})
+
 describe('seasonCityPage vanoce — 24.–26. 12.', () => {
   const entries = {
     // Thursday 18:00 weekly: 24 Dec 2026 is a Thursday, but a weekly row says

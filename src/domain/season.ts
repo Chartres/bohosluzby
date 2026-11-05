@@ -141,12 +141,34 @@ function rorateRows(id: string, entry: RawEntry, advent: { start: string; end: s
     const own = /(?:od|v)\s+(\d{1,2})[:.](\d{2})\s*(?:hod\S*\s+)?roráty/i.exec(r[5])
     out.push({ churchId: id, time: own ? `${own[1].padStart(2, '0')}:${own[2]}` : hhmm(r[1]), when: regDays(on.join('')), type: r[4], lang: normalizeLang(r[2]), greek: r[3] === 1, note: r[5].trim(), source: sourceHtml(undefined, entry) })
   }
+  // dated roráty: one notice gives ~20 dates for a church; the same time, kind and
+  // source make one row ("po–pá 30. 11. – 23. 12., kromě 8. 12."), not twenty
+  const groups = new Map<string, { row: Row; dates: string[] }>()
   for (const r of entry.x ?? []) {
     if (r[0] < advent.start || r[0] > advent.end || !RORATE.test(`${r[4]} ${r[5]}`)) continue
-    const c = correctionFor(corrections, id, r[0], r[1])
-    out.push({ churchId: id, time: hhmm(r[1]), when: dayShort(r[0]), type: r[4], lang: normalizeLang(r[2]), greek: r[3] === 1, note: r[5].trim(), source: sourceHtml(c, entry) })
+    const row: Row = { churchId: id, time: hhmm(r[1]), when: '', type: r[4], lang: normalizeLang(r[2]), greek: r[3] === 1, note: r[5].trim(), source: sourceHtml(correctionFor(corrections, id, r[0], r[1]), entry) }
+    const key = JSON.stringify([row.time, row.type, row.lang, row.greek, row.note, row.source])
+    const g = groups.get(key) ?? { row, dates: [] }
+    g.dates.push(r[0])
+    groups.set(key, g)
   }
+  for (const { row, dates } of groups.values()) out.push({ ...row, when: datesSpan(dates) })
   return out
+}
+
+/** "so 5. 12." for one date; "po–pá 30. 11. – 23. 12., kromě 8. 12." for a run. */
+function datesSpan(dates: string[]): string {
+  const ds = [...new Set(dates)].sort()
+  if (ds.length === 1) return dayShort(ds[0])
+  const wd = (d: string) => String(new Date(utc(d)).getUTCDay() || 7)
+  const days = [...new Set(ds.map(wd))].sort().join('')
+  const dm = (d: string) => `${Number(d.slice(8, 10))}. ${Number(d.slice(5, 7))}.`
+  const missing: string[] = []
+  for (let t = utc(ds[0]); t <= utc(ds[ds.length - 1]); t += DAY_MS) {
+    const d = iso(t)
+    if (days.includes(wd(d)) && !ds.includes(d)) missing.push(dm(d))
+  }
+  return `${regDays(days)} ${dm(ds[0])} – ${dm(ds[ds.length - 1])}` + (missing.length ? `, kromě ${missing.join(', ')}` : '')
 }
 
 /** One church's rows dated `date` (Christmas), from `fromMin` on. */

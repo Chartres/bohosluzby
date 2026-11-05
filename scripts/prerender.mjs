@@ -199,11 +199,13 @@ const border = JSON.parse(readFileSync(`${root}data/geo/cz-border.json`, 'utf8')
 const hubTowns = feastListed.map((c) => ({ ...c, diocese: dioceseOfTown(c.churches.map((ch) => ch.id)) }))
 writeFileSync(`${root}dist/dusicky/index.html`, staticPage(feastHubPage({ cities: hubTowns, today, border })))
 
-// Advent (roráty) and Christmas (půlnoční) pages — DRAFT (docs/SEASON-PAGES.md).
-// Same static shape as Dušičky; a town page only where something seasonal is listed.
+// Advent (roráty) pages (docs/SEASON-PAGES.md). Same static shape as Dušičky; a town
+// page only where something seasonal is listed. Christmas ('vanoce') joins the list
+// after the 14–23 Dec pass (Pavol, 5 Nov 2026) — the code is ready in season.ts.
+const SEASON_KINDS = ['advent']
 const corrections = loadCorrections()
 const seasonUrls = []
-for (const kind of ['advent', 'vanoce']) {
+for (const kind of SEASON_KINDS) {
   const listed = []
   for (const city of feastCities) {
     const page = seasonCityPage({ kind, city, entries: Object.fromEntries(city.churches.map((c) => [c.id, entryOf(c)])), corrections, today })
@@ -270,7 +272,7 @@ ${urls.map(([u, mod]) => `  <url><loc>${ORIGIN}${u}</loc><lastmod>${mod}</lastmo
 `
 writeFileSync(`${root}dist/sitemap.xml`, sitemap)
 console.log(
-  `prerendered ${cities.length} city pages + ${feastUrls.length} Dušičky pages + ${seasonUrls.length} Advent/Christmas draft pages (not in sitemap)` +
+  `prerendered ${cities.length} city pages + ${feastUrls.length} Dušičky pages + ${seasonUrls.length} roráty pages (not in sitemap)` +
     (CHURCH_PAGES ? ` + ${churchUrls.length} church pages` : ' (church pages off — PRERENDER_CHURCHES=1 for the web deploy)') +
     ' + sitemap.xml + 404.html',
 )

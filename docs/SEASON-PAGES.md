@@ -1,7 +1,11 @@
-# Roráty and Vánoce pages — plan (draft, 3 Nov 2026)
+# Roráty and Vánoce pages — plan (3 Nov 2026, updated 5 Nov)
 
-Status: a **draft PR** with the pages. Shipping them is Pavol's call: new page types are a
-judgment call (28 Oct). Advent 2026 starts on Sun 29 Nov, and Christmas Eve is Thu 24 Dec.
+Status: **Pavol's call, 5 Nov: roráty before 29 Nov, Christmas after the December pass.**
+The PR (#94) stays unmerged until the roráty pass is done; it ships on Sat 28 Nov evening.
+The build renders only the Advent pages (`SEASON_KINDS` in `scripts/prerender.mjs`); the
+Christmas code stays in `season.ts` for December. The pass checklist is
+[`RORATY-PASS.md`](RORATY-PASS.md). Advent 2026 starts on Sun 29 Nov, and Christmas Eve is
+Thu 24 Dec.
 
 ## What the draft does
 - `/advent/<town>/` lists roráty and `/vanoce/<town>/` lists 24.–26. 12. Both are static, with
@@ -39,11 +43,11 @@ Without the passes, the roráty view is thin and the Christmas view is empty.
   time. "Roráty po–pá v 6:30" in a notice dated November 2026 for that church counts. An
   undated standing schedule doesn't. If a notice gives the time but doesn't name the church,
   the row is held.
-- **Record format:** today `data/corrections.json` takes one date per entry. Roráty are 4
-  weeks × the announced weekdays, about 15–20 dates per church. Proposal: a small TDD change
-  that lets an entry carry `"dates": [...]`, or `"from"/"to"/"days"`, expanding to dated
-  one-offs at transform, with the same source, quote and checked fields. Until that lands, the
-  pass can write one entry per date with a generator script.
+- **Record format (landed 5 Nov):** a `data/corrections.json` entry can carry
+  `"from"/"to"/"days"` (with `"except"`), or `"dates": [...]`. It expands to dated one-offs
+  with the same source, quote and checked fields (`expandCorrections` in
+  `data/corrections.mjs`). On the page, one notice is one row: "po–pá 30. 11. – 23. 12.,
+  kromě 8. 12.". `data/roraty-check.mjs` checks a batch before it goes in.
 - **Review:** as in #79–#86. An independent subagent re-fetches every source and checks the
   2026 date, the church, the days, the time and the quote. A source the reviewer can't reach
   is held. No bot-wall workarounds, and no contact with parishes.
@@ -67,10 +71,11 @@ Without the passes, the roráty view is thin and the Christmas view is empty.
   Mass (#90); in Advent they are the roráty.
 - **No sitemap entry, no link from the app or the Dušičky hub** until Pavol says ship.
 
+## Decided (Pavol, 5 Nov 2026)
+- Roráty pages ship before 29 Nov, with the towns pass 1 fills.
+- Christmas pages ship after pass 2 (14–23 Dec).
+
 ## Open for Pavol
-- Ship the roráty view before 29 Nov, yes or no? Recommendation: **yes, after pass 1**, with
-  the town pages that the pass fills. Not on registry data alone, which gives 4 towns.
-- Ship the Christmas view? Recommendation: decide after pass 1. It has nothing to show until
-  pass 2.
+- Sitemap entry and links from the app and the Dušičky hub when the roráty pages ship.
 - The wording for corrected rows ("mimořádná" and the like) is Pavol's call. The draft shows
   the source instead of a label.
