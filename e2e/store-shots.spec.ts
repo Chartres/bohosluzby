@@ -39,7 +39,10 @@ for (const d of DEVICES) {
       test.skip(!!process.env.CI, 'store screenshots are generated locally, not in CI')
       // the first-run intro guide must not overlay the store shots (step 1 uses
       // real bundled data, so mockData's seed hasn't run yet)
-      await page.addInitScript(() => localStorage.setItem('bohosluzby:introSeen', '1'))
+      await page.addInitScript(() => {
+        localStorage.setItem('bohosluzby:introSeen', '1')
+        localStorage.setItem('fw:whats-new', '9999') // no what's-new sheet over the store shots
+      })
       // Sandboxes whose browser can't reach tile.openstreetmap.org (but curl can):
       // PW_TILES_VIA_CURL=1 serves the map tiles through curl. Local-only escape hatch.
       if (process.env.PW_TILES_VIA_CURL)

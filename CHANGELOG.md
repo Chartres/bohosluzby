@@ -5,6 +5,11 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **What's new sheet** (flywheel `docs/standards/whats-new.md`): a returning reader sees a
+  short sheet once per version, with two items and a CSS animation each
+  (`public/whats-new/1.5.0/`). Release text lives in `whats-new.json` / `whats-new.en.json`;
+  bump `version` in both and rewrite the items with the next user-facing release.
+  `returning` = `bohosluzby:introSeen`; never in a frame or over `?intro=1`.
 - **Privacy link in the footer** ("Soukromí" / "Privacy" → /privacy/): Google Play wants the
   policy reachable inside the app. The policy now names the iOS and Android apps and lists
   the anonymous in-app events (including a town picked by hand, never coordinates).

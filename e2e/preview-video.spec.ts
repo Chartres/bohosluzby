@@ -22,7 +22,10 @@ test('bohosluzby app preview walkthrough', async ({ page }) => {
   test.setTimeout(60_000)
   await page.clock.install({ time: new Date('2026-07-12T05:00:00Z') })
   // keep the first-run intro guide out of the recorded walkthrough (real data)
-  await page.addInitScript(() => localStorage.setItem('bohosluzby:introSeen', '1'))
+  await page.addInitScript(() => {
+    localStorage.setItem('bohosluzby:introSeen', '1')
+    localStorage.setItem('fw:whats-new', '9999') // no what's-new sheet over the shots
+  })
 
   // 0-3s: opens straight to the nearest-mass list (real data, no loading/login)
   await page.goto('/?zobrazeni=seznam')

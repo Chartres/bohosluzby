@@ -1,0 +1,22 @@
+{
+  "version": "1.5.0",
+  "date": "2026-11-05",
+  "items": [
+    {
+      "id": "time-verbs",
+      "text": "Klepnutím na čas mše otevřete připomenout, do kalendáře a pozvat.",
+      "alt": "Klepnutí na čas 12:15 rozbalí pod řádkem připomenout, do kalendáře a pozvat",
+      "media": "/whats-new/1.5.0/time-verbs.html",
+      "width": 390,
+      "height": 200
+    },
+    {
+      "id": "map-groups",
+      "text": "Skupina kostelů na mapě ukazuje čas mše, která vyhovuje výběru, a počet kostelů.",
+      "alt": "Kolečka s počtem kostelů na mapě se změní na štítky s časem a odznakem s počtem",
+      "media": "/whats-new/1.5.0/map-groups.html",
+      "width": 390,
+      "height": 220
+    }
+  ]
+}
