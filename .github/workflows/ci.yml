@@ -34,6 +34,9 @@ jobs:
       # the store listing within Play's limits, and the target-API gate
       - run: node --test scripts/*.test.mjs
       - run: node scripts/play-listing.mjs
+      # what's-new sheet (flywheel docs/standards/whats-new.md): plain words, light HTML animations
+      - run: node scripts/check-whats-new.mjs whats-new.json --public public
+      - run: node scripts/check-whats-new.mjs whats-new.en.json --public public
       - run: node scripts/android-gates.mjs --gradle android/variables.gradle
       - name: Store screenshot check (fastlane helper self-test)
         run: ruby ios/App/fastlane/screenshot_ops_test.rb

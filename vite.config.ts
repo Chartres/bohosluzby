@@ -49,7 +49,7 @@ export default defineConfig({
         navigateFallback: '/index.html',
         // /dusicky/ pages are static lists with no app route — a returning
         // visitor's service worker must fetch them, not answer with the app shell
-        navigateFallbackDenylist: [/^\/dusicky\//],
+        navigateFallbackDenylist: [/^\/dusicky\//, /^\/whats-new\//],
         cleanupOutdatedCaches: true,
         // Fonts are self-hosted (Fontsource) and precached via globPatterns
         // (woff2) — no Google Fonts runtime caching needed.
