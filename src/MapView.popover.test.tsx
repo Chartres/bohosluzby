@@ -217,6 +217,15 @@ describe('popover names today’s services the choice leaves out', () => {
     expect(container.querySelector('.map-pop-today')!.textContent).toBe('Dnes ještě: 21:00 (mimo zvolený čas)')
   })
 
+  // Pavol, 2026-11-05 (Salvátor): "Dnes ještě: 20:00" was Thursday's adoration and
+  // read as a Mass. A service that isn't a Mass carries its type (his pick: option 2).
+  it('names the type of a service that is not a Mass: "21:00 adorace"', async () => {
+    setup({ '1': { ...TYN['1'], s: [['7', '20:00', 'česky', 0, 'mše sv.', ''], ['7', '21:00', 'česky', 0, 'adorace', ''], ['5', '15:00', 'česky', 0, 'mše sv.', '']] } })
+    const { container } = render(<MapView {...base} cas="16:00" onOpen={() => {}} now={sundayAfternoon} />)
+    await openPopover(container)
+    expect(container.querySelector('.map-pop-today')!.textContent).toBe('Dnes ještě: 20:00, 21:00 adorace (mimo zvolený čas)')
+  })
+
   it('zítra: a single chosen day never mentions today', async () => {
     setup(TYN)
     const { container } = render(<MapView {...base} day={1} cas="16:00" onOpen={() => {}} now={sundayAfternoon} />)

@@ -298,7 +298,8 @@ export default function MapView({
             // mimo kolem 16:00" read as a puzzle; the filter row already names the choice
             today.textContent = `${t('map_today_still')}: ${later
               .slice(0, 3)
-              .map((u) => fmtTime(u.start))
+              // not a Mass → say what it is (Salvátor's Thursday adoration — Pavol, 2026-11-05)
+              .map((u) => fmtTime(u.start) + (isMass(u.service.type) ? '' : ` ${u.service.type.trim()}`))
               .join(', ')} (${t(cas ? 'map_outside_time' : 'map_outside_choice')})`
             el.append(today)
           }
