@@ -226,7 +226,14 @@ function parseSegment(seg: string): Pred | 'none' | null {
 
   // school year / holidays
   // Guard against "mimo/kromě školní rok" — the except handler below resolves those.
-  if (/školní(?:m|ho)?\s+ro[ck]/.test(s) && !/^(?:kromě|mimo|vyjma|s výjimkou)/.test(s))
+  // Guard against ordinal-prefixed segments like "1. sobota ve školním roce": those
+  // carry more structure than "school year only" and must fall through to null so the
+  // row is flagged uncertain rather than silently dropping the ordinal condition.
+  if (
+    /školní(?:m|ho)?\s+ro[ck]/.test(s) &&
+    !/^(?:kromě|mimo|vyjma|s výjimkou)/.test(s) &&
+    !/^\d+\./.test(s)
+  )
     return NEGATION.test(s) ? not(schoolYear) : schoolYear
   if (/^(?:pouze\s+|jen\s+)?(?:o|v|během)\s+(?:době\s+|období\s+)?(?:letních\s+)?prázdnin(?:ách)?$/.test(s)) return julyAugust
 
