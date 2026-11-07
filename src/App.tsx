@@ -425,7 +425,12 @@ export default function App() {
         pendingGeoRef.current = { lat, lng }
         return false
       }
-      setOrigin({ lat, lng, source: 'geo' })
+      // avoid new-object churn (clears data + remounts map) when GPS returns
+      // the same fix — e.g. the background re-locate after 15 min away
+      setOrigin((cur) => {
+        if (cur?.source === 'geo' && Math.abs(cur.lat - lat) < 1e-5 && Math.abs(cur.lng - lng) < 1e-5) return cur
+        return { lat, lng, source: 'geo' }
+      })
       return true
     }
     if (!background) setLocating(true)
