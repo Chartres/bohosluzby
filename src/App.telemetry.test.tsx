@@ -4,13 +4,15 @@
 import { vi } from 'vitest'
 vi.mock('./lib/supabase', () => ({ supabase: null }))
 vi.mock('./analytics', () => ({ track: vi.fn(), conversion: vi.fn(), feedback: vi.fn(), logError: vi.fn() }))
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import App from './App'
-import { track } from './analytics'
+import { track, conversion } from './analytics'
 import type { IndexRow } from './domain/data'
 
 const INDEX: IndexRow[] = [['1', 'kostel Nejsvětějšího Salvátora', 'Praha 1', 50.086, 14.417, 1, '50-14']]
 const SHARD = { '1': { u: '2026-06-01', p: '', pa: '', c: [], s: [['1234567', '18:00', 'česky', 0, 'mše sv.', '']] } }
+
+const mockConversion = vi.mocked(conversion)
 
 beforeEach(() => {
   localStorage.clear()
@@ -36,6 +38,7 @@ beforeEach(() => {
     configurable: true,
   })
   vi.mocked(track).mockClear()
+  mockConversion.mockClear()
 })
 afterEach(() => {
   vi.useRealTimers()
@@ -73,4 +76,29 @@ it('page_view fires once per load: not again on a resume or a minute tick', asyn
   await act(() => vi.advanceTimersByTimeAsync(2 * 60_000))
   const pageViews = vi.mocked(track).mock.calls.filter(([e]) => e === 'page_view')
   expect(pageViews).toHaveLength(1)
+})
+
+it('conversion fires when tapping a church from the hero list (not map/MyChurches)', async () => {
+  render(<App />)
+  const link = await screen.findByRole('link', { name: /Salvátora/ })
+  fireEvent.click(link)
+  expect(mockConversion).toHaveBeenCalledOnce()
+  expect(mockConversion).toHaveBeenCalledWith(expect.objectContaining({ church: '1' }))
+})
+
+it('city_selected key_action fires when a city is chosen from the picker', async () => {
+  render(<App />)
+  await screen.findByText(/Salvátora/)
+  // "změnit" is the inline link that opens the city picker once a location is known
+  fireEvent.click(screen.getByRole('button', { name: 'změnit' }))
+  // type enough for the typeahead to surface Praha (< 2 chars → no results)
+  const combo = await screen.findByRole('combobox')
+  act(() => { fireEvent.change(combo, { target: { value: 'pra' } }) })
+  const option = await screen.findByRole('option', { name: /^Praha/ })
+  fireEvent.click(option)
+  const cityHits = vi.mocked(track).mock.calls.filter(
+    ([e, p]) => e === 'key_action' && p?.action === 'city_selected',
+  )
+  expect(cityHits).toHaveLength(1)
+  expect(cityHits[0][1]).toMatchObject({ action: 'city_selected', city: 'Praha' })
 })
