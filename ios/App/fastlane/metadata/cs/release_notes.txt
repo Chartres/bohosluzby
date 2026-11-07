@@ -4,6 +4,6 @@ Novinky ve verzi 1.5:
 • V bublině kostela uvidíte, co se tam dnes ještě koná mimo váš výběr, i s druhem bohoslužby (třeba „20:00 adorace“).
 • Fotografie kostela v barvě liturgického období.
 • U dalších kostelů titulární svátek (pouť), ověřený z webu nebo zpravodaje farnosti.
-• Přesnější pořady: letní a zimní časy se střídají podle data, „v adventu rorátní“ mše se ukazují celý rok a výjimka „kromě …“ už nesvítí v den, kdy se mše koná.
+• Přesnější pořady: letní a zimní časy se střídají podle data a mše s poznámkou „v adventu rorátní“ se ukazují celý rok.
 • Opravy pro starší iPhony (iOS 15).
 Data z rejstříku bohoslužeb České biskupské konference.

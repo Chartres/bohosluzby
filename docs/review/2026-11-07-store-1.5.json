@@ -11,10 +11,10 @@
     "verify_after_release": "Once 1.5 is live: https://itunes.apple.com/lookup?id=6792305024&country=cz, where languageCodesISO2A should include CS."
   },
   "listing": {
-    "release_notes": "ios/App/fastlane/metadata/cs/release_notes.txt rewritten for 1.5 (the old text was the 1.3/1.4 one)",
+    "release_notes": "ios/App/fastlane/metadata/cs/release_notes.txt rewritten for 1.5 (the old text was the 1.3/1.4 one). Pavol, 7 Nov: the kromě clause read as if once-a-month notes were hidden; it only drops one-off dated exclusions on other days, so the clause is out of the notes",
     "description": "ios/App/fastlane/metadata/cs/description.txt: opens with 'Kam na mši' (was the old name 'Bohoslužby'); adds tap-a-time actions, Moje kostely, filters, title feasts; 1488 characters",
     "unchanged": "name, subtitle, keywords, promotional text, URLs",
-    "screenshots": "regenerated with e2e/store-shots.spec.ts (iPhone 6.9\" and iPad 13\", plus the Android phone shot); the old ones dated from 7 Oct (iPhone) and 23 Aug (iPad). The list shot shows the July holiday note because the fixture date is in July."
+    "screenshots": "regenerated with e2e/store-shots.spec.ts (iPhone 6.9\" and iPad 13\", plus the Android phone shot); the old ones dated from 7 Oct (iPhone) and 23 Aug (iPad). The list shot shows the July holiday note because the fixture date is in July. Pavol, 7 Nov: the detail shot shows a church photo; it is St Vitus with its own Commons photo (registry 10001)."
   },
   "repo_fix": "#77 committed node_modules as a symlink to itself, so every fresh checkout broke npm/npx. It is now untracked (it was already in .gitignore).",
   "nomination": "docs/store/nomination-advent-2026.md: New Content, 29 Nov – 6 Jan, English fields plus a Czech note, the App Store Connect path. Pavol submits it by 12 Nov.",
