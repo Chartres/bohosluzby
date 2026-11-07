@@ -781,15 +781,18 @@ export default function App() {
     setPicking(false)
     navigate(`/kostel/${id}/${search}`)
   }
-  // shared by the list rows and the map popovers — the aha moment fires once
   // `at`: the tapped service's start — the church page leads with that day's
   // services (history.state, so the URL stays clean and shareable)
-  const openChurch = (id: string, at?: Date) => {
+  const openChurch = (id: string, at?: Date) =>
+    navigate(`/kostel/${id}/${search}`, { state: at ? { at: at.toISOString() } : null }) // keep ?den/?cas — back restores the view
+  // The aha moment ("found a service") is specifically opening from the hero list,
+  // not from map popovers or MyChurches which are secondary surfaces.
+  const openFromHeroList = (id: string, at?: Date) => {
     if (!convertedRef.current) {
       convertedRef.current = true
       conversion({ church: id })
     }
-    navigate(`/kostel/${id}/${search}`, { state: at ? { at: at.toISOString() } : null }) // keep ?den/?cas — back restores the view
+    openChurch(id, at)
   }
 
   // map mode: the map IS the page — a viewport-locked column, slim chrome, no
@@ -1134,7 +1137,7 @@ export default function App() {
                   feast={feast}
                   showUntil={!feastOn && (day === 'now' || day === 0)}
                   witnessChurches={witnessChurches}
-                  onOpen={openChurch}
+                  onOpen={openFromHeroList}
                   onNavigate={setNavTarget}
                 />
                 {/* the cap is honest: another page of the ordo instead of "evening ends at 18:00" */}
