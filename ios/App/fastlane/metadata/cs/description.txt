@@ -1,21 +1,21 @@
-Bohoslužby vám podle vaší polohy ukážou nejbližší katolické mše svaté — a hlavně to, kterou mši dnes ještě stihnete.
+Kam na mši vám podle vaší polohy ukáže nejbližší katolické mše svaté — a hlavně to, kterou mši dnes ještě stihnete.
 
-Otevřete aplikaci a hned vidíte pořad bohoslužeb v okolí: kde a v kolik začíná nejbližší mše, kolik zbývá času a jak daleko to máte. Bez zdlouhavého hledání na webu farnosti.
+Otevřete aplikaci a hned vidíte pořad bohoslužeb v okolí: kde a v kolik začíná nejbližší mše, kolik zbývá času a jak daleko to máte. Bez hledání na webech farností.
 
 Co aplikace umí:
 • Nejbližší mše podle vaší polohy, seřazené od té, kterou ještě stihnete
-• Mapa s časy mší přímo v mapě — čas nejbližší bohoslužby vidíte hned, bez klepnutí na kostel
-• Fotografie kostelů
+• Mapa s časy mší přímo v mapě; skupina blízkých kostelů ukáže čas mše, která vyhovuje vašemu výběru
+• Klepnutím na čas mše si ji připomenete, uložíte do kalendáře nebo pozvete ostatní
+• Moje kostely: uložte si kostely hvězdičkou a uvidíte jejich nejbližší bohoslužbu
+• Pořad bohoslužeb pro dnešek, zítřek i neděli, s filtrem jen mše svaté, jazyk, řeckokatolický ritus a bezbariérový přístup
 • Časy svátosti smíření (zpovědi) u vybraných kostelů
-• Pořad bohoslužeb pro dnešek, zítřek i neděli
+• Titulární svátek (pouť) kostela a bohoslužby o slavnostech, jako jsou Dušičky
+• Fotografie kostelů
 • Funguje offline — data máte v telefonu i bez signálu
-• Export mše do kalendáře jedním klepnutím
-• Připomínka před začátkem mše, ať nikam nespěcháte
 • Téměř 4 000 kostelů z oficiálního rejstříku České biskupské konference
-• Malá a rychlá — aplikace zabere jen pár megabajtů
 
 Zdarma, bez reklam a bez registrace. Nepotřebujete účet ani přihlášení.
 
 Vaše poloha se používá jen ve vašem telefonu k výpočtu nejbližších kostelů a nikam se neodesílá.
 
-Zdroj dat: oficiální rejstřík bohoslužeb České biskupské konference (bohoslužby.cirkev.cz).
+Zdroj dat: oficiální rejstřík bohoslužeb České biskupské konference (bohosluzby.cirkev.cz).

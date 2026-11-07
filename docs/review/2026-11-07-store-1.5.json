@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-07",
+  "package": "iOS 1.5 store bundle (Pavol: 'bundle into 1.5 so we release everything together') + orchestrator: Czech in the App Store, Advent nomination text, measurement plan",
+  "branch": "store-1.5",
+  "czech_language": {
+    "finding": "iTunes lookup (7 Nov): the App Store lists the app's language as English only.",
+    "cause": "The App Store reads languages from the bundle's .lproj folders. The app had only Base.lproj (developmentRegion en). CFBundleLocalizations has listed cs and en since July (#14); that alone does not count.",
+    "fix": "ios/App/App/cs.lproj/InfoPlist.strings and en.lproj/InfoPlist.strings (display name and location prompt per language), a PBXVariantGroup in the Resources phase, cs in knownRegions.",
+    "side_effect": "English-language devices now get the location prompt in English; before, it was Czech everywhere.",
+    "test": "scripts/ios-localizations.test.mjs (node --test, red before, green after)",
+    "verify_after_release": "Once 1.5 is live: https://itunes.apple.com/lookup?id=6792305024&country=cz, where languageCodesISO2A should include CS."
+  },
+  "listing": {
+    "release_notes": "ios/App/fastlane/metadata/cs/release_notes.txt rewritten for 1.5 (the old text was the 1.3/1.4 one)",
+    "description": "ios/App/fastlane/metadata/cs/description.txt: opens with 'Kam na mši' (was the old name 'Bohoslužby'); adds tap-a-time actions, Moje kostely, filters, title feasts; 1488 characters",
+    "unchanged": "name, subtitle, keywords, promotional text, URLs",
+    "screenshots": "regenerated with e2e/store-shots.spec.ts (iPhone 6.9\" and iPad 13\", plus the Android phone shot); the old ones dated from 7 Oct (iPhone) and 23 Aug (iPad). The list shot shows the July holiday note because the fixture date is in July."
+  },
+  "repo_fix": "#77 committed node_modules as a symlink to itself, so every fresh checkout broke npm/npx. It is now untracked (it was already in .gitignore).",
+  "nomination": "docs/store/nomination-advent-2026.md: New Content, 29 Nov – 6 Jan, English fields plus a Czech note, the App Store Connect path. Pavol submits it by 12 Nov.",
+  "measurement_plan": {
+    "what": "App Store impressions, product page views, first-time downloads (App Store Connect → Analytics → Acquisition), Czechia.",
+    "windows": "29 Nov – 12 Dec 2026 against the baseline 1–14 Nov 2026; both are 14 days and start on a Sunday",
+    "read_on": "13 Dec 2026 (App Store Analytics lags 24–48 h, so read again on 15 Dec)",
+    "featuring_signal": "an email from Apple, or a 'Featured' traffic source in App Store Analytics; also a spike in impressions with no change in web referrals",
+    "confounders": "Advent itself raises search for Mass times, so the season alone may lift the numbers. Compare with the web KPIs (page_view, conversion) over the same windows: a jump in the store that the web doesn't share points to featuring.",
+    "who_reads": "an agent can't read App Store Connect Analytics (no ASC session in the sandbox), so Pavol exports the two windows as CSV into docs/review/, or the hand-back asks him for the four numbers",
+    "baseline_note": "1.4 has been live since 30 Oct with 3 ratings, so the numbers are small. A difference of a few downloads is noise."
+  },
+  "release_steps": [
+    "Pavol OKs the screenshots and text (this hand-back)",
+    "merge store-1.5 (CI green)",
+    "Release iOS, lane 'release' on main: uploads build 92 with the listing and screenshots; it never submits",
+    "Pavol: version 1.5 → attach build 92 → Submit for Review; then the nomination by 12 Nov"
+  ],
+  "limits_kept": "no store submission, no App Store Connect changes, no emails or posts, no Supabase SQL"
+}

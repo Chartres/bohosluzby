@@ -1,1 +1,9 @@
-Opravy: aplikace se na některých starších iPhonech (iOS 15–16.3) nezobrazovala — nyní funguje. Sdílený odkaz na kostel teď vede na web, poloha se načte i při pomalejším GPS. Novinky: Moje kostely — uložte si kostely hvězdičkou a uvidíte jejich nejbližší bohoslužbu; bez polohy stačí klepnout na město; tichá připomínka slavností. Data z rejstříku ČBK.
+Novinky ve verzi 1.5:
+• Klepněte na čas mše a pod řádkem se objeví připomenout, do kalendáře a pozvat.
+• Mapa: skupina blízkých kostelů ukazuje čas mše, která vyhovuje vašemu výběru, a kolik kostelů v ní je. Časy z jiných dnů lze v legendě skrýt.
+• V bublině kostela uvidíte, co se tam dnes ještě koná mimo váš výběr, i s druhem bohoslužby (třeba „20:00 adorace“).
+• Fotografie kostela v barvě liturgického období.
+• U dalších kostelů titulární svátek (pouť), ověřený z webu nebo zpravodaje farnosti.
+• Přesnější pořady: letní a zimní časy se střídají podle data, „v adventu rorátní“ mše se ukazují celý rok a výjimka „kromě …“ už nesvítí v den, kdy se mše koná.
+• Opravy pro starší iPhony (iOS 15).
+Data z rejstříku bohoslužeb České biskupské konference.
