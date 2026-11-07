@@ -12,7 +12,7 @@ Everything else is automated (list at the end). Answers to paste live in
    test). Confirmation later: in the app's menu, *Test and release → Production* is locked
    and the *Dashboard* shows "Apply for production".
 2. **Upload key + GitHub secrets — one command at the mini**, in your bohosluzby
-   checkout (needs `gh auth login` once and a JDK):
+   checkout (needs `gh auth login` once; no JDK, it uses `openssl`):
    ```
    git pull && scripts/android-keystore.sh
    ```

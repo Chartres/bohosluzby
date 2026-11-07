@@ -2,10 +2,10 @@
 // Run: node --test scripts/*.test.mjs It must
 // set the GitHub secrets without ever showing a secret value on screen (Pavol,
 // 2026-11-04: "as hands-free as possible"; values never pass through a terminal
-// he might screen-share). Run here with stub keytool/gh/security on PATH.
+// he might screen-share). Run here with stub gh/security on PATH and the real openssl.
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { chmodSync, symlinkSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
@@ -19,19 +19,22 @@ function sandbox({ gh = true, security = false, ghFails = false } = {}) {
   const log = join(root, 'gh-secrets')
   mkdirSync(bin)
   mkdirSync(log)
+  // PATH is only this dir: the real macOS `security` must not be reachable (it would write the real Keychain)
+  for (const t of ['bash', 'env', 'openssl', 'base64', 'tr', 'cut', 'mktemp', 'chmod', 'mkdir', 'rm', 'cat', 'head']) {
+    const real = ['/usr/bin', '/bin'].map((d) => join(d, t)).find(existsSync)
+    if (real) symlinkSync(real, join(bin, t))
+  }
   const stub = (name, body) => {
     writeFileSync(join(bin, name), `#!/usr/bin/env bash\n${body}\n`)
     chmodSync(join(bin, name), 0o755)
   }
-  // keytool: -genkeypair writes a fake keystore; -list prints a fingerprint
-  stub('keytool', `case "$*" in *-genkeypair*) for a in "$@"; do [ -n "$prev" ] && [ "$prev" = "-keystore" ] && echo fake-jks > "$a"; prev="$a"; done;; *-list*) echo "SHA256: AA:BB:CC";; esac`)
   if (gh) stub('gh', `if [ "$1 $2" = "secret set" ]; then ${ghFails ? 'exit 1' : `cat > "${log}/$3"`}; elif [ "$1 $2" = "auth status" ]; then exit 0; fi`)
   if (security) stub('security', `cat > /dev/null; for a in "$@"; do [ "$prev" = "-w" ] && echo -n "$a" > "${root}/keychain"; prev="$a"; done`)
   return { root, bin, log, out: join(root, 'cfg') }
 }
 
 function run(sb, args = []) {
-  const PATH = `${sb.bin}:/usr/bin:/bin`
+  const PATH = sb.bin
   return spawnSync('bash', [SCRIPT, ...args], { env: { PATH, HOME: sb.root, OUT_DIR: sb.out, REPO: 'o/r', SERVICE: 'test android upload key' }, encoding: 'utf8' })
 }
 
@@ -51,7 +54,8 @@ describe('android-keystore.sh', () => {
     const shown = r.stdout + r.stderr
     assert.ok(!shown.includes(pass))
     assert.ok(!shown.includes(b64))
-    assert.ok(shown.includes('SHA256: AA:BB:CC')) // the public certificate fingerprint is fine to show
+    assert.match(shown, /SHA256 Fingerprint=([0-9A-F]{2}:){31}[0-9A-F]{2}/i) // the public certificate fingerprint is fine to show
+    assert.ok(!/keytool/.test(shown))
   })
 
   it('keeps the password for the owner without showing it: macOS Keychain, else a 600 file', () => {
@@ -73,8 +77,28 @@ describe('android-keystore.sh', () => {
     assert.ok(existsSync(join(sb.out, 'android-upload.pass')))
   })
 
-  it('never puts the password on a command line keytool runs with', () => {
-    assert.doesNotMatch(readFileSync(SCRIPT, 'utf8'), /-storepass\s+"\$/)
+  it('needs no JDK and never puts the password on a command line', () => {
+    const src = readFileSync(SCRIPT, 'utf8')
+    assert.doesNotMatch(src, /^[^#]*keytool/m)
+    assert.doesNotMatch(src, /-pass(out|in)?\s+"?pass:/)
+  })
+
+  it('writes a PKCS12 keystore openssl opens with the generated password, alias intact', () => {
+    const sb = sandbox()
+    assert.equal(run(sb).status, 0)
+    const ks = join(sb.out, 'android-upload.jks')
+    const pass = readFileSync(join(sb.log, 'ANDROID_KEYSTORE_PASSWORD'), 'utf8')
+    assert.equal(Buffer.from(readFileSync(join(sb.log, 'ANDROID_KEYSTORE_BASE64'), 'utf8'), 'base64').compare(readFileSync(ks)), 0)
+    const env = { PATH: '/usr/bin:/bin', KS_PASS: pass }
+    const info = spawnSync('openssl', ['pkcs12', '-info', '-noout', '-in', ks, '-passin', 'env:KS_PASS'], { env, encoding: 'utf8' })
+    assert.equal(info.status, 0, info.stderr)
+    const all = spawnSync('openssl', ['pkcs12', '-in', ks, '-passin', 'env:KS_PASS', '-nodes'], { env, encoding: 'utf8' }).stdout
+    assert.match(all, /friendlyName: upload/)
+    assert.match(all, /BEGIN (RSA |ENCRYPTED )?PRIVATE KEY/)
+    const cert = all.slice(all.indexOf('-----BEGIN CERTIFICATE'), all.indexOf('-----END CERTIFICATE') + 25)
+    const x = spawnSync('openssl', ['x509', '-noout', '-enddate'], { env, input: cert, encoding: 'utf8' }).stdout
+    const year = Number(x.match(/(\d{4}) GMT/)[1])
+    assert.ok(year >= new Date().getFullYear() + 25, x) // Play wants validity past 2033
   })
 
   it('refuses to overwrite an existing keystore', () => {
@@ -100,7 +124,7 @@ describe('android-keystore.sh', () => {
     // the token is built at runtime: the stamp would fill a literal one in this file too
     const token = `${'__'}SLUG__`
     writeFileSync(copy, readFileSync(SCRIPT, 'utf8').replace(/^SERVICE=".*"$/m, `SERVICE="\${SERVICE:-${token} android upload key}"`))
-    const r = spawnSync('bash', [copy], { env: { PATH: `${sb.bin}:/usr/bin:/bin`, HOME: sb.root, OUT_DIR: sb.out, REPO: 'o/r' }, encoding: 'utf8' })
+    const r = spawnSync('bash', [copy], { env: { PATH: sb.bin, HOME: sb.root, OUT_DIR: sb.out, REPO: 'o/r' }, encoding: 'utf8' })
     assert.notEqual(r.status, 0)
     assert.match(r.stdout + r.stderr, /never stamped/)
     assert.deepEqual(readdirSync(sb.log), [])
