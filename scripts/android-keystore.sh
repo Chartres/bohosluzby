@@ -10,7 +10,9 @@
 #
 # Google Play App Signing keeps the real signing key on Google's side; this is only
 # the upload key, and you can reset it in Play Console if it is ever lost.
-# Needs: a JDK (keytool), openssl, and gh logged in to GitHub (gh auth login).
+# Needs: openssl (macOS's own LibreSSL or Homebrew OpenSSL; no JDK) and gh logged in to GitHub.
+# The keystore is PKCS12, which keytool and Gradle read as-is. OpenSSL 3 encrypts it with
+# AES-256: JDK 11.0.12+/17+ (CI uses 21) reads that; only a JDK 8 keytool would not.
 set -euo pipefail
 
 REPO="${REPO:-Chartres/bohosluzby}"
@@ -33,7 +35,6 @@ if [ "${1:-}" = "--play-json" ]; then
   exit 0
 fi
 
-need keytool "install a JDK (brew install --cask temurin)"
 need openssl "install openssl"
 mkdir -p "$OUT_DIR"; chmod 700 "$OUT_DIR"
 if [ -f "$KS" ]; then
@@ -41,7 +42,7 @@ if [ -f "$KS" ]; then
 fi
 
 KS_PASS="$(openssl rand -base64 30 | tr -d '/+=\n' | cut -c1-32)"
-export KS_PASS # read by keytool through :env, never on its command line
+export KS_PASS # read by openssl through env:, never on its command line
 
 # keep the password first: if a later step fails, the keystore is never stranded
 if command -v security >/dev/null; then
@@ -52,11 +53,14 @@ else
   where="$OUT_DIR/android-upload.pass (only you can read it)"
 fi
 
-if ! err=$(keytool -genkeypair -v \
-  -keystore "$KS" -storepass:env KS_PASS -keypass:env KS_PASS \
-  -alias "$ALIAS" -keyalg RSA -keysize 4096 -validity 10000 \
-  -dname "CN=Kam na mši – katolické mše, O=Pavol Dravecký, C=CZ" 2>&1 >/dev/null); then
-  echo "✗ keytool failed: $err"; exit 1
+# self-signed RSA-4096 cert, ~27 years; the PEM key lives only in a private temp dir
+tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT; chmod 700 "$tmp"
+if ! err=$(openssl req -x509 -newkey rsa:4096 -nodes -days 10000 -utf8 \
+  -keyout "$tmp/key.pem" -out "$tmp/cert.pem" \
+  -subj "/CN=Kam na mši – katolické mše/O=Pavol Dravecký/C=CZ" 2>&1 >/dev/null) \
+  || ! err=$(openssl pkcs12 -export -inkey "$tmp/key.pem" -in "$tmp/cert.pem" \
+  -name "$ALIAS" -passout env:KS_PASS -out "$KS" 2>&1 >/dev/null); then
+  rm -f "$KS"; echo "✗ openssl failed: $err"; exit 1
 fi
 chmod 600 "$KS"
 
@@ -69,5 +73,5 @@ echo "✓ upload keystore: $KS"
 echo "✓ 4 secrets set on $REPO (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD)"
 echo "✓ password kept in: $where"
 echo "  Upload certificate fingerprint (public, for Play Console if it asks):"
-keytool -list -v -keystore "$KS" -storepass:env KS_PASS -alias "$ALIAS" 2>/dev/null | grep -E "SHA256:" | head -1
+openssl x509 -in "$tmp/cert.pem" -noout -fingerprint -sha256
 unset KS_PASS
