@@ -8,7 +8,7 @@
 // upload source). Both MUST stay in lockstep — a v1.1 upload once shipped stale
 // shots because only store-assets was regenerated (verify_listing caught it).
 import { test } from '@playwright/test'
-import { cpSync, mkdirSync, readdirSync } from 'node:fs'
+import { cpSync, mkdirSync, readdirSync, readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { FIXED_NOW, PRAGUE, mockData } from './fixtures'
 
@@ -37,6 +37,7 @@ for (const d of DEVICES) {
 
     test('store screens', async ({ page }) => {
       test.skip(!!process.env.CI, 'store screenshots are generated locally, not in CI')
+      test.setTimeout(120_000) // real map tiles + a Wikimedia photo
       // the first-run intro guide must not overlay the store shots (step 1 uses
       // real bundled data, so mockData's seed hasn't run yet)
       await page.addInitScript(() => {
@@ -71,14 +72,19 @@ for (const d of DEVICES) {
       // fixture at FIXED_NOW (map already captured, so tile-fade timing moot)
       await page.clock.setFixedTime(FIXED_NOW)
       await mockData(page)
+      // the detail shot shows a church photo (Pavol, 7 Nov): fixture church 2 is St Vitus,
+      // so it gets St Vitus's own entry from the real photos.json (registry id 10001)
+      const photos = JSON.parse(readFileSync('public/data/photos.json', 'utf8'))
+      await page.route('**/data/photos.json', (route) => route.fulfill({ json: { '2': photos['10001'] } }))
       await page.goto('/?zobrazeni=seznam')
       await page.getByText('kostel Panny Marie Sněžné').first().waitFor()
       await page.evaluate(() => document.fonts.ready.then(() => undefined))
       await page.screenshot({ path: `${dir}/2-home.png` })
 
-      // 3 — a church's full ordo + add-to-calendar
-      await page.getByText('kostel Panny Marie Sněžné').click()
+      // 3 — a church with its photo, full ordo + the time's actions
+      await page.getByText('katedrála sv. Víta, Václava a Vojtěcha').first().click()
       await page.getByLabel('Pořad bohoslužeb').waitFor()
+      await page.waitForFunction(() => [...document.images].some((i) => i.src.includes('wikimedia') && i.complete && i.naturalWidth > 0), { timeout: 15000 })
       await page.evaluate(() => document.fonts.ready.then(() => undefined))
       await page.screenshot({ path: `${dir}/3-detail.png` })
 
