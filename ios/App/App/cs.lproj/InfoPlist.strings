@@ -1,0 +1,4 @@
+/* Czech — the app's own language. The App Store lists languages from these .lproj folders. */
+"CFBundleDisplayName" = "Kam na mši";
+"NSLocationWhenInUseUsageDescription" = "Pro zobrazení nejbližších bohoslužeb podle vaší polohy. Polohu můžete kdykoli zadat i ručně.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Pro zobrazení nejbližších bohoslužeb podle vaší polohy. Polohu můžete kdykoli zadat i ručně.";
