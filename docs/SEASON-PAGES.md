@@ -74,8 +74,9 @@ Without the passes, the roráty view is thin and the Christmas view is empty.
 ## Decided (Pavol, 5 Nov 2026)
 - Roráty pages ship before 29 Nov, with the towns pass 1 fills.
 - Christmas pages ship after pass 2 (14–23 Dec).
+- At the roráty ship: sitemap entry and links from the app and the Dušičky hub, as with the
+  Dušičky pages (Pavol, 8 Nov).
 
 ## Open for Pavol
-- Sitemap entry and links from the app and the Dušičky hub when the roráty pages ship.
 - The wording for corrected rows ("mimořádná" and the like) is Pavol's call. The draft shows
   the source instead of a label.

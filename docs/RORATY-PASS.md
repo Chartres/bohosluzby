@@ -57,8 +57,9 @@ checklist on 5 parishes (5 Nov, on last year's notices) is in
 - [ ] Merge #94. Deploy runs on main.
 - [ ] Live check at 390 px: the hub, Praha, one town filled only by the pass, and one row's source
       link opened. Screenshots go in `docs/review/shots/`.
-- [ ] Sitemap and links from the app: only if Pavol says so in the ship hand-back (open question in
-      SEASON-PAGES.md). Until then the pages are reachable but not linked.
+- [ ] Links, as with the Dušičky pages (Pavol, 8 Nov 2026): add `/advent/` and the town pages to
+      the sitemap, link `/advent/` from the app, and link it from the Dušičky hub (`/dusicky/`).
+      Check each link live after the deploy.
 - [ ] Hand-back `docs/review/2026-11-28.json`: towns, rows, sources, the blocked list, and what is held.
 
 ## After the ship
