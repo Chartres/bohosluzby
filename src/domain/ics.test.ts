@@ -104,6 +104,19 @@ describe('buildICS — note-restricted weekly services (sweep F1, G2)', () => {
     expect(unfold(ics)).toContain('20261102') // EXDATE for the one-off
   })
 
+  it('sentence-prefixed note + dated exclusion keeps open-ended RRULE', () => {
+    // "Pro děti. Kromě 2. 11. 2026" — the sentence "Pro děti" is not a date
+    // condition; hasDatedOnlyExclusions must split on the sentence boundary so
+    // it correctly identifies the note as dated-only and keeps the RRULE open.
+    const testNow = new Date('2026-10-01T08:00:00Z')
+    const withPrefix: Service = { days: '1', time: '09:00', lang: 'česky', greek: false, type: 'mše sv.', note: 'Pro děti. Kromě 2. 11. 2026' }
+    const ics = buildICS(church, withPrefix, testNow)!
+    expect(ics).not.toBeNull()
+    expect(ics).toMatch(/RRULE:FREQ=WEEKLY;BYDAY=MO\r\n/) // open-ended — no UNTIL
+    expect(ics).not.toContain(';UNTIL=')
+    expect(unfold(ics)).toContain('20261102') // EXDATE for the one-off
+  })
+
   it('G2: dated exclusion on the last horizon occurrence is included in EXDATE', () => {
     // Sep 27 2027 is the last Monday within 366 days of Oct 1 2026; excluding it
     // must still produce an EXDATE even though it falls after `last` (Sep 20 2027).

@@ -462,7 +462,10 @@ export const noteUncertain = (note: string): boolean => parseNote(note).uncertai
  * ("kromě D. M. YYYY") — the RRULE can stay open-ended; EXDATE handles the gaps. */
 export function hasDatedOnlyExclusions(note: string | undefined): boolean {
   const segs = (note ?? '')
-    .split(/\s*[,;]\s*/)
+    // sentence split: same boundary as parseNote (".〈3 lowercase〉 〈uppercase〉")
+    .replace(/(\p{Ll}{3})\.\s+(?=\p{Lu})/gu, '$1\u0000')
+    .split('\u0000')
+    .flatMap((s) => s.split(/\s*[,;]\s*/))
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean)
   if (!segs.some((s) => EXCL_DATE.test(s))) return false
