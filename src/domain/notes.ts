@@ -27,7 +27,7 @@ const DAY = 86_400_000
 
 const daysInMonth = (y: number, m: number) => new Date(Date.UTC(y, m, 0)).getUTCDate()
 /** ISO day of week, 1 = Monday … 7 = Sunday. */
-const isoDow = (y: number, m: number, d: number) => new Date(Date.UTC(y, m - 1, d)).getUTCDay() || 7
+export const isoDow = (y: number, m: number, d: number): number => new Date(Date.UTC(y, m - 1, d)).getUTCDay() || 7
 
 function isoWeek(y: number, m: number, d: number): number {
   const t = Date.UTC(y, m - 1, d)
