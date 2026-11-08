@@ -177,8 +177,8 @@ describe('buildICS — the web reminder (once + alarm)', () => {
     expect(ics).not.toContain('EXDATE')
     expect(ics).toContain('BEGIN:VALARM')
     expect(ics).toContain('TRIGGER:-PT30M')
-    // its own UID, so it never replaces the weekly series in the calendar
-    expect(ics).not.toContain('UID:42-135-18:00@')
+    // its own UID (timestamp suffix), so it never replaces the weekly series in the calendar
+    expect(ics).not.toContain('UID:42-135-18:00-mše sv.-česky@')
   })
   it('respects the note: the next occurrence the note allows', () => {
     const s: Service = { ...weekly, note: 'kromě 3. 7. 2026' }
