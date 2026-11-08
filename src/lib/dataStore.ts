@@ -115,12 +115,18 @@ export async function loadData<T>(path: string): Promise<T> {
   // fetched+parsed once even when multiple components request it simultaneously.
   const flying = inFlight.get(path)
   if (flying) return flying as Promise<T>
-  const p = readSource(path).then((parsed) => {
-    inFlight.delete(path)
-    // Don't write stale data back if an OTA refresh started while we were reading.
-    if (!refreshLock) memCache.set(path, parsed)
-    return parsed
-  })
+  const p = readSource(path).then(
+    (parsed) => {
+      inFlight.delete(path)
+      // Don't write stale data back if an OTA refresh started while we were reading.
+      if (!refreshLock) memCache.set(path, parsed)
+      return parsed
+    },
+    (err) => {
+      inFlight.delete(path)
+      throw err
+    },
+  )
   inFlight.set(path, p)
   return p as Promise<T>
 }
