@@ -512,7 +512,8 @@ export default function MapView({
           // "7:30⁺²": further services that day the same filters let through
           // (Pavol, 2026-10-25 — the 9:00 and 11:00 hid behind a tap)
           // ponytail: pass a single-entry byId so applyFilters is O(1) not O(viewport)
-          const churchById = byId.has(church.id) ? new Map([[church.id, byId.get(church.id)!]]) : new Map<string, ChurchServices>()
+          const services = byId.get(church.id)
+          const churchById = new Map<string, ChurchServices>(services ? [[church.id, services]] : [])
           const more = next
             ? selectUpcoming(now, origin, [church], churchById, filters, cas,
                 Math.round((pragueDay(next.start).getTime() - pragueDay(now).getTime()) / 86_400_000),
