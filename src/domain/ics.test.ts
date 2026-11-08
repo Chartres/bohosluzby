@@ -135,6 +135,31 @@ describe('buildICS — note-restricted weekly services (sweep F1, G2)', () => {
   })
 })
 
+it('DST boundary: DTSTART in CEST, EXDATE winter entries keep wall-clock time, UNTIL is valid UTC (sweep/2026-11-08)', () => {
+  // now = Jul 3 2026 (CEST, UTC+2). Monthly Saturday service; non-first-week
+  // exclusions cross into CET (Nov+). Wall-clock 17:00 must appear in both
+  // DTSTART and EXDATE regardless of offset. UNTIL falls in summer → T150000Z.
+  const monthly: Service = { days: '6', time: '17:00', lang: 'česky', greek: false, type: 'mše sv.', note: '1x za měsíc, 1. týden v měsíci' }
+  const ics = buildICS(church, monthly, now)! // now = 2026-07-03T15:00:00Z (CEST)
+  const unfold = (s: string) => s.replace(/\r\n /g, '')
+
+  // DTSTART is in CEST: Prague 17:00 wall-clock (the TZID carries the offset)
+  expect(ics).toContain('DTSTART;TZID=Europe/Prague:20260704T170000')
+
+  // EXDATE covers November+ (CET) — wall-clock time must still be T170000, not adjusted
+  const exdateLine = unfold(ics).match(/EXDATE;TZID=Europe\/Prague:(.*)/)?.[1] ?? ''
+  const winterEx = exdateLine.split(',').filter((d) => parseInt(d.slice(4, 6), 10) >= 11)
+  expect(winterEx.length).toBeGreaterThan(0)
+  for (const d of winterEx) expect(d).toMatch(/T170000$/)
+
+  // UNTIL is a valid UTC datetime (Z suffix); last 1st-week Saturday (Jul 2027, CEST) → T150000Z
+  const untilMatch = ics.match(/UNTIL=(\d{8}T\d{6}Z)/)
+  expect(untilMatch).not.toBeNull()
+  expect(untilMatch![1]).toMatch(/^\d{8}T\d{6}Z$/)
+  // UNTIL in CEST: wall-clock 17:00 Prague → 15:00 UTC
+  expect(untilMatch![1]).toContain('T150000Z')
+})
+
 it('folds lines at 75 octets, counting UTF-8 bytes, without splitting a character (sweep F7)', () => {
   const longName: Church = { ...church, name: 'kostel Nejsvětějšího Srdce Páně a Panny Marie Růžencové — Žďár nad Sázavou' }
   const ics = buildICS(longName, weekly, now)!
