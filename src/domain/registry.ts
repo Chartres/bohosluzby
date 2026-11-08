@@ -53,3 +53,10 @@ export function toMin(t: string): number {
 
 /** The registry writes Mass as "", "mše sv." or "mše svatá"; one label for all. */
 export const typeLabel = (type: string): string => (!type || /^mše sv\.?$/i.test(type) ? 'mše svatá' : type)
+
+type ServiceKey = { time: string; type: string; lang: string; greek: boolean }
+
+/** The same service entered both weekly and as a one-off for the day — print it
+ * once. A different one-off at that time (a cemetery devotion) is not the same. */
+export const sameService = (a: ServiceKey, b: ServiceKey): boolean =>
+  toMin(a.time) === toMin(b.time) && typeLabel(a.type) === typeLabel(b.type) && a.lang === b.lang && a.greek === b.greek

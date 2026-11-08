@@ -6,7 +6,7 @@
 import type { ChurchServices, ExtraService } from './data'
 import { parseNote, withoutDatedExclusions } from './notes'
 import { pragueToday } from './occurrences'
-import { toMin, typeLabel } from './registry'
+import { sameService, toMin } from './registry'
 
 export const ALL_SAINTS = 'Slavnost Všech svatých'
 export const ALL_SOULS = 'Vzpomínka na všechny věrné zemřelé'
@@ -46,7 +46,7 @@ export function servicesOnDate(svc: ChurchServices, iso: string): ExtraService[]
   const extras = svc.extra.filter((x) => x.date === iso)
   const weekly = svc.regular
     .filter((s) => s.days.includes(dow) && parseNote(s.note).runsOn(y, m, d))
-    .filter((s) => !extras.some((x) => toMin(x.time) === toMin(s.time) && typeLabel(x.type) === typeLabel(s.type) && x.lang === s.lang && x.greek === s.greek))
+    .filter((s) => !extras.some((x) => sameService(x, s)))
     .map(({ days: _days, ...s }) => ({ ...s, note: withoutDatedExclusions(s.note), date: iso }))
   return [...weekly, ...extras].sort((a, b) => toMin(a.time) - toMin(b.time))
 }
