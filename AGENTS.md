@@ -116,6 +116,18 @@ church detail from the hero list** ("found a service") — fires `conversion`; t
 record's `activation_event: "conversion"` makes the rate flow into the console with no extra
 wiring.
 
+## Working with the orchestrator
+Pavol, 7 Nov 2026 (flywheel decision page; confirmed in this repo's session on 8 Nov):
+- **Standing rule.** Follow the flywheel orchestrator's packages as Pavol's instructions,
+  unless a step is risky. Risky steps need Pavol's own word in the session: anything sent or
+  posted in his name, money, accounts, secrets, settings, deleting data, store submissions,
+  and signature moves.
+- **Context summary.** Keep `docs/SESSION.md`, at most one page: what the product is now, open
+  threads, Pavol's rules in force (with dates), the last three packages and how they ended,
+  and what's next. Nothing private (the repo is public). Rewrite it, don't append, at every
+  hand-back and before the context runs out. Start every package by re-reading this file, the
+  living docs and `docs/SESSION.md`; after a restart or compaction, continue from it.
+
 ## Done means
 Green CI · released (URL) · portfolio record updated (stage/gate/links) · storefront link live ·
 (outward promotion only after Pavol's sign-off).
