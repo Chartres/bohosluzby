@@ -108,20 +108,19 @@ export async function loadData<T>(path: string): Promise<T> {
   if (refreshLock) await refreshLock
   const hit = memCache.get(path)
   if (hit !== undefined) return hit as T
-  let parsed: T
+  const parsed = await readSource(path)
+  memCache.set(path, parsed)
+  return parsed as T
+}
+
+async function readSource(path: string): Promise<unknown> {
   if (await ready()) {
     const text = await readCache(path)
-    if (text) {
-      parsed = JSON.parse(text) as T
-      memCache.set(path, parsed)
-      return parsed
-    }
+    if (text) return JSON.parse(text)
   }
   const res = await fetch(`/data/${path}`)
   if (!res.ok) throw new Error(`${path} ${res.status}`)
-  parsed = (await res.json()) as T
-  memCache.set(path, parsed)
-  return parsed
+  return res.json()
 }
 
 /** One services/<cell>.json shard, undecoded (callers run decodeShard). */
