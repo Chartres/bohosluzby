@@ -1,0 +1,4 @@
+/* English — shown on devices that prefer neither Czech nor Slovak (the UI follows the same rule). */
+"CFBundleDisplayName" = "Kam na mši";
+"NSLocationWhenInUseUsageDescription" = "To show the nearest Masses from where you are. You can always pick a place by hand instead.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "To show the nearest Masses from where you are. You can always pick a place by hand instead.";
