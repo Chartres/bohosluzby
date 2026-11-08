@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import { afterEach } from 'vitest'
 import { cleanup } from '@testing-library/react'
+import { clearDataCache } from './src/lib/dataStore'
 
 // jsdom does not expose a global localStorage on an opaque origin. Provide a
 // deterministic in-memory implementation so storage-backed code is testable.
@@ -44,4 +45,5 @@ afterEach(() => {
   cleanup()
   localStorage.clear()
   window.history.replaceState(null, '', '/')
+  clearDataCache()
 })
