@@ -79,7 +79,8 @@ const ORDINAL: Record<string, number | 'last'> = {
   '1': 1, 'první': 1, '2': 2, 'druhá': 2, 'druhou': 2, 'druhé': 2, '3': 3, 'třetí': 3,
   '4': 4, 'čtvrtá': 4, 'čtvrtou': 4, '5': 5, 'pátá': 5, 'páté': 5, 'poslední': 'last', 'posl': 'last',
 }
-const ORDINAL_RE = "(?:\\d|první|druh[áoé]u?|třetí|čtvrt[áoé]u?|pát[áé]|posl(?:ední)?)\\.?"
+const ORDINAL_WORD_RE = 'první|druh[áoé]u?|třetí|čtvrt[áoé]u?|pát[áé]|posl(?:ední)?'
+const ORDINAL_RE = `(?:\\d|${ORDINAL_WORD_RE})\\.?`
 /** "1." | "1. a 3." | "2., 4." — an ordinal list. */
 const ORDINALS_RE = `${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*`
 
@@ -233,7 +234,7 @@ function parseSegment(seg: string): Pred | 'none' | null {
     /školní(?:m|ho)?\s+ro[ck]/.test(s) &&
     !/^(?:kromě|mimo|vyjma|s výjimkou)/.test(s) &&
     !/^\d+[.x]/.test(s) &&
-    !/^(?:první|druh[áoé]u?|třetí|čtvrt[áoé]u?|pát[áé]|posl(?:ední)?)\s/i.test(s)
+    !new RegExp(`^(?:${ORDINAL_WORD_RE})\\s`, 'i').test(s)
   )
     return NEGATION.test(s) ? not(schoolYear) : schoolYear
   if (/^(?:pouze\s+|jen\s+)?(?:o|v|během)\s+(?:době\s+|období\s+)?(?:letních\s+)?prázdnin(?:ách)?$/.test(s)) return julyAugust
