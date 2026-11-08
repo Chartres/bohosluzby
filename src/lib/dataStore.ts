@@ -37,6 +37,10 @@ let cacheReady: boolean | null = null
 /** Held while an OTA refresh writes the cache; loadData waits on it so no read
  * mixes a bundled index with half-written shards. */
 let refreshLock: Promise<void> | null = null
+/** In-memory parse cache: path → parsed JSON. Avoids repeated fetch + JSON.parse
+ * when App, MapView, ChurchDetail and MyChurches all request the same shard.
+ * Cleared after a successful OTA data refresh so the new payload is picked up. */
+const memCache = new Map<string, unknown>()
 
 /** The freshness key: timestamp when present (lexicographic order works for both
  * an ISO date and an ISO datetime), else the date. */
@@ -99,20 +103,32 @@ async function ready(): Promise<boolean> {
   return true
 }
 
-/** Load a /data/<path> JSON from the freshest available source: cache → bundled. */
+/** Load a /data/<path> JSON from the freshest available source: mem → cache → bundled. */
 export async function loadData<T>(path: string): Promise<T> {
   if (refreshLock) await refreshLock
+  const hit = memCache.get(path)
+  if (hit !== undefined) return hit as T
+  let parsed: T
   if (await ready()) {
-    const cached = await readCache(path)
-    if (cached) return JSON.parse(cached) as T
+    const text = await readCache(path)
+    if (text) {
+      parsed = JSON.parse(text) as T
+      memCache.set(path, parsed)
+      return parsed
+    }
   }
   const res = await fetch(`/data/${path}`)
   if (!res.ok) throw new Error(`${path} ${res.status}`)
-  return (await res.json()) as T
+  parsed = (await res.json()) as T
+  memCache.set(path, parsed)
+  return parsed
 }
 
 /** One services/<cell>.json shard, undecoded (callers run decodeShard). */
 export const loadShard = (cell: string) => loadData<Record<string, RawEntry>>(`services/${cell}.json`)
+
+/** Clear the in-memory parse cache. Call in test afterEach to prevent cross-test bleed. */
+export const clearDataCache = () => memCache.clear()
 
 export function activeAsOf(): string | null {
   try {
@@ -207,6 +223,7 @@ export async function refreshData(onDownloading?: () => void): Promise<RefreshRe
       await writeCache('churches.json', churchesText)
       await writeCache('version.json', JSON.stringify(remote)) // marker, written last
       cacheReady = true
+      memCache.clear() // new payload written; next reads rebuild from cache
       setAsOf(versionKey(remote))
     } finally {
       refreshLock = null
