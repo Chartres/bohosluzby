@@ -377,9 +377,7 @@ export function ChurchDetail({
     setSvc(null)
     setFailed(false)
     // Use loadData (not raw fetch) so the native/OTA-refreshed registry is used.
-    // (MapView does the same.) ponytail: no in-memory cache — repeat opens
-    // re-read the shard (service-worker or Filesystem hit) and re-parse it; add
-    // a memo in loadData if detail opens ever show up as slow.
+    // (MapView does the same.)
     loadShard(church.cell)
       .then((shard) => {
         if (cancelled) return
