@@ -174,6 +174,7 @@ export function geoFailKey(fail: GeoFailure | null, native: boolean, waiting: bo
     if (fail === 'denied') return 'geo_fail_native_denied'
     return waiting && fail === 'deadline' ? 'geo_fail_native_slow' : 'geo_fail_native_none'
   }
+  if (fail === 'unsupported') return 'geo_fail_unsupported'
   return fail === 'deadline' ? 'geo_fail_deadline' : 'geo_fail_denied'
 }
 
