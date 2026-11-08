@@ -3,7 +3,7 @@
 // mass (tap it and this line unfolds under the row), the NAME is the church,
 // and trasa/web belong to the church. Same line in the list, the church ordo,
 // the 1.–2. 11. block and the detail header (for the mass you came for).
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import type { Church, ExtraService, Service } from './domain/data'
 import { inviteFor } from './domain/invite'
 import { pragueIsoDate } from './domain/occurrences'
@@ -50,9 +50,11 @@ export function MassVerbs({
   className?: string
 }) {
   const [msg, setMsg] = useState<string | null>(null)
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const flash = (m: string) => {
+    if (flashTimer.current) clearTimeout(flashTimer.current)
     setMsg(m)
-    setTimeout(() => setMsg(null), 3500)
+    flashTimer.current = setTimeout(() => setMsg(null), 3500)
   }
 
   const onRemind = async () => {
