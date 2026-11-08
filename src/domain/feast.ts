@@ -7,7 +7,7 @@
 // Node imports this via type stripping: explicit .ts specifiers.
 import type { RawEntry } from './churchPage.ts'
 import { parseNote, withoutDatedExclusions } from './notes.ts'
-import { isConfession, isStale, normalizeLang } from './registry.ts'
+import { isConfession, isStale, normalizeLang, toMin, typeLabel } from './registry.ts'
 import { churchUrl, SITE_ORIGIN } from './site.ts'
 import { DIOCESES } from './diocese.ts'
 
@@ -67,11 +67,6 @@ export interface FeastService {
   uncertain: boolean
 }
 
-const toMin = (t: string) => {
-  const m = /^(\d{1,2}):(\d{2})/.exec(t)
-  return m ? +m[1] * 60 + +m[2] : 0
-}
-
 /** What the registry says for one church on one date, chronological. */
 export function servicesOn(entry: RawEntry | undefined, iso: string): FeastService[] {
   if (!entry) return []
@@ -97,8 +92,6 @@ export function servicesOn(entry: RawEntry | undefined, iso: string): FeastServi
 }
 
 /** "mše svatá" for the registry's blank / abbreviated Mass type. */
-const typeLabel = (type: string) => (!type || /^mše sv\.?$/i.test(type) ? 'mše svatá' : type)
-
 function detail(s: FeastService): string {
   return [
     typeLabel(s.type),
