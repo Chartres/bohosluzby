@@ -7,7 +7,7 @@
 // Node imports this via type stripping: explicit .ts specifiers.
 import type { RawEntry } from './churchPage.ts'
 import { parseNote, withoutDatedExclusions } from './notes.ts'
-import { isConfession, isStale, normalizeLang, toMin, typeLabel } from './registry.ts'
+import { isConfession, isStale, normalizeLang, sameService, toMin, typeLabel } from './registry.ts'
 import { churchUrl, SITE_ORIGIN } from './site.ts'
 import { DIOCESES } from './diocese.ts'
 
@@ -85,9 +85,7 @@ export function servicesOn(entry: RawEntry | undefined, iso: string): FeastServi
   const weekly = entry.s
     .filter((r) => r[0].includes(dow) && !isConfession(r[4]) && parseNote(r[5]).runsOn(y, m, d))
     .map((r) => row(r, false))
-    // the same service entered again as a one-off for that day — print it once;
-    // a different one-off at that time (a cemetery devotion) never hides the Mass
-    .filter((s) => !extras.some((x) => toMin(x.time) === toMin(s.time) && typeLabel(x.type) === typeLabel(s.type) && x.lang === s.lang && x.greek === s.greek))
+    .filter((s) => !extras.some((x) => sameService(x, s)))
   return [...weekly, ...extras].sort((a, b) => toMin(a.time) - toMin(b.time))
 }
 
