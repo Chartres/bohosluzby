@@ -700,17 +700,19 @@ export default function App() {
     filters.witnessTags.length > 0 ||
     Boolean(cas)
 
-  const updateFilters = (next: Filters) => {
+  const storeFilters = (next: Filters) => {
     setFilters(next)
     saveSticky(FILTERS_KEY, next)
+  }
+  const updateFilters = (next: Filters) => {
+    storeFilters(next)
     track('key_action', { action: 'filter', ...next })
   }
 
-  // "zrušit vše": one tap back to the clean page — day, kdy, okruh, co
+  // "zrušit vše": one tap back to the clean page — day, kdy, okruh, co.
+  // storeFilters, not updateFilters: the reset tracks filters_reset only
   const resetAll = () => {
-    // skip updateFilters to avoid the extra key_action{action:'filter'} it emits
-    setFilters({ ...NO_FILTERS })
-    saveSticky(FILTERS_KEY, { ...NO_FILTERS })
+    storeFilters({ ...NO_FILTERS })
     setParams({ cas: null, den: null }) // one navigate — setCas+setDay would race on `search`
     removeKey(CAS_KEY)
     setHideOtherDay(false)
