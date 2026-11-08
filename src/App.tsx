@@ -707,7 +707,9 @@ export default function App() {
 
   // "zrušit vše": one tap back to the clean page — day, kdy, okruh, co
   const resetAll = () => {
-    updateFilters({ ...NO_FILTERS })
+    // skip updateFilters to avoid the extra key_action{action:'filter'} it emits
+    setFilters({ ...NO_FILTERS })
+    saveSticky(FILTERS_KEY, { ...NO_FILTERS })
     setParams({ cas: null, den: null }) // one navigate — setCas+setDay would race on `search`
     removeKey(CAS_KEY)
     setHideOtherDay(false)
