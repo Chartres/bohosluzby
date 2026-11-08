@@ -232,7 +232,8 @@ function parseSegment(seg: string): Pred | 'none' | null {
   if (
     /školní(?:m|ho)?\s+ro[ck]/.test(s) &&
     !/^(?:kromě|mimo|vyjma|s výjimkou)/.test(s) &&
-    !/^\d+\./.test(s)
+    !/^\d+[.x]/.test(s) &&
+    !/^(?:první|druh[áoé]u?|třetí|čtvrt[áoé]u?|pát[áé]|posl(?:ední)?)\s/i.test(s)
   )
     return NEGATION.test(s) ? not(schoolYear) : schoolYear
   if (/^(?:pouze\s+|jen\s+)?(?:o|v|během)\s+(?:době\s+|období\s+)?(?:letních\s+)?prázdnin(?:ách)?$/.test(s)) return julyAugust
