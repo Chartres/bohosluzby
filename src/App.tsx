@@ -174,6 +174,7 @@ export function geoFailKey(fail: GeoFailure | null, native: boolean, waiting: bo
     if (fail === 'denied') return 'geo_fail_native_denied'
     return waiting && fail === 'deadline' ? 'geo_fail_native_slow' : 'geo_fail_native_none'
   }
+  if (fail === 'unsupported') return 'geo_fail_unsupported'
   return fail === 'deadline' ? 'geo_fail_deadline' : 'geo_fail_denied'
 }
 
@@ -425,7 +426,12 @@ export default function App() {
         pendingGeoRef.current = { lat, lng }
         return false
       }
-      setOrigin({ lat, lng, source: 'geo' })
+      // avoid new-object churn (clears data + remounts map) when GPS returns
+      // the same fix — e.g. the background re-locate after 15 min away
+      setOrigin((cur) => {
+        if (cur?.source === 'geo' && Math.abs(cur.lat - lat) < 1e-5 && Math.abs(cur.lng - lng) < 1e-5) return cur
+        return { lat, lng, source: 'geo' }
+      })
       return true
     }
     if (!background) setLocating(true)
@@ -593,10 +599,14 @@ export default function App() {
     }
     const awayMs = resumed.getTime() - hiddenAt
     const away = awayMs > STICKY_TTL_MS || !samePragueDay(new Date(hiddenAt), resumed)
-    if (cas && saved !== cas && (expired || away)) setParam('cas', saved)
+    // batch both URL updates into one navigate so the second doesn't re-apply the
+    // stale search and undo the first (both setParam calls read the same closure)
+    const resumeUpdates: Record<string, string | null> = {}
+    if (cas && saved !== cas && (expired || away)) resumeUpdates.cas = saved
     // 'zitra' was relative to the previous day — after a cross-day gap it points
     // to the day-after-tomorrow; reset to 'now' so the user sees today's services
-    if (away && den === 'zitra') setParam('den', null)
+    if (away && den === 'zitra') resumeUpdates.den = null
+    if (Object.keys(resumeUpdates).length) setParams(resumeUpdates)
     // ponytail: 15 min away ≈ maybe moved; shorter app switches keep the list as is
     if (origin?.source === 'geo' && !picking && awayMs >= 15 * 60_000) locate(true)
   }
@@ -690,15 +700,19 @@ export default function App() {
     filters.witnessTags.length > 0 ||
     Boolean(cas)
 
-  const updateFilters = (next: Filters) => {
+  const storeFilters = (next: Filters) => {
     setFilters(next)
     saveSticky(FILTERS_KEY, next)
+  }
+  const updateFilters = (next: Filters) => {
+    storeFilters(next)
     track('key_action', { action: 'filter', ...next })
   }
 
-  // "zrušit vše": one tap back to the clean page — day, kdy, okruh, co
+  // "zrušit vše": one tap back to the clean page — day, kdy, okruh, co.
+  // storeFilters, not updateFilters: the reset tracks filters_reset only
   const resetAll = () => {
-    updateFilters({ ...NO_FILTERS })
+    storeFilters({ ...NO_FILTERS })
     setParams({ cas: null, den: null }) // one navigate — setCas+setDay would race on `search`
     removeKey(CAS_KEY)
     setHideOtherDay(false)
@@ -777,15 +791,18 @@ export default function App() {
     setPicking(false)
     navigate(`/kostel/${id}/${search}`)
   }
-  // shared by the list rows and the map popovers — the aha moment fires once
   // `at`: the tapped service's start — the church page leads with that day's
   // services (history.state, so the URL stays clean and shareable)
-  const openChurch = (id: string, at?: Date) => {
+  const openChurch = (id: string, at?: Date) =>
+    navigate(`/kostel/${id}/${search}`, { state: at ? { at: at.toISOString() } : null }) // keep ?den/?cas — back restores the view
+  // The aha moment ("found a service") is specifically opening from the hero list,
+  // not from map popovers or MyChurches which are secondary surfaces.
+  const openFromHeroList = (id: string, at?: Date) => {
     if (!convertedRef.current) {
       convertedRef.current = true
       conversion({ church: id })
     }
-    navigate(`/kostel/${id}/${search}`, { state: at ? { at: at.toISOString() } : null }) // keep ?den/?cas — back restores the view
+    openChurch(id, at)
   }
 
   // map mode: the map IS the page — a viewport-locked column, slim chrome, no
@@ -1130,7 +1147,7 @@ export default function App() {
                   feast={feast}
                   showUntil={!feastOn && (day === 'now' || day === 0)}
                   witnessChurches={witnessChurches}
-                  onOpen={openChurch}
+                  onOpen={openFromHeroList}
                   onNavigate={setNavTarget}
                 />
                 {/* the cap is honest: another page of the ordo instead of "evening ends at 18:00" */}

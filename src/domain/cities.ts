@@ -128,6 +128,15 @@ export function aggregateCities(index: Church[]): City[] {
     }
     if (best) c.near = best.name
   }
+  // guard: two same-named cities that share the nearest anchor still produce
+  // duplicate labels; suffix the near value to make every label unique
+  const labelSeen = new Map<string, number>()
+  for (const c of out) {
+    const lbl = cityLabel(c)
+    const n = (labelSeen.get(lbl) ?? 0) + 1
+    labelSeen.set(lbl, n)
+    if (n > 1) c.near = c.near ? `${c.near} ${n}` : String(n)
+  }
   return out
 }
 

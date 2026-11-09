@@ -4,8 +4,9 @@
 // days. The name of 2 Nov is the missal's ("Vzpomínka na všechny věrné
 // zemřelé") — the parishes' own wording; "Dušičky" is the folk name.
 import type { ChurchServices, ExtraService } from './data'
-import { parseNote, withoutDatedExclusions } from './notes'
+import { isoDow, parseNote, withoutDatedExclusions } from './notes'
 import { pragueToday } from './occurrences'
+import { sameService, toMin } from './registry'
 
 export const ALL_SAINTS = 'Slavnost Všech svatých'
 export const ALL_SOULS = 'Vzpomínka na všechny věrné zemřelé'
@@ -34,11 +35,6 @@ export function feastWeek(now: Date): FeastDayRef[] | null {
   ].filter((f) => f.offset >= 0)
 }
 
-const toMin = (t: string) => {
-  const r = /^(\d{1,2}):(\d{2})/.exec(t)
-  return r ? +r[1] * 60 + +r[2] : 0
-}
-const mass = (type: string) => (!type || /^mše sv\.?$/i.test(type) ? 'mše svatá' : type)
 
 /** One church's services on one date, as dated one-offs (so calendar and pozvat
  * name that day), chronological. Mirrors servicesOn (feast.ts) for the decoded
@@ -46,11 +42,11 @@ const mass = (type: string) => (!type || /^mše sv\.?$/i.test(type) ? 'mše svat
  * entered for it; the same service entered both ways prints once. */
 export function servicesOnDate(svc: ChurchServices, iso: string): ExtraService[] {
   const [y, m, d] = iso.split('-').map(Number)
-  const dow = String(new Date(Date.UTC(y, m - 1, d)).getUTCDay() || 7)
+  const dow = String(isoDow(y, m, d))
   const extras = svc.extra.filter((x) => x.date === iso)
   const weekly = svc.regular
     .filter((s) => s.days.includes(dow) && parseNote(s.note).runsOn(y, m, d))
-    .filter((s) => !extras.some((x) => toMin(x.time) === toMin(s.time) && mass(x.type) === mass(s.type) && x.lang === s.lang && x.greek === s.greek))
+    .filter((s) => !extras.some((x) => sameService(x, s)))
     .map(({ days: _days, ...s }) => ({ ...s, note: withoutDatedExclusions(s.note), date: iso }))
   return [...weekly, ...extras].sort((a, b) => toMin(a.time) - toMin(b.time))
 }

@@ -114,6 +114,17 @@ describe('summer holidays and school year', () => {
     expect(runs('ve školním roce se nekoná', '2026-10-06')).toBe(false)
     expect(runs('ve školním roce se nekoná', '2026-07-06')).toBe(true)
   })
+  it('ordinal+weekday ve školním roce: flagged uncertain, not silently dropped to schoolYear', () => {
+    // "1. sobota ve školním roce" is not a simple school-year expression; the ordinal
+    // condition is part of the predicate and must not be silently discarded.
+    expect(noteUncertain('1. sobota ve školním roce')).toBe(true)
+    expect(noteUncertain('2. pátek v měsíci ve školním roce')).toBe(true)
+    // Czech word ordinals and frequency must also be flagged uncertain, not silently
+    // resolved to plain schoolYear (losing the ordinal/frequency condition).
+    expect(noteUncertain('první sobota ve školním roce')).toBe(true)
+    expect(noteUncertain('poslední neděle ve školním roce')).toBe(true)
+    expect(noteUncertain('1x za měsíc ve školním roce')).toBe(true)
+  })
   it('pouze o letních prázdninách runs only in July/August', () => {
     expect(runs('pouze o letních prázdninách', '2026-07-06')).toBe(true)
     expect(runs('pouze o letních prázdninách', '2026-09-06')).toBe(false)

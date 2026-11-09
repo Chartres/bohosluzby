@@ -5,6 +5,7 @@
 // utm_source=pozvani so we learn how many invitations were opened, nothing more.
 import { nextReminderAt, pragueDay, pragueToday } from './occurrences'
 import { runsAt } from './notes'
+import { isMass } from './filters'
 import { churchUrl } from './site'
 import type { Lang } from '../i18n'
 
@@ -19,7 +20,6 @@ const MONTH_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
 
 const VE_HOURS = new Set([2, 3, 4, 12, 13, 14, 20, 21, 22, 23])
 
-const isMass = (type: string) => !type.trim() || /mše|liturgi/i.test(type)
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 export function inviteFor(

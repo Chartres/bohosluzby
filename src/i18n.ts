@@ -43,6 +43,8 @@ export const cs = {
     'Prohlížeč nedostal odpověď na dialog o povolení polohy — možná se nezobrazil. Zkontrolujte, zda smí prohlížeč používat polohu v nastavení telefonu, a klepněte na ',
   geo_fail_denied:
     'Pokud jste ji dříve zablokovali, klepněte na ikonu zámku vedle adresy stránky → Oprávnění → Poloha → Povolit, a pak na ',
+  geo_fail_unsupported:
+    'Tento prohlížeč nepodporuje určování polohy. Zkuste jiný prohlížeč nebo zadejte obec ručně.',
   // native shell: no address bar, lock icon or browser dialog (App geoFailKey)
   no_geo_title_slow: 'Poloha se ještě načítá',
   geo_fail_native_slow:
@@ -284,6 +286,8 @@ export const en: Record<Key, string> = {
     'The browser never got a response to the location permission dialog — it may not have appeared. Check that the browser is allowed to use location in your phone settings, then tap ',
   geo_fail_denied:
     'If you blocked it earlier, tap the lock icon next to the address bar → Permissions → Location → Allow, then tap ',
+  geo_fail_unsupported:
+    "This browser doesn't support geolocation. Try a different browser or enter a town manually.",
   no_geo_title_slow: 'Still getting your location',
   geo_fail_native_slow:
     "Your phone hasn't sent a location yet — the list will appear on its own when it does. You can also tap ",

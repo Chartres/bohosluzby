@@ -6,8 +6,8 @@
 // weekday whose note doesn't provably exclude it, plus one-offs dated that day.
 // Node imports this via type stripping: explicit .ts specifiers.
 import type { RawEntry } from './churchPage.ts'
-import { parseNote, withoutDatedExclusions } from './notes.ts'
-import { isConfession, isStale, normalizeLang } from './registry.ts'
+import { isoDow, parseNote, withoutDatedExclusions } from './notes.ts'
+import { isConfession, isStale, normalizeLang, sameService, toMin, typeLabel } from './registry.ts'
 import { churchUrl, SITE_ORIGIN } from './site.ts'
 import { DIOCESES } from './diocese.ts'
 
@@ -67,16 +67,11 @@ export interface FeastService {
   uncertain: boolean
 }
 
-const toMin = (t: string) => {
-  const m = /^(\d{1,2}):(\d{2})/.exec(t)
-  return m ? +m[1] * 60 + +m[2] : 0
-}
-
 /** What the registry says for one church on one date, chronological. */
 export function servicesOn(entry: RawEntry | undefined, iso: string): FeastService[] {
   if (!entry) return []
   const [y, m, d] = parseIso(iso)
-  const dow = String(new Date(Date.UTC(y, m - 1, d)).getUTCDay() || 7)
+  const dow = String(isoDow(y, m, d))
   const row = (r: RawEntry['s'][number], extra: boolean): FeastService => ({
     time: r[1].trim(),
     type: r[4].trim(),
@@ -90,15 +85,11 @@ export function servicesOn(entry: RawEntry | undefined, iso: string): FeastServi
   const weekly = entry.s
     .filter((r) => r[0].includes(dow) && !isConfession(r[4]) && parseNote(r[5]).runsOn(y, m, d))
     .map((r) => row(r, false))
-    // the same service entered again as a one-off for that day — print it once;
-    // a different one-off at that time (a cemetery devotion) never hides the Mass
-    .filter((s) => !extras.some((x) => toMin(x.time) === toMin(s.time) && typeLabel(x.type) === typeLabel(s.type) && x.lang === s.lang && x.greek === s.greek))
+    .filter((s) => !extras.some((x) => sameService(x, s)))
   return [...weekly, ...extras].sort((a, b) => toMin(a.time) - toMin(b.time))
 }
 
 /** "mše svatá" for the registry's blank / abbreviated Mass type. */
-const typeLabel = (type: string) => (!type || /^mše sv\.?$/i.test(type) ? 'mše svatá' : type)
-
 function detail(s: FeastService): string {
   return [
     typeLabel(s.type),

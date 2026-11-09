@@ -51,7 +51,10 @@ const dow = (t: number) => new Date(t).getUTCDay() // 0 = Sunday
 
 // Fixed-date solemnities/feasts that override the season color (CZ calendar).
 const FIXED: Record<string, { color: LiturgicalColor; feast: string }> = {
+  '1-1': { color: 'gold', feast: 'Slavnost Matky Boží' },
   '1-6': { color: 'gold', feast: 'Zjevení Páně' },
+  '3-19': { color: 'gold', feast: 'sv. Josefa' },
+  '3-25': { color: 'gold', feast: 'Zvěstování Páně' },
   '6-29': { color: 'red', feast: 'sv. Petra a Pavla' }, // martyrs
   '7-5': { color: 'gold', feast: 'sv. Cyrila a Metoděje' }, // CZ solemnity
   '8-15': { color: 'gold', feast: 'Nanebevzetí Panny Marie' },
@@ -60,6 +63,8 @@ const FIXED: Record<string, { color: LiturgicalColor; feast: string }> = {
   '11-2': { color: 'violet', feast: 'Vzpomínka na všechny věrné zemřelé' },
   '12-8': { color: 'gold', feast: 'Neposkvrněného početí Panny Marie' },
   '12-25': { color: 'gold', feast: 'Narození Páně' },
+  '12-26': { color: 'red', feast: 'sv. Štěpána' }, // protomartyr
+  '12-28': { color: 'red', feast: 'sv. Mláďátek' }, // martyrs
 }
 
 export function liturgicalDay(year: number, month: number, day: number): LiturgicalDay {
@@ -67,6 +72,12 @@ export function liturgicalDay(year: number, month: number, day: number): Liturgi
   const easter = easterSunday(year)
   const easterT = utc(year, easter.month, easter.day)
   const fixed = FIXED[`${month}-${day}`]
+  // a fixed solemnity inside a season keeps the season but takes its own color
+  const inSeason = (season: Season, color: LiturgicalColor): LiturgicalDay => ({
+    season,
+    color: fixed?.color ?? color,
+    feast: fixed?.feast,
+  })
 
   // Movable days from the computus
   if (t === easterT - 7 * DAY) return { season: 'lent', color: 'red', feast: 'Květná neděle' }
@@ -76,22 +87,22 @@ export function liturgicalDay(year: number, month: number, day: number): Liturgi
   if (t === easterT + 49 * DAY) return { season: 'easter', color: 'red', feast: 'Seslání Ducha svatého' }
   if (t === easterT + 60 * DAY) return { season: 'ordinary', color: 'gold', feast: 'Těla a krve Páně' } // Boží Tělo
 
-  if (t >= easterT - 46 * DAY && t < easterT) return { season: 'lent', color: 'violet' }
-  if (t >= easterT && t <= easterT + 49 * DAY) return { season: 'easter', color: 'gold' }
+  if (t >= easterT - 46 * DAY && t < easterT) return inSeason('lent', 'violet')
+  if (t >= easterT && t <= easterT + 49 * DAY) return inSeason('easter', 'gold')
 
   // Christmas season spills into January: Baptism of the Lord = Sunday after 6 Jan.
   const jan6 = utc(year, 1, 6)
   const baptism = jan6 + ((7 - dow(jan6)) % 7 || 7) * DAY
-  if (t <= baptism) return { season: 'christmas', color: 'gold', feast: fixed?.feast }
+  if (t <= baptism) return inSeason('christmas', 'gold')
 
   // Advent: 4th Sunday before 25 Dec (the Sunday in the 27 Nov – 3 Dec window).
   const christmas = utc(year, 12, 25)
   const advent1 = christmas - (dow(christmas) || 7) * DAY - 21 * DAY
-  if (t >= christmas) return { season: 'christmas', color: 'gold', feast: fixed?.feast }
+  if (t >= christmas) return inSeason('christmas', 'gold')
   if (t === advent1 - 7 * DAY) return { season: 'ordinary', color: 'gold', feast: 'Ježíše Krista Krále' }
-  if (t >= advent1) return { season: 'advent', color: fixed?.color ?? 'violet', feast: fixed?.feast }
+  if (t >= advent1) return inSeason('advent', 'violet')
 
-  return { season: 'ordinary', color: fixed?.color ?? 'green', feast: fixed?.feast }
+  return inSeason('ordinary', 'green')
 }
 
 /** Today's liturgical color in Prague (used for the --season accent). */
