@@ -332,7 +332,6 @@ function events(sections: SeasonSection[], names: Map<string, SeasonChurch>, kin
         eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
         eventStatus: 'https://schema.org/EventScheduled',
         isAccessibleForFree: true,
-        inLanguage: r.lang,
         ...(r.note ? { description: r.note } : {}),
         location: {
           '@type': 'Church',
