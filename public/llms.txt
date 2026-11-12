@@ -25,6 +25,21 @@
   static per-city lists of the services the register gives for those two dates, e.g.
   https://bohosluzby.dravec.org/dusicky/brno/. Church pages carry the two days too in the
   month before.
+- Christmas (půlnoční, 24–26 Dec): https://bohosluzby.dravec.org/vanoce/ and per town, e.g.
+  https://bohosluzby.dravec.org/vanoce/praha/. Advent dawn Masses (roráty):
+  https://bohosluzby.dravec.org/advent/ and per town, e.g. https://bohosluzby.dravec.org/advent/praha/.
+  Listed are only services the register or a parish notice gives for those dates; a town or
+  church with nothing published says so, with the date we last checked. Never a guessed time.
+
+## Markdown twins (for assistants)
+Every /vanoce/ and /advent/ page has a static Markdown twin at the same URL plus `index.md`,
+e.g. https://bohosluzby.dravec.org/vanoce/praha/index.md, and the hubs
+https://bohosluzby.dravec.org/vanoce/index.md and https://bohosluzby.dravec.org/advent/index.md.
+A twin holds more than the page: every service with church, address (town, GPS), time, days,
+rite, language, barrier-free access, the date the register entry was last verified, the
+source (register or a linked parish notice) and the church page; then every church in the
+town with no schedule published yet and where to check. Each twin states when it was built
+and the register snapshot date. Only these season pages have twins.
 
 ## Data & provenance
 - Source: the official register of the Czech Bishops' Conference, https://bohosluzby.cirkev.cz

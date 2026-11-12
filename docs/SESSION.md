@@ -13,10 +13,10 @@ in docs/review/. The rule is in AGENTS.md › Working with the orchestrator. Las
   (docs/ANDROID-RELEASE.md).
 
 ## Open threads
-- **Roráty pages** on draft PR #94 (branch `advent-christmas-draft`). The pass runs 22–28 Nov
-  per docs/RORATY-PASS.md on that branch; the orchestrator sends a reminder on 22 Nov. They ship
-  on Sat 28 Nov evening with a sitemap entry and links from the app and the Dušičky hub (Pavol, 8 Nov).
-- **Christmas pages** after the 14–23 Dec pass: add 'vanoce' to SEASON_KINDS.
+- **Roráty and Christmas pages are live** (12 Nov, Pavol's option A): `/advent/`, `/vanoce/`,
+  181 towns each, Markdown twins, in the sitemap. #94's code went in with it. The roráty pass
+  (22–28 Nov, docs/RORATY-PASS.md) and the Christmas pass (14–23 Dec) now merge into `main`.
+  In-app link and the Dušičky-hub link still open (visual: shots first).
 - **Advent nomination**: Pavol submits it by 12 Nov (docs/store/nomination-advent-2026.md).
   Measurement plan in docs/review/2026-11-07-store-1.5.json (read on 13 and 15 Dec).
 - **App Store header and search-results assets** (new slots, iOS 27+): generate them and
