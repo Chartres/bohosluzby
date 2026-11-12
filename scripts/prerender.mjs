@@ -16,6 +16,8 @@ import { embedData } from '../src/domain/embedData.ts'
 import { churchFeastSection, feastBeacon, feastCityPage, feastHubPage } from '../src/domain/feast.ts'
 import { SITE_ORIGIN as ORIGIN } from '../src/domain/site.ts'
 import { dioceseOfTown } from '../src/domain/diocese.ts'
+import { seasonCityPage, seasonHubPage } from '../src/domain/season.ts'
+import { loadCorrections } from '../data/corrections.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const CITY_PAGES = 30
@@ -197,6 +199,27 @@ const border = JSON.parse(readFileSync(`${root}data/geo/cz-border.json`, 'utf8')
 const hubTowns = feastListed.map((c) => ({ ...c, diocese: dioceseOfTown(c.churches.map((ch) => ch.id)) }))
 writeFileSync(`${root}dist/dusicky/index.html`, staticPage(feastHubPage({ cities: hubTowns, today, border })))
 
+// Advent (roráty) pages (docs/SEASON-PAGES.md). Same static shape as Dušičky; a town
+// page only where something seasonal is listed. Christmas ('vanoce') joins the list
+// after the 14–23 Dec pass (Pavol, 5 Nov 2026) — the code is ready in season.ts.
+const SEASON_KINDS = ['advent']
+const corrections = loadCorrections()
+const seasonUrls = []
+for (const kind of SEASON_KINDS) {
+  const listed = []
+  for (const city of feastCities) {
+    const page = seasonCityPage({ kind, city, entries: Object.fromEntries(city.churches.map((c) => [c.id, entryOf(c)])), corrections, today })
+    if (page.services === 0) continue
+    mkdirSync(`${root}dist/${kind}/${city.slug}`, { recursive: true })
+    writeFileSync(`${root}dist/${kind}/${city.slug}/index.html`, staticPage(page))
+    seasonUrls.push(`/${kind}/${city.slug}/`)
+    listed.push({ ...city, count: page.services })
+  }
+  mkdirSync(`${root}dist/${kind}`, { recursive: true })
+  writeFileSync(`${root}dist/${kind}/index.html`, staticPage(seasonHubPage({ kind, towns: listed, today })))
+  seasonUrls.push(`/${kind}/`)
+}
+
 // home page: inject the city index into its static seo block, then mirror it
 // to 404.html (GH Pages deep-link fallback for /kostel/<id>/)
 const home = template.replace(
@@ -249,7 +272,7 @@ ${urls.map(([u, mod]) => `  <url><loc>${ORIGIN}${u}</loc><lastmod>${mod}</lastmo
 `
 writeFileSync(`${root}dist/sitemap.xml`, sitemap)
 console.log(
-  `prerendered ${cities.length} city pages + ${feastUrls.length} Dušičky pages` +
+  `prerendered ${cities.length} city pages + ${feastUrls.length} Dušičky pages + ${seasonUrls.length} roráty pages (not in sitemap)` +
     (CHURCH_PAGES ? ` + ${churchUrls.length} church pages` : ' (church pages off — PRERENDER_CHURCHES=1 for the web deploy)') +
     ' + sitemap.xml + 404.html',
 )
