@@ -53,6 +53,17 @@ for (const slug of ['', ...feastDirs]) {
   if (!slug && !(html.includes('<figure class="map"><svg') && html.includes('id="dieceze"'))) problems.push(`${path}: no map or diocese list`)
   if (!sitemap.includes(`/${path}</loc>`)) problems.push(`${path}: missing from sitemap.xml`)
 }
+// freshness ledger: static, dated, with its Markdown twin, no bulk download
+{
+  const file = `${root}dist/cerstvost/index.html`
+  const html = existsSync(file) ? readFileSync(file, 'utf8') : ''
+  if (!html.includes('<title>Čerstvost')) problems.push('cerstvost/: no page or wrong title')
+  if (html.includes('type="module"')) problems.push('cerstvost/: boots the app over the page')
+  if (!html.includes('id="dieceze"') || !html.includes('Stav k ')) problems.push('cerstvost/: no dated diocese table')
+  if (/href="[^"]+\.(csv|json)"/.test(html)) problems.push('cerstvost/: links a bulk download')
+  if (!existsSync(`${root}dist/cerstvost/index.md`)) problems.push('cerstvost/: no index.md twin')
+  if (!sitemap.includes('/cerstvost/</loc>')) problems.push('cerstvost/: missing from sitemap.xml')
+}
 if (problems.length) {
   console.error(`church pages: ${problems.length} problem(s)\n${problems.slice(0, 20).join('\n')}`)
   process.exit(1)
