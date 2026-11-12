@@ -2,7 +2,7 @@
 // The registry barely carries either (31 roráty rows, no 24 Dec one-offs), so the
 // pages list only what is seasonal: roráty rows that run in Advent, and rows dated
 // for 24–26 Dec. Every row says where it comes from.
-import { adventOf, seasonCityPage, seasonHubPage } from './season'
+import { adventOf, seasonCityPage, seasonHubPage, seasonSections } from './season'
 import type { RawEntry } from './churchPage'
 
 type Row = [string, string, string, 0 | 1, string, string]
@@ -166,7 +166,7 @@ describe('seasonCityPage advent — a roráty notice over the whole Advent (pass
   const page = seasonCityPage({ kind: 'advent', city: CITY, entries: shards.c, corrections, today: '2026-11-23' })
 
   it('lands as one row, not one per date: weekdays, first – last, the gap named', () => {
-    const rows = [...page.body.matchAll(/<li>.*?<\/li>/g)]
+    const rows = [...page.body.split('<details')[0].matchAll(/<li>.*?<\/li>/g)]
     expect(rows).toHaveLength(1)
     expect(rows[0][0]).toContain('<span class="t">06:30</span>')
     expect(rows[0][0]).toContain('po–pá 30. 11. – 23. 12., kromě 8. 12.')
@@ -208,7 +208,7 @@ describe('seasonCityPage vanoce — 24.–26. 12.', () => {
 
   it('a day with nothing dated says so, plainly', () => {
     expect(page.body).toContain('sobota 26. prosince')
-    expect(page.body).toContain('Zatím tu nic není')
+    expect(page.body).toContain('Na tento den rozpis zatím žádná farnost nezveřejnila')
   })
 })
 
@@ -218,5 +218,104 @@ describe('seasonHubPage', () => {
     expect(hub.url).toBe('https://bohosluzby.dravec.org/advent/')
     expect(hub.body).toContain('href="https://bohosluzby.dravec.org/advent/brno/"')
     expect(hub.body).not.toContain('<script')
+  })
+})
+
+describe('seasonSections — which services a feast date gets', () => {
+  it('Christmas: only rows dated 24 Dec from 15:00, 25 and 26 Dec; each with its real date', () => {
+    const entries = {
+      '1': entry([['4', '18:00', 'česky', 0, 'mše sv.', '']], [['2026-12-24', '24:00', 'česky', 0, 'mše sv.', 'půlnoční'], ['2026-12-24', '08:00', 'česky', 0, 'mše sv.', '']]),
+      '2': entry([], [['2026-12-25', '09:30', 'slovensky', 1, 'sv. liturgie', ''], ['2026-12-27', '09:30', 'česky', 0, 'mše sv.', '']]),
+    }
+    const s = seasonSections({ kind: 'vanoce', city: CITY, entries, corrections: [], today: '2026-11-12' })
+    expect(s.map((x) => x.date)).toEqual(['2026-12-24', '2026-12-25', '2026-12-26'])
+    expect(s[0].rows.map((r) => [r.churchId, r.time, r.dates])).toEqual([['1', '24:00', ['2026-12-24']]])
+    expect(s[1].rows.map((r) => [r.churchId, r.time, r.lang, r.greek])).toEqual([['2', '09:30', 'slovensky', true]])
+    expect(s[2].rows).toEqual([])
+  })
+
+  it('roráty: a weekly row carries every Advent date it runs on (po–pá in Advent 2026 = 19 days)', () => {
+    const s = seasonSections({ kind: 'advent', city: CITY, entries: { '1': entry([['12345', '06:30', 'česky', 0, 'rorátní mše sv.', 'v adventu']]) }, corrections: [], today: '2026-11-12' })
+    expect(s).toHaveLength(1)
+    const dates = s[0].rows[0].dates
+    expect(dates).toHaveLength(19)
+    expect(dates[0]).toBe('2026-11-30')
+    expect(dates.at(-1)).toBe('2026-12-24')
+  })
+})
+
+describe('season pages — honest when empty, dated, with Events and a Markdown twin', () => {
+  const city = {
+    name: 'Brno',
+    slug: 'brno',
+    churches: [
+      { id: '1', name: 'kostel sv. Jakuba', city: 'Brno-střed', lat: 49.19645, lng: 16.60863, www: 'https://jakub.example.cz', access: true },
+      { id: '2', name: 'kostel sv. Tomáše', city: 'Brno', lat: 49.2, lng: 16.6 },
+      { id: '3', name: 'kaple sv. Michala', city: 'Brno' },
+    ],
+  }
+  const entries = {
+    '1': entry([], [['2026-12-24', '24:00', 'česky', 0, 'mše sv.', 'půlnoční']], '2026-05-01'),
+    '2': entry([['7', '09:00', 'česky', 0, 'mše sv.', '']], [], '2019-03-02'),
+  }
+  const page = seasonCityPage({ kind: 'vanoce', city, entries, corrections: [], today: '2026-11-12', checked: '2026-10-27' })
+
+  it('names the build date, the register date and the source', () => {
+    expect(page.body).toContain('Aktualizováno 12. 11. 2026')
+    expect(page.body).toContain('27. 10. 2026')
+    expect(page.body).toContain('href="https://bohosluzby.cirkev.cz/"')
+  })
+
+  it('a church with nothing dated is listed, honestly, with where to check — never a made-up time', () => {
+    expect(page.body).toMatch(/kostel sv\. Tomáše<\/a> — rozpis zatím farnost nezveřejnila/)
+    expect(page.body).not.toMatch(/<span class="t">09:00/)
+    expect(page.missing).toBe(2)
+    expect(page.services).toBe(1)
+  })
+
+  it('a day with nothing says so with the date we checked', () => {
+    expect(page.body).toContain('Na tento den rozpis zatím žádná farnost nezveřejnila (stav rejstříku k 27. 10. 2026)')
+  })
+
+  it('every service is a schema.org Event; půlnoční 24:00 starts at midnight of the 25th', () => {
+    const ld = JSON.parse(page.jsonLd)
+    const events = ld['@graph'].filter((x: { '@type': string }) => x['@type'] === 'Event')
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({
+      startDate: '2026-12-25T00:00+01:00',
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+      location: { '@type': 'Church', name: 'kostel sv. Jakuba', url: 'https://bohosluzby.dravec.org/kostel/1/' },
+    })
+    expect(ld['@graph'].some((x: { '@type': string }) => x['@type'] === 'BreadcrumbList')).toBe(true)
+  })
+
+  it('the Markdown twin holds every detail: church, address, time, rite, language, access, verified, link', () => {
+    const md = page.markdown
+    expect(md).toMatch(/^# Vánoce 2026/)
+    expect(md).toContain('https://bohosluzby.dravec.org/vanoce/brno/')
+    expect(md).toContain('bohosluzby.cirkev.cz')
+    expect(md).toContain('2026-11-12')
+    expect(md).toContain('2026-10-27')
+    const row = md.split('\n').find((l) => l.includes('24:00'))!
+    for (const s of ['kostel sv. Jakuba', 'Brno-střed', '49.19645, 16.60863', 'římskokatolický', 'česky', 'bezbariérový', '2026-05-01', 'https://bohosluzby.dravec.org/kostel/1/', 'půlnoční'])
+      expect(row).toContain(s)
+    expect(md).toContain('kostel sv. Tomáše')
+    expect(md).toContain('https://jakub.example.cz')
+    expect(md).not.toContain('<')
+  })
+
+  it('a town with nothing at all still gets an honest page', () => {
+    const p = seasonCityPage({ kind: 'advent', city, entries: {}, corrections: [], today: '2026-11-12', checked: '2026-10-27' })
+    expect(p.services).toBe(0)
+    expect(p.missing).toBe(3)
+    expect(p.body).toContain('rozpis zatím farnost nezveřejnila')
+    expect(p.markdown).toContain('kaple sv. Michala')
+  })
+
+  it('the hub has a twin linking every town twin', () => {
+    const hub = seasonHubPage({ kind: 'vanoce', towns: [{ name: 'Brno', slug: 'brno', count: 1 }], today: '2026-11-12', checked: '2026-10-27' })
+    expect(hub.markdown).toContain('https://bohosluzby.dravec.org/vanoce/brno/index.md')
+    expect(hub.markdown).toContain('2026-10-27')
   })
 })

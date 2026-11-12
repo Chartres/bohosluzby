@@ -5,6 +5,15 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **Christmas and roráty pages** (Pavol 2026-11-12, option A): `/vanoce/<town>/` (24–26 Dec,
+  půlnoční first) and `/advent/<town>/` (roráty) for all 181 towns with 3+ churches, plus hubs.
+  A town or church with nothing published says "rozpis zatím farnost nezveřejnila" with the
+  register date and where to check; no time is ever guessed. Each page is dated and sourced,
+  carries a schema.org Event per service date, and has a Markdown twin (`index.md`) with more
+  detail per row for assistants, linked from the page, the sitemap and `llms.txt`. On 12 Nov
+  the register gives roráty in 3 towns (16 churches) and nothing dated for Christmas yet; the
+  passes fill them (docs/SEASON-PAGES.md). Code: `src/domain/season.ts` (from draft #94),
+  checks in `scripts/check-prerender.mjs`, journey P7 in `e2e/seo.spec.ts`.
 - **What's new sheet** (flywheel `docs/standards/whats-new.md`): a returning reader sees a
   short sheet once per version, with two items and a CSS animation each
   (`public/whats-new/1.5.0/`). Release text lives in `whats-new.json` / `whats-new.en.json`;

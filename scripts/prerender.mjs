@@ -26,8 +26,10 @@ const MAX_CHURCH_LINKS = 60
 const CHURCH_PAGES = process.env.PRERENDER_CHURCHES === '1'
 
 const index = JSON.parse(readFileSync(`${root}public/data/churches.json`, 'utf8')).map(
-  ([id, name, city, lat, lng, , cell, www]) => ({ id, name, city, lat, lng, cell, www: www || undefined }),
+  ([id, name, city, lat, lng, access, cell, www]) => ({ id, name, city, lat, lng, cell, www: www || undefined, access: access === 1 }),
 )
+// the register snapshot the pages show as "stav rejstříku k …"
+const checked = JSON.parse(readFileSync(`${root}public/data/version.json`, 'utf8')).generated ?? ''
 const allCities = aggregateCities(index)
 const cities = allCities.slice(0, CITY_PAGES)
 // Dušičky pages: every municipality with 3+ churches — people go back to the
@@ -169,6 +171,11 @@ const STATIC_CSS = `
       .near li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #d8d0bd; }
       .near .km { font-variant-numeric: tabular-nums; color: #655c4d; font-size: 0.875rem; white-space: nowrap; }
       .ordo-page .small { font-size: 0.875rem; color: #655c4d; }
+      .ordo-page.advent { --season: #5b3a7e; }
+      .missing { margin: 1.5rem 0 0; border-top: 1px solid #d8d0bd; }
+      .missing summary { cursor: pointer; padding: 0.6rem 0; min-height: 44px; box-sizing: border-box; color: #9a2b1e; font-family: 'Source Sans 3', system-ui, sans-serif; font-variant-caps: all-small-caps; letter-spacing: 0.04em; }
+      .missing ul { list-style: none; padding: 0; margin: 0; font-size: 0.875rem; color: #655c4d; }
+      .missing li { padding: 0.45rem 0; border-bottom: 1px solid #d8d0bd; }
 `
 const BEACON = feastBeacon(
   process.env.VITE_SUPABASE_URL,
@@ -181,7 +188,10 @@ function staticPage(page) {
     .replace(/<!--seo-->[\s\S]*<!--\/seo-->/, () => `<!--seo-->${page.body}<!--/seo-->`)
     .replace(
       '</head>',
-      () => `  <style>${STATIC_CSS}    </style>\n    <script type="application/ld+json">${page.jsonLd}</script>\n    ${BEACON}\n  </head>`,
+      () =>
+        `  <style>${STATIC_CSS}    </style>\n    <script type="application/ld+json">${page.jsonLd}</script>\n` +
+        (page.markdown ? `    <link rel="alternate" type="text/markdown" href="${page.url}index.md" />\n` : '') +
+        `    ${BEACON}\n  </head>`,
     )
 }
 const feastUrls = ['/dusicky/']
@@ -199,32 +209,40 @@ const border = JSON.parse(readFileSync(`${root}data/geo/cz-border.json`, 'utf8')
 const hubTowns = feastListed.map((c) => ({ ...c, diocese: dioceseOfTown(c.churches.map((ch) => ch.id)) }))
 writeFileSync(`${root}dist/dusicky/index.html`, staticPage(feastHubPage({ cities: hubTowns, today, border })))
 
-// Advent (roráty) pages (docs/SEASON-PAGES.md). Same static shape as Dušičky; a town
-// page only where something seasonal is listed. Christmas ('vanoce') joins the list
-// after the 14–23 Dec pass (Pavol, 5 Nov 2026) — the code is ready in season.ts.
-const SEASON_KINDS = ['advent']
+// Christmas (půlnoční) and Advent (roráty) pages (docs/SEASON-PAGES.md). Same static
+// shape and towns as Dušičky. Every town gets a page, also before the parishes publish:
+// it names each church and where to check (Pavol, 12 Nov 2026: option A). Each page has
+// a Markdown twin, index.md, with more detail per row, for assistants (public/llms.txt).
+const SEASON_KINDS = ['vanoce', 'advent']
 const corrections = loadCorrections()
 const seasonUrls = []
+const seasonStats = {}
 for (const kind of SEASON_KINDS) {
   const listed = []
   for (const city of feastCities) {
-    const page = seasonCityPage({ kind, city, entries: Object.fromEntries(city.churches.map((c) => [c.id, entryOf(c)])), corrections, today })
-    if (page.services === 0) continue
+    const page = seasonCityPage({ kind, city, entries: Object.fromEntries(city.churches.map((c) => [c.id, entryOf(c)])), corrections, today, checked })
     mkdirSync(`${root}dist/${kind}/${city.slug}`, { recursive: true })
     writeFileSync(`${root}dist/${kind}/${city.slug}/index.html`, staticPage(page))
-    seasonUrls.push(`/${kind}/${city.slug}/`)
-    listed.push({ ...city, count: page.services })
+    writeFileSync(`${root}dist/${kind}/${city.slug}/index.md`, page.markdown)
+    seasonUrls.push(`/${kind}/${city.slug}/`, `/${kind}/${city.slug}/index.md`)
+    listed.push({ ...city, count: page.services, churchesWithRows: city.churches.length - page.missing })
   }
+  const hub = seasonHubPage({ kind, towns: listed, today, checked })
   mkdirSync(`${root}dist/${kind}`, { recursive: true })
-  writeFileSync(`${root}dist/${kind}/index.html`, staticPage(seasonHubPage({ kind, towns: listed, today })))
-  seasonUrls.push(`/${kind}/`)
+  writeFileSync(`${root}dist/${kind}/index.html`, staticPage(hub))
+  writeFileSync(`${root}dist/${kind}/index.md`, hub.markdown)
+  seasonUrls.push(`/${kind}/`, `/${kind}/index.md`)
+  const filled = listed.filter((t) => t.count > 0)
+  seasonStats[kind] = `${filled.length}/${listed.length} towns, ${filled.reduce((n, t) => n + t.churchesWithRows, 0)} churches, ${filled.reduce((n, t) => n + t.count, 0)} services`
 }
 
 // home page: inject the city index into its static seo block, then mirror it
 // to 404.html (GH Pages deep-link fallback for /kostel/<id>/)
 const home = template.replace(
   /<!--\/seo-->/,
-  `  <p><a href="${ORIGIN}/dusicky/">Všech svatých a Dušičky — mše svatá podle měst</a></p>
+  `  <p><a href="${ORIGIN}/vanoce/">Vánoce — půlnoční a vánoční mše podle měst</a></p>
+        <p><a href="${ORIGIN}/advent/">Roráty — rorátní mše v adventu podle měst</a></p>
+        <p><a href="${ORIGIN}/dusicky/">Všech svatých a Dušičky — mše svatá podle měst</a></p>
         <h2>Bohoslužby ve městech</h2>
         <ul>
           ${cityLinks(null)}
@@ -262,7 +280,7 @@ if (CHURCH_PAGES) {
 }
 
 const urls = [
-  ...['/', ...cities.map((c) => `/mesto/${c.slug}/`), ...feastUrls].map((u) => [u, today]),
+  ...['/', ...cities.map((c) => `/mesto/${c.slug}/`), ...feastUrls, ...seasonUrls].map((u) => [u, today]),
   ...churchUrls,
 ]
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -272,7 +290,8 @@ ${urls.map(([u, mod]) => `  <url><loc>${ORIGIN}${u}</loc><lastmod>${mod}</lastmo
 `
 writeFileSync(`${root}dist/sitemap.xml`, sitemap)
 console.log(
-  `prerendered ${cities.length} city pages + ${feastUrls.length} Dušičky pages + ${seasonUrls.length} roráty pages (not in sitemap)` +
+  `prerendered ${cities.length} city pages + ${feastUrls.length} Dušičky pages + ${seasonUrls.length / 2} season pages with .md twins` +
+    ` (with services — ${SEASON_KINDS.map((k) => `${k}: ${seasonStats[k]}`).join('; ')})` +
     (CHURCH_PAGES ? ` + ${churchUrls.length} church pages` : ' (church pages off — PRERENDER_CHURCHES=1 for the web deploy)') +
     ' + sitemap.xml + 404.html',
 )

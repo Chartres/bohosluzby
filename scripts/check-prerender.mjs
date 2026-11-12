@@ -53,6 +53,33 @@ for (const slug of ['', ...feastDirs]) {
   if (!slug && !(html.includes('<figure class="map"><svg') && html.includes('id="dieceze"'))) problems.push(`${path}: no map or diocese list`)
   if (!sitemap.includes(`/${path}</loc>`)) problems.push(`${path}: missing from sitemap.xml`)
 }
+// Christmas and roráty pages (option A, 12 Nov 2026): every town in the sitemap has a
+// static page and a Markdown twin; the twin is in the sitemap, linked from the page,
+// dated and sourced; the page carries Events only for services it lists
+for (const kind of ['vanoce', 'advent']) {
+  const dirs = [...sitemap.matchAll(new RegExp(`/${kind}/([^/]+)/</loc>`, 'g'))].map((m) => m[1])
+  if (dirs.length < feastDirs.length) problems.push(`${kind}: ${dirs.length} town pages, Dušičky has ${feastDirs.length}`)
+  for (const slug of ['', ...dirs]) {
+    const path = slug ? `${kind}/${slug}/` : `${kind}/`
+    if (!existsSync(`${root}dist/${path}index.html`) || !existsSync(`${root}dist/${path}index.md`)) {
+      problems.push(`${path}: page or twin missing`)
+      continue
+    }
+    const html = readFileSync(`${root}dist/${path}index.html`, 'utf8')
+    const md = readFileSync(`${root}dist/${path}index.md`, 'utf8')
+    if (html.includes('type="module"')) problems.push(`${path}: boots the app over the list`)
+    if (!html.includes(`<link rel="canonical" href="https://bohosluzby.dravec.org/${path}" />`)) problems.push(`${path}: canonical is not the page`)
+    if (!html.includes(`<link rel="alternate" type="text/markdown" href="https://bohosluzby.dravec.org/${path}index.md" />`)) problems.push(`${path}: no twin link`)
+    if (!html.includes('Aktualizováno') || !html.includes('bohosluzby.cirkev.cz')) problems.push(`${path}: no date or source`)
+    if (!md.startsWith('# ') || !md.includes('Aktualizováno:') || !md.includes('bohosluzby.cirkev.cz')) problems.push(`${path}index.md: no title, date or source`)
+    if (!sitemap.includes(`/${path}index.md</loc>`)) problems.push(`${path}index.md: missing from sitemap.xml`)
+    if (slug) {
+      const listed = (html.match(/<span class="t">/g) ?? []).length
+      const events = (html.match(/"@type":"Event"/g) ?? []).length
+      if (events < listed) problems.push(`${path}: ${listed} services but ${events} Events`)
+    }
+  }
+}
 if (problems.length) {
   console.error(`church pages: ${problems.length} problem(s)\n${problems.slice(0, 20).join('\n')}`)
   process.exit(1)

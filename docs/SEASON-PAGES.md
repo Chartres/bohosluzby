@@ -1,11 +1,31 @@
-# Roráty and Vánoce pages — plan (3 Nov 2026, updated 5 Nov)
+# Roráty and Vánoce pages (3 Nov 2026, updated 5 and 12 Nov)
 
-Status: **Pavol's call, 5 Nov: roráty before 29 Nov, Christmas after the December pass.**
-The PR (#94) stays unmerged until the roráty pass is done; it ships on Sat 28 Nov evening.
-The build renders only the Advent pages (`SEASON_KINDS` in `scripts/prerender.mjs`); the
-Christmas code stays in `season.ts` for December. The pass checklist is
-[`RORATY-PASS.md`](RORATY-PASS.md). Advent 2026 starts on Sun 29 Nov, and Christmas Eve is
-Thu 24 Dec.
+Status: **live since 12 Nov 2026 (Pavol, 12 Nov: option A).** `/vanoce/` and `/advent/` render
+for every Dušičky-size town (3+ churches, 181 towns), are in the sitemap and linked from the
+home page and `public/llms.txt`. A town with nothing published still gets its page: it names
+each church, says "rozpis zatím farnost nezveřejnila" with the register date, and links the
+parish website or the church page. The data passes below fill them. This supersedes the 5 Nov
+call (Christmas only after the December pass). The pass checklist is
+[`RORATY-PASS.md`](RORATY-PASS.md); the passes now merge into `main`, not into #94. Advent 2026
+starts on Sun 29 Nov, and Christmas Eve is Thu 24 Dec.
+
+Kill line (BACKLOG): the 21–27 Dec week under 100 visitors.
+
+## Markdown twins (for assistants)
+Every season page has a static twin next to it, `index.md` (`/vanoce/praha/index.md`, hubs
+`/vanoce/index.md` and `/advent/index.md`), written by `scripts/prerender.mjs` from the same
+`seasonCityPage` call, so the two never disagree. The twin holds more than the HTML: a table
+row per service with church, town and GPS, time, days, kind and note, rite, language,
+barrier-free flag, the date the register entry was last verified, the source (register or the
+linked parish notice), the church page and the parish website; then every church in the town
+with no schedule yet. It states the build date and the register snapshot
+(`public/data/version.json` `generated`). The HTML links it with
+`<link rel="alternate" type="text/markdown">`, the sitemap and llms.txt list it. Each HTML
+page carries a schema.org Event per service date. GitHub Pages serves the files; the domain
+sits behind Cloudflare, so the CDN caches them. Twins exist only for these season pages:
+twins for all ~4,000 church pages or the whole dataset were deferred (Pavol, 12 Nov, option B,
+over the data-copying risk). `scripts/check-prerender.mjs` fails the deploy if a town page or
+twin is missing, undated, unsourced or out of the sitemap.
 
 ## What the draft does
 - `/advent/<town>/` lists roráty and `/vanoce/<town>/` lists 24.–26. 12. Both are static, with
@@ -62,18 +82,21 @@ Without the passes, the roráty view is thin and the Christmas view is empty.
 - **Source rule and review:** as above. A půlnoční at 24:00 is written as "24:00" so it sorts
   last and reads as midnight.
 - **What the page says:** only what the sources say. Where a town has nothing, the day reads
-  "Zatím tu nic není. Vánoční pořad doplníme z ohlášek farností."
+  "Na tento den rozpis zatím žádná farnost nezveřejnila (stav rejstříku k …)", and each church
+  without a schedule is listed with where to check.
 
 ## Decisions taken in the draft (reversible)
 - **Weekly rows off the Christmas page.** Listing 710 ordinary Thursday rows as "24 Dec
   evening" would be wrong more often than right.
 - **Variant roráty rows are listed.** These are rows like "v adventu rorátní" on an all-year
   Mass (#90); in Advent they are the roráty.
-- **No sitemap entry, no link from the app or the Dušičky hub** until Pavol says ship.
+- ~~No sitemap entry until Pavol says ship~~: shipped 12 Nov with sitemap, home-page and
+  llms.txt links. The in-app link is still open (a visual change: shots first).
 
 ## Decided (Pavol, 5 Nov 2026)
 - Roráty pages ship before 29 Nov, with the towns pass 1 fills.
-- Christmas pages ship after pass 2 (14–23 Dec).
+- Christmas pages ship after pass 2 (14–23 Dec). Superseded 12 Nov: they ship now, honest
+  when empty, and pass 2 fills them.
 - At the roráty ship: sitemap entry and links from the app and the Dušičky hub, as with the
   Dušičky pages (Pavol, 8 Nov).
 
