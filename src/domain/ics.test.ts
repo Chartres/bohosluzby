@@ -147,3 +147,14 @@ describe('buildICS — the web reminder (once + alarm)', () => {
     expect(buildICS(church, s, now, { once: true, alarmMin: 30 })).toContain('DTSTART;TZID=Europe/Prague:20260706T180000')
   })
 })
+
+describe('buildICS — UID uniqueness', () => {
+  it('two services differing only in note produce distinct UIDs', () => {
+    const s1: Service = { ...weekly, note: 'první neděle v měsíci' }
+    const s2: Service = { ...weekly, note: 'třetí neděle v měsíci' }
+    const ics1 = buildICS(church, s1, now)!
+    const ics2 = buildICS(church, s2, now)!
+    const getUid = (ics: string) => ics.split('\r\n').find((l) => l.startsWith('UID:'))!
+    expect(getUid(ics1)).not.toBe(getUid(ics2))
+  })
+})
