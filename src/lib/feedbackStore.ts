@@ -106,6 +106,13 @@ export function clearAggregateCache(): void {
   loadedIds.clear()
 }
 
+/** Clear only the loaded-id tracker, keeping the display cache intact.
+ * Call when the data layer resets (OTA reload, location change) so the
+ * next loadAggregates call fetches fresh witness rows for the same IDs. */
+export function resetLoadedIds(): void {
+  loadedIds.clear()
+}
+
 const emptyChurchAggregate = (churchId: string): ChurchAggregate => ({
   slots: new Map<string, Aggregate>(),
   church: { massKey: churchId, witnesses: 0, chips: [] },

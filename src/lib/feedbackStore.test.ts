@@ -12,6 +12,7 @@ import {
   loadAggregates,
   rankChurchTags,
   rankDistinctive,
+  resetLoadedIds,
   submitFeedback,
   suggestTag,
 } from './feedbackStore'
@@ -188,5 +189,27 @@ describe('suggestTag', () => {
     const list = JSON.parse(localStorage.getItem('bohosluzby:tagSuggestions')!)
     expect(list).toHaveLength(1)
     expect(list[0].text).toBe('latina s gregoriánským chorálem')
+  })
+})
+
+describe('resetLoadedIds', () => {
+  it('after reset, loadAggregates re-fetches rows submitted since the last load', async () => {
+    // Initial load — no rows yet.
+    await loadAggregates(['c1'])
+    expect(aggregateFor('c1').church.witnesses).toBe(0)
+
+    // Three new witness rows arrive (simulating submissions since the last fetch).
+    subAs('d1', 'c1|w7|09:30', ['hluboky_prozitek'])
+    subAs('d2', 'c1|w7|09:30', ['hluboky_prozitek'])
+    subAs('d3', 'c1|w7|09:30', ['hluboky_prozitek'])
+
+    // Without reset, re-loading the same IDs is a no-op (loadedIds dedup).
+    await loadAggregates(['c1'])
+    expect(aggregateFor('c1').church.witnesses).toBe(0) // stale
+
+    // resetLoadedIds (called on OTA reload / location change) invalidates the tracker.
+    resetLoadedIds()
+    await loadAggregates(['c1'])
+    expect(aggregateFor('c1').church.witnesses).toBe(3) // fresh rows now visible
   })
 })
