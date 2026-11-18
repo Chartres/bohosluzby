@@ -102,6 +102,22 @@ describe('aggregateCities / findCity', () => {
     const hits = searchPlaces(cities, idx, 'petro').filter((r) => r.kind === 'city')
     expect(hits.map((r) => r.name).sort()).toEqual(['Petrovice (Opava)', 'Petrovice (Příbram)'])
   })
+  it('labels stay distinct when two namesakes share the same nearest anchor', () => {
+    const at = (id: string, city: string, lat: number, lng: number): Church => ({
+      ...church(id, city, lat, lng),
+      cell: `${Math.floor(lat)}-${Math.floor(lng)}`,
+    })
+    // Both Nová Ves cities are equidistant from Opava; they would both resolve to
+    // the same anchor and produce "Nová Ves (Opava)" twice without the dedup guard.
+    const idx = [
+      ...['o1', 'o2', 'o3'].map((id) => at(id, 'Opava', 49.94, 17.9)),
+      at('n1', 'Nová Ves', 49.9, 17.8),   // very close to Opava
+      at('n2', 'Nová Ves', 49.98, 17.95), // also very close to Opava
+    ]
+    const cities = aggregateCities(idx)
+    const labels = cities.filter((c) => c.name === 'Nová Ves').map((c) => cityLabel(c))
+    expect(new Set(labels).size).toBe(labels.length) // all distinct
+  })
 })
 
 describe('searchPlaces — unified church + city typeahead', () => {

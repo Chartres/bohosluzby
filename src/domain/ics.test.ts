@@ -104,6 +104,19 @@ describe('buildICS — note-restricted weekly services (sweep F1, G2)', () => {
     expect(unfold(ics)).toContain('20261102') // EXDATE for the one-off
   })
 
+  it('sentence-prefixed note + dated exclusion keeps open-ended RRULE', () => {
+    // "Pro děti. Kromě 2. 11. 2026" — the sentence "Pro děti" is not a date
+    // condition; hasDatedOnlyExclusions must split on the sentence boundary so
+    // it correctly identifies the note as dated-only and keeps the RRULE open.
+    const testNow = new Date('2026-10-01T08:00:00Z')
+    const withPrefix: Service = { days: '1', time: '09:00', lang: 'česky', greek: false, type: 'mše sv.', note: 'Pro děti. Kromě 2. 11. 2026' }
+    const ics = buildICS(church, withPrefix, testNow)!
+    expect(ics).not.toBeNull()
+    expect(ics).toMatch(/RRULE:FREQ=WEEKLY;BYDAY=MO\r\n/) // open-ended — no UNTIL
+    expect(ics).not.toContain(';UNTIL=')
+    expect(unfold(ics)).toContain('20261102') // EXDATE for the one-off
+  })
+
   it('G2: dated exclusion on the last horizon occurrence is included in EXDATE', () => {
     // Sep 27 2027 is the last Monday within 366 days of Oct 1 2026; excluding it
     // must still produce an EXDATE even though it falls after `last` (Sep 20 2027).
@@ -120,6 +133,31 @@ describe('buildICS — note-restricted weekly services (sweep F1, G2)', () => {
     expect(ics).not.toContain('EXDATE')
     expect(dtstarts(ics)).toHaveLength(1)
   })
+})
+
+it('DST boundary: DTSTART in CEST, EXDATE winter entries keep wall-clock time, UNTIL is valid UTC (sweep/2026-11-08)', () => {
+  // now = Jul 3 2026 (CEST, UTC+2). Monthly Saturday service; non-first-week
+  // exclusions cross into CET (Nov+). Wall-clock 17:00 must appear in both
+  // DTSTART and EXDATE regardless of offset. UNTIL falls in summer → T150000Z.
+  const monthly: Service = { days: '6', time: '17:00', lang: 'česky', greek: false, type: 'mše sv.', note: '1x za měsíc, 1. týden v měsíci' }
+  const ics = buildICS(church, monthly, now)! // now = 2026-07-03T15:00:00Z (CEST)
+  const unfold = (s: string) => s.replace(/\r\n /g, '')
+
+  // DTSTART is in CEST: Prague 17:00 wall-clock (the TZID carries the offset)
+  expect(ics).toContain('DTSTART;TZID=Europe/Prague:20260704T170000')
+
+  // EXDATE covers November+ (CET) — wall-clock time must still be T170000, not adjusted
+  const exdateLine = unfold(ics).match(/EXDATE;TZID=Europe\/Prague:(.*)/)?.[1] ?? ''
+  const winterEx = exdateLine.split(',').filter((d) => parseInt(d.slice(4, 6), 10) >= 11)
+  expect(winterEx.length).toBeGreaterThan(0)
+  for (const d of winterEx) expect(d).toMatch(/T170000$/)
+
+  // UNTIL is a valid UTC datetime (Z suffix); last 1st-week Saturday (Jul 2027, CEST) → T150000Z
+  const untilMatch = ics.match(/UNTIL=(\d{8}T\d{6}Z)/)
+  expect(untilMatch).not.toBeNull()
+  expect(untilMatch![1]).toMatch(/^\d{8}T\d{6}Z$/)
+  // UNTIL in CEST: wall-clock 17:00 Prague → 15:00 UTC
+  expect(untilMatch![1]).toContain('T150000Z')
 })
 
 it('folds lines at 75 octets, counting UTF-8 bytes, without splitting a character (sweep F7)', () => {
@@ -139,8 +177,8 @@ describe('buildICS — the web reminder (once + alarm)', () => {
     expect(ics).not.toContain('EXDATE')
     expect(ics).toContain('BEGIN:VALARM')
     expect(ics).toContain('TRIGGER:-PT30M')
-    // its own UID, so it never replaces the weekly series in the calendar
-    expect(ics).not.toContain('UID:42-135-18:00@')
+    // its own UID (timestamp suffix), so it never replaces the weekly series in the calendar
+    expect(ics).not.toContain('UID:42-135-18:00-mše sv.-česky@')
   })
   it('respects the note: the next occurrence the note allows', () => {
     const s: Service = { ...weekly, note: 'kromě 3. 7. 2026' }

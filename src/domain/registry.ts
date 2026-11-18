@@ -44,3 +44,19 @@ export function isStale(iso: string, now = new Date()): boolean {
   cutoff.setMonth(cutoff.getMonth() - 18)
   return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) < cutoff
 }
+
+/** "18:30" (or "18:30–19:00") → minutes past midnight; unreadable → 0. */
+export function toMin(t: string): number {
+  const m = /^(\d{1,2}):(\d{2})/.exec(t)
+  return m ? +m[1] * 60 + +m[2] : 0
+}
+
+/** The registry writes Mass as "", "mše sv." or "mše svatá"; one label for all. */
+export const typeLabel = (type: string): string => (!type || /^mše sv\.?$/i.test(type) ? 'mše svatá' : type)
+
+type ServiceKey = { time: string; type: string; lang: string; greek: boolean }
+
+/** The same service entered both weekly and as a one-off for the day — print it
+ * once. A different one-off at that time (a cemetery devotion) is not the same. */
+export const sameService = (a: ServiceKey, b: ServiceKey): boolean =>
+  toMin(a.time) === toMin(b.time) && typeLabel(a.type) === typeLabel(b.type) && a.lang === b.lang && a.greek === b.greek

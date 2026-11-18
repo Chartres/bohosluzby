@@ -27,7 +27,7 @@ const DAY = 86_400_000
 
 const daysInMonth = (y: number, m: number) => new Date(Date.UTC(y, m, 0)).getUTCDate()
 /** ISO day of week, 1 = Monday … 7 = Sunday. */
-const isoDow = (y: number, m: number, d: number) => new Date(Date.UTC(y, m - 1, d)).getUTCDay() || 7
+export const isoDow = (y: number, m: number, d: number): number => new Date(Date.UTC(y, m - 1, d)).getUTCDay() || 7
 
 function isoWeek(y: number, m: number, d: number): number {
   const t = Date.UTC(y, m - 1, d)
@@ -79,7 +79,8 @@ const ORDINAL: Record<string, number | 'last'> = {
   '1': 1, 'první': 1, '2': 2, 'druhá': 2, 'druhou': 2, 'druhé': 2, '3': 3, 'třetí': 3,
   '4': 4, 'čtvrtá': 4, 'čtvrtou': 4, '5': 5, 'pátá': 5, 'páté': 5, 'poslední': 'last', 'posl': 'last',
 }
-const ORDINAL_RE = "(?:\\d|první|druh[áoé]u?|třetí|čtvrt[áoé]u?|pát[áé]|posl(?:ední)?)\\.?"
+const ORDINAL_WORD_RE = 'první|druh[áoé]u?|třetí|čtvrt[áoé]u?|pát[áé]|posl(?:ední)?'
+const ORDINAL_RE = `(?:\\d|${ORDINAL_WORD_RE})\\.?`
 /** "1." | "1. a 3." | "2., 4." — an ordinal list. */
 const ORDINALS_RE = `${ORDINAL_RE}(?:\\s*(?:,|\\s+a\\s+)\\s*${ORDINAL_RE})*`
 
@@ -226,7 +227,15 @@ function parseSegment(seg: string): Pred | 'none' | null {
 
   // school year / holidays
   // Guard against "mimo/kromě školní rok" — the except handler below resolves those.
-  if (/školní(?:m|ho)?\s+ro[ck]/.test(s) && !/^(?:kromě|mimo|vyjma|s výjimkou)/.test(s))
+  // Guard against ordinal-prefixed segments like "1. sobota ve školním roce": those
+  // carry more structure than "school year only" and must fall through to null so the
+  // row is flagged uncertain rather than silently dropping the ordinal condition.
+  if (
+    /školní(?:m|ho)?\s+ro[ck]/.test(s) &&
+    !/^(?:kromě|mimo|vyjma|s výjimkou)/.test(s) &&
+    !/^\d+[.x]/.test(s) &&
+    !new RegExp(`^(?:${ORDINAL_WORD_RE})\\s`, 'i').test(s)
+  )
     return NEGATION.test(s) ? not(schoolYear) : schoolYear
   if (/^(?:pouze\s+|jen\s+)?(?:o|v|během)\s+(?:době\s+|období\s+)?(?:letních\s+)?prázdnin(?:ách)?$/.test(s)) return julyAugust
 
@@ -454,7 +463,10 @@ export const noteUncertain = (note: string): boolean => parseNote(note).uncertai
  * ("kromě D. M. YYYY") — the RRULE can stay open-ended; EXDATE handles the gaps. */
 export function hasDatedOnlyExclusions(note: string | undefined): boolean {
   const segs = (note ?? '')
-    .split(/\s*[,;]\s*/)
+    // sentence split: same boundary as parseNote (".〈3 lowercase〉 〈uppercase〉")
+    .replace(/(\p{Ll}{3})\.\s+(?=\p{Lu})/gu, '$1\u0000')
+    .split('\u0000')
+    .flatMap((s) => s.split(/\s*[,;]\s*/))
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean)
   if (!segs.some((s) => EXCL_DATE.test(s))) return false
