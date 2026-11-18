@@ -94,7 +94,8 @@ export function buildICS(
   const type = service.type || 'bohoslužba'
   const summary = `${type.charAt(0).toUpperCase()}${type.slice(1)} — ${church.name}`
   const url = churchUrl(church.id)
-  const uid = `${church.id}-${'days' in service ? service.days : service.date}-${service.time}-${service.type}-${service.lang}${opts.once ? `-${runsOn[0].getTime()}` : ''}`
+  const noteTag = service.note ? `-${service.note.replace(/[:;,\\\r\n]/g, '_')}` : ''
+  const uid = `${church.id}-${'days' in service ? service.days : service.date}-${service.time}-${service.type}-${service.lang}${noteTag}${opts.once ? `-${runsOn[0].getTime()}` : ''}`
   const utc = (at: Date) => at.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z')
   const dtstamp = utc(now)
 

@@ -14,6 +14,15 @@ Format: what a user notices first, then what an agent needs to know.
   the register gives roráty in 3 towns (16 churches) and nothing dated for Christmas yet; the
   passes fill them (docs/SEASON-PAGES.md). Code: `src/domain/season.ts` (from draft #94),
   checks in `scripts/check-prerender.mjs`, journey P7 in `e2e/seo.spec.ts`.
+- **Freshness ledger** (/cerstvost/, web only; Pavol 12 Nov, option C): a static page, rebuilt
+  on every deploy, with what the app knows that the register doesn't say. Per diocese: entries
+  the app flags as stale (the same 18-month rule as "ověřte si u farnosti"), the age spread
+  of "naposledy změněno" as a bar, the median age; the sourced corrections from
+  `data/corrections.json` with date, change, source host and check date; Sunday figures
+  (regular Sunday Masses, share of churches with a Sunday Mass from 17:00 and a Saturday Mass
+  from 16:00). Markdown twin at /cerstvost/index.md (`rel="alternate"`), Dataset JSON-LD, in
+  the sitemap, linked from the home page's static block. No bulk download (deferred by Pavol).
+  Pure core `src/domain/ledger.ts` (tested); `scripts/check-prerender.mjs` reads it back.
 - **What's new sheet** (flywheel `docs/standards/whats-new.md`): a returning reader sees a
   short sheet once per version, with two items and a CSS animation each
   (`public/whats-new/1.5.0/`). Release text lives in `whats-new.json` / `whats-new.en.json`;

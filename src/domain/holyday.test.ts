@@ -29,3 +29,8 @@ it('quiet on ordinary days and when the solemnity falls on a Sunday', () => {
   // 2026-11-01 is a Sunday → nothing on the 31st's "tomorrow" either
   expect(holyDayLine(at('2026-11-01'))).toBeNull()
 })
+
+it('quiet on Good Friday and its eve — not a solemnity (Easter 2027 = 28 Mar → Fri 26 Mar)', () => {
+  expect(holyDayLine(at('2027-03-25'))).toBeNull()
+  expect(holyDayLine(at('2027-03-26'))).toBeNull()
+})

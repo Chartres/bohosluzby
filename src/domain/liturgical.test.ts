@@ -53,6 +53,14 @@ describe('liturgicalDay — seasons 2026 (Roman rite, CZ)', () => {
     expect(day(2027, 1, 11)).toMatchObject({ season: 'ordinary', color: 'green' })
   })
 
+  it('Epiphany on a Sunday (6 Jan 2030): Baptism of the Lord is the next Sunday, 13 Jan', () => {
+    // Roman calendar: Sunday after 6 January; the Monday rule applies only where Epiphany is
+    // transferred to Sunday 7 or 8 Jan; this calendar keeps Epiphany on 6 Jan (FIXED).
+    expect(day(2030, 1, 7)).toMatchObject({ season: 'christmas', color: 'gold' })
+    expect(day(2030, 1, 13)).toMatchObject({ season: 'christmas', color: 'gold' })
+    expect(day(2030, 1, 14)).toMatchObject({ season: 'ordinary', color: 'green' })
+  })
+
   it('Advent 2025 starts 30 Nov (Nov 27–Dec 3 window, other bound)', () => {
     expect(day(2025, 11, 29)).toMatchObject({ season: 'ordinary' })
     expect(day(2025, 11, 30)).toMatchObject({ season: 'advent' })

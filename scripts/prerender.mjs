@@ -18,6 +18,7 @@ import { SITE_ORIGIN as ORIGIN } from '../src/domain/site.ts'
 import { dioceseOfTown } from '../src/domain/diocese.ts'
 import { seasonCityPage, seasonHubPage } from '../src/domain/season.ts'
 import { loadCorrections } from '../data/corrections.mjs'
+import { LEDGER_CSS, ledgerMarkdown, ledgerPage, ledgerStats } from '../src/domain/ledger.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const CITY_PAGES = 30
@@ -236,6 +237,25 @@ for (const kind of SEASON_KINDS) {
   seasonStats[kind] = `${filled.length}/${listed.length} towns, ${filled.reduce((n, t) => n + t.churchesWithRows, 0)} churches, ${filled.reduce((n, t) => n + t.count, 0)} services`
 }
 
+// freshness ledger (/cerstvost/): stale share and entry ages per diocese, the
+// sourced corrections, Sunday figures — static, plus a Markdown twin
+const byId = new Map(index.map((c) => [c.id, c]))
+const ledger = ledgerStats({
+  index,
+  entryOf: (id) => entryOf(byId.get(id)),
+  corrections: JSON.parse(readFileSync(`${root}data/corrections.json`, 'utf8')).corrections,
+  now: new Date(`${today}T12:00:00Z`),
+})
+mkdirSync(`${root}dist/cerstvost`, { recursive: true })
+writeFileSync(
+  `${root}dist/cerstvost/index.html`,
+  staticPage(ledgerPage(ledger, today)).replace(
+    '</head>',
+    () => `  <style>${LEDGER_CSS}    </style>\n    <link rel="alternate" type="text/markdown" href="${ORIGIN}/cerstvost/index.md" />\n  </head>`,
+  ),
+)
+writeFileSync(`${root}dist/cerstvost/index.md`, ledgerMarkdown(ledger, today))
+
 // home page: inject the city index into its static seo block, then mirror it
 // to 404.html (GH Pages deep-link fallback for /kostel/<id>/)
 const home = template.replace(
@@ -243,6 +263,7 @@ const home = template.replace(
   `  <p><a href="${ORIGIN}/vanoce/">Vánoce — půlnoční a vánoční mše podle měst</a></p>
         <p><a href="${ORIGIN}/advent/">Roráty — rorátní mše v adventu podle měst</a></p>
         <p><a href="${ORIGIN}/dusicky/">Všech svatých a Dušičky — mše svatá podle měst</a></p>
+        <p><a href="${ORIGIN}/cerstvost/">Jak čerstvé jsou rozpisy bohoslužeb v rejstříku</a></p>
         <h2>Bohoslužby ve městech</h2>
         <ul>
           ${cityLinks(null)}
@@ -280,7 +301,7 @@ if (CHURCH_PAGES) {
 }
 
 const urls = [
-  ...['/', ...cities.map((c) => `/mesto/${c.slug}/`), ...feastUrls, ...seasonUrls].map((u) => [u, today]),
+  ...['/', ...cities.map((c) => `/mesto/${c.slug}/`), ...feastUrls, '/cerstvost/', ...seasonUrls].map((u) => [u, today]),
   ...churchUrls,
 ]
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
