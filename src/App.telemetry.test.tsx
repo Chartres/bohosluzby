@@ -78,7 +78,7 @@ it('page_view fires once per load: not again on a resume or a minute tick', asyn
   expect(pageViews).toHaveLength(1)
 })
 
-it('conversion fires when tapping a church from the hero list (not map/MyChurches)', async () => {
+it('conversion fires when tapping a church from the hero list', async () => {
   render(<App />)
   const link = await screen.findByRole('link', { name: /Salvátora/ })
   fireEvent.click(link)

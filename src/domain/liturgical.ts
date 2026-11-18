@@ -51,10 +51,7 @@ const dow = (t: number) => new Date(t).getUTCDay() // 0 = Sunday
 
 // Fixed-date solemnities/feasts that override the season color (CZ calendar).
 const FIXED: Record<string, { color: LiturgicalColor; feast: string }> = {
-  '1-1': { color: 'gold', feast: 'Slavnost Matky Boží' },
   '1-6': { color: 'gold', feast: 'Zjevení Páně' },
-  '3-19': { color: 'gold', feast: 'sv. Josefa' },
-  '3-25': { color: 'gold', feast: 'Zvěstování Páně' },
   '6-29': { color: 'red', feast: 'sv. Petra a Pavla' }, // martyrs
   '7-5': { color: 'gold', feast: 'sv. Cyrila a Metoděje' }, // CZ solemnity
   '8-15': { color: 'gold', feast: 'Nanebevzetí Panny Marie' },
@@ -63,8 +60,6 @@ const FIXED: Record<string, { color: LiturgicalColor; feast: string }> = {
   '11-2': { color: 'violet', feast: 'Vzpomínka na všechny věrné zemřelé' },
   '12-8': { color: 'gold', feast: 'Neposkvrněného početí Panny Marie' },
   '12-25': { color: 'gold', feast: 'Narození Páně' },
-  '12-26': { color: 'red', feast: 'sv. Štěpána' }, // protomartyr
-  '12-28': { color: 'red', feast: 'sv. Mláďátek' }, // martyrs
 }
 
 export function liturgicalDay(year: number, month: number, day: number): LiturgicalDay {
