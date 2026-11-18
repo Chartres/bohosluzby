@@ -54,7 +54,7 @@ for (const slug of ['', ...feastDirs]) {
   if (!sitemap.includes(`/${path}</loc>`)) problems.push(`${path}: missing from sitemap.xml`)
 }
 // Christmas and roráty pages (option A, 12 Nov 2026): every town in the sitemap has a
-// static page and a Markdown twin; the twin is in the sitemap, linked from the page,
+// static page and a Markdown twin; the twin is linked from the page (not in the sitemap),
 // dated and sourced; the page carries Events only for services it lists
 for (const kind of ['vanoce', 'advent']) {
   const dirs = [...sitemap.matchAll(new RegExp(`/${kind}/([^/]+)/</loc>`, 'g'))].map((m) => m[1])
@@ -72,7 +72,8 @@ for (const kind of ['vanoce', 'advent']) {
     if (!html.includes(`<link rel="alternate" type="text/markdown" href="https://bohosluzby.dravec.org/${path}index.md" />`)) problems.push(`${path}: no twin link`)
     if (!html.includes('Aktualizováno') || !html.includes('bohosluzby.cirkev.cz')) problems.push(`${path}: no date or source`)
     if (!md.startsWith('# ') || !md.includes('Aktualizováno:') || !md.includes('bohosluzby.cirkev.cz')) problems.push(`${path}index.md: no title, date or source`)
-    if (!sitemap.includes(`/${path}index.md</loc>`)) problems.push(`${path}index.md: missing from sitemap.xml`)
+    // twins are linked (rel=alternate, llms.txt) but not in the sitemap: GitHub Pages can't send them a canonical header
+    if (sitemap.includes(`/${path}index.md</loc>`)) problems.push(`${path}index.md: in sitemap.xml`)
     if (slug) {
       const listed = (html.match(/<span class="t">/g) ?? []).length
       const events = (html.match(/"@type":"Event"/g) ?? []).length

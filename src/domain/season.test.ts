@@ -208,7 +208,40 @@ describe('seasonCityPage vanoce — 24.–26. 12.', () => {
 
   it('a day with nothing dated says so, plainly', () => {
     expect(page.body).toContain('sobota 26. prosince')
-    expect(page.body).toContain('Na tento den rozpis zatím žádná farnost nezveřejnila')
+    expect(page.body).toContain('V rejstříku ČBK zatím pro toto město na tento den nic není')
+  })
+})
+
+// GIRM 374–376: no votive Mass (roráty = votive Mass of Our Lady in Advent) on a
+// solemnity or an Advent Sunday. Immaculate Conception is 8 Dec, or 9 Dec when the 8th is a Sunday.
+describe('roráty — not on 8 Dec (Immaculate Conception) nor Advent Sundays', () => {
+  const weekly = { '1': entry([['123456', '06:30', 'česky', 0, 'rorátní mše sv.', 'v adventu']]) }
+  it('a weekly roráty row skips the solemnity', () => {
+    const s = seasonSections({ kind: 'advent', city: CITY, entries: weekly, corrections: [], today: '2026-11-18' })
+    expect(s[0].rows[0].dates).not.toContain('2026-12-08')
+    expect(s[0].rows[0].dates).toContain('2026-12-09')
+  })
+  it('the solemnity moves to Monday 9 Dec when 8 Dec is an Advent Sunday (2024)', () => {
+    const s = seasonSections({ kind: 'advent', city: CITY, entries: weekly, corrections: [], today: '2024-11-10' })
+    expect(s[0].rows[0].dates).not.toContain('2024-12-08')
+    expect(s[0].rows[0].dates).not.toContain('2024-12-09')
+    expect(s[0].rows[0].dates).toContain('2024-12-10')
+  })
+  it('no Event in the JSON-LD on 8 Dec', () => {
+    const p = seasonCityPage({ kind: 'advent', city: CITY, entries: weekly, corrections: [], today: '2026-11-18' })
+    expect(p.jsonLd).not.toContain('2026-12-08T')
+    expect(p.body).toContain('po–so, kromě 8. 12.')
+  })
+  it("a parish's own notice that lists 8 Dec stands, shown as theirs", () => {
+    const p = seasonCityPage({
+      kind: 'advent',
+      city: CITY,
+      entries: { '3': entry([], [['2026-12-08', '06:00', 'česky', 0, 'rorátní mše sv.', '']]) },
+      corrections: [{ id: '3', date: '2026-12-08', add: [['06:00', 'rorátní mše sv.']], source: 'https://ex.cz/o.pdf', source_date: 'ohlášky 29. 11. 2026' }],
+      today: '2026-11-18',
+    })
+    expect(p.body).toContain('út 8. 12.')
+    expect(p.body).toContain('<a href="https://ex.cz/o.pdf">ohlášky farnosti</a>')
   })
 })
 
@@ -238,7 +271,7 @@ describe('seasonSections — which services a feast date gets', () => {
     const s = seasonSections({ kind: 'advent', city: CITY, entries: { '1': entry([['12345', '06:30', 'česky', 0, 'rorátní mše sv.', 'v adventu']]) }, corrections: [], today: '2026-11-12' })
     expect(s).toHaveLength(1)
     const dates = s[0].rows[0].dates
-    expect(dates).toHaveLength(19)
+    expect(dates).toHaveLength(18) // 19 weekdays minus 8 Dec
     expect(dates[0]).toBe('2026-11-30')
     expect(dates.at(-1)).toBe('2026-12-24')
   })
@@ -267,14 +300,32 @@ describe('season pages — honest when empty, dated, with Events and a Markdown 
   })
 
   it('a church with nothing dated is listed, honestly, with where to check — never a made-up time', () => {
-    expect(page.body).toMatch(/kostel sv\. Tomáše<\/a> — rozpis zatím farnost nezveřejnila/)
+    expect(page.body).toMatch(/kostel sv\. Tomáše<\/a> — v rejstříku ČBK zatím bez vánočního rozpisu \(stav k 27\. 10\. 2026\)/)
     expect(page.body).not.toMatch(/<span class="t">09:00/)
     expect(page.missing).toBe(2)
     expect(page.services).toBe(1)
   })
 
   it('a day with nothing says so with the date we checked', () => {
-    expect(page.body).toContain('Na tento den rozpis zatím žádná farnost nezveřejnila (stav rejstříku k 27. 10. 2026)')
+    expect(page.body).toContain('V rejstříku ČBK zatím pro toto město na tento den nic není (stav k 27. 10. 2026). Další plánované načtení rejstříku: 3. 12. 2026.')
+  })
+
+  it('claims nothing about parishes: only what the registry snapshot shows', () => {
+    const empty = seasonCityPage({ kind: 'vanoce', city, entries: {}, corrections: [], today: '2026-11-18', checked: '2026-10-27' })
+    const emptyA = seasonCityPage({ kind: 'advent', city, entries: {}, corrections: [], today: '2026-11-18', checked: '2026-10-27' })
+    const hub = seasonHubPage({ kind: 'advent', towns: [{ name: 'Brno', slug: 'brno', count: 0 }], today: '2026-11-18', checked: '2026-10-27' })
+    for (const t of [empty.body, empty.markdown, empty.description, emptyA.body, emptyA.markdown, emptyA.description, hub.body, hub.markdown])
+      expect(t).not.toMatch(/nezveřejn|zveřejnil/)
+    expect(emptyA.description).not.toContain('0 záznamů')
+    expect(emptyA.description).toContain('v rejstříku ČBK zatím bez záznamu')
+  })
+
+  it('JSON-LD parses; every node has an @type', () => {
+    const hub = seasonHubPage({ kind: 'advent', towns: [], today: '2026-11-18' })
+    for (const ld of [JSON.parse(page.jsonLd), JSON.parse(hub.jsonLd)]) {
+      expect(ld['@context']).toBe('https://schema.org')
+      for (const node of ld['@graph'] ?? [ld]) expect(node['@type']).toBeTruthy()
+    }
   })
 
   it('every service is a schema.org Event; půlnoční 24:00 starts at midnight of the 25th', () => {
@@ -309,7 +360,7 @@ describe('season pages — honest when empty, dated, with Events and a Markdown 
     const p = seasonCityPage({ kind: 'advent', city, entries: {}, corrections: [], today: '2026-11-12', checked: '2026-10-27' })
     expect(p.services).toBe(0)
     expect(p.missing).toBe(3)
-    expect(p.body).toContain('rozpis zatím farnost nezveřejnila')
+    expect(p.body).toContain('v rejstříku ČBK zatím bez rorátů (stav k 27. 10. 2026)')
     expect(p.markdown).toContain('kaple sv. Michala')
   })
 
