@@ -7,10 +7,10 @@ import type { ChurchServices, ExtraService } from './data'
 import { parseNote, withoutDatedExclusions } from './notes'
 import { pragueToday } from './occurrences'
 
-export const ALL_SAINTS = 'Slavnost Všech svatých'
+const ALL_SAINTS = 'Slavnost Všech svatých'
 export const ALL_SOULS = 'Vzpomínka na všechny věrné zemřelé'
 /** Days before 1 Nov the line and the block appear. */
-export const WINDOW_DAYS = 7
+const WINDOW_DAYS = 7
 
 export interface FeastDayRef {
   iso: string

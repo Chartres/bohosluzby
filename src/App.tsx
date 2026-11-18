@@ -30,7 +30,7 @@ import { MassVerbs, onDate } from './MassVerbs'
 import { FeedbackCard } from './FeedbackCard'
 import { AfterMassCard, type CardMass } from './AfterMassCard'
 import { massKey, riteOf, slotKey, WITNESS_CHIPS, type MassFeedback } from './domain/feedback'
-import { aggregateFor, churchHasTags, loadAggregates, submitFeedback } from './lib/feedbackStore'
+import { aggregateFor, churchHasTags, loadAggregates, resetLoadedIds, submitFeedback } from './lib/feedbackStore'
 import { dueCards, markAnswered, neverAsk, type LedgerEntry } from './lib/feedbackLedger'
 import { WITNESS_ENABLED } from './lib/flags'
 import { track, conversion, logError } from './analytics'
@@ -509,6 +509,7 @@ export default function App() {
     if (!index || !origin) return
     let cancelled = false
     setData(null)
+    resetLoadedIds() // allow fresh witness fetch when the same IDs reload (OTA / location change)
     setPartialData(false)
     const nearby = index
       .map((c) => ({ c, d: haversineKm(origin.lat, origin.lng, c.lat, c.lng) }))
