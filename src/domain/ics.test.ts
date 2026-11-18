@@ -157,4 +157,10 @@ describe('buildICS — UID uniqueness', () => {
     const getUid = (ics: string) => ics.split('\r\n').find((l) => l.startsWith('UID:'))!
     expect(getUid(ics1)).not.toBe(getUid(ics2))
   })
+
+  it('a note with a comma or backslash leaves the UID free of TEXT specials (RFC 5545 §3.3.11)', () => {
+    const s: Service = { ...weekly, note: '1x za měsíc, 1. týden\\v měsíci' }
+    const uid = buildICS(church, s, now)!.split('\r\n').find((l) => l.startsWith('UID:'))!
+    expect(uid).not.toMatch(/[,;\\]/)
+  })
 })
