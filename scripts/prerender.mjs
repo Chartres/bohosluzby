@@ -225,14 +225,14 @@ for (const kind of SEASON_KINDS) {
     mkdirSync(`${root}dist/${kind}/${city.slug}`, { recursive: true })
     writeFileSync(`${root}dist/${kind}/${city.slug}/index.html`, staticPage(page))
     writeFileSync(`${root}dist/${kind}/${city.slug}/index.md`, page.markdown)
-    seasonUrls.push(`/${kind}/${city.slug}/`, `/${kind}/${city.slug}/index.md`)
+    seasonUrls.push(`/${kind}/${city.slug}/`)
     listed.push({ ...city, count: page.services, churchesWithRows: city.churches.length - page.missing })
   }
   const hub = seasonHubPage({ kind, towns: listed, today, checked })
   mkdirSync(`${root}dist/${kind}`, { recursive: true })
   writeFileSync(`${root}dist/${kind}/index.html`, staticPage(hub))
   writeFileSync(`${root}dist/${kind}/index.md`, hub.markdown)
-  seasonUrls.push(`/${kind}/`, `/${kind}/index.md`)
+  seasonUrls.push(`/${kind}/`)
   const filled = listed.filter((t) => t.count > 0)
   seasonStats[kind] = `${filled.length}/${listed.length} towns, ${filled.reduce((n, t) => n + t.churchesWithRows, 0)} churches, ${filled.reduce((n, t) => n + t.count, 0)} services`
 }
@@ -311,7 +311,7 @@ ${urls.map(([u, mod]) => `  <url><loc>${ORIGIN}${u}</loc><lastmod>${mod}</lastmo
 `
 writeFileSync(`${root}dist/sitemap.xml`, sitemap)
 console.log(
-  `prerendered ${cities.length} city pages + ${feastUrls.length} Dušičky pages + ${seasonUrls.length / 2} season pages with .md twins` +
+  `prerendered ${cities.length} city pages + ${feastUrls.length} Dušičky pages + ${seasonUrls.length} season pages with .md twins (twins kept out of the sitemap: no canonical on GitHub Pages)` +
     ` (with services — ${SEASON_KINDS.map((k) => `${k}: ${seasonStats[k]}`).join('; ')})` +
     (CHURCH_PAGES ? ` + ${churchUrls.length} church pages` : ' (church pages off — PRERENDER_CHURCHES=1 for the web deploy)') +
     ' + sitemap.xml + 404.html',

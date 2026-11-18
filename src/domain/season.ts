@@ -97,6 +97,20 @@ function christmasOf(today: string): number {
   return today > `${ty}-12-26` ? ty + 1 : ty
 }
 
+/** Slavnost Panny Marie počaté bez poskvrny: 8 Dec, or Monday 9 Dec when the 8th is an
+ *  Advent Sunday. GIRM 374–376: no votive Mass (roráty) on a solemnity or an Advent Sunday. */
+const immaculate = (year: string) => (wdOf(`${year}-12-08`) === '7' ? `${year}-12-09` : `${year}-12-08`)
+
+/** The next scheduled registry refresh after `today` (crons in .github/workflows/refresh-data.yml). */
+export function nextRefresh(today: string): string {
+  const y = Number(today.slice(0, 4))
+  const days = [y, y + 1].flatMap((yy) => [
+    ...Array.from({ length: 12 }, (_, m) => `${yy}-${String(m + 1).padStart(2, '0')}-03`),
+    `${yy}-09-01`, `${yy}-12-15`, `${yy}-03-15`, `${yy}-04-05`,
+  ])
+  return days.filter((d) => d > today).sort()[0]
+}
+
 /** "12345" → "po–pá", "123456" → "po–so", else "st, pá". */
 function regDays(days: string): string {
   if (days === '12345') return 'po–pá'
@@ -167,10 +181,12 @@ function rorateRows(id: string, entry: RawEntry, advent: { start: string; end: s
     // a year-round "rorátní" row that never says Advent is a registry label, not roráty
     if (!/advent/i.test(`${r[4]} ${r[5]}`)) continue
     const rule = parseNote(r[5])
-    // no roráty on an Advent Sunday: a Sunday row is the ordinary Sunday Mass
+    // no roráty on an Advent Sunday (a Sunday row is the ordinary Sunday Mass) nor on the
+    // Immaculate Conception; a parish notice that lists the day (dated rows below) still stands
+    const solemnity = immaculate(advent.end.slice(0, 4))
     const dates = days.filter((d) => {
       const [y, m, dd] = d.split('-').map(Number)
-      return wdOf(d) !== '7' && r[0].includes(wdOf(d)) && rule.runsOn(y, m, dd)
+      return wdOf(d) !== '7' && d !== solemnity && r[0].includes(wdOf(d)) && rule.runsOn(y, m, dd)
     })
     const on = [...r[0]].filter((wd) => dates.some((d) => wdOf(d) === wd))
     if (!on.length) continue
@@ -180,7 +196,7 @@ function rorateRows(id: string, entry: RawEntry, advent: { start: string; end: s
       churchId: id,
       dates,
       time: own ? `${own[1].padStart(2, '0')}:${own[2]}` : hhmm(r[1]),
-      when: regDays(on.join('')),
+      when: regDays(on.join('')) + (on.includes(wdOf(solemnity)) ? `, kromě ${Number(solemnity.slice(8))}. 12.` : ''),
       type: r[4],
       lang: normalizeLang(r[2]),
       greek: r[3] === 1,
@@ -347,12 +363,12 @@ function events(sections: SeasonSection[], names: Map<string, SeasonChurch>, kin
 
 const NOTE_ADVENT =
   'Roráty jsou ranní (někde večerní) mše v adventu, často při svíčkách. Rejstřík ČBK je uvádí jen u menšiny kostelů; ' +
-  'doplňujeme je z adventních ohlášek farností a u každého řádku je zdroj. Před cestou si čas ověřte u farnosti.'
+  'doplňujeme je z adventních ohlášek farností a u každého řádku je zdroj. V adventní neděle a na slavnost Panny Marie počaté bez poskvrny (8. 12.) ' +
+  'je uvádíme, jen když je na ten den výslovně ohlásí farnost. Před cestou si čas ověřte u farnosti.'
 const NOTE_VANOCE =
   'Vánoční pořad farnosti zveřejňují v prosinci a do rejstříku ČBK ho většinou nezapisují. ' +
   'Proto tu nejsou běžné týdenní časy: uvádíme jen bohoslužby zapsané přímo na tyto dny, z rejstříku nebo z ohlášek farností (s odkazem). ' +
   'Před cestou si čas ověřte u farnosti.'
-const NOT_YET = 'rozpis zatím farnost nezveřejnila'
 
 function header(kind: SeasonKind, today: string) {
   const year = kind === 'advent' ? adventOf(today).year : christmasOf(today)
@@ -372,9 +388,13 @@ export function seasonCityPage(input: Input & { checked?: string }): SeasonPage 
   const total = sections.reduce((n, s) => n + s.rows.length, 0)
   const withRows = new Set(sections.flatMap((s) => s.rows.map((r) => r.churchId)))
   const missing = city.churches.filter((c) => !withRows.has(c.id)).sort((a, b) => a.name.localeCompare(b.name, 'cs'))
-  const stav = checked ? ` (stav rejstříku k ${dateCz(checked)})` : ''
-  const what = kind === 'advent' ? 'Roráty' : 'Na tento den rozpis'
-  const emptyDay = `<p>${what} zatím žádná farnost nezveřejnila${esc(stav)}. Ověřte u farnosti — kostely jsou níže.</p>`
+  // say what the registry snapshot shows, not what parishes did: many publish on their own web
+  const stav = checked ? ` (stav k ${dateCz(checked)})` : ''
+  const notYet = `v rejstříku ČBK zatím bez ${kind === 'advent' ? 'rorátů' : 'vánočního rozpisu'}${stav}`
+  const emptyText =
+    `V rejstříku ČBK zatím pro toto město ${kind === 'advent' ? 'nejsou žádné roráty' : 'na tento den nic není'}${stav}. ` +
+    `Další plánované načtení rejstříku: ${dateCz(nextRefresh(today))}.`
+  const emptyDay = `<p>${esc(emptyText)} Ověřte u farnosti — kostely jsou níže.</p>`
 
   const sectionsHtml = sections
     .map(
@@ -388,7 +408,7 @@ export function seasonCityPage(input: Input & { checked?: string }): SeasonPage 
     ? `<details class="missing"><summary>${esc(kind === 'advent' ? 'Kostely bez rorátů v rejstříku' : 'Kostely bez vánočního rozpisu')} (${missing.length})</summary><ul>${missing
         .map(
           (c) =>
-            `<li><a href="${churchUrl(c.id)}">${esc(c.name)}</a>${quarterOf(c, city.name) ? `, ${esc(quarterOf(c, city.name))}` : ''} — ${NOT_YET}${esc(stav)}, ${checkAt(c)}</li>`,
+            `<li><a href="${churchUrl(c.id)}">${esc(c.name)}</a>${quarterOf(c, city.name) ? `, ${esc(quarterOf(c, city.name))}` : ''} — ${esc(notYet)}, ${checkAt(c)}</li>`,
         )
         .join('')}</ul></details>`
     : ''
@@ -398,13 +418,15 @@ export function seasonCityPage(input: Input & { checked?: string }): SeasonPage 
   if (kind === 'advent') {
     const advent = adventOf(today)
     title = `Roráty ${advent.year} — ${shown}: rorátní mše v adventu | Kam na mši`
-    description = `${shown}: roráty v adventu ${advent.year} (${dateCz(advent.start)} – ${dateCz(advent.end)}) — ${total} ${plural(total, 'záznam', 'záznamy', 'záznamů')} v ${withRows.size} ${plural(withRows.size, 'kostele', 'kostelech', 'kostelech')}, se zdrojem u každého.`
+    description = total
+      ? `${shown}: roráty v adventu ${advent.year} (${dateCz(advent.start)} – ${dateCz(advent.end)}) — ${total} ${plural(total, 'záznam', 'záznamy', 'záznamů')} v ${withRows.size} ${plural(withRows.size, 'kostele', 'kostelech', 'kostelech')}, se zdrojem u každého.`
+      : `${shown}: roráty v adventu ${advent.year} (${dateCz(advent.start)} – ${dateCz(advent.end)}) — v rejstříku ČBK zatím bez záznamu; kostely a kde čas ověřit.`
   } else {
     const year = christmasOf(today)
     title = `Vánoce ${year} — půlnoční a mše svatá ${shown} | Kam na mši`
     description = total
       ? `${shown}: půlnoční a mše svatá o Vánocích ${year} (24.–26. 12.) — ${total} ${plural(total, 'bohoslužba', 'bohoslužby', 'bohoslužeb')} zapsaných na tyto dny, se zdrojem u každé.`
-      : `${shown}: půlnoční a mše svatá o Vánocích ${year} (24.–26. 12.) — farnosti rozpis zatím nezveřejnily; doplňujeme z rejstříku ČBK a ohlášek.`
+      : `${shown}: půlnoční a mše svatá o Vánocích ${year} (24.–26. 12.) — v rejstříku ČBK zatím bez záznamu na tyto dny; kostely a kde čas ověřit.`
   }
 
   const h1 = kind === 'advent' ? `${crumb}: rorátní mše — ${esc(shown)}` : `${crumb}: půlnoční a mše svatá — ${esc(shown)}`
@@ -463,7 +485,7 @@ export function seasonCityPage(input: Input & { checked?: string }): SeasonPage 
           '|---|---|---|---|---|---|---|---|---|---|---|---|',
           ...sortRows(rows, names).map(mdRow),
         ].join('\n')
-      : `${what} zatím žádná farnost nezveřejnila${stav}.`
+      : emptyText
   const markdown = [
     `# ${crumb}: ${kind === 'advent' ? 'rorátní mše' : 'půlnoční a mše svatá'} — ${mdCell(shown)}`,
     '',
@@ -474,7 +496,7 @@ export function seasonCityPage(input: Input & { checked?: string }): SeasonPage 
     `- Bohoslužeb na stránce: ${total}; kostelů bez rozpisu: ${missing.length} z ${city.churches.length}`,
     '',
     kind === 'advent' ? NOTE_ADVENT : NOTE_VANOCE,
-    'Časy nikdy nedoplňujeme odhadem: co farnost nezveřejnila, tu není.',
+    'Časy nikdy nedoplňujeme odhadem: co není v rejstříku ani v ohláškách farnosti, tu není.',
     '',
     ...sections.flatMap((s) => [`## ${s.label} — ${s.name}`, '', table(s.rows), '']),
     `## Kostely bez rozpisu (${missing.length})`,
@@ -482,7 +504,7 @@ export function seasonCityPage(input: Input & { checked?: string }): SeasonPage 
     ...missing.map((c) => {
       const e = entries[c.id]
       const where = httpUrl(c.www) ? `ověřte na webu farnosti ${c.www}` : 'ověřte u farnosti'
-      return `- ${mdCell(c.name)} (${mdCell(c.city)}) — ${NOT_YET}${stav}; ${mdCell(where)}; rejstřík ověřen ${e?.u ? isoDay(e.u) : 'neuvedeno'}; ${churchUrl(c.id)}`
+      return `- ${mdCell(c.name)} (${mdCell(c.city)}) — ${notYet}; ${mdCell(where)}; rejstřík ověřen ${e?.u ? isoDay(e.u) : 'neuvedeno'}; ${churchUrl(c.id)}`
     }),
     '',
   ].join('\n')
@@ -512,7 +534,7 @@ export function seasonHubPage(input: { kind: SeasonKind; towns: { name: string; 
         <h1>${esc(crumb)}</h1>
         <p>${esc(lead)}</p>
         ${updatedHtml(today, checked)}
-        <p class="small">Rozpis zatím zveřejnily farnosti v ${filled} ${plural(filled, 'městě', 'městech', 'městech')} z ${towns.length}. Stránky ostatních měst vyjmenují kostely a řeknou, kde čas ověřit.</p>
+        <p class="small">Záznam v rejstříku ČBK nebo v ohláškách farností má zatím ${filled} ${plural(filled, 'město', 'města', 'měst')} z ${towns.length}. Stránky ostatních měst vyjmenují kostely a řeknou, kde čas ověřit.</p>
         <h2>Města (${towns.length})</h2>
         ${list}
         <p class="small">${kind === 'advent' ? NOTE_ADVENT : NOTE_VANOCE}</p>

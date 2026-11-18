@@ -3,8 +3,9 @@
 Status: **live since 12 Nov 2026 (Pavol, 12 Nov: option A).** `/vanoce/` and `/advent/` render
 for every Dušičky-size town (3+ churches, 181 towns), are in the sitemap and linked from the
 home page and `public/llms.txt`. A town with nothing published still gets its page: it names
-each church, says "rozpis zatím farnost nezveřejnila" with the register date, and links the
-parish website or the church page. The data passes below fill them. This supersedes the 5 Nov
+each church, says "v rejstříku ČBK zatím bez rorátů / vánočního rozpisu (stav k …)" and the next
+scheduled registry refresh, and links the parish website or the church page. The copy says what the
+register snapshot shows, not what a parish did (18 Nov: many parishes publish only on their own web). The data passes below fill them. This supersedes the 5 Nov
 call (Christmas only after the December pass). The pass checklist is
 [`RORATY-PASS.md`](RORATY-PASS.md); the passes now merge into `main`, not into #94. Advent 2026
 starts on Sun 29 Nov, and Christmas Eve is Thu 24 Dec.
@@ -20,12 +21,13 @@ barrier-free flag, the date the register entry was last verified, the source (re
 linked parish notice), the church page and the parish website; then every church in the town
 with no schedule yet. It states the build date and the register snapshot
 (`public/data/version.json` `generated`). The HTML links it with
-`<link rel="alternate" type="text/markdown">`, the sitemap and llms.txt list it. Each HTML
+`<link rel="alternate" type="text/markdown">` and llms.txt lists it. Twins are not in the sitemap
+(18 Nov): GitHub Pages cannot send them a `Link: rel=canonical` header. Each HTML
 page carries a schema.org Event per service date. GitHub Pages serves the files; the domain
 sits behind Cloudflare, so the CDN caches them. Twins exist only for these season pages:
 twins for all ~4,000 church pages or the whole dataset were deferred (Pavol, 12 Nov, option B,
 over the data-copying risk). `scripts/check-prerender.mjs` fails the deploy if a town page or
-twin is missing, undated, unsourced or out of the sitemap.
+twin is missing, undated or unsourced, a page is out of the sitemap, or a twin is in it.
 
 ## What the draft does
 - `/advent/<town>/` lists roráty and `/vanoce/<town>/` lists 24.–26. 12. Both are static, with
@@ -35,7 +37,10 @@ twin is missing, undated, unsourced or out of the sitemap.
   and gives its date ("ohlášky farnosti (ohlášky 22. 11. 2026)"). A row from the registry gives
   the date the schedule was last verified ("rejstřík ČBK, ověřen 6. 9. 2016").
 - **Advent** lists registry rows whose type or note says roráty and that run in Advent (by
-  parseNote, so "kromě adventu" rows drop out), plus roráty one-offs dated in Advent. Notes
+  parseNote, so "kromě adventu" rows drop out), plus roráty one-offs dated in Advent. Weekly rows
+  skip Advent Sundays and the Immaculate Conception (8 Dec, 9 Dec when the 8th is a Sunday):
+  GIRM 374–376 allow no votive Mass on a solemnity or an Advent Sunday. A parish notice that
+  names the day still stands, shown with its source. Notes
   that name a past year ("v adventu 2019") are skipped.
 - **Christmas** lists only rows dated 24 Dec (from 15:00), 25 Dec or 26 Dec. A weekly row says
   nothing about Christmas Eve, so weekly rows are left out on purpose.
@@ -82,8 +87,8 @@ Without the passes, the roráty view is thin and the Christmas view is empty.
 - **Source rule and review:** as above. A půlnoční at 24:00 is written as "24:00" so it sorts
   last and reads as midnight.
 - **What the page says:** only what the sources say. Where a town has nothing, the day reads
-  "Na tento den rozpis zatím žádná farnost nezveřejnila (stav rejstříku k …)", and each church
-  without a schedule is listed with where to check.
+  "V rejstříku ČBK zatím pro toto město na tento den nic není (stav k …). Další plánované
+  načtení rejstříku: …", and each church without a schedule is listed with where to check.
 
 ## Decisions taken in the draft (reversible)
 - **Weekly rows off the Christmas page.** Listing 710 ordinary Thursday rows as "24 Dec
