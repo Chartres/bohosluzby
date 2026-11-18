@@ -7,8 +7,9 @@ sprint (1–3) → shipped; parked holds `persona:?` asks and explicit no's, eac
 
 ## candidates
 
-- **Christmas pages** (`/vanoce/`, per-city půlnoční lists): build by 15 Nov, filled by the
-  15 Dec refresh + one extra ~20 Dec. Kill: 21–27 Dec week < 100 visitors.
+- **Christmas pages** (`/vanoce/`, per-city půlnoční lists): **built 12 Nov** (live, with
+  `/advent/` and Markdown twins, docs/SEASON-PAGES.md). Still to do: fill them by the 15 Dec
+  refresh + one extra ~20 Dec; in-app link (shots first). Kill: 21–27 Dec week < 100 visitors.
 - **Travel mode** (evolve #8, Pavol: yes): "jedu v neděli Praha → Brno" → masses at arrival.
 - **Rating prompt after the 3rd conversion** (#9, Pavol: yes): StoreKit / Play in-app review;
   native release needed.

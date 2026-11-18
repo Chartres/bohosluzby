@@ -94,6 +94,39 @@ test('the app boots on a prerendered church page and shows that church', async (
   await expect(page.getByRole('region', { name: 'Pořad bohoslužeb' })).toBeVisible()
 })
 
+// P7 Ondřej (docs/PERSONAS.md), the search half: "půlnoční Praha" lands on a static page
+// that says what is known, dated, and where to check the rest; an assistant reads the
+// Markdown twin. Roráty the same way. No JavaScript needed.
+test('P7: /vanoce/ and /advent/ town pages are honest, dated and have a Markdown twin', async ({ browser, request }) => {
+  const ctx = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } })
+  const page = await ctx.newPage()
+  await page.goto('/vanoce/praha/')
+  await expect(page).toHaveTitle(/Vánoce \d{4} — půlnoční a mše svatá Praha/)
+  await expect(page.locator('h2#den-1')).toContainText('24. prosince')
+  await expect(page.locator('main')).toContainText('Aktualizováno')
+  await expect(page.locator('main')).toContainText('bohosluzby.cirkev.cz')
+  await page.screenshot({ path: 'e2e/shots/p7-vanoce-praha-390.png' })
+  await page.locator('details.missing summary').click()
+  await expect(page.locator('details.missing li').first()).toContainText('rozpis zatím farnost nezveřejnila')
+  await page.screenshot({ path: 'e2e/shots/p7-vanoce-praha-390-missing.png' })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
+
+  await page.goto('/advent/praha/')
+  await expect(page.locator('ul.ordo li').first().locator('.t')).toHaveText(/^\d{2}:\d{2}$/)
+  await page.screenshot({ path: 'e2e/shots/p7-advent-praha-390.png' })
+  await page.goto('/vanoce/')
+  await expect(page.locator('ul.cities a[href$="/vanoce/praha/"]')).toBeVisible()
+  await page.screenshot({ path: 'e2e/shots/p7-vanoce-hub-390.png' })
+  await ctx.close()
+
+  const md = await request.get('/vanoce/praha/index.md')
+  expect(md.ok()).toBe(true)
+  const text = await md.text()
+  expect(text).toMatch(/^# Vánoce \d{4}: půlnoční a mše svatá — Praha/)
+  expect(text).toContain('Stav rejstříku:')
+  expect((await (await request.get('/llms.txt')).text())).toContain('/vanoce/index.md')
+})
+
 // P8 Hana (docs/PERSONAS.md): searches "dušičková mše Brno" on her phone, lands on
 // the static feast list, reads a time, opens that church — no JavaScript needed
 // to read it (crawlers and AI agents read the same HTML).

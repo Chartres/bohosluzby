@@ -9,6 +9,10 @@
 //         parseNote (src/domain/notes.ts) reads as that one date excluded, so the
 //         list, detail, feast pages and .ics all skip it. A one-off dated that
 //         day is removed instead.
+// A notice that names weekdays over weeks (roráty: "po–pá v 6:30" all Advent) is one
+// entry with "from"/"to"/"days" (registry digits, 1 = Monday … 7 = Sunday) and an
+// optional "except" list, or with "dates": [...]. loadCorrections expands it to one
+// dated entry per day, each carrying the same source, quote and checked fields.
 // Applied by data/extract.mjs at transform (so a registry refresh keeps them)
 // and runnable alone on the committed shards: node data/corrections.mjs
 // Corrections for past dates are skipped; their source stays in the log.
@@ -20,7 +24,40 @@ import { fileURLToPath } from 'node:url'
 const HERE = `${dirname(fileURLToPath(import.meta.url))}/`
 
 export function loadCorrections(file = `${HERE}corrections.json`) {
-  return JSON.parse(readFileSync(file, 'utf8')).corrections
+  return expandCorrections(JSON.parse(readFileSync(file, 'utf8')).corrections)
+}
+
+const ISO = /^\d{4}-\d{2}-\d{2}$/
+
+/** Range entries (from/to/days[/except], or dates) → one dated entry per day. */
+export function expandCorrections(list) {
+  const out = []
+  for (const c of list) {
+    if (c.date) {
+      out.push(c)
+      continue
+    }
+    const { from, to, days, except = [], dates, ...rest } = c
+    const who = `${c.id} ${c.church ?? ''}`.trim()
+    let picked
+    if (dates) {
+      if (!Array.isArray(dates) || !dates.every((d) => ISO.test(d))) throw new Error(`corrections: ${who}: dates must be YYYY-MM-DD`)
+      picked = dates
+    } else {
+      if (!ISO.test(from ?? '') || !ISO.test(to ?? '') || to < from || !/^[1-7]+$/.test(days ?? ''))
+        throw new Error(`corrections: ${who}: a range needs from ≤ to (YYYY-MM-DD) and days (digits 1–7)`)
+      picked = []
+      const end = Date.parse(`${to}T00:00:00Z`)
+      for (let t = Date.parse(`${from}T00:00:00Z`); t <= end; t += 86_400_000) {
+        const d = new Date(t)
+        const iso = d.toISOString().slice(0, 10)
+        if (days.includes(String(d.getUTCDay() || 7)) && !except.includes(iso)) picked.push(iso)
+      }
+    }
+    if (!picked.length) throw new Error(`corrections: ${who}: the range matches no date`)
+    for (const date of picked) out.push({ ...rest, date })
+  }
+  return out
 }
 
 const toMin = (t) => {

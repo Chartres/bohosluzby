@@ -6,12 +6,45 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { applyCorrections, exceptDate, loadCorrections } from './corrections.mjs'
+import { applyCorrections, exceptDate, expandCorrections, loadCorrections } from './corrections.mjs'
 import { servicesOn } from '../src/domain/feast.ts'
 
 const entry = () => ({
   u: '2015-01-01', p: '', pa: '', c: [],
   s: [['17', '18:00', 'česky', 0, 'mše sv.', ''], ['1', '07:00', 'česky', 0, 'mše sv.', 've školním roce.']],
+})
+
+describe('expandCorrections', () => {
+  // roráty: one notice names weekdays over four Advent weeks — one entry, ~20 dates
+  const src = { id: 'a', church: 'k', town: 't', add: [['06:30', 'mše sv.', 'roráty']], source: 'https://f.cz/ohlasky', source_date: 'ohlášky 22. 11. 2026', quote: 'roráty po–pá v 6:30', checked: '2026-11-23' }
+
+  it('a from/to/days entry becomes one dated entry per matching day, sources kept', () => {
+    const out = expandCorrections([{ ...src, from: '2026-11-30', to: '2026-12-06', days: '135' }])
+    expect(out.map((c) => c.date)).toEqual(['2026-11-30', '2026-12-02', '2026-12-04'])
+    for (const c of out) {
+      expect(c).toMatchObject({ id: 'a', source: src.source, source_date: src.source_date, quote: src.quote, add: src.add })
+      expect(c).not.toHaveProperty('from')
+      expect(c).not.toHaveProperty('days')
+    }
+  })
+
+  it('except removes named dates (8 Dec, a parish’s own gap); dates lists them outright', () => {
+    const out = expandCorrections([{ ...src, from: '2026-12-07', to: '2026-12-11', days: '12345', except: ['2026-12-08'] }])
+    expect(out.map((c) => c.date)).toEqual(['2026-12-07', '2026-12-09', '2026-12-10', '2026-12-11'])
+    expect(expandCorrections([{ ...src, dates: ['2026-12-05', '2026-12-12'] }]).map((c) => c.date)).toEqual(['2026-12-05', '2026-12-12'])
+  })
+
+  it('plain dated entries pass through unchanged', () => {
+    const one = { ...src, date: '2026-11-02' }
+    expect(expandCorrections([one])).toEqual([one])
+  })
+
+  it('refuses a range it cannot read rather than silently adding nothing', () => {
+    expect(() => expandCorrections([{ ...src, from: '2026-12-01', days: '135' }])).toThrow(/a k/)
+    expect(() => expandCorrections([{ ...src, from: '2026-12-01', to: '2026-11-30', days: '1' }])).toThrow(/a k/)
+    expect(() => expandCorrections([{ ...src, from: '2026-12-01', to: '2026-12-03', days: '8' }])).toThrow(/a k/)
+    expect(() => expandCorrections([{ ...src, from: '2026-12-01', to: '2026-12-03', days: '6' }])).toThrow(/no date/)
+  })
 })
 
 describe('applyCorrections', () => {

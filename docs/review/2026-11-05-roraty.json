@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-05",
+  "package": "v7.bohosluzby.roraty-94 — step 1 (make #94 ready, pass checklist, dry run)",
+  "decision": "Pavol, 5 Nov 17:58 UTC: roráty before 29 Nov, Christmas after the December pass",
+  "pr": 94,
+  "pr_state": "draft, unmerged, not deployed (ships Sat 28 Nov evening after the pass)",
+  "done": [
+    "advent-christmas-draft brought up to date with main (merge, no force-push)",
+    "corrections.json range records: from/to/days/except or dates, expanded by loadCorrections (TDD)",
+    "roráty page: one notice = one row ('po–pá 30. 11. – 23. 12., kromě 8. 12.')",
+    "data/roraty-check.mjs: batch checker (source, date, quote, id, Advent dates, page pickup) + printed rows",
+    "prerender renders only Advent pages (SEASON_KINDS); Christmas code kept for December",
+    "docs/RORATY-PASS.md: pass checklist; docs/SEASON-PAGES.md updated with the decision",
+    "dry run on 5 parishes: docs/review/2026-11-05-roraty-dryrun.md"
+  ],
+  "checks": {
+    "tsc": "clean",
+    "vitest": "860+ passed",
+    "node_test_scripts": "43 passed",
+    "build": "4 roráty pages (hub, Praha, Chrudim, Hořovice), none in sitemap, no /vanoce/"
+  },
+  "dry_run": {
+    "records": 2,
+    "parishes": ["Kolín sv. Bartoloměj (ok)", "Brno Petrov (ok)", "Praha sv. Vít (no archive)", "Praha Týn (no archive)", "Chrudim (no archive)"],
+    "blocked_sites": [],
+    "quotes_reverified": 2
+  },
+  "next": [
+    "22–28 Nov: roráty pass per docs/RORATY-PASS.md (orchestrator reminder on 22 Nov)",
+    "28 Nov evening: merge #94, live check at 390 px, hand-back docs/review/2026-11-28.json",
+    "1 Dec: re-check month-ahead sites (sv. Vít)",
+    "14–23 Dec: Christmas pass, then add 'vanoce' to SEASON_KINDS"
+  ],
+  "open_for_pavol": [
+    "Sitemap entry and app/Dušičky-hub links for the roráty pages at ship",
+    "Salvátor map popover: 'Dnes ještě: 20:00' is Thursday adoration, not a Mass — fix option 1 (Masses only) or 2 (name the type)"
+  ]
+}

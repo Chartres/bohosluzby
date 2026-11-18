@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1000473",
+    "church": "farní kostel sv. Bartoloměje, Kolín",
+    "town": "kolin",
+    "from": "2025-12-02",
+    "to": "2025-12-23",
+    "days": "24",
+    "except": [],
+    "add": [
+      [
+        "06:30",
+        "mše sv.",
+        "roráty"
+      ]
+    ],
+    "source": "https://www.farnostkolin.cz/ohlasky-1-nedele-adventni-4/",
+    "source_date": "ohlášky 30. 11. 2025",
+    "quote": "Srdečně zveme děti každé úterý v adventu na mši v 6:30 v kostele sv. Bartoloměje. […] Rorátní mše (se zpěvem Staročeských rorát) budou o adventu každý čtvrtek v 6:30 u sv. Bartoloměje.",
+    "checked": "2026-11-05"
+  },
+  {
+    "id": "8000949776313",
+    "church": "katedrála sv. Petra a sv. Pavla",
+    "town": "brno",
+    "from": "2025-12-01",
+    "to": "2025-12-22",
+    "days": "1",
+    "except": [],
+    "add": [
+      [
+        "06:00",
+        "mše sv.",
+        "roráty"
+      ]
+    ],
+    "source": "https://www.katedrala-petrov.cz/l/farni-ohlasky-1-a-2-nedele-adventni/",
+    "source_date": "ohlášky 1. a 2. neděle adventní (30. 11. 2025; web 01.12.2025)",
+    "quote": "Roráty budou v katedrále vždy v pondělí v 6:00 ráno.",
+    "checked": "2026-11-05"
+  }
+]
