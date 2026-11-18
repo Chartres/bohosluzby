@@ -2,7 +2,7 @@
 
 One page, rewritten (not appended) at every hand-back and before the context runs out.
 Start every package by reading AGENTS.md, docs/ROADMAP.md, this file and the latest hand-back
-in docs/review/. The rule is in AGENTS.md › Working with the orchestrator. Last rewrite: 8 Nov 2026.
+in docs/review/. The rule is in AGENTS.md › Working with the orchestrator. Last rewrite: 9 Nov 2026.
 
 ## What the product is now
 - Web: bohosluzby.dravec.org, deployed from main, with the Dušičky and city pages. Data reaches
@@ -19,8 +19,9 @@ in docs/review/. The rule is in AGENTS.md › Working with the orchestrator. Las
 - **Christmas pages** after the 14–23 Dec pass: add 'vanoce' to SEASON_KINDS.
 - **Advent nomination**: Pavol submits it by 12 Nov (docs/store/nomination-advent-2026.md).
   Measurement plan in docs/review/2026-11-07-store-1.5.json (read on 13 and 15 Dec).
-- **App Store header and search-results assets** (new slots, iOS 27+): generate them and
-  add them with the next iOS version (Pavol, 8 Nov). Pavol OKs them before upload.
+- **App Store header and search-results assets** (new slots, iOS 27+): in
+  store-assets/ios/creative/ (#105, Pavol OK'd 9 Nov). Pavol uploads them by hand with the next
+  iOS version: version → Product Page Information → Header and Search Results.
 - After 1.5 is live: check that the iTunes lookup (id 6792305024, country cz) lists CS.
 - ČBK registry list (docs/registry-quality-hlaseni.md): written, not sent. Sending it is Pavol's call.
 
@@ -35,13 +36,13 @@ in docs/review/. The rule is in AGENTS.md › Working with the orchestrator. Las
 - 7 Nov: the store screenshots include a church photo.
 
 ## Last three packages
-1. **Store 1.5 bundle + Czech in the App Store** (6–8 Nov, #101): cs/en .lproj, 1.5 listing,
-   screenshots, nomination text. Build 92 uploaded; Pavol submitted it.
+1. **Store 1.5 bundle + Czech in the App Store** (6–9 Nov, #101, #104, #105): cs/en .lproj,
+   1.5 listing, screenshots, nomination text, the orchestrator rules in AGENTS.md, and header
+   and search assets. Build 92 uploaded; Pavol submitted it.
 2. **Salvátor popover** (5–6 Nov, #100): "Dnes ještě: 20:00 adorace". Live; it went to TestFlight as build 91.
 3. **Roráty step 1** (5 Nov, #94 branch): range records, a batch checker, the pass checklist, a
    dry run on 5 parishes, and the Christmas pages switched off.
 
 ## Next
-- The header and search-results assets, for Pavol's OK.
 - 22–28 Nov: the roráty pass, then ship #94 on 28 Nov with the links.
 - 13 and 15 Dec: read the nomination numbers. 14–23 Dec: the Christmas pass.
