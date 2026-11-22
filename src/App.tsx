@@ -26,6 +26,7 @@ import { SearchPicker } from './SearchPicker'
 import { MyChurches } from './MyChurches'
 import { holyDayLine } from './domain/holyday'
 import { feastWeek, type FeastDayRef } from './domain/feastWeek'
+import { rorateLabel, rorateWindow } from './domain/roraty'
 import { MassVerbs, onDate } from './MassVerbs'
 import { FeedbackCard } from './FeedbackCard'
 import { AfterMassCard, type CardMass } from './AfterMassCard'
@@ -54,6 +55,9 @@ import {
 
 /** ?den= value for the '1.–2. 11.' pill (both feast days at once) */
 const FEAST_DEN = 'svatky'
+// Advent (Pavol, 22 Nov 2026: option B): a "roráty" pill (?den=roraty) lists the next 7 days' roráty
+const RORATE_DEN = 'roraty'
+const RORATE_DAYS: DayChoice[] = [0, 1, 2, 3, 4, 5, 6]
 const NEARBY_KM = 30
 const NEARBY_CAP = 120
 const LIST_LIMIT = 20
@@ -293,6 +297,8 @@ export default function App() {
   // first of them as the selected day (map, countdowns, kolem times)
   const feast = useMemo(() => feastWeek(now), [now])
   const feastOn = den === FEAST_DEN && feast !== null
+  const rorate = rorateWindow(now)
+  const rorateOn = den === RORATE_DEN && rorate
   const day = useMemo(
     () => (feastOn ? feast![0].offset : dayFromParam(now, den)),
     [den, now, feastOn, feast],
@@ -629,18 +635,26 @@ export default function App() {
   // data): keep only Masses carrying ALL selected tags at slot- or church-tier.
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
-    const days: DayChoice[] = feastOn ? feast!.map((f) => f.offset) : [day]
-    const all = days.flatMap((d) =>
+    const days: DayChoice[] = rorateOn ? RORATE_DAYS : feastOn ? feast!.map((f) => f.offset) : [day]
+    let all = days.flatMap((d) =>
       selectUpcoming(now, origin, data.nearby, data.byId, filters, cas, d, {
-        limit: witnessTags.length ? Infinity : listLimit,
+        limit: witnessTags.length || rorateOn ? Infinity : listLimit,
       }),
     )
+    if (rorateOn) {
+      // roráty only; a weekly Mass a notice confirms shows the notice's word ("roráty")
+      all = all.flatMap((u) => {
+        const label = rorateLabel(u, data.byId.get(u.church.id))
+        return label === null ? [] : [label === u.service.note || /rorát/i.test(`${u.service.type} ${u.service.note}`) ? u : { ...u, service: { ...u.service, note: label } }]
+      })
+      if (!witnessTags.length) all = all.slice(0, listLimit)
+    }
     if (witnessTags.length === 0) return all
     return all
       .filter((u) => churchHasTags(u.church.id, massKey(u.church.id, u.service, u.start), witnessTags))
       .slice(0, listLimit)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
-  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, now, feastOn, feast])
+  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, now, feastOn, feast, rorateOn])
 
   // the no-location path: the six towns with the most churches, one tap each
   const popularCities = useMemo(() => (index ? aggregateCities(index).slice(0, 6) : []), [index])
@@ -1063,6 +1077,12 @@ export default function App() {
                 onFeast={(on) => {
                   setParam('den', on ? FEAST_DEN : null)
                   track('key_action', { action: 'day', day: on ? FEAST_DEN : 'now' })
+                }}
+                rorate={rorate && !mapMode}
+                rorateOn={rorateOn}
+                onRorate={(on) => {
+                  setParam('den', on ? RORATE_DEN : null)
+                  track('key_action', { action: 'day', day: on ? RORATE_DEN : 'now' })
                 }}
               />
               {/* not on a live fix (offline / last-known / picked city): search is the
@@ -1607,6 +1627,9 @@ function OrdoControls({
   feast = null,
   feastOn = false,
   onFeast,
+  rorate = false,
+  rorateOn = false,
+  onRorate,
 }: {
   day: DayChoice
   onDay: (d: DayChoice) => void
@@ -1621,6 +1644,10 @@ function OrdoControls({
   feast?: FeastDayRef[] | null
   feastOn?: boolean
   onFeast?: (on: boolean) => void
+  /** Advent: the "roráty" pill (Pavol, 22 Nov 2026: option B) */
+  rorate?: boolean
+  rorateOn?: boolean
+  onRorate?: (on: boolean) => void
 }) {
   const [open, setOpen] = useState(false)
   const narrow = useNarrow()
@@ -1636,7 +1663,7 @@ function OrdoControls({
   const whatCount =
     [filters.massOnly, filters.barrierFree, filters.greek, filters.lang].filter(Boolean).length +
     filters.witnessTags.length
-  const dayLbl = feastOn
+  const dayLbl = feastOn || rorateOn
     ? t('day_group')
     : day === 'now'
       ? t('day_now')
@@ -1912,12 +1939,26 @@ function OrdoControls({
             {feastLabel(feast)}
           </button>
         )}
-        {pill(t('day_group').toLowerCase(), dayLbl, day !== 'now' && !feastOn)}
+        {rorate && onRorate && (
+          <button
+            type="button"
+            aria-pressed={rorateOn}
+            aria-label={t('rorate_pill_aria')}
+            className={`-my-2 px-0.5 py-3.5 text-sm font-semibold whitespace-nowrap ${
+              rorateOn ? 'underline decoration-2 underline-offset-4' : 'hover:text-ink'
+            }`}
+            style={{ color: 'var(--season)', textDecorationColor: 'var(--season)' }}
+            onClick={() => onRorate(!rorateOn)}
+          >
+            {t('rorate_pill')}
+          </button>
+        )}
+        {pill(t('day_group').toLowerCase(), dayLbl, day !== 'now' && !feastOn && !rorateOn)}
         {pill(t('rubric_when'), kdyLbl, Boolean(cas))}
         {pill(t('rubric_range'), okruhLbl, Boolean(filters.maxKm))}
         {pill(t('rubric_what'), filtryLbl, whatCount > 0)}
         {/* anything narrowed → one pill back to the clean page */}
-        {(day !== 'now' || feastOn || cas || filters.maxKm || whatCount > 0) && (
+        {(day !== 'now' || feastOn || rorateOn || cas || filters.maxKm || whatCount > 0) && (
           <button
             type="button"
             aria-label={t('clear_all_aria')}

@@ -44,6 +44,8 @@ export interface ChurchServices {
    * every Mass path (schedule, ranking, countdowns). Rendered as their own
    * auxiliary section on the detail page. */
   confession: Service[]
+  /** Roráty a parish notice confirms on a weekly row ("YYYY-MM-DD", "HH:MM"). */
+  rorate?: { date: string; time: string; note: string }[]
 }
 
 
@@ -89,6 +91,7 @@ export function decodeShard(shard: Record<string, RawEntry>): Map<string, Church
           type,
           note,
         })),
+      ...(e.r?.length ? { rorate: e.r.map(([date, time, note]) => ({ date, time, note })) } : {}),
     })
   }
   return out
