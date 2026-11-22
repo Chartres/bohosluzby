@@ -18,6 +18,7 @@ import { currentLiturgicalDay, verifySeason, type LiturgicalDay } from './domain
 import { dayFromParam, dayOptions, dayToParam, litForChoice } from './domain/days'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domain/format'
 import { aggregateCities, cityLabel, findCity, type City } from './domain/cities'
+import { adventLink } from './domain/adventLink'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
@@ -643,7 +644,10 @@ export default function App() {
   }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, now, feastOn, feast])
 
   // the no-location path: the six towns with the most churches, one tap each
-  const popularCities = useMemo(() => (index ? aggregateCities(index).slice(0, 6) : []), [index])
+  const allCities = useMemo(() => (index ? aggregateCities(index) : []), [index])
+  const popularCities = useMemo(() => allCities.slice(0, 6), [allCities])
+  // Advent: one line under the day row to the nearest town's roráty page (option A, 25 Nov 2026)
+  const advent = useMemo(() => adventLink(now, origin, allCities), [now, origin, allCities])
   const holy = useMemo(() => holyDayLine(now), [now])
 
   // list_ready — the aha that needs no click: a list of times stood on screen.
@@ -1079,6 +1083,20 @@ export default function App() {
               )}
               {/* the two-day list names its feasts in its day rubrics */}
               {!mapMode && !feastOn && <FeastLine day={day} />}
+              {!mapMode && !feastOn && advent && (
+                <p className="mt-2 text-sm">
+                  <a
+                    href={advent.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="-my-3 inline-block py-3 font-semibold underline decoration-1 underline-offset-4"
+                    style={{ color: 'var(--season)' }}
+                    onClick={() => track('key_action', { action: 'advent_link' })}
+                  >
+                    {t('advent_link')}
+                  </a>
+                </p>
+              )}
               {/* season advisory replaces the per-row "ověřeno <year>" marker —
                   "times often change NOW, verify" is a signal the reader can
                   act on; a provenance year wasn't. Not in map mode: chrome
