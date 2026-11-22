@@ -54,6 +54,7 @@ const SHARD_50_14 = {
     c: [],
     s: [
       ['5', '19:00', 'česky', 0, 'růženec', ''],
+      ['2', '06:30', 'česky', 0, 'rorátní mše sv.', 'v adventu'], // roráty (the Advent pill)
       ['5', '19:30', 'Latine', 0, 'mše sv.', 'tridentská, kromě 24. 7. 2026'], // a dated exclusion (data/corrections.mjs)
       // the registry lists the same Sunday slot twice (real pattern: seasonal variants)
       ['7', '10:00', 'česky', 0, 'mše sv.', ''],
@@ -69,6 +70,7 @@ const SHARD_50_14 = {
       ['5', '20:00', 'česky', 0, 'mše sv.', 'kromě července a srpna'], // provably not in July
       ['5', '21:00', 'česky', 0, 'mše sv.', 'nepravidelně, dle ohlášení'], // unverifiable → loud note
     ],
+    r: [['2026-12-04', '20:00', 'roráty']], // a parish notice calls this Friday Mass roráty
   },
 }
 const SHARD_49_16 = {
@@ -270,6 +272,32 @@ describe('Marie finds the nearest mass', () => {
     // a second tap returns to "hned"
     await user.click(screen.getAllByRole('button', { name: 'Všech svatých a Vzpomínka na všechny věrné zemřelé', pressed: true })[0])
     expect(qp('den')).toBeNull()
+  })
+
+  // Pavol, 22 Nov 2026: option B — a "roráty" pill in the day row, like the Dušičky one
+  it('in Advent a "roráty" pill lists the coming roráty, notice-confirmed ones too', async () => {
+    vi.setSystemTime(new Date('2026-12-01T05:00:00Z')) // Tue 6:00 Prague
+    stubGeolocation('granted')
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    const pill = screen.getByRole('button', { name: 'Roráty v příštích sedmi dnech', pressed: false })
+    expect(pill).toHaveTextContent('roráty')
+    await user.click(pill)
+    expect(qp('den')).toBe('roraty')
+    expect(await screen.findByText(/sv\. Havla/)).toBeInTheDocument() // registry: út 6:30 rorátní, v adventu
+    expect(screen.getByText(/sv\. Anny/)).toBeInTheDocument() // pá 4. 12. 20:00, confirmed by a notice
+    expect(screen.queryByText(/Salvátora/)).toBeNull() // ordinary Masses drop out
+    await user.click(screen.getByRole('button', { name: 'Roráty v příštích sedmi dnech', pressed: true }))
+    expect(qp('den')).toBeNull()
+  })
+
+  it('before Advent there is no roráty pill', async () => {
+    vi.setSystemTime(new Date('2026-11-20T10:00:00Z'))
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    expect(screen.queryByRole('button', { name: 'Roráty v příštích sedmi dnech' })).toBeNull()
   })
 
   it('outside that week there is no feast pill', async () => {

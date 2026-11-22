@@ -20,6 +20,8 @@ export interface RawEntry {
   c: [string, string][]
   s: Row[]
   x?: Row[]
+  /** Roráty a parish notice confirms on a weekly row: [date, time, note] (data/corrections.mjs). */
+  r?: [string, string, string][]
 }
 
 export interface PageChurch {

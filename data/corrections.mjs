@@ -15,6 +15,7 @@
 // dated entry per day, each carrying the same source, quote and checked fields.
 // An add the registry already has (a weekly row that runs that day at that time) is not
 // copied as a dated row: the notice confirms it ("confirmed"), and the season pages cite it.
+// A confirmed roráty is marked on the entry as r: [[date, time, note]] for the app's roráty view.
 // Applied by data/extract.mjs at transform (so a registry refresh keeps them)
 // and runnable alone on the committed shards: node data/corrections.mjs
 // Corrections for past dates are skipped; their source stays in the log.
@@ -115,6 +116,14 @@ export function applyCorrections(shards, corrections, today = new Date().toISOSt
       const weekly = entry.s.some((r) => r[0].includes(dow) && toMin(r[1]) === toMin(time) && !CONFESSION.test(r[4]) && parseNote(r[5]).runsOn(y, m, d))
       if (weekly) {
         confirmed.push(`${c.id} ${c.date} =${time}`)
+        // a confirmed roráty is marked for the app's roráty view: r = [[date, time, note]]
+        if (/rorát/i.test(`${type} ${note}`)) {
+          entry.r ??= []
+          if (!entry.r.some((r) => r[0] === c.date && toMin(r[1]) === toMin(time))) {
+            entry.r.push([c.date, time, note || type])
+            entry.r.sort((a, b) => (a[0] + a[1]).localeCompare(b[0] + b[1]))
+          }
+        }
         continue
       }
       const row = [c.date, time, lang, 0, type, note]

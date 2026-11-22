@@ -58,6 +58,19 @@ describe('applyCorrections', () => {
     expect(r.missing).toEqual([])
   })
 
+  // the app's "roráty" view (Pavol, 22 Nov: option B) must find these too: a confirmed
+  // roráty is marked on the entry as `r` [date, time, note]; other confirmations aren't
+  it('marks a confirmed roráty as r: [date, time, note]; a confirmed ordinary Mass is not marked', () => {
+    const shards = { c: { a: { u: '2016-09-06', p: '', pa: '', c: [], s: [['1234', '06:45', 'česky', 0, 'mše sv.', '']] } } }
+    applyCorrections(shards, [
+      { id: 'a', date: '2026-11-30', add: [['06:45', 'mše sv.', 'roráty']], source: 'https://x.cz', source_date: 'o' },
+      { id: 'a', date: '2026-12-01', add: [['06:45', 'mše sv.']], source: 'https://x.cz', source_date: 'o' },
+    ], '2026-11-22')
+    expect(shards.c.a.r).toEqual([['2026-11-30', '06:45', 'roráty']])
+    applyCorrections(shards, [{ id: 'a', date: '2026-11-30', add: [['06:45', 'mše sv.', 'roráty']], source: 'https://x.cz', source_date: 'o' }], '2026-11-22')
+    expect(shards.c.a.r).toHaveLength(1) // idempotent
+  })
+
   it('still adds the dated row when the weekly row does not run that day (its note excludes it)', () => {
     const shards = { c: { a: { u: '2016-09-06', p: '', pa: '', c: [], s: [['2', '07:00', 'česky', 0, 'mše sv.', 'kromě adventu']] } } }
     applyCorrections(shards, [{ id: 'a', date: '2026-12-01', add: [['07:00', 'mše sv.', 'roráty']], source: 'https://x.cz', source_date: 'o' }], '2026-11-22')
