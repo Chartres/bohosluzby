@@ -50,6 +50,12 @@ describe('checkRoraty', () => {
     expect(run([rec({ add: [['06:30', 'mše sv.']] })]).errors.join('\n')).toMatch(/not on the roráty page/)
   })
 
+  it('finds a row whose source URL has a query string (& is escaped on the page — Týn, 22 Nov)', () => {
+    const r = run([rec({ source: 'http://www.tyn.cz/cz/index.php?stranka=aktuality&clanek=10' })])
+    expect(r.errors).toEqual([])
+    expect(r.rows[0]).toContain('<http://www.tyn.cz/cz/index.php?stranka=aktuality&clanek=10>')
+  })
+
   it('a malformed range is an error, not a crash', () => {
     expect(run([rec({ days: '8' })]).errors.join('\n')).toMatch(/days/)
   })

@@ -48,6 +48,22 @@ describe('expandCorrections', () => {
 })
 
 describe('applyCorrections', () => {
+  // Týn, 22 Nov: the parish notice confirms the roráty the registry already lists
+  // (út, so 7:00 "v adventu"). A dated copy would show the same Mass twice in the app.
+  it('adds nothing when a weekly row already runs that day at that time; reports it as confirmed', () => {
+    const shards = { c: { a: { u: '2016-09-06', p: '', pa: '', c: [], s: [['26', '07:00', 'česky', 0, 'rorátní mše sv.', 'v adventu']] } } }
+    const r = applyCorrections(shards, expandCorrections([{ id: 'a', from: '2026-12-01', to: '2026-12-05', days: '26', add: [['07:00', 'mše sv.', 'roráty']], source: 'https://x.cz', source_date: 'ohlášky' }]), '2026-11-22')
+    expect(shards.c.a.x).toBeUndefined()
+    expect(r.confirmed).toEqual(['a 2026-12-01 =07:00', 'a 2026-12-05 =07:00'])
+    expect(r.missing).toEqual([])
+  })
+
+  it('still adds the dated row when the weekly row does not run that day (its note excludes it)', () => {
+    const shards = { c: { a: { u: '2016-09-06', p: '', pa: '', c: [], s: [['2', '07:00', 'česky', 0, 'mše sv.', 'kromě adventu']] } } }
+    applyCorrections(shards, [{ id: 'a', date: '2026-12-01', add: [['07:00', 'mše sv.', 'roráty']], source: 'https://x.cz', source_date: 'o' }], '2026-11-22')
+    expect(shards.c.a.x).toEqual([['2026-12-01', '07:00', 'česky', 0, 'mše sv.', 'roráty']])
+  })
+
   it('adds a dated one-off and drops a weekly Mass on that date only', () => {
     const shards = { c: { a: entry() } }
     const { applied, missing } = applyCorrections(

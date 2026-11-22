@@ -138,6 +138,36 @@ describe('seasonCityPage advent — roráty', () => {
   })
 })
 
+// Pass 1, 22 Nov: a notice that confirms a Mass the registry already lists adds no dated row
+// (data/corrections.mjs, "confirmed"), so the page builds the roráty row from the notice itself.
+describe('seasonCityPage advent — a notice confirming a weekly registry Mass', () => {
+  const tue = ['2026-12-01', '2026-12-15', '2026-12-22'] // 8 Dec is the solemnity
+  const sat = ['2026-12-05', '2026-12-12', '2026-12-19']
+  const fromNotice = (id: string, dates: string[], time: string) =>
+    dates.map((date) => ({ id, date, add: [[time, 'mše sv.', 'roráty']], source: 'https://tyn.cz/a?b=1&c=2', source_date: 'aktuality 22. 11. 2026' }))
+
+  it('Týn: the registry roráty row and the notice make one row, cited to the notice', () => {
+    const entries = { '1': entry([['26', '07:00', 'česky', 0, 'rorátní mše sv.', 'v adventu']], [], '2016-09-06') }
+    const page = seasonCityPage({ kind: 'advent', city: CITY, entries, corrections: fromNotice('1', [...tue, ...sat].sort(), '07:00'), today: '2026-11-22' })
+    const rows = [...page.body.matchAll(/<li><span class="t">.*?<\/li>/g)].map((m) => m[0])
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toContain('út, so 1. 12. – 22. 12.')
+    expect(rows[0]).toContain('href="https://tyn.cz/a?b=1&amp;c=2"')
+    expect(rows[0]).not.toContain('rejstřík ČBK')
+  })
+
+  it('Stará Bělá: the ordinary weekday Mass the notice calls roráty is listed as roráty', () => {
+    const entries = { '1': entry([['1234', '06:45', 'česky', 0, 'mše sv.', '']]) }
+    const mon = ['2026-11-30', '2026-12-07', '2026-12-14', '2026-12-21']
+    const page = seasonCityPage({ kind: 'advent', city: CITY, entries, corrections: fromNotice('1', mon, '06:45'), today: '2026-11-22' })
+    const rows = [...page.body.matchAll(/<li><span class="t">.*?<\/li>/g)].map((m) => m[0])
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toContain('<span class="t">06:45</span>')
+    expect(rows[0]).toContain('po 30. 11. – 21. 12.')
+    expect(rows[0]).toContain('roráty')
+  })
+})
+
 describe('seasonCityPage advent — a roráty notice over the whole Advent (pass 1 record)', () => {
   // one corrections.json entry: "roráty po–pá v 6:30" from 30 Nov, not on 8 Dec
   const notice = {

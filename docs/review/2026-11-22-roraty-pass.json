@@ -1,0 +1,272 @@
+{
+ "date": "2026-11-22",
+ "package": "Roráty pass, day 1 (orchestrator, 22 Nov; Pavol's pick of 5 Nov)",
+ "scope": "30 largest towns, 174 parish websites (31 parishes have no website in the registry)",
+ "method": "6 reader subagents (docs/RORATY-PASS.md rules), data/roraty-check.mjs, an independent reviewer subagent that re-fetched every source",
+ "result": {
+  "records": 21,
+  "reviewer": "20 pass, 1 fix (sv. Matěj quote made verbatim), 0 held, 0 unreachable",
+  "towns_with_notice_rows": {
+   "praha": 11,
+   "ostrava": 5,
+   "olomouc": 1,
+   "plzen": 1,
+   "kutna-hora": 2,
+   "liberec": 1
+  }
+ },
+ "sites": {
+  "error": 20,
+  "not-yet": 114,
+  "ok": 13,
+  "held": 4,
+  "blocked": 22,
+  "no-roraty": 1
+ },
+ "blocked": [
+  {
+   "site": "http://www.farnoststodulky.cz/",
+   "town": "praha",
+   "note": "HTTP 403 Cloudflare challenge ('Just a moment...'). Stopped."
+  },
+  {
+   "site": "http://www.lhoteckafarnost.cz",
+   "town": "praha",
+   "note": "HTTP 403."
+  },
+  {
+   "site": "https://farnosthostivar.cz",
+   "town": "praha",
+   "note": "HTTP 403 Cloudflare challenge ('Just a moment...')."
+  },
+  {
+   "site": "http://www.farnosthloubetin.cz",
+   "town": "praha",
+   "note": "HTTP 403 Cloudflare challenge ('Just a moment...')."
+  },
+  {
+   "site": "http://kbely.farnost.cz",
+   "town": "praha",
+   "note": "Redirects to farnostkbely.cz, HTTP 403 Cloudflare challenge."
+  },
+  {
+   "site": "http://salesianizabovresky.cz/farnost",
+   "town": "brno",
+   "note": "HTTP 403, Cloudflare 'Sorry, you have been blocked'."
+  },
+  {
+   "site": "http://www.farnostkomin.cz",
+   "town": "brno",
+   "note": "HTTP 403, Cloudflare JS challenge ('Just a moment...')."
+  },
+  {
+   "site": "http://www.augustinbrno.cz",
+   "town": "brno",
+   "note": "HTTP 401, WEDOS.protection security verification page."
+  },
+  {
+   "site": "http://www.farnostmostrava.cz",
+   "town": "ostrava",
+   "note": "HTTP 401, WEDOS.protection security verification page. Stopped."
+  },
+  {
+   "site": "http://privoz.farnost.cz",
+   "town": "ostrava",
+   "note": "Redirects to farnostprivoz.cz, HTTP 403 Cloudflare 'Just a moment...' challenge. Stopped."
+  },
+  {
+   "site": "http://www.dekanstvicb.cz",
+   "town": "ceske-budejovice",
+   "note": "Cloudflare JS challenge (403, cf-mitigated: challenge)"
+  },
+  {
+   "site": "http://farnostsuchevrbne.cz",
+   "town": "ceske-budejovice",
+   "note": "Cloudflare JS challenge (403, cf-mitigated: challenge)"
+  },
+  {
+   "site": "http://www.jannepomuckycb.cz/",
+   "town": "ceske-budejovice",
+   "note": "Cloudflare JS challenge (403, cf-mitigated: challenge)"
+  },
+  {
+   "site": "http://www.farnosthkpp.cz",
+   "town": "hradec-kralove",
+   "note": "Cloudflare JS challenge (403, cf-mitigated: challenge)"
+  },
+  {
+   "site": "http://www.farnostfrydek.cz",
+   "town": "frydek-mistek",
+   "note": "Cloudflare JS challenge (403, cf-mitigated: challenge)"
+  },
+  {
+   "site": "http://farnostkromeriz.cz",
+   "town": "kromeriz",
+   "note": "Cloudflare JS challenge (403, cf-mitigated: challenge)"
+  },
+  {
+   "site": "http://farnostzlin.cz",
+   "town": "zlin",
+   "note": "Cloudflare 'Just a moment...' JS challenge, HTTP 403"
+  },
+  {
+   "site": "http://farnostmalenovice.cz",
+   "town": "zlin",
+   "note": "Cloudflare 'Just a moment...' JS challenge, HTTP 403"
+  },
+  {
+   "site": "http://farnostsdbzlin.cz",
+   "town": "zlin",
+   "note": "Cloudflare 'Just a moment...' JS challenge, HTTP 403"
+  },
+  {
+   "site": "http://farnostbreznice.cz",
+   "town": "zlin",
+   "note": "Cloudflare 'Just a moment...' JS challenge, HTTP 403"
+  },
+  {
+   "site": "http://www.farnostcheb.cz",
+   "town": "cheb",
+   "note": "Cloudflare 'Just a moment...' JS challenge, HTTP 403"
+  },
+  {
+   "site": "http://www.arcidekanstvi-lbc.cz",
+   "town": "liberec",
+   "note": "HTTP 403 Forbidden (nginx) on homepage."
+  }
+ ],
+ "error": [
+  {
+   "site": "http://www.katedralasvatehovita.cz",
+   "town": "praha",
+   "note": "Connection reset by peer on 2 attempts (curl 35); nothing read."
+  },
+  {
+   "site": "http://www.augustiniani.cz",
+   "town": "praha",
+   "note": "Connection reset by peer on 2 attempts (curl 35); nothing read."
+  },
+  {
+   "site": "http://www.farnostbranik.cz",
+   "town": "praha",
+   "note": "Connection reset on every attempt (TLS recv failure), not a bot wall; retry later."
+  },
+  {
+   "site": "https://www.farnostprahapodoli.cz",
+   "town": "praha",
+   "note": "Connection reset on every attempt; retry later."
+  },
+  {
+   "site": "http://www.farnostkyje.cz",
+   "town": "praha",
+   "note": "Empty 200 response, once 503 upstream connection timeout; retry later."
+  },
+  {
+   "site": "http://www.trs-farnosti.cz",
+   "town": "praha",
+   "note": "Connection reset on every attempt; retry later."
+  },
+  {
+   "site": "http://www.opatstvibrno.cz",
+   "town": "brno",
+   "note": "Connection reset by peer on two attempts (curl 35)."
+  },
+  {
+   "site": "http://ujezuitu.cz",
+   "town": "brno",
+   "note": "HTTP 500, WordPress critical error page."
+  },
+  {
+   "site": "http://www.svatyjakub.cz",
+   "town": "brno",
+   "note": "Connection reset by peer on two attempts (curl 35)."
+  },
+  {
+   "site": "http://www.farnost-velke-hostice.cz",
+   "town": "opava",
+   "note": "Domain now serves an unrelated shop/spam page, not the parish; registry website needs updating."
+  },
+  {
+   "site": "http://ostravakuncicky.farnost.cz",
+   "town": "ostrava",
+   "note": "JS-only single-page app ('Načítám web..'); no content readable without a browser, sitemap returns the same shell."
+  },
+  {
+   "site": "http://farnost-olomouc-hejcin.cz",
+   "town": "olomouc",
+   "note": "Connection reset by peer twice (curl 35)."
+  },
+  {
+   "site": "http://fma.cz/pcs",
+   "town": "plzen",
+   "note": "Connection reset by peer twice (curl 35)."
+  },
+  {
+   "site": "http://zesov.dpv.cz",
+   "town": "prostejov",
+   "note": "web ve výstavbě ('na stránkách se pracuje'), bez obsahu"
+  },
+  {
+   "site": "https://www.farnostchlebovicestaric.cz/",
+   "town": "frydek-mistek",
+   "note": "TLS chyba: server neposílá ověřitelný řetězec certifikátu (curl 60)"
+  },
+  {
+   "site": "http://farni-musle.cz",
+   "town": "prerov",
+   "note": "connection reset (curl 35) po přesměrování na https"
+  },
+  {
+   "site": "http://www.farnostrozdelov.cz",
+   "town": "kladno",
+   "note": "connection reset (curl 35) po přesměrování na https"
+  },
+  {
+   "site": "http://www.farnost-spalov.cz",
+   "town": "fulnek",
+   "note": "Connection reset by peer, twice (Vlkovice parish entry)."
+  },
+  {
+   "site": "http://www.farnost-spalov.cz",
+   "town": "odry",
+   "note": "Connection reset by peer, twice (Spálov parish entry)."
+  },
+  {
+   "site": "http://www.farnost-strakonice.wbs.cz",
+   "town": "strakonice",
+   "note": "Redirects to farnost-strakonice.cz; connection reset by peer, twice."
+  }
+ ],
+ "held": [
+  {
+   "site": "http://www.farnostsmichov.cz",
+   "town": "praha",
+   "note": "Smíchovské ohlášky 22. 11. 2026 (image): 'Ranní rorátní mše svaté se budou slavit v postranní lodi u mariánského oltáře.' No days or time given."
+  },
+  {
+   "site": "http://www.farnostoz.cz",
+   "town": "ostrava",
+   "note": "Ohlášky 22.11.2026: 'Roráty pro děti – Tři králové v nesnázích: Každou adventní sobotu ... Upozorňujeme, že po celý advent budou sobotní ranní mše svaté začínat"
+  },
+  {
+   "site": "http://www.sdbplzen.cz",
+   "town": "plzen",
+   "note": "The first request answered 503, the retry 200. The parish pages are at farnost.sdbplzen.cz. 'Zveme na prosinec' (19.11.2026): '5. 12. 7:45 rorátní mše svatá'. C"
+  },
+  {
+   "site": "http://www.farnostfulnek.cz",
+   "town": "fulnek",
+   "note": "Ohlášky 22. 11. 2026 give days per place but no time: 'Dobu adventní prožijeme v letošním roce při rorátních mších svatých : Fulnek – úterý a pátek, Děrné – stř"
+  }
+ ],
+ "not_yet_count": 114,
+ "fixes": [
+  "data/roraty-check.mjs: a source URL with & was not found on the page (Týn)",
+  "data/corrections.mjs: an add that a weekly registry row already covers adds no dated copy ('confirmed'); 79 of 140 dated rows were confirmations",
+  "season.ts: roráty rows a parish notice gives come from the notice (one row, cited to the notice), the registry's own roráty row at that time drops out"
+ ],
+ "next": [
+  "26–28 Nov: re-read the 114 not-yet sites (most notices for the 1st Sunday of Advent go up during the week) and the 20 error sites",
+  "held: Fulnek (no time), Smíchov (no days/time), Ostrava-Zábřeh and Plzeň-Lobzy (church not named)"
+ ]
+}

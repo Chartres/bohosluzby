@@ -60,6 +60,19 @@ describe('ledgerStats', () => {
     expect(s.dioceses.find((d) => d.key === '1')!.sundayMasses).toBe(2)
   })
 
+  // Roráty pass, 22 Nov: a notice for all Advent is one range record (no `date`);
+  // the build crashed on it. One ledger line, dated by its first day, says the span.
+  it('lists a range record (roráty) as one line with its span', () => {
+    const range = [
+      { id: '10002', church: 'kostel B', town: 'praha', from: '2026-11-30', to: '2026-12-23', days: '135', add: [['07:00', 'mše sv.', 'roráty']], source: 'https://b.example/?a=1&b=2', source_date: 'ohlášky 22. 11. 2026', quote: '…', checked: '2026-11-22' },
+      { id: '10001', church: 'kostel A', town: 'praha', dates: ['2026-12-10'], add: [['07:00', 'mše sv.', 'roráty']], source: 'https://a.example/', source_date: 'akce', quote: '…', checked: '2026-11-22' },
+    ]
+    const r = ledgerStats({ index: INDEX, entryOf: (id) => ENTRIES[id], corrections: [...CORRECTIONS, ...range], now: NOW })
+    const b = r.corrections.find((c) => c.id === '10002')!
+    expect(b).toMatchObject({ date: '2026-11-30', change: 'doplněno 07:00 mše sv. (roráty, 30. 11. – 23. 12.)' })
+    expect(r.corrections.find((c) => c.id === '10001' && c.date === '2026-12-10')!.change).toBe('doplněno 07:00 mše sv. (roráty, 10. 12.)')
+  })
+
   it('lists corrections newest first with the church’s own town', () => {
     expect(s.corrections.map((c) => c.id)).toEqual(['10001', '80000001'])
     expect(s.corrections[0]).toMatchObject({ city: 'Praha 1', change: 'doplněno 18:00 mše sv.' })
