@@ -10,6 +10,8 @@ import { applyCorrections, expandCorrections } from './corrections.mjs'
 import { adventOf, seasonCityPage } from '../src/domain/season.ts'
 
 const HERE = `${dirname(fileURLToPath(import.meta.url))}/`
+// the page escapes the href as HTML (season.ts esc): & → &amp;
+const escAttr = (s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
 const strip = (s) => s.replace(/<[^>]+>/g, '').replaceAll('&amp;', '&').replaceAll('&quot;', '"').replaceAll('&lt;', '<').replaceAll('&gt;', '>')
 
 /**
@@ -50,7 +52,7 @@ export function checkRoraty({ records, shards, names, today }) {
     const page = seasonCityPage({ kind: 'advent', city, entries: { [r.id]: work[where.get(r.id)][r.id] }, corrections: dated, today })
     for (const [time] of r.add ?? []) {
       const t = time.padStart(5, '0')
-      const li = [...page.body.matchAll(/<li>(.*?)<\/li>/g)].map((m) => m[1]).find((h) => h.includes(`<span class="t">${t}</span>`) && h.includes(`href="${r.source}"`))
+      const li = [...page.body.matchAll(/<li>(.*?)<\/li>/g)].map((m) => m[1]).find((h) => h.includes(`<span class="t">${t}</span>`) && h.includes(`href="${escAttr(r.source)}"`))
       if (!li) {
         errors.push(`${who}: ${t} is not on the roráty page (does the type or note say "roráty"?)`)
         continue
