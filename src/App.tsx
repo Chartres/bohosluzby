@@ -54,6 +54,8 @@ import {
 
 /** ?den= value for the '1.–2. 11.' pill (both feast days at once) */
 const FEAST_DEN = 'svatky'
+// PROTOTYPE (not for merge): ?navrh=a | b — the in-app roráty link options for Pavol
+const PROTO = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('navrh') : null
 const NEARBY_KM = 30
 const NEARBY_CAP = 120
 const LIST_LIMIT = 20
@@ -629,18 +631,20 @@ export default function App() {
   // data): keep only Masses carrying ALL selected tags at slot- or church-tier.
   const rows: Upcoming[] | null = useMemo(() => {
     if (!data || !origin) return null
-    const days: DayChoice[] = feastOn ? feast!.map((f) => f.offset) : [day]
-    const all = days.flatMap((d) =>
+    const rorOn = PROTO === 'b' && den === 'roraty'
+    const days: DayChoice[] = rorOn ? [0, 1, 2, 3, 4, 5, 6] : feastOn ? feast!.map((f) => f.offset) : [day]
+    let all = days.flatMap((d) =>
       selectUpcoming(now, origin, data.nearby, data.byId, filters, cas, d, {
-        limit: witnessTags.length ? Infinity : listLimit,
+        limit: witnessTags.length || rorOn ? Infinity : listLimit,
       }),
     )
+    if (rorOn) all = all.filter((u) => /rorát/i.test(`${u.service.type} ${u.service.note ?? ''}`)).slice(0, listLimit)
     if (witnessTags.length === 0) return all
     return all
       .filter((u) => churchHasTags(u.church.id, massKey(u.church.id, u.service, u.start), witnessTags))
       .slice(0, listLimit)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- aggTick refreshes the aggregate reads
-  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, now, feastOn, feast])
+  }, [data, origin, filters, day, cas, listLimit, witnessTags, aggTick, now, feastOn, feast, den])
 
   // the no-location path: the six towns with the most churches, one tap each
   const popularCities = useMemo(() => (index ? aggregateCities(index).slice(0, 6) : []), [index])
@@ -1079,6 +1083,13 @@ export default function App() {
               )}
               {/* the two-day list names its feasts in its day rubrics */}
               {!mapMode && !feastOn && <FeastLine day={day} />}
+              {!mapMode && PROTO === 'a' && (
+                <p className="mt-2 text-sm">
+                  <a href="https://bohosluzby.dravec.org/advent/praha/" className="font-semibold underline decoration-1 underline-offset-4" style={{ color: 'var(--season)' }}>
+                    Roráty v adventu ve vašem městě ›
+                  </a>
+                </p>
+              )}
               {/* season advisory replaces the per-row "ověřeno <year>" marker —
                   "times often change NOW, verify" is a signal the reader can
                   act on; a provenance year wasn't. Not in map mode: chrome
@@ -1910,6 +1921,22 @@ function OrdoControls({
             onClick={() => onFeast(!feastOn)}
           >
             {feastLabel(feast)}
+          </button>
+        )}
+        {PROTO === 'b' && (
+          <button
+            type="button"
+            aria-pressed={new URLSearchParams(location.search).get('den') === 'roraty'}
+            className={`-my-2 px-0.5 py-3.5 text-sm font-semibold whitespace-nowrap ${new URLSearchParams(location.search).get('den') === 'roraty' ? 'underline decoration-2 underline-offset-4' : ''}`}
+            style={{ color: 'var(--season)', textDecorationColor: 'var(--season)' }}
+            onClick={() => {
+              const q = new URLSearchParams(location.search)
+              if (q.get('den') === 'roraty') q.delete('den')
+              else q.set('den', 'roraty')
+              location.search = q.toString()
+            }}
+          >
+            roráty
           </button>
         )}
         {pill(t('day_group').toLowerCase(), dayLbl, day !== 'now' && !feastOn)}
