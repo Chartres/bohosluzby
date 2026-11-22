@@ -23,7 +23,11 @@ export interface Correction {
   id: string
   church: string
   town: string
-  date: string
+  /** One day, or a range record (roráty, data/corrections.mjs): from/to/days or dates. */
+  date?: string
+  from?: string
+  to?: string
+  dates?: string[]
   add?: string[][]
   drop?: string[]
   source: string
@@ -115,9 +119,22 @@ export function ledgerStats(input: {
   const total = tally(all, now)
   const byId = new Map(index.map((c) => [c.id, c]))
   const host = (u: string) => /^https?:\/\/(?:www\.)?([^/]+)/.exec(u)?.[1] ?? u
+  const dm = (iso: string) => `${Number(iso.slice(8, 10))}. ${Number(iso.slice(5, 7))}.`
+  // a range record: one line, dated by its first day, with the span in the change text
+  const first = (c: Correction) => c.date ?? c.from ?? [...(c.dates ?? [])].sort()[0] ?? ''
+  const span = (c: Correction) => {
+    if (c.date) return ''
+    const ds = [...(c.dates ?? [])].sort()
+    const [a, b] = c.from ? [c.from, c.to ?? c.from] : [ds[0], ds[ds.length - 1]]
+    return a === b ? dm(a) : `${dm(a)} – ${dm(b)}`
+  }
   const change = (c: Correction) =>
     [
-      ...(c.add ?? []).map((a) => `doplněno ${a[0]} ${a[1] ?? ''}`.trim()),
+      ...(c.add ?? []).map((a) => {
+        const what = `doplněno ${a[0]} ${a[1] ?? ''}`.trim()
+        const sp = span(c)
+        return sp ? `${what} (${[a[2], sp].filter(Boolean).join(', ')})` : what
+      }),
       ...(c.drop ?? []).map((t) => `nekoná se ${t}`),
     ].join('; ')
   return {
@@ -135,7 +152,7 @@ export function ledgerStats(input: {
         id: c.id,
         name: byId.get(c.id)?.name ?? c.church,
         city: byId.get(c.id)?.city ?? c.town,
-        date: c.date,
+        date: first(c),
         change: change(c),
         // the log's source field sometimes holds two URLs or a note after the
         // first one; the page links the first and names its host
