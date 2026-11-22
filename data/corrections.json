@@ -1,5 +1,5 @@
 {
- "about": "Sourced hand corrections on top of the ČBK registry for Všech svatých / Dušičky 2026 — each from the parish's own 2026 announcement (ohlášky, bulletin, parish or diocese calendar), checked 2026-10-29. Format and how it is applied: data/corrections.mjs. Times not published by a parish are never invented here.",
+ "about": "Sourced hand corrections on top of the ČBK registry for Všech svatých / Dušičky 2026 — each from the parish's own 2026 announcement (ohlášky, bulletin, parish or diocese calendar), checked 2026-10-29. Format and how it is applied: data/corrections.mjs. Times not published by a parish are never invented here. Advent 2026: roráty from the parishes' own Advent notices (docs/RORATY-PASS.md), range records expanded by data/corrections.mjs.",
  "corrections": [
   {
    "id": "8000366182975",
@@ -1851,6 +1851,443 @@
    "source_date": "pořad bohoslužeb 1.–8. 11.; datováno kalendářem kostela https://calendar.google.com/calendar/ical/kostelslatinacz%40gmail.com/public/basic.ics (událost 2026-11-02 18:00, „Dušičky“)",
    "quote": "Pořad bohoslužeb v našem kostele: neděle 1.11. mše svatá 8.30 Slavnost všech svatých pondělí 2.11. mše svatá 18.00 Památka zesnulých po mši svaté následuje pobožnost na hřbitově · (kalendář) DTSTART:20261102T170000Z DESCRIPTION:Dušičky SUMMARY:Mše svatá: Za zemřelé farníky, zemřelé kněze ve farnosti a duše v …",
    "checked": "2026-11-01"
+  },
+  {
+   "id": "100031",
+   "church": "farní kostel Matky Boží před Týnem, Praha-Staré Město",
+   "town": "praha",
+   "from": "2026-12-01",
+   "to": "2026-12-23",
+   "days": "26",
+   "except": [],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality&clanek=10",
+   "source_date": "Aktuality: 22.11. Slavnost Ježíše Krista, Krále (2026)",
+   "quote": "Adventní roráty vždy v 7:00: M. Boží: úterý, sobota s. Haštal: pondělí, středa, pátek s. Havel: čt 10.12.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "100026",
+   "church": "filiální kostel sv. Haštala, Praha-Staré Město",
+   "town": "praha",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "135",
+   "except": [],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality&clanek=10",
+   "source_date": "Aktuality: 22.11. Slavnost Ježíše Krista, Krále (2026)",
+   "quote": "Adventní roráty vždy v 7:00: M. Boží: úterý, sobota s. Haštal: pondělí, středa, pátek s. Havel: čt 10.12.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "100032",
+   "church": "filiální kostel sv. Havla, Praha-Staré Město",
+   "town": "praha",
+   "dates": [
+    "2026-12-10"
+   ],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "http://www.tyn.cz/cz/index.php?stranka=aktuality&clanek=10",
+   "source_date": "Aktuality: 22.11. Slavnost Ježíše Krista, Krále (2026)",
+   "quote": "Adventní roráty vždy v 7:00: M. Boží: úterý, sobota s. Haštal: pondělí, středa, pátek s. Havel: čt 10.12.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "100043",
+   "church": "filiální kostel sv. Ignáce, Praha-Nové Město",
+   "town": "praha",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "12345",
+   "except": [],
+   "add": [
+    [
+     "06:15",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.kostelignac.cz/aktualne/",
+   "source_date": "Bohoslužby, zpovědi a ohlášky – neděle Krista Krále – 22. listopadu 2026",
+   "quote": "Od pondělí 30. listopadu se budou při ranních bohoslužbách zpívat roráty, a to v pondělí až pátek v 6:15 a v 7:30, v sobotu v 7:30 a v neděli v 7 hodin.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "100043",
+   "church": "filiální kostel sv. Ignáce, Praha-Nové Město",
+   "town": "praha",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "123456",
+   "except": [],
+   "add": [
+    [
+     "07:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.kostelignac.cz/aktualne/",
+   "source_date": "Bohoslužby, zpovědi a ohlášky – neděle Krista Krále – 22. listopadu 2026",
+   "quote": "Od pondělí 30. listopadu se budou při ranních bohoslužbách zpívat roráty, a to v pondělí až pátek v 6:15 a v 7:30, v sobotu v 7:30 a v neděli v 7 hodin.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "100064",
+   "church": "bazilika sv. Markéty, Praha-Břevnov",
+   "town": "praha",
+   "from": "2026-12-01",
+   "to": "2026-12-23",
+   "days": "2456",
+   "except": [],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty, staročeské"
+    ]
+   ],
+   "source": "https://www.farnost-brevnov.cz/2026/11/slavnost-jezise-krista-krale-22-listopadu-2026/",
+   "source_date": "Slavnost Ježíše Krista Krále (22. listopadu 2026)",
+   "quote": "Po celý Advent zpíváme Staročeské roráty v bazilice při mši svaté v 7.00 vždy: v úterý, čtvrtek, pátek a v sobotu!",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "100020",
+   "church": "farní kostel sv. Vojtěcha, Praha-Nové Město",
+   "town": "praha",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "1234",
+   "except": [],
+   "add": [
+    [
+     "06:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://farnostsvvojtech.websnadno.cz/zpravodaj/zpravodaj_listopad_2026-page-001_original.jpg",
+   "source_date": "Zpravodaj farnosti sv. Vojtěcha – listopad 2026 (obrázek, str. 1)",
+   "quote": "Rorátní mše sv. od 1. neděle adventní Sv. Vojtěch Pondělí, úterý, středa, čtvrtek 6:00 sobota 7:00 Sv. Voršila Pátek (školní) 7:00",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "100020",
+   "church": "farní kostel sv. Vojtěcha, Praha-Nové Město",
+   "town": "praha",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "6",
+   "except": [],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://farnostsvvojtech.websnadno.cz/zpravodaj/zpravodaj_listopad_2026-page-001_original.jpg",
+   "source_date": "Zpravodaj farnosti sv. Vojtěcha – listopad 2026 (obrázek, str. 1)",
+   "quote": "Rorátní mše sv. od 1. neděle adventní Sv. Vojtěch Pondělí, úterý, středa, čtvrtek 6:00 sobota 7:00 Sv. Voršila Pátek (školní) 7:00",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "100021",
+   "church": "klášterní kostel sv. Voršily, Praha-Nové Město",
+   "town": "praha",
+   "from": "2026-12-04",
+   "to": "2026-12-23",
+   "days": "5",
+   "except": [],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty, školní"
+    ]
+   ],
+   "source": "https://farnostsvvojtech.websnadno.cz/zpravodaj/zpravodaj_listopad_2026-page-001_original.jpg",
+   "source_date": "Zpravodaj farnosti sv. Vojtěcha – listopad 2026 (obrázek, str. 1)",
+   "quote": "Rorátní mše sv. od 1. neděle adventní Sv. Vojtěch Pondělí, úterý, středa, čtvrtek 6:00 sobota 7:00 Sv. Voršila Pátek (školní) 7:00",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "100067",
+   "church": "farní kostel sv. Matěje, Praha-Dejvice",
+   "town": "praha",
+   "dates": [
+    "2026-12-10"
+   ],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.matejstranti.com/cs/roraty-u-sv-mateje?listId=7528",
+   "source_date": "Akce: Roráty u sv. Matěje, 10. 12. 2026",
+   "quote": "Roráty u sv. Matěje Datum konání akce 10. 12. 2026 7:00 - 8:00 ... Místo konání Kostel sv. Matěje",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "1000140",
+   "church": "farní kostel sv. Ludmily, Praha-Chvaly",
+   "town": "praha",
+   "dates": [
+    "2026-12-02",
+    "2026-12-09",
+    "2026-12-16",
+    "2026-12-23"
+   ],
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnostchvalyjirny.cz/porad_bohosluzeb",
+   "source_date": "Pořad bohoslužeb Farnosti Chvaly Jirny od 21.11. do 29.11.2026",
+   "quote": "rorátní mše svaté ve středu v 6:30 ve Chvalech (2., 9., 16. a 23. prosince)",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "5000261589548",
+   "church": "farní kostel sv. Jana Nepomuckého",
+   "town": "ostrava",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "1234",
+   "add": [
+    [
+     "06:45",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnost-starabela.cz/wp-content/uploads/2026/11/Krista-Krale.pdf",
+   "source_date": "Pořad bohoslužeb v týdnu od 22.11.2026 do 29.11.2026",
+   "quote": "Od pondělí (30.11.) do čtvrtka budou pravidelně pouze ranní mše svaté a roráty. Začátek v 6.45 hod. V pátky bude mše svatá s roráty od 18.00 hod. V sobotu bude mše sv. a roráty začínat v 7.30 hod.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "5000261589548",
+   "church": "farní kostel sv. Jana Nepomuckého",
+   "town": "ostrava",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "5",
+   "add": [
+    [
+     "18:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnost-starabela.cz/wp-content/uploads/2026/11/Krista-Krale.pdf",
+   "source_date": "Pořad bohoslužeb v týdnu od 22.11.2026 do 29.11.2026",
+   "quote": "Od pondělí (30.11.) do čtvrtka budou pravidelně pouze ranní mše svaté a roráty. Začátek v 6.45 hod. V pátky bude mše svatá s roráty od 18.00 hod. V sobotu bude mše sv. a roráty začínat v 7.30 hod.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "5000261589548",
+   "church": "farní kostel sv. Jana Nepomuckého",
+   "town": "ostrava",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "6",
+   "add": [
+    [
+     "07:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnost-starabela.cz/wp-content/uploads/2026/11/Krista-Krale.pdf",
+   "source_date": "Pořad bohoslužeb v týdnu od 22.11.2026 do 29.11.2026",
+   "quote": "Od pondělí (30.11.) do čtvrtka budou pravidelně pouze ranní mše svaté a roráty. Začátek v 6.45 hod. V pátky bude mše svatá s roráty od 18.00 hod. V sobotu bude mše sv. a roráty začínat v 7.30 hod.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "50001981492424",
+   "church": "farní kostel P. Marie Královny",
+   "town": "ostrava",
+   "from": "2026-12-05",
+   "to": "2026-12-19",
+   "days": "6",
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://farnostmh.cz/pripravujeme-advent-a-vanoce/",
+   "source_date": "Připravujeme advent a Vánoce, 7. 11. 2026",
+   "quote": "Dohodli jsme se, že v adventním čase prožijeme roráty. Budou každou adventní sobotu v 7.00 ve farním kostele.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "50001362279293",
+   "church": "farní kostel sv. Jakuba Staršího",
+   "town": "ostrava",
+   "dates": [
+    "2026-12-03",
+    "2026-12-04",
+    "2026-12-08",
+    "2026-12-10",
+    "2026-12-17"
+   ],
+   "add": [
+    [
+     "16:45",
+     "mše sv.",
+     "roráty pro děti"
+    ]
+   ],
+   "source": "https://www.farnost-plesna.cz/blog_clanek/roratni-bohosluzby-behem-adventu-28017",
+   "source_date": "Rorátní bohoslužby během adventu, 14.11.2026",
+   "quote": "Během adventu začínají bohoslužby během týdne v 16,45 za tmy a průvodem dětí se svícemi (ze zadní části kostela k oltáři). ... Čtvrtek 3.12: Vůl a osel. Pátek 4.12: Pastýři ... Úterý 8.12 Slavnost P. Marie): Andělé. Čtvrtek 10.12: sv. Josef Čtvrtek 17.12: P. Maria.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "70001386081579",
+   "church": "metropolitní katedrální chrám  sv. Václava - katedrála Olomouc",
+   "town": "olomouc",
+   "from": "2026-12-04",
+   "to": "2026-12-18",
+   "days": "5",
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty s lampičkami"
+    ]
+   ],
+   "source": "https://katedralaolomouc.cz/porad_bohosluzeb",
+   "source_date": "OHLÁŠKY 22. 11. 2026",
+   "quote": "Roráty budou v době adventní každý pátek v 6. 30 h v katedrále. Po té bude snídaně ve farním domě.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "60002727640371",
+   "church": "filiální kostel Nanebevzetí Panny Marie, (u františkánů) Plzeň",
+   "town": "plzen",
+   "from": "2026-12-02",
+   "to": "2026-12-23",
+   "days": "3",
+   "add": [
+    [
+     "06:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnostbartolomej.cz/news/388-bartik-a-info-o-deni-ve-farnosti-22-11-6-12-2026",
+   "source_date": "Bartík a info o dění ve farnosti 22. 11. - 6. 12. 2026 (publikováno 20.11.2026)",
+   "quote": "V adventu budou mše sv. s rorátními zpěvy v neděli v 6:45 v katedrále a ve středu v 6:00 v kostele NPM. Středeční mše sv. v 8:00 v katedrále v adventu nebude.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "30003701408967",
+   "church": "klášterní kostel Nejsvětějšího Srdce Ježíšova (v klášteře sester voršilek)",
+   "town": "kutna-hora",
+   "dates": [
+    "2026-12-03",
+    "2026-12-10",
+    "2026-12-17"
+   ],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.khfarnost.cz/blog_clanek/adventu-u-nas-20522",
+   "source_date": "Adventu u nás, 3.11.2026",
+   "quote": "3. 12. v 7 hodin - roráty v klášterním kostele ... 10. 12. v 7 hodin - roráty v klášterním kostele ... 17. 12. v 7 hodin - roráty v klášterním kostele",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "3000480135307",
+   "church": "arciděkanský kostel sv. Jakuba Staršího, apoštola",
+   "town": "kutna-hora",
+   "dates": [
+    "2026-12-12"
+   ],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.khfarnost.cz/blog_clanek/adventu-u-nas-20522",
+   "source_date": "Adventu u nás, 3.11.2026",
+   "quote": "12. 12. v 7 hodin - roráty v kostele sv. Jakuba",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
+  },
+  {
+   "id": "2000337",
+   "church": "farní kostel sv. Antonína Paduánského, Liberec-Ruprechtice",
+   "town": "liberec",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "5",
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnostruprechtice.cz/2026/11/20/ohlasky-na-slavnost-jezise-krista-krale-22-11-2026/",
+   "source_date": "Ohlášky na slavnost Ježíše Krista Krále – 22. 11. 2026",
+   "quote": "Rorátní mše sv. se budou konat jako obvykle v pátek od 6:30, večerní mše budou jako obvykle.",
+   "checked": "2026-11-22",
+   "reviewed": "2026-11-22"
   }
  ]
 }

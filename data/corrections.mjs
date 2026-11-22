@@ -13,10 +13,13 @@
 // entry with "from"/"to"/"days" (registry digits, 1 = Monday … 7 = Sunday) and an
 // optional "except" list, or with "dates": [...]. loadCorrections expands it to one
 // dated entry per day, each carrying the same source, quote and checked fields.
+// An add the registry already has (a weekly row that runs that day at that time) is not
+// copied as a dated row: the notice confirms it ("confirmed"), and the season pages cite it.
 // Applied by data/extract.mjs at transform (so a registry refresh keeps them)
 // and runnable alone on the committed shards: node data/corrections.mjs
 // Corrections for past dates are skipped; their source stays in the log.
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
+import { parseNote } from '../src/domain/notes.ts'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -78,6 +81,9 @@ export function applyCorrections(shards, corrections, today = new Date().toISOSt
   for (const [cell, data] of Object.entries(shards)) for (const id of Object.keys(data)) where.set(id, cell)
   const applied = []
   const missing = []
+  // an `add` the registry already has (a weekly row that runs that day at that time):
+  // the notice confirms it, and a dated copy would list the same Mass twice
+  const confirmed = []
   for (const c of corrections) {
     if (c.date < today) continue
     const cell = where.get(c.id)
@@ -106,6 +112,11 @@ export function applyCorrections(shards, corrections, today = new Date().toISOSt
       else missing.push(`${c.id} ${c.date} -${time} (no such row)`)
     }
     for (const [time, type, note = '', lang = 'česky'] of c.add ?? []) {
+      const weekly = entry.s.some((r) => r[0].includes(dow) && toMin(r[1]) === toMin(time) && !CONFESSION.test(r[4]) && parseNote(r[5]).runsOn(y, m, d))
+      if (weekly) {
+        confirmed.push(`${c.id} ${c.date} =${time}`)
+        continue
+      }
       const row = [c.date, time, lang, 0, type, note]
       entry.x ??= []
       if (entry.x.some((r) => r[0] === c.date && toMin(r[1]) === toMin(time) && r[4] === type)) continue
@@ -114,7 +125,7 @@ export function applyCorrections(shards, corrections, today = new Date().toISOSt
       applied.push(`${c.id} ${c.date} +${time}`)
     }
   }
-  return { applied, missing }
+  return { applied, missing, confirmed }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
@@ -122,11 +133,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const shards = {}
   for (const f of readdirSync(dir)) if (f.endsWith('.json')) shards[f.slice(0, -5)] = JSON.parse(readFileSync(`${dir}/${f}`, 'utf8'))
   const before = Object.fromEntries(Object.entries(shards).map(([cell, data]) => [cell, JSON.stringify(data)]))
-  const { applied, missing } = applyCorrections(shards, loadCorrections())
+  const { applied, missing, confirmed } = applyCorrections(shards, loadCorrections())
   if (missing.length) console.error(`corrections: not applied: ${missing.join('; ')}`)
   for (const [cell, data] of Object.entries(shards)) {
     const text = JSON.stringify(data)
     if (text !== before[cell]) writeFileSync(`${dir}/${cell}.json`, text)
   }
+  if (confirmed.length) console.log(`corrections: ${confirmed.length} confirmed by a weekly row already (no dated copy)`)
   console.log(`corrections: ${applied.length} change(s)${applied.length ? ': ' + applied.join('; ') : ''}`)
 }

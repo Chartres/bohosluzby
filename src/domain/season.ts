@@ -174,8 +174,15 @@ function rorateRows(id: string, entry: RawEntry, advent: { start: string; end: s
   const days: string[] = []
   for (let t = utc(advent.start); t <= utc(advent.end); t += DAY_MS) days.push(iso(t))
   const out: SeasonRow[] = []
+  // roráty a parish notice gives for this church (data/corrections.json): times the notice
+  // covers come from it, not from the registry's weekly row
+  const noticed = corrections.filter(
+    (c) => c.id === id && c.date >= advent.start && c.date <= advent.end && (c.add ?? []).some((a) => RORATE.test(`${a[1] ?? ''} ${a[2] ?? ''}`)),
+  )
+  const noticedTimes = new Set(noticed.flatMap((c) => (c.add ?? []).map((a) => hhmm(a[0] ?? ''))))
   for (const r of entry.s) {
     if (!RORATE.test(`${r[4]} ${r[5]}`) || isConfession(r[4])) continue
+    if (noticedTimes.has(hhmm(r[1]))) continue
     // "v adventu 2019": the parish wrote it for a past Advent
     if ([...r[5].matchAll(/\b(20\d\d)\b/g)].some((m) => Number(m[1]) < Number(advent.end.slice(0, 4)))) continue
     // a year-round "rorátní" row that never says Advent is a registry label, not roráty
@@ -214,6 +221,20 @@ function rorateRows(id: string, entry: RawEntry, advent: { start: string; end: s
     const g = groups.get(key) ?? row
     g.dates.push(r[0])
     groups.set(key, g)
+  }
+  // a notice that confirms a Mass the registry already lists adds no dated row
+  // (data/corrections.mjs, "confirmed"): the roráty row comes from the notice itself
+  const dated = new Set((entry.x ?? []).map((r) => `${r[0]} ${hhmm(r[1])}`))
+  for (const c of noticed) {
+    for (const a of c.add ?? []) {
+      const time = hhmm(a[0] ?? '')
+      if (!RORATE.test(`${a[1] ?? ''} ${a[2] ?? ''}`) || dated.has(`${c.date} ${time}`)) continue
+      const row: SeasonRow = { churchId: id, dates: [], time, when: '', type: a[1] ?? '', lang: normalizeLang(a[3] ?? 'česky'), greek: false, note: (a[2] ?? '').trim(), source: sourceOf(c, entry) }
+      const key = JSON.stringify([row.time, row.type, row.lang, row.greek, row.note, row.source])
+      const g = groups.get(key) ?? row
+      g.dates.push(c.date)
+      groups.set(key, g)
+    }
   }
   for (const row of groups.values()) {
     row.dates = [...new Set(row.dates)].sort()
