@@ -86,6 +86,9 @@ const parseTime = (time: string): [number, number] | null => {
  */
 const midnight = (time: string) => /^24:00$/.test(time.trim())
 
+/** A "24:00" one-off's start (see nextOccurrences): no real service starts at 23:59:59.999. */
+export const isMidnight = (at: Date): boolean => at.getUTCSeconds() === 59 && at.getUTCMilliseconds() === 999 && pragueMinutes(at) === 23 * 60 + 59
+
 export function nextOccurrences(spec: OccurrenceSpec, now: Date, horizonDays = 8): Date[] {
   const t = 'date' in spec && midnight(spec.time) ? ([0, 0] as [number, number]) : parseTime(spec.time)
   if (!t) return []
@@ -94,10 +97,11 @@ export function nextOccurrences(spec: OccurrenceSpec, now: Date, horizonDays = 8
   if ('date' in spec) {
     const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(spec.date)
     if (!m) return []
-    // "24:00" on a dated row is midnight, as parishes write the půlnoční: 00:00 the next day
-    const next = midnight(spec.time) ? new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]) + 1)) : null
-    const instant = next
-      ? pragueInstant(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate(), 0, 0)
+    // "24:00" on a dated row is midnight, as parishes write the půlnoční. It is kept as the last
+    // instant of its own day (23:59:59.999), so lists file it under 24 Dec, last; fmtTime shows
+    // "24:00" and the calendar export writes 00:00 on the 25th (isMidnight)
+    const instant = midnight(spec.time)
+      ? new Date(pragueInstant(Number(m[1]), Number(m[2]), Number(m[3]), 23, 59).getTime() + 59_999)
       : pragueInstant(Number(m[1]), Number(m[2]), Number(m[3]), hh, mm)
     return instant > now ? [instant] : []
   }

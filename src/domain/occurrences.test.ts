@@ -4,6 +4,7 @@ import {
   pragueInstant,
   pragueToday,
   recentOccurrence,
+  isMidnight,
 } from './occurrences'
 
 // Europe/Prague is UTC+2 in summer (CEST), UTC+1 in winter (CET).
@@ -61,9 +62,12 @@ describe('nextOccurrences — periodic services', () => {
     expect(nextOccurrences({ date: '2026-07-01', time: '11:00' }, now)).toEqual([])
   })
 
-  it('a one-off at 24:00 is midnight: 00:00 the next day (the půlnoční on 24 Dec, as parishes write it)', () => {
+  it('a one-off at 24:00 is the last instant of its day: listed on 24 Dec, last, shown as 24:00 (the půlnoční, as parishes write it)', () => {
     const advent = new Date('2026-12-24T12:00:00Z')
-    expect(nextOccurrences({ date: '2026-12-24', time: '24:00' }, advent).map((d) => d.toISOString())).toEqual(['2026-12-24T23:00:00.000Z'])
+    const [at] = nextOccurrences({ date: '2026-12-24', time: '24:00' }, advent)
+    expect(at.toISOString()).toBe('2026-12-24T22:59:59.999Z')
+    expect(isMidnight(at)).toBe(true)
+    expect(isMidnight(new Date('2026-12-24T22:59:00.000Z'))).toBe(false)
     expect(nextOccurrences({ date: '2026-12-24', time: '24:30' }, advent)).toEqual([])
     expect(nextOccurrences({ days: '4', time: '24:00' }, advent)).toEqual([]) // weekly rows: never
   })

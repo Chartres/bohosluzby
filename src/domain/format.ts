@@ -1,3 +1,4 @@
+import { isMidnight } from './occurrences'
 // Display formatting, all wall-clock output in Europe/Prague. Locale-aware
 // (cs/en) via i18n's lang()/locale() — read per call, not cached at module
 // load, so a runtime language change (or a test flipping navigator.language)
@@ -59,7 +60,7 @@ const timeFmt = new Intl.DateTimeFormat('cs-CZ', {
   minute: '2-digit',
   hourCycle: 'h23',
 })
-export const fmtTime = (d: Date): string => timeFmt.format(d)
+export const fmtTime = (d: Date): string => (isMidnight(d) ? '24:00' : timeFmt.format(d))
 
 const dateKeyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }) // YYYY-MM-DD
 

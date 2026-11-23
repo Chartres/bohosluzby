@@ -20,7 +20,7 @@ in docs/review/. The rule is in AGENTS.md › Working with the orchestrator. Las
   two fixes. `/vanoce/` lists confirmed notices; the app reads a dated `24:00` as midnight.
   **The 24:00 fix needs a native build before Christmas.**
   The Vánoce pill is a draft (`data/views-drafts/vanoce.json`). Shots went to Pavol on 23 Nov;
-  it goes live only on his OK. Open for him: the půlnoční shows as "00:00 · zítra", not "24:00".
+  it goes live only on his OK. The půlnoční shows as "24:00" on 24 Dec (default, 23 Nov); Pavol may pick "00:00 zítra".
 - **Design proposals** (branch `design-proposals`, prototype only, `?navrh=1..9`): Pavol likes
   the stained-glass band (`src/domain/glass.ts` palette is tested). Bolder ones (6 photo hero,
   7 window light, 8 candlelit roráty) are with him. Nothing builds before his pick.

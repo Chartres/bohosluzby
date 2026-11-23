@@ -122,8 +122,8 @@ describe('the Vánoce pill draft', () => {
     expect(vanoce.match.text).toEqual(VANOCE_WORDS)
     expect(vanoce.match.mark).toEqual(VANOCE_WORDS)
   })
-  it('a notice row: the půlnoční (24:00 is 00:00 on the 25th) and the 25th', () => {
-    expect(viewLabel(vanoce, up(extra('2026-12-24', '24:00', 'mše sv.', 'půlnoční'), '2026-12-25', '00:00'), svc())).toBe('půlnoční')
+  it('a notice row: the půlnoční (24:00, the last instant of the 24th) and the 25th', () => {
+    expect(viewLabel(vanoce, up(extra('2026-12-24', '24:00', 'mše sv.', 'půlnoční'), '2026-12-24', '23:59'), svc())).toBe('půlnoční')
     expect(viewLabel(vanoce, up(extra('2026-12-25', '09:00', 'mše sv.', 'slavnost Narození Páně'), '2026-12-25', '09:00'), svc())).toBe('slavnost Narození Páně')
   })
   it('Christmas Eve before 15:00 is still Advent', () => {
