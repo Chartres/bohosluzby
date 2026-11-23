@@ -1,0 +1,17 @@
+{
+  "about": "Seasonal pills in the app's day row, delivered as data (Pavol, 23 Nov 2026). Format and rules: src/domain/views.ts. CI checks every entry (src/domain/views.test.ts).",
+  "views": [
+    {
+      "id": "roraty",
+      "label": { "cs": "roráty", "en": "roráty" },
+      "aria": { "cs": "Roráty v příštích sedmi dnech", "en": "Roráty (Advent dawn Masses) in the next seven days" },
+      "show": { "from": "2026-11-28", "to": "2026-12-24" },
+      "days": { "next": 7 },
+      "match": {
+        "text": ["rorát"],
+        "weekly": { "also": ["advent"], "skipWeekdays": [7], "skipDates": ["2026-12-08"], "skipPastYearNotes": true },
+        "mark": ["rorát"]
+      }
+    }
+  ]
+}
