@@ -905,6 +905,16 @@ describe('Marie finds the nearest mass', () => {
     for (const m of metas) expect(m.textContent).not.toMatch(/·\s*$/)
   })
 
+  it('a row note stays on the meta line: no paragraph inside a paragraph (the browser splits it onto new lines)', async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    const note = screen.getByText(/nepravidelně, dle ohlášení/)
+    expect(note.tagName).toBe('SPAN')
+    expect(note.closest('p')?.textContent).toMatch(/·\s*nepravidelně, dle ohlášení/)
+    expect(document.querySelector('ol .group p p')).toBeNull()
+  })
+
   it('feasts: Sunday 5 Jul (Cyril a Metoděj) is highlighted in the picker and named in the header', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })

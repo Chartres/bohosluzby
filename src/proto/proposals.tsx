@@ -2,7 +2,10 @@
 // ?navrh=1..5 — 1 věnec (photo), 2 nástěnka (photo), 3 vitráž (procedural),
 // 4 úsvit (sky from the real sun position), 5 rubrika (typography).
 import { useEffect, useRef } from 'react'
+import { glassPalette, type GlassColor } from '../domain/glass'
 
+// ?radek=a|b|c — row verbs: a icons only, b a text line under the meta, c none (the time unfolds them)
+export const RADEK = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('radek') ?? '' : ''
 export const PROPOSAL = typeof location !== 'undefined' ? Number(new URLSearchParams(location.search).get('navrh') ?? 0) : 0
 
 // --- 3: stained glass, procedural (Voronoi cells, lead lines), seeded by the date -------------
@@ -10,7 +13,7 @@ function rng(seed: number) {
   let s = seed >>> 0
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32)
 }
-export function GlassBand({ seed, height = 10 }: { seed: number; height?: number }) {
+export function GlassBand({ seed, height = 10, color = 'violet' }: { seed: number; height?: number; color?: GlassColor }) {
   const ref = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const c = ref.current
@@ -22,9 +25,15 @@ export function GlassBand({ seed, height = 10 }: { seed: number; height?: number
     c.height = Math.round(h * dpr)
     const ctx = c.getContext('2d')!
     const r = rng(seed)
-    // violet Advent glass with gold and deep blue, as in Gothic windows
-    const palette = ['#5b3a7e', '#4a2c6b', '#6d4a92', '#3b2a5e', '#2f3f7a', '#b08a2e', '#7a2a3a']
-    const pts = Array.from({ length: Math.round(w / 16) }, () => ({ x: r() * w, y: r() * h, c: palette[Math.floor(r() * (r() < 0.82 ? 5 : 7))] }))
+    const pal = glassPalette(color, seed)
+    const pick = () => (r() < 0.12 ? pal.accents[Math.floor(r() * pal.accents.length)] : pal.glass[Math.floor(r() * pal.glass.length)])
+    // a jittered grid, not random points: even-sized panes as a glazier cuts them, no slivers
+    const pts: { x: number; y: number; c: string }[] = []
+    const step = 15
+    for (let row = -1; row <= 2; row++)
+      for (let x = -step + (row % 2) * (step / 2); x < w + step; x += step)
+        pts.push({ x: x + (r() - 0.5) * step * 0.7, y: (row + 0.5) * (h / 1.6) + (r() - 0.5) * h * 0.5, c: pick() })
+    const lead = pal.lead
     const img = ctx.createImageData(c.width, c.height)
     const hex = (s: string) => [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)]
     for (let py = 0; py < c.height; py++) {
@@ -41,14 +50,14 @@ export function GlassBand({ seed, height = 10 }: { seed: number; height?: number
         // light through glass: brighter in the middle of a cell, a little grain
         const glow = 1 + 0.35 * Math.max(0, 1 - Math.sqrt(d1) / 10) + (r() - 0.5) * 0.06
         const i = (py * c.width + px) * 4
-        img.data[i] = edge ? 26 : Math.min(255, R * glow)
-        img.data[i + 1] = edge ? 23 : Math.min(255, G * glow)
-        img.data[i + 2] = edge ? 18 : Math.min(255, B * glow)
+        img.data[i] = edge ? parseInt(lead.slice(1, 3), 16) : Math.min(255, R * glow)
+        img.data[i + 1] = edge ? parseInt(lead.slice(3, 5), 16) : Math.min(255, G * glow)
+        img.data[i + 2] = edge ? parseInt(lead.slice(5, 7), 16) : Math.min(255, B * glow)
         img.data[i + 3] = 255
       }
     }
     ctx.putImageData(img, 0, 0)
-  }, [seed, height])
+  }, [seed, height, color])
   return <canvas ref={ref} aria-hidden="true" style={{ display: 'block', width: '100%', height }} />
 }
 
@@ -184,5 +193,26 @@ export function FooterSlots() {
       <dt className="font-semibold" style={{ color: 'var(--season)' }}>Opravili jsme</dt>
       <dd>22. 11. Liberec-Ruprechtice: roráty v pátek v 6:30 podle ohlášek.</dd>
     </dl>
+  )
+}
+
+// gallery for Pavol: four liturgical colours, a week of days each
+export function GlassGallery() {
+  const colors: [GlassColor, string][] = [['violet', 'fialová · advent, půst'], ['green', 'zelená · liturgické mezidobí'], ['gold', 'bílá/zlatá · Vánoce, Velikonoce'], ['red', 'červená · Letnice, mučedníci']]
+  const days = ['po', 'út', 'st', 'čt', 'pá', 'so', 'ne']
+  return (
+    <div className="py-3">
+      {colors.map(([c, name]) => (
+        <section key={c} className="mb-4">
+          <p className="mb-1 text-xs font-semibold tracking-[0.08em] uppercase text-ink-faded">{name}</p>
+          {days.map((d, i) => (
+            <div key={d} className="mb-1 flex items-center gap-2">
+              <span className="w-5 text-xs text-ink-faded">{d}</span>
+              <div className="flex-1"><GlassBand seed={20261130 + i} color={c} /></div>
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
   )
 }

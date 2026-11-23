@@ -13,13 +13,13 @@ import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueDay, pragueIsoDate } from './domain/occurrences'
-import { noteShownOnDay, withoutDatedExclusions } from './domain/notes'
+import { noteShownOnDay, noteUncertain, withoutDatedExclusions } from './domain/notes'
 import { currentLiturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
 import { dayFromParam, dayOptions, dayToParam, litForChoice } from './domain/days'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domain/format'
 import { aggregateCities, cityLabel, findCity, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
-import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
+import { ChurchDetail, Chip } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
 import { IntroGuide } from './IntroGuide'
 import { SearchPicker } from './SearchPicker'
@@ -35,7 +35,7 @@ import { aggregateFor, churchHasTags, loadAggregates, resetLoadedIds, submitFeed
 import { dueCards, markAnswered, neverAsk, type LedgerEntry } from './lib/feedbackLedger'
 import { WITNESS_ENABLED } from './lib/flags'
 import { track, conversion, logError } from './analytics'
-import { PROPOSAL, GlassBand, seedOf, WreathStrip, NoticeBoard, DawnLine, skyGradient, Rubric, Ribbon, FooterSlots } from './proto/proposals'
+import { RADEK, PROPOSAL, GlassGallery, GlassBand, seedOf, WreathStrip, NoticeBoard, DawnLine, skyGradient, Rubric, Ribbon, FooterSlots } from './proto/proposals'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
 import { isNative, platform } from './lib/native'
 import { pageViewContext } from './lib/telemetry'
@@ -870,7 +870,7 @@ export default function App() {
         {PROPOSAL === 4 && origin && <DawnLine now={now} lat={origin.lat} lng={origin.lng} />}
         {PROPOSAL === 5 && !mapMode && <Rubric />}
         {PROPOSAL === 5 && <Ribbon />}
-        {PROPOSAL === 3 && <div className="-mx-5 mt-2 -mb-2 sm:-mx-8"><GlassBand seed={seedOf(now)} /></div>}
+        {PROPOSAL === 3 && <div className="-mx-5 mt-2 -mb-2 sm:-mx-8"><GlassBand seed={seedOf(now)} color={season.color} /></div>}
       </header>
       )}
 
@@ -1120,6 +1120,7 @@ export default function App() {
                   budget, the map is a page. */}
               {!mapMode && <VerifyBanner now={now} />}
               {PROPOSAL === 2 && !mapMode && <NoticeBoard />}
+              {PROPOSAL === 6 && <GlassGallery />}
             </div>
             {view === 'mapa' ? (
               online ? (
@@ -1417,6 +1418,19 @@ function GlobeIcon() {
   )
 }
 
+/** A service note inline on the row's meta line ("· v adventu"). A block element here
+ * nested a paragraph in the meta paragraph; the browser closed the outer one and pushed
+ * the note and the icons that follow onto lines of their own (Pavol, 23 Nov 2026). */
+function RowNote({ note }: { note: string }) {
+  if (!note) return null
+  return (
+    <>
+      {' · '}
+      <span className={noteUncertain(note) ? 'font-semibold text-rubric' : undefined}>{note}</span>
+    </>
+  )
+}
+
 /** One-line season advisory ("times often change now — verify"), shown only in
  * the windows when parishes actually shuffle schedules (summer, Advent,
  * Christmas, Lent, Easter octave). Missal-quiet: hairline rule, season color. */
@@ -1543,7 +1557,7 @@ function ServiceList({
                   {fmtDistance(r.distanceKm)}
                   {r.service.type && ` · ${r.service.type}`}
                   {/* a note naming another of the service's weekdays ("…není páteční mše") stays off this day's row; a dated exclusion ("kromě 2. 11. 2026") is noise on a day it runs */}
-                  <NoteText note={noteShownOnDay(r.service.note, 'days' in r.service ? r.service.days : '', isoDayOf(r.start)) ? withoutDatedExclusions(r.service.note) : ''} />
+                  <RowNote note={noteShownOnDay(r.service.note, 'days' in r.service ? r.service.days : '', isoDayOf(r.start)) ? withoutDatedExclusions(r.service.note) : ''} />
                   {r.church.barrierFree && (
                     <>
                       {' · '}
@@ -1569,11 +1583,23 @@ function ServiceList({
                     </>
                   )}
                 </p>
+                {RADEK === 'b' && (
+                  <p className="relative z-10 mt-1 flex gap-6 text-xs font-semibold tracking-[0.08em] uppercase text-ink-faded">
+                    <button type="button" aria-label={`${t('row_route')}: ${r.church.name}`} className="-my-3 flex items-center gap-1 py-3 uppercase hover:text-ink" onClick={() => onNavigate({ name: r.church.name, lat: r.church.lat, lng: r.church.lng })}><MapPinIcon />{t('row_route')}</button>
+                    {r.church.www && <a aria-label={`${t('row_web')}: ${r.church.name}`} className="-my-3 flex items-center gap-1 py-3 hover:text-ink" href={r.church.www} target="_blank" rel="noreferrer"><GlobeIcon />{t('row_web')}</a>}
+                  </p>
+                )}
               </div>
               {/* the row's verbs: trasa opens the nav-app chooser, web the
                   parish site. Stacked VERTICALLY — side-by-side they squeezed
                   the church-name column to a sliver (user feedback). z-10
                   lifts them above the stretched detail link. */}
+              {RADEK === 'a' || RADEK === 'c' ? (
+                <div className="relative z-10 -my-2 -mr-2 flex shrink-0 flex-col self-center">
+                  <button type="button" aria-label={`${t('row_route')}: ${r.church.name}`} className="flex h-11 w-11 items-center justify-center text-ink-faded hover:text-ink" onClick={() => onNavigate({ name: r.church.name, lat: r.church.lat, lng: r.church.lng })}><MapPinIcon /></button>
+                  {RADEK === 'a' && r.church.www && <a aria-label={`${t('row_web')}: ${r.church.name}`} className="flex h-11 w-11 items-center justify-center text-ink-faded hover:text-ink" href={r.church.www} target="_blank" rel="noreferrer"><GlobeIcon /></a>}
+                </div>
+              ) : RADEK === 'b' ? null : (
               <div className="flex shrink-0 flex-col items-end self-center">
                 {/* ONE segmented group, hairline-divided — two loose bordered
                     buttons read as clutter (user feedback); the shared border
@@ -1604,6 +1630,7 @@ function ServiceList({
                   )}
                 </div>
               </div>
+              )}
             </div>
             {isOpen && <MassVerbs church={r.church} service={onDate(r.service, r.start)} className="pb-3" />}
           </li>
