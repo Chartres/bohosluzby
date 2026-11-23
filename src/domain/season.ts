@@ -92,7 +92,7 @@ export function adventOf(today: string): { year: number; start: string; end: str
 }
 
 /** The Christmas that `today` is in or before (pages stay up through 26 Dec). */
-function christmasOf(today: string): number {
+export function christmasOf(today: string): number {
   const ty = Number(today.slice(0, 4))
   return today > `${ty}-12-26` ? ty + 1 : ty
 }
@@ -258,7 +258,7 @@ function datesSpan(ds: string[]): string {
 
 /** One church's rows dated `date` (Christmas), from `fromMin` on. */
 function datedRows(id: string, entry: RawEntry, date: string, fromMin: number, corrections: SeasonCorrection[]): SeasonRow[] {
-  return (entry.x ?? [])
+  const rows: SeasonRow[] = (entry.x ?? [])
     .filter((r) => r[0] === date && !isConfession(r[4]) && toMin(r[1]) >= fromMin)
     .map((r) => ({
       churchId: id,
@@ -271,6 +271,19 @@ function datedRows(id: string, entry: RawEntry, date: string, fromMin: number, c
       note: r[5].trim(),
       source: sourceOf(correctionFor(corrections, id, date, r[1]), entry),
     }))
+  // a notice that confirms a weekly Mass adds no dated row (data/corrections.mjs, "confirmed"):
+  // 25 Dec 2026 is a Friday, and "25. 12. v 9:00" at a church with Friday 9:00 is listed from the notice
+  const have = new Set(rows.map((r) => r.time))
+  for (const c of corrections) {
+    if (c.id !== id || c.date !== date) continue
+    for (const a of c.add ?? []) {
+      const time = hhmm(a[0] ?? '')
+      if (have.has(time) || toMin(time) < fromMin || isConfession(a[1] ?? '')) continue
+      have.add(time)
+      rows.push({ churchId: id, dates: [date], time, when: '', type: a[1] ?? '', lang: normalizeLang(a[3] ?? 'česky'), greek: false, note: (a[2] ?? '').trim(), source: sourceOf(c, entry) })
+    }
+  }
+  return rows
 }
 
 export interface SeasonChurch {

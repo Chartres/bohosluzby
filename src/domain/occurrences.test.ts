@@ -61,6 +61,13 @@ describe('nextOccurrences — periodic services', () => {
     expect(nextOccurrences({ date: '2026-07-01', time: '11:00' }, now)).toEqual([])
   })
 
+  it('a one-off at 24:00 is midnight: 00:00 the next day (the půlnoční on 24 Dec, as parishes write it)', () => {
+    const advent = new Date('2026-12-24T12:00:00Z')
+    expect(nextOccurrences({ date: '2026-12-24', time: '24:00' }, advent).map((d) => d.toISOString())).toEqual(['2026-12-24T23:00:00.000Z'])
+    expect(nextOccurrences({ date: '2026-12-24', time: '24:30' }, advent)).toEqual([])
+    expect(nextOccurrences({ days: '4', time: '24:00' }, advent)).toEqual([]) // weekly rows: never
+  })
+
   it('ignores unparseable times', () => {
     expect(nextOccurrences({ days: '5', time: '' }, now)).toEqual([])
   })
