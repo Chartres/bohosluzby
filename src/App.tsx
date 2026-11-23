@@ -13,13 +13,13 @@ import { MAX_KM_OPTIONS, NO_FILTERS, type Filters } from './domain/filters'
 import { haversineKm } from './domain/distance'
 import { selectUpcoming, type DayChoice, type Upcoming } from './domain/ranking'
 import { pragueDay, pragueIsoDate } from './domain/occurrences'
-import { noteShownOnDay, withoutDatedExclusions } from './domain/notes'
+import { noteShownOnDay, noteUncertain, withoutDatedExclusions } from './domain/notes'
 import { currentLiturgicalDay, verifySeason, type LiturgicalDay } from './domain/liturgical'
 import { dayFromParam, dayOptions, dayToParam, litForChoice } from './domain/days'
 import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domain/format'
 import { aggregateCities, cityLabel, findCity, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
-import { ChurchDetail, Chip, NoteText } from './ChurchDetail'
+import { ChurchDetail, Chip } from './ChurchDetail'
 import { NavSheet, type NavTarget } from './NavSheet'
 import { IntroGuide } from './IntroGuide'
 import { SearchPicker } from './SearchPicker'
@@ -1405,6 +1405,19 @@ function GlobeIcon() {
   )
 }
 
+/** A service note inline on the row's meta line ("· v adventu"). A block element here
+ * nested a paragraph in the meta paragraph; the browser closed the outer one and pushed
+ * the note and the icons that follow onto lines of their own (Pavol, 23 Nov 2026). */
+function RowNote({ note }: { note: string }) {
+  if (!note) return null
+  return (
+    <>
+      {' · '}
+      <span className={noteUncertain(note) ? 'font-semibold text-rubric' : undefined}>{note}</span>
+    </>
+  )
+}
+
 /** One-line season advisory ("times often change now — verify"), shown only in
  * the windows when parishes actually shuffle schedules (summer, Advent,
  * Christmas, Lent, Easter octave). Missal-quiet: hairline rule, season color. */
@@ -1531,7 +1544,7 @@ function ServiceList({
                   {fmtDistance(r.distanceKm)}
                   {r.service.type && ` · ${r.service.type}`}
                   {/* a note naming another of the service's weekdays ("…není páteční mše") stays off this day's row; a dated exclusion ("kromě 2. 11. 2026") is noise on a day it runs */}
-                  <NoteText note={noteShownOnDay(r.service.note, 'days' in r.service ? r.service.days : '', isoDayOf(r.start)) ? withoutDatedExclusions(r.service.note) : ''} />
+                  <RowNote note={noteShownOnDay(r.service.note, 'days' in r.service ? r.service.days : '', isoDayOf(r.start)) ? withoutDatedExclusions(r.service.note) : ''} />
                   {r.church.barrierFree && (
                     <>
                       {' · '}
@@ -1558,39 +1571,30 @@ function ServiceList({
                   )}
                 </p>
               </div>
-              {/* the row's verbs: trasa opens the nav-app chooser, web the
-                  parish site. Stacked VERTICALLY — side-by-side they squeezed
-                  the church-name column to a sliver (user feedback). z-10
-                  lifts them above the stretched detail link. */}
-              <div className="flex shrink-0 flex-col items-end self-center">
-                {/* ONE segmented group, hairline-divided — two loose bordered
-                    buttons read as clutter (user feedback); the shared border
-                    makes them one control with two verbs */}
-                <div className="relative z-10 flex flex-col divide-y divide-hairline overflow-hidden rounded-sm border border-hairline">
-                  <button
-                    type="button"
-                    aria-label={`${t('row_route')}: ${r.church.name}`}
-                    className="flex min-h-11 items-center gap-1 px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:bg-white/60 hover:text-ink"
-                    onClick={() =>
-                      onNavigate({ name: r.church.name, lat: r.church.lat, lng: r.church.lng })
-                    }
+              {/* the row's verbs: trasa opens the nav-app chooser, web the parish site.
+                  Quiet icons, 44 px targets, the name in the aria-label (Pavol, 23 Nov 2026:
+                  the boxed TRASA/WEB labels were "super unnatural" and squeezed the church
+                  name onto three lines). z-10 lifts them above the stretched detail link. */}
+              <div className="relative z-10 -my-2 -mr-2 flex shrink-0 flex-col self-center">
+                <button
+                  type="button"
+                  aria-label={`${t('row_route')}: ${r.church.name}`}
+                  className="flex h-11 w-11 items-center justify-center text-ink-faded hover:text-ink"
+                  onClick={() => onNavigate({ name: r.church.name, lat: r.church.lat, lng: r.church.lng })}
+                >
+                  <MapPinIcon />
+                </button>
+                {r.church.www && (
+                  <a
+                    aria-label={`${t('row_web')}: ${r.church.name}`}
+                    className="flex h-11 w-11 items-center justify-center text-ink-faded hover:text-ink"
+                    href={r.church.www}
+                    target="_blank"
+                    rel="noreferrer"
                   >
-                    <MapPinIcon />
-                    {t('row_route')}
-                  </button>
-                  {r.church.www && (
-                    <a
-                      aria-label={`${t('row_web')}: ${r.church.name}`}
-                      className="flex min-h-11 items-center gap-1 px-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-faded hover:bg-white/60 hover:text-ink"
-                      href={r.church.www}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <GlobeIcon />
-                      {t('row_web')}
-                    </a>
-                  )}
-                </div>
+                    <GlobeIcon />
+                  </a>
+                )}
               </div>
             </div>
             {isOpen && <MassVerbs church={r.church} service={onDate(r.service, r.start)} className="pb-3" />}
