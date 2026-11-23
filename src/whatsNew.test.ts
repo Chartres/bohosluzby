@@ -1,6 +1,6 @@
 // The app's wiring of the what's-new kit (src/platform/whats-new.ts): which release file,
 // who counts as returning, and where the sheet never mounts (inside a frame, ?intro=1).
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { startWhatsNew, wasHereBefore } from './whatsNew'
 import cs from '../whats-new.json'
 import en from '../whats-new.en.json'
@@ -26,6 +26,19 @@ describe('wasHereBefore', () => {
 })
 
 describe('startWhatsNew', () => {
+  // 1.6's only item (the roráty pill) waits for 28 Nov 2026, the day the pill appears
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-11-28T08:00:00+01:00'))
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('before the roráty pill is in the row: no sheet, and nothing recorded, so it comes on the day', () => {
+    vi.setSystemTime(new Date('2026-11-23T20:00:00+01:00'))
+    expect(startWhatsNew({ track: () => {}, returning: true })).toBe(false)
+    expect(localStorage.getItem('fw:whats-new')).toBeNull()
+  })
+
   it('a returning reader without fw:whats-new sees the Czech sheet once, and it is tracked', () => {
     const track = vi.fn()
     expect(startWhatsNew({ track, returning: true })).toBe(true)

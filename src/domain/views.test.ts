@@ -2,6 +2,8 @@
 // the air like the Mass times; the app only knows how to read it (src/domain/views.ts).
 // The roráty tests run against the real file, so a data edit that breaks them fails CI.
 import FILE from '../../public/data/views.json'
+import WHATS_NEW from '../../whats-new.json'
+import WHATS_NEW_EN from '../../whats-new.en.json'
 import { activeViews, parseViews, viewDays, viewLabel, type ViewSpec } from './views'
 import type { ChurchServices, ExtraService, Service } from './data'
 import type { Upcoming } from './ranking'
@@ -19,6 +21,15 @@ const svc = (marks?: ChurchServices['marks']): ChurchServices => ({ updated: '',
 describe('views.json (the data)', () => {
   it('every entry is valid: CI fails before a broken pill ships', () => {
     expect(VIEWS.map((v) => v.id)).toEqual((FILE.views as unknown as ViewSpec[]).map((v) => v.id))
+  })
+})
+
+describe("what's new names a pill only once it is in the row (Pavol, 23 Nov 2026)", () => {
+  it('the roráty item waits for the day the pill appears', () => {
+    for (const release of [WHATS_NEW, WHATS_NEW_EN]) {
+      const item = (release.items as { id: string; from?: string }[]).find((i) => i.id === 'roraty-pill')
+      if (item) expect(item.from).toBe(roraty.show.from)
+    }
   })
 })
 

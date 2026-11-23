@@ -96,6 +96,13 @@ describe('checkRelease', () => {
     has(errors, /a: .*a\.html.*prefers-reduced-motion/)
   })
 
+  it('an item `from` must be a date (YYYY-MM-DD)', () => {
+    const root = product({ items: [{ id: 'a', text: 'Kopírovat odkaz otevře mapu.', alt: 'x', from: '28. 11.' }] })
+    has(checkRelease(join(root, 'whats-new.json'), { publicDir: join(root, 'public') }), /a: from/)
+    const ok = product({ items: [{ id: 'a', text: 'Kopírovat odkaz otevře mapu.', alt: 'x', from: '2026-11-28' }] })
+    assert.deepEqual(checkRelease(join(ok, 'whats-new.json'), { publicDir: join(ok, 'public') }), [])
+  })
+
   it('needs a version', () => {
     const root = product()
     writeFileSync(join(root, 'whats-new.json'), JSON.stringify({ items: [] }))
