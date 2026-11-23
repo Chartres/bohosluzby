@@ -18,6 +18,7 @@ import { SITE_ORIGIN as ORIGIN } from '../src/domain/site.ts'
 import { dioceseOfTown } from '../src/domain/diocese.ts'
 import { seasonCityPage, seasonHubPage } from '../src/domain/season.ts'
 import { loadCorrections } from '../data/corrections.mjs'
+import { lastDataCommit, stampVersion } from './data-version.mjs'
 import { LEDGER_CSS, ledgerMarkdown, ledgerPage, ledgerStats } from '../src/domain/ledger.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -310,6 +311,13 @@ ${urls.map(([u, mod]) => `  <url><loc>${ORIGIN}${u}</loc><lastmod>${mod}</lastmo
 </urlset>
 `
 writeFileSync(`${root}dist/sitemap.xml`, sitemap)
+
+// data version for the native apps: the last data commit moves `timestamp`, so a correction or
+// photo batch reaches them without a registry refresh (scripts/data-version.mjs)
+const committedVersion = JSON.parse(readFileSync(`${root}public/data/version.json`, 'utf8'))
+const stamped = stampVersion(committedVersion, lastDataCommit(root))
+writeFileSync(`${root}dist/data/version.json`, JSON.stringify(stamped))
+console.log(`data version: ${stamped.timestamp ?? stamped.generated}${stamped === committedVersion ? ' (as committed)' : ' (stamped from git)'}`)
 console.log(
   `prerendered ${cities.length} city pages + ${feastUrls.length} Dušičky pages + ${seasonUrls.length} season pages with .md twins (twins kept out of the sitemap: no canonical on GitHub Pages)` +
     ` (with services — ${SEASON_KINDS.map((k) => `${k}: ${seasonStats[k]}`).join('; ')})` +

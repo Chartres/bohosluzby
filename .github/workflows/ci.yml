@@ -23,6 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # the build stamps data/version.json with the last data commit (scripts/data-version.mjs),
+          # which needs the history: a shallow clone would leave the apps without new data
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
