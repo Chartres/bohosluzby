@@ -125,7 +125,7 @@ export function WreathStrip({ now }: { now: Date }) {
       <figcaption className="text-sm leading-snug">
         <span className="font-semibold" style={{ color: 'var(--season)' }}>{w}. týden adventu</span>
         <span className="text-ink-faded"> · na věnci hoří {ORD[w]} svíce</span>
-        <span className={`block ${CREDIT}`}>foto: Wikimedia Commons, CC BY-SA</span>
+        <span className={`block ${CREDIT}`}>foto Kora27 · CC BY-SA 4.0 · Wikimedia Commons</span>
       </figcaption>
     </figure>
   )
@@ -140,6 +140,7 @@ export function NoticeBoard() {
         <p className="text-xs font-semibold tracking-[0.08em] uppercase" style={{ color: 'var(--season)' }}>Z ohlášek farností</p>
         <p className="mt-1">Roráty podle ohlášek ze 17 kostelů, každý řádek s odkazem na ohlášky.</p>
         <p className="mt-1 text-ink-faded">Ostatní farnosti ohlášky na advent zatím nevyvěsily. Díváme se znovu ve čtvrtek.</p>
+        <p className={`mt-1 ${CREDIT}`}>foto vývěska v Dolních Chabrech, ŠJů · CC BY-SA 4.0</p>
       </div>
     </section>
   )
@@ -294,6 +295,9 @@ export function CandleNight({ on }: { on: boolean }) {
   if (!on) return null
   return (
     <style>{`
+      header.sticky { background: linear-gradient(rgba(14,11,8,.55), rgba(14,11,8,.92)), url(/proto/rorate.jpg) center 60% / cover !important; padding-bottom: 2.2rem !important; }
+      header.sticky::after { content: 'foto HubertSt · CC BY-SA 4.0'; position: absolute; right: 1.25rem; bottom: .35rem; font-size: 10px; color: rgba(241,230,207,.55); }
+      header.sticky { position: sticky; }
       :root { --color-paper:#16120d; --color-ink:#f1e6cf; --color-ink-faded:#a8987a; --color-hairline:#3a3024; --season:#b996e0 !important; }
       body { background:#16120d; }
       ol[data-testid="seznam"] li .font-display.text-2xl {
