@@ -2288,6 +2288,63 @@
    "quote": "Rorátní mše sv. se budou konat jako obvykle v pátek od 6:30, večerní mše budou jako obvykle.",
    "checked": "2026-11-22",
    "reviewed": "2026-11-22"
+  },
+  {
+   "id": "10001",
+   "church": "katedrála sv. Víta, Václava a Vojtěcha, Praha-Hradčany",
+   "town": "praha",
+   "dates": [
+    "2026-11-30"
+   ],
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.katedralasvatehovita.cz/bohosluzby/",
+   "source_date": "program bohoslužeb katedrály, 30. 11. (Po) 2026",
+   "quote": "30. 11. Po 06.30 Rorátní mše svatá Celebruje Mons. Stanislav Přibyl, arcibiskup pražský",
+   "checked": "2026-11-23"
+  },
+  {
+   "id": "70002148043530",
+   "church": "farní kostel sv. Cyrila a Metoděje",
+   "town": "olomouc",
+   "from": "2026-12-01",
+   "to": "2026-12-22",
+   "days": "2",
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty s lampičkami"
+    ]
+   ],
+   "source": "https://www.farnost-olomouc-hejcin.cz/aktuality/roraty-mse-svat-s-lampickami-advent-2026",
+   "source_date": "aktuality: Roráty, mše svatá s lampičkami, advent 2026",
+   "quote": "V adventu bude v hejčínském kostele každé úterý v 6.30 hodin rorátní mše svatá s lampičkami. První bude v úterý 1. prosince 2026.",
+   "checked": "2026-11-23"
+  },
+  {
+   "id": "40003148089774",
+   "church": "farní kostel sv. Markéty",
+   "town": "strakonice",
+   "from": "2026-12-02",
+   "to": "2026-12-23",
+   "days": "3",
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnost-strakonice.cz/ohlasky-nedele-22-listopadu-2026/",
+   "source_date": "Ohlášky neděle 22. listopadu 2026",
+   "quote": "během adventní doby budou středeční mše svaté u sv. Markéty v 6.30 se zpěvy rorát.",
+   "checked": "2026-11-23"
   }
  ]
 }
