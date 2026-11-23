@@ -242,6 +242,29 @@ describe('seasonCityPage vanoce — 24.–26. 12.', () => {
   })
 })
 
+// The Christmas pass (docs/VANOCE-PASS.md): 25 Dec 2026 is a Friday. A notice for "25. 12. v 9:00"
+// at a church whose registry has Friday 9:00 is confirmed, not copied (data/corrections.mjs), so the
+// shard gains no dated row. The page must still list it, from the notice.
+describe('vanoce — a notice that confirms a weekly Mass is listed, with the notice as source', () => {
+  const entries = { '2': entry([['5', '09:00', 'česky', 0, 'mše sv.', '']]) }
+  const corrections = [{ id: '2', date: '2026-12-25', add: [['09:00', 'mše sv.', 'slavnost Narození Páně']], source: 'https://ex.cz/vanoce.pdf', source_date: 'vánoční pořad 2026' }]
+  const s = seasonSections({ kind: 'vanoce', city: CITY, entries, corrections, today: '2026-12-14' })
+  it('listed on its day, once', () => {
+    expect(s[1].rows.map((r) => [r.churchId, r.time, r.note, r.source.from])).toEqual([['2', '09:00', 'slavnost Narození Páně', 'farnost']])
+    expect(s[0].rows).toEqual([])
+  })
+  it('not twice when the shard has the dated row too', () => {
+    const both = { '2': entry([['5', '09:00', 'česky', 0, 'mše sv.', '']], [['2026-12-25', '09:00', 'česky', 0, 'mše sv.', 'slavnost Narození Páně']]) }
+    const t = seasonSections({ kind: 'vanoce', city: CITY, entries: both, corrections, today: '2026-12-14' })
+    expect(t[1].rows).toHaveLength(1)
+  })
+  it('Christmas Eve before 15:00 stays off, from a notice too', () => {
+    const morning = [{ id: '2', date: '2026-12-24', add: [['08:00', 'mše sv.', '']], source: 'https://ex.cz/v.pdf', source_date: 'vánoční pořad 2026' }]
+    const t = seasonSections({ kind: 'vanoce', city: CITY, entries: { '2': entry([['4', '08:00', 'česky', 0, 'mše sv.', '']]) }, corrections: morning, today: '2026-12-14' })
+    expect(t[0].rows).toEqual([])
+  })
+})
+
 // GIRM 374–376: no votive Mass (roráty = votive Mass of Our Lady in Advent) on a
 // solemnity or an Advent Sunday. Immaculate Conception is 8 Dec, or 9 Dec when the 8th is a Sunday.
 describe('roráty — not on 8 Dec (Immaculate Conception) nor Advent Sundays', () => {

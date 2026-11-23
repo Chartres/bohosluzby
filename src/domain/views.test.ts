@@ -3,6 +3,9 @@
 // The roráty tests run against the real file, so a data edit that breaks them fails CI.
 import FILE from '../../public/data/views.json'
 import WHATS_NEW from '../../whats-new.json'
+import VANOCE_DRAFT from '../../data/views-drafts/vanoce.json'
+// @ts-expect-error a plain .mjs module
+import { VANOCE_WORDS } from '../../data/vanoce-check.mjs'
 import WHATS_NEW_EN from '../../whats-new.en.json'
 import { activeViews, parseViews, viewDays, viewLabel, type ViewSpec } from './views'
 import type { ChurchServices, ExtraService, Service } from './data'
@@ -107,5 +110,32 @@ describe('a dated view (the shape Christmas will use)', () => {
     expect(viewLabel(vanoce, up(extra('2026-12-24', '24:00', 'mše sv.', 'půlnoční'), '2026-12-24', '23:59'), svc())).toBe('půlnoční')
     expect(viewLabel(vanoce, up(weekly('5', '09:00', 'mše sv.'), '2026-12-25', '09:00'), svc())).toBe('')
     expect(viewLabel(vanoce, up(weekly('5', '09:00', 'mše sv.'), '2026-12-27', '09:00'), svc())).toBeNull()
+  })
+})
+
+// The Christmas pill draft (data/views-drafts/vanoce.json, docs/VANOCE-PASS.md): goes live by moving
+// into views.json after Pavol's OK. It keeps what the Christmas notices give, never a weekly row.
+describe('the Vánoce pill draft', () => {
+  const [vanoce] = parseViews(VANOCE_DRAFT)
+  it('is a valid entry, and matches the words every Christmas record must carry', () => {
+    expect(vanoce?.id).toBe('vanoce')
+    expect(vanoce.match.text).toEqual(VANOCE_WORDS)
+    expect(vanoce.match.mark).toEqual(VANOCE_WORDS)
+  })
+  it('a notice row: the půlnoční (24:00 is 00:00 on the 25th) and the 25th', () => {
+    expect(viewLabel(vanoce, up(extra('2026-12-24', '24:00', 'mše sv.', 'půlnoční'), '2026-12-25', '00:00'), svc())).toBe('půlnoční')
+    expect(viewLabel(vanoce, up(extra('2026-12-25', '09:00', 'mše sv.', 'slavnost Narození Páně'), '2026-12-25', '09:00'), svc())).toBe('slavnost Narození Páně')
+  })
+  it('Christmas Eve before 15:00 is still Advent', () => {
+    expect(viewLabel(vanoce, up(extra('2026-12-24', '08:00', 'mše sv.', 'štědrovečerní'), '2026-12-24', '08:00'), svc())).toBeNull()
+  })
+  it('a weekly row only when a notice marks it (Friday 25 Dec 9:00), never on its own', () => {
+    const fri = weekly('5', '09:00', 'mše sv.', 'narození páně')
+    expect(viewLabel(vanoce, up(fri, '2026-12-25', '09:00'), svc())).toBeNull()
+    const marked = svc([{ date: '2026-12-25', time: '9:00', note: 'slavnost Narození Páně' }])
+    expect(viewLabel(vanoce, up(weekly('5', '09:00', 'mše sv.'), '2026-12-25', '09:00'), marked)).toBe('slavnost Narození Páně')
+  })
+  it('shows from 19 Dec, next to the roráty pill', () => {
+    expect(activeViews([...VIEWS, vanoce], at('2026-12-20', '12:00')).map((v) => v.id)).toEqual(['roraty', 'vanoce'])
   })
 })

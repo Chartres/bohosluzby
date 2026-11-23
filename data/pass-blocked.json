@@ -1,0 +1,115 @@
+{
+ "about": "Parish websites that answered the roráty pass (22 Nov 2026) with a bot wall: 403/429, a Cloudflare or JS challenge, a captcha or a login. Data passes list them apart and never work around them (docs/VANOCE-PASS.md). A site that opens again can be removed from this list.",
+ "sites": [
+  {
+   "site": "http://farnostbreznice.cz",
+   "reason": "Cloudflare 'Just a moment...' JS challenge, HTTP 403",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://farnostkromeriz.cz",
+   "reason": "Cloudflare JS challenge (403, cf-mitigated: challenge)",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://farnostmalenovice.cz",
+   "reason": "Cloudflare 'Just a moment...' JS challenge, HTTP 403",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://farnostsdbzlin.cz",
+   "reason": "Cloudflare 'Just a moment...' JS challenge, HTTP 403",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://farnostsuchevrbne.cz",
+   "reason": "Cloudflare JS challenge (403, cf-mitigated: challenge)",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://farnostzlin.cz",
+   "reason": "Cloudflare 'Just a moment...' JS challenge, HTTP 403",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://kbely.farnost.cz",
+   "reason": "Redirects to farnostkbely.cz, HTTP 403 Cloudflare challenge.",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://privoz.farnost.cz",
+   "reason": "Redirects to farnostprivoz.cz, HTTP 403 Cloudflare 'Just a moment...' challenge. Stopped.",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://salesianizabovresky.cz/farnost",
+   "reason": "HTTP 403, Cloudflare 'Sorry, you have been blocked'.",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.arcidekanstvi-lbc.cz",
+   "reason": "HTTP 403 Forbidden (nginx) on homepage.",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.augustinbrno.cz",
+   "reason": "HTTP 401, WEDOS.protection security verification page.",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.dekanstvicb.cz",
+   "reason": "Cloudflare JS challenge (403, cf-mitigated: challenge)",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.farnostcheb.cz",
+   "reason": "Cloudflare 'Just a moment...' JS challenge, HTTP 403",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.farnostfrydek.cz",
+   "reason": "Cloudflare JS challenge (403, cf-mitigated: challenge)",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.farnosthkpp.cz",
+   "reason": "Cloudflare JS challenge (403, cf-mitigated: challenge)",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.farnosthloubetin.cz",
+   "reason": "HTTP 403 Cloudflare challenge ('Just a moment...').",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.farnostkomin.cz",
+   "reason": "HTTP 403, Cloudflare JS challenge ('Just a moment...').",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.farnostmostrava.cz",
+   "reason": "HTTP 401, WEDOS.protection security verification page. Stopped.",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.farnoststodulky.cz",
+   "reason": "HTTP 403 Cloudflare challenge ('Just a moment...'). Stopped.",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.jannepomuckycb.cz",
+   "reason": "Cloudflare JS challenge (403, cf-mitigated: challenge)",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "http://www.lhoteckafarnost.cz",
+   "reason": "HTTP 403.",
+   "seen": "2026-11-22"
+  },
+  {
+   "site": "https://farnosthostivar.cz",
+   "reason": "HTTP 403 Cloudflare challenge ('Just a moment...').",
+   "seen": "2026-11-22"
+  }
+ ]
+}

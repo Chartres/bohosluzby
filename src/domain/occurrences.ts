@@ -84,15 +84,21 @@ const parseTime = (time: string): [number, number] | null => {
  * Periodic: one per matching weekday within `horizonDays` (offsets 0..horizon).
  * One-off: exactly one, if still in the future.
  */
+const midnight = (time: string) => /^24:00$/.test(time.trim())
+
 export function nextOccurrences(spec: OccurrenceSpec, now: Date, horizonDays = 8): Date[] {
-  const t = parseTime(spec.time)
+  const t = 'date' in spec && midnight(spec.time) ? ([0, 0] as [number, number]) : parseTime(spec.time)
   if (!t) return []
   const [hh, mm] = t
 
   if ('date' in spec) {
     const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(spec.date)
     if (!m) return []
-    const instant = pragueInstant(Number(m[1]), Number(m[2]), Number(m[3]), hh, mm)
+    // "24:00" on a dated row is midnight, as parishes write the půlnoční: 00:00 the next day
+    const next = midnight(spec.time) ? new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]) + 1)) : null
+    const instant = next
+      ? pragueInstant(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate(), 0, 0)
+      : pragueInstant(Number(m[1]), Number(m[2]), Number(m[3]), hh, mm)
     return instant > now ? [instant] : []
   }
 

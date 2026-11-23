@@ -2,28 +2,29 @@
 
 One page, rewritten (not appended) at every hand-back and before the context runs out.
 Start every package by reading AGENTS.md, docs/ROADMAP.md, this file and the latest hand-back
-in docs/review/. The rule is in AGENTS.md › Working with the orchestrator. Last rewrite: 9 Nov 2026.
+in docs/review/. The rule is in AGENTS.md › Working with the orchestrator. Last rewrite: 23 Nov 2026.
 
 ## What the product is now
-- Web: bohosluzby.dravec.org, deployed from main, with the Dušičky and city pages. Data reaches
-  the apps over the air.
-- iOS: 1.4 live since 30 Oct. **1.5 build 92 was submitted for review by Pavol on 8 Nov.**
-  It has the new listing, screenshots and Czech as a listed language (#101).
-- Android: the release path is ready (#97, #98). The Play Console steps are Pavol's
-  (docs/ANDROID-RELEASE.md).
+- Web: bohosluzby.dravec.org, deployed from main. Data reaches the apps over the air: since
+  #114 the build stamps `version.json` from git, so a corrections merge alone updates the apps.
+- iOS: 1.5 live since 8 Nov. **1.6 is on TestFlight (build 95, 23 Nov)**: the roráty pill,
+  quiet row icons (#117), and What's new that waits for the pill (#118). Submit for Review is Pavol's.
+- Seasonal pills are data (`public/data/views.json`, #115). Roráty shows 28 Nov – 24 Dec.
+- Android: release path ready; the Play Console steps are Pavol's.
 
 ## Open threads
-- **Roráty and Christmas pages are live** (12 Nov, Pavol's option A): `/advent/`, `/vanoce/`,
-  181 towns each, Markdown twins, in the sitemap. #94's code went in with it. The roráty pass
-  (22–28 Nov, docs/RORATY-PASS.md) and the Christmas pass (14–23 Dec) now merge into `main`.
-  In-app link and the Dušičky-hub link still open (visual: shots first).
-- **Advent nomination**: Pavol submits it by 12 Nov (docs/store/nomination-advent-2026.md).
-  Measurement plan in docs/review/2026-11-07-store-1.5.json (read on 13 and 15 Dec).
-- **App Store header and search-results assets** (new slots, iOS 27+): in
-  store-assets/ios/creative/ (#105, Pavol OK'd 9 Nov). Pavol uploads them by hand with the next
-  iOS version: version → Product Page Information → Header and Search Results.
-- After 1.5 is live: check that the iTunes lookup (id 6792305024, country cz) lists CS.
-- ČBK registry list (docs/registry-quality-hlaseni.md): written, not sent. Sending it is Pavol's call.
+- **Roráty pass** (docs/RORATY-PASS.md): day 1 (22 Nov, #111) and the re-read of the 20 error
+  sites (23 Nov, #119, 3 rows) are live. Day 2 runs 26 Nov (scheduled); 28 Nov: final batch,
+  live check at 390 px, hand-back. 1 Dec: re-check sv. Vít.
+- **Christmas pass prep** (#120, docs/VANOCE-PASS.md): checker, site list, known bot walls, and
+  two fixes. `/vanoce/` lists confirmed notices; the app reads a dated `24:00` as midnight.
+  **The 24:00 fix needs a native build before Christmas.**
+  The Vánoce pill is a draft (`data/views-drafts/vanoce.json`). Shots went to Pavol on 23 Nov;
+  it goes live only on his OK. Open for him: the půlnoční shows as "00:00 · zítra", not "24:00".
+- **Design proposals** (branch `design-proposals`, prototype only, `?navrh=1..9`): Pavol likes
+  the stained-glass band (`src/domain/glass.ts` palette is tested). Bolder ones (6 photo hero,
+  7 window light, 8 candlelit roráty) are with him. Nothing builds before his pick.
+- Hub follow-up: the what's-new kit gained `from` dates (#118); port it to flywheel.
 
 ## Pavol's rules in force here
 - Follow the orchestrator's packages; risky steps need his word (AGENTS.md, 7–8 Nov 2026).
@@ -32,17 +33,17 @@ in docs/review/. The rule is in AGENTS.md › Working with the orchestrator. Las
 - Submit for Review, Play Console, emails, posts, contacting parishes, secrets and Supabase
   SQL are his. The wording for corrected rows is his call.
 - Data passes: a 2026 source for every row, an independent review, and bot walls respected.
-- 5 Nov: the map popover names a non-Mass service's type ("20:00 adorace").
-- 7 Nov: the store screenshots include a church photo.
+- 23 Nov: What's new names a feature only once it is in the app. Prefer real photos to drawn
+  graphics; procedural visuals are fine. Be more ambitious in design proposals.
 
 ## Last three packages
-1. **Store 1.5 bundle + Czech in the App Store** (6–9 Nov, #101, #104, #105): cs/en .lproj,
-   1.5 listing, screenshots, nomination text, the orchestrator rules in AGENTS.md, and header
-   and search assets. Build 92 uploaded; Pavol submitted it.
-2. **Salvátor popover** (5–6 Nov, #100): "Dnes ještě: 20:00 adorace". Live; it went to TestFlight as build 91.
-3. **Roráty step 1** (5 Nov, #94 branch): range records, a batch checker, the pass checklist, a
-   dry run on 5 parishes, and the Christmas pages switched off.
+1. **Overnight 23–24 Nov:** the re-read of the error sites (#119) and the Christmas prep (#120).
+2. **1.6** (23 Nov, #115–#118): the roráty pill as data, row icons, and What's new dated to the
+   pill. TestFlight builds 93–95.
+3. **Roráty day 1** (22 Nov, #111, #114): 21 records, the confirmed-notice logic, and the OTA
+   version stamp.
 
 ## Next
-- 22–28 Nov: the roráty pass, merged into main; 28 Nov: the in-app and Dušičky-hub links (shots first).
-- 13 and 15 Dec: read the nomination numbers. 14–23 Dec: the Christmas pass.
+- 26 and 28 Nov: roráty day 2 and the final batch, then the hand-back. 1 Dec: sv. Vít.
+- Before 19 Dec: Pavol's OK on the Vánoce pill, and a build with the 24:00 fix submitted.
+- 13 and 15 Dec: read the nomination numbers. 14–23 Dec: the Christmas pass (docs/VANOCE-PASS.md).
