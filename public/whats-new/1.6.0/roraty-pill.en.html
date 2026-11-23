@@ -1,0 +1,29 @@
+<!doctype html>
+<meta charset="utf-8">
+<!-- What's new 1.6.0 (docs/standards/whats-new.md in flywheel): CSS keyframes only, no script, nothing
+     fetched. 5 s loop: a tap on the seasonal pill "roráty", and the list keeps only the roráty. -->
+<style>
+  :root{--paper:#f6f1e5;--ink:#1a1712;--faded:#655c4d;--hair:#d8d0bd;--season:#5b3a7e}
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:15px/1.3 'Source Sans 3',system-ui,sans-serif;overflow:hidden}
+  .f{position:relative;padding:14px 16px 0;box-sizing:border-box;height:100%}
+  .pills{display:flex;gap:14px;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--faded);border-bottom:1px solid var(--hair);padding-bottom:9px}
+  .p{color:var(--season);font-size:14px;letter-spacing:0;text-decoration-color:var(--season);text-underline-offset:4px;animation:on 5s infinite}
+  .r{display:flex;gap:14px;padding-top:10px;align-items:baseline}
+  .t{font:700 22px/1 'Fraunces Variable',Georgia,serif;min-width:62px}
+  .n{font:600 15px/1.2 'Fraunces Variable',Georgia,serif}
+  .n small{display:block;font:13px 'Source Sans 3',system-ui,sans-serif;color:var(--faded)}
+  .x{overflow:hidden;max-height:40px;animation:out 5s infinite}
+  .dot{position:absolute;left:10px;top:4px;width:30px;height:30px;border-radius:50%;background:var(--season);opacity:0;animation:touch 5s infinite}
+  @keyframes on{0%,24%{text-decoration:none}30%,90%{text-decoration:underline 2px}100%{text-decoration:none}}
+  @keyframes out{0%,26%{max-height:40px;opacity:1}38%,88%{max-height:0;opacity:0}96%,100%{max-height:40px;opacity:1}}
+  @keyframes touch{0%,16%{opacity:0;transform:scale(.5)}24%{opacity:.28;transform:scale(1)}34%,100%{opacity:0}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}.x{max-height:0;opacity:0}.p{text-decoration:underline 2px}.dot{display:none}}
+</style>
+<div class="f" aria-hidden="true">
+  <div class="pills"><span class="p">roráty</span><span>NOW ▾</span><span>ANYTIME ▾</span></div>
+  <div class="r"><div class="t">6:15</div><div class="n">kostel sv. Ignáce<small>Mass · roráty</small></div></div>
+  <div class="r x"><div class="t">6:45</div><div class="n">kostel sv. Jakuba<small>Mass</small></div></div>
+  <div class="r"><div class="t">7:00</div><div class="n">kostel sv. Haštala<small>Mass · roráty</small></div></div>
+  <div class="r x"><div class="t">7:30</div><div class="n">kostel sv. Jindřicha<small>Mass</small></div></div>
+  <div class="dot"></div>
+</div>
