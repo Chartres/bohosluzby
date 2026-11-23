@@ -118,6 +118,23 @@ describe('mountWhatsNew', () => {
     expect(o.storage.getItem(WHATS_NEW_KEY)).toBe('1.6.1')
   })
 
+  it('an item dated `from` waits for its day: no sheet and nothing recorded before, the sheet from that day on', () => {
+    const later: WhatsNewRelease = { version: '1.6.0', items: [{ id: 'roraty', text: 'Roráty.', alt: 'x', from: '2026-11-28' }] }
+    const s = memoryStorage({ [WHATS_NEW_KEY]: '1.5.0' })
+    expect(mountWhatsNew({ release: later, storage: s, now: new Date('2026-11-27T22:00:00Z') }).shown).toBe(false)
+    expect(s.getItem(WHATS_NEW_KEY)).toBe('1.5.0') // not seen yet: the reader still gets it on the day
+    expect(mountWhatsNew({ release: later, storage: s, now: new Date('2026-11-28T09:00:00Z') }).shown).toBe(true)
+    expect(s.getItem(WHATS_NEW_KEY)).toBe('1.6.0')
+  })
+
+  it('the sheet waits until every item is available, so no item is lost to an early showing', () => {
+    const mixed: WhatsNewRelease = { version: '1.6.0', items: [{ id: 'a', text: 'A.', alt: 'a' }, { id: 'b', text: 'B.', alt: 'b', from: '2026-11-28' }] }
+    const s = memoryStorage({ [WHATS_NEW_KEY]: '1.5.0' })
+    expect(mountWhatsNew({ release: mixed, storage: s, now: new Date('2026-11-25T09:00:00Z') }).shown).toBe(false)
+    expect(mountWhatsNew({ release: mixed, storage: s, now: new Date('2026-11-28T09:00:00Z') }).shown).toBe(true)
+    expect(document.querySelectorAll('.fw-wn li')).toHaveLength(2)
+  })
+
   it('labels follow the product language', () => {
     mountWhatsNew(opts({ labels: { title: 'Co je nového', close: 'Rozumím', all: 'Všechny změny' } }))
     const dlg = document.querySelector('[role="dialog"]')!

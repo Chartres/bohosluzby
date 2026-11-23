@@ -77,6 +77,7 @@ export function checkRelease(path, { publicDir = 'public' } = {}) {
     if (seen.has(id)) errors.push(`duplicate id "${id}"`)
     seen.add(id)
     if (!item.alt?.trim()) errors.push(`${id}: alt text missing (what the animation shows)`)
+    if (item.from !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(item.from)) errors.push(`${id}: from must be a date, YYYY-MM-DD`)
     for (const e of checkText(item.text)) errors.push(`${id}: ${e}`)
     for (const key of ['media', 'still']) {
       const src = item[key]

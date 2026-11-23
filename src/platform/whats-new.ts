@@ -21,6 +21,9 @@ export type WhatsNewItem = {
   alt: string
   width?: number
   height?: number
+  /** YYYY-MM-DD: the feature is there only from that day (a seasonal one, switched on by data).
+   * The whole sheet waits for it, and nothing is recorded before, so no item is lost. */
+  from?: string
 }
 export type WhatsNewRelease = { version: string; date?: string; items: WhatsNewItem[]; changelog?: string }
 export type Labels = { title: string; close: string; all: string }
@@ -123,6 +126,7 @@ export function mountWhatsNew({
   labels = DEFAULT_LABELS,
   returning = false,
   root = typeof document !== 'undefined' ? document.body : (null as unknown as HTMLElement),
+  now = new Date(),
 }: {
   release: WhatsNewRelease
   storage?: StorageLike | null
@@ -132,9 +136,15 @@ export function mountWhatsNew({
   /** true when the product's own storage shows an earlier visit (see decide) */
   returning?: boolean
   root?: HTMLElement
+  /** the reader's today, for items with `from` */
+  now?: Date
 }): { shown: boolean; close: () => void } {
   const noop = { shown: false, close: () => {} }
   if (!storage || !root) return noop
+  // an item not there yet holds the whole sheet back, before decide() records the version
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+  if (release.items.slice(0, MAX_ITEMS).some((i) => i.from && i.from > today)) return noop
   if (decide(storage, release.version, { returning }) !== 'show') return noop
   const items = release.items.slice(0, MAX_ITEMS)
   if (!items.length) return noop
