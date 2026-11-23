@@ -256,6 +256,36 @@ it('native: the OTA refresh also brings photos.json and confession.json (sweep F
   expect(await ds.loadData('confession.json')).toEqual({ x: 1 })
 })
 
+// the seasonal pills are data too (views.json, 23 Nov 2026): carried when present, never a blocker
+it('native: the OTA refresh caches views.json when present, and refreshes without it', async () => {
+  const withViews = fsMock()
+  stubFetch({
+    '/data/version.json': version('2026-07-03'),
+    '/data/churches.json': index(100),
+    [`${R}/data/version.json`]: version('2026-08-01'),
+    [`${R}/data/churches.json`]: index(100),
+    [`${R}/data/services/50-14.json`]: SHARD,
+    ...SIDE,
+    [`${R}/data/views.json`]: '{"views":[{"id":"x"}]}',
+  })
+  let ds = await loadModule(true, withViews)
+  expect(await ds.refreshData()).toEqual({ asOf: '2026-08-01', updated: true })
+  stubFetch({})
+  expect(await ds.loadData('views.json')).toEqual({ views: [{ id: 'x' }] })
+
+  const without = fsMock()
+  stubFetch({
+    '/data/version.json': version('2026-07-03'),
+    '/data/churches.json': index(100),
+    [`${R}/data/version.json`]: version('2026-09-01'), // newer than the first refresh's
+    [`${R}/data/churches.json`]: index(100),
+    [`${R}/data/services/50-14.json`]: SHARD,
+    ...SIDE,
+  })
+  ds = await loadModule(true, without)
+  expect(await ds.refreshData()).toEqual({ asOf: '2026-09-01', updated: true })
+})
+
 it('native: a failed side-file fetch aborts the refresh so the next launch retries (sweep K3)', async () => {
   const fs = fsMock()
   const routes = {

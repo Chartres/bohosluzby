@@ -10,6 +10,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App, { geoFailKey } from './App'
 import type { IndexRow } from './domain/data'
+import VIEWS from '../public/data/views.json'
 
 // Friday 3 Jul 2026 17:00 Prague. Vitest fake timers pin "now".
 const NOW = new Date('2026-07-03T15:00:00Z')
@@ -91,7 +92,9 @@ function stubFetch() {
             ? SHARD_50_14
             : path.endsWith('/data/services/49-16.json')
               ? SHARD_49_16
-              : null
+              : path.endsWith('/data/views.json')
+                ? VIEWS // the real seasonal-pill data
+                : null
       if (!body) return new Response('not found', { status: 404 })
       return new Response(JSON.stringify(body), { status: 200 })
     }),
@@ -274,7 +277,8 @@ describe('Marie finds the nearest mass', () => {
     expect(qp('den')).toBeNull()
   })
 
-  // Pavol, 22 Nov 2026: option B — a "roráty" pill in the day row, like the Dušičky one
+  // Pavol, 22 Nov 2026: option B — a "roráty" pill in the day row, like the Dušičky one;
+  // since 23 Nov the pill is data (public/data/views.json), so this runs on the real entry
   it('in Advent a "roráty" pill lists the coming roráty, notice-confirmed ones too', async () => {
     vi.setSystemTime(new Date('2026-12-01T05:00:00Z')) // Tue 6:00 Prague
     stubGeolocation('granted')
