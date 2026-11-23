@@ -5,6 +5,15 @@ The web app deploys continuously from `main` (bohosluzby.dravec.org). Store vers
 Format: what a user notices first, then what an agent needs to know.
 
 ## Unreleased (web: live · iOS/Android: next store build)
+- **Seasonal pills are data** (Pavol 2026-11-23, 1.6): `public/data/views.json` holds each pill in the
+  day row (label, when it shows, which days, what it keeps); `src/domain/views.ts` reads it. The first
+  entry is **roráty** (Pavol 2026-11-22, option B): the next 7 days' roráty, parish notices included.
+  A Christmas or Easter pill is a data edit, no release. The file rides the over-the-air data.
+- **Data reaches the apps again** (2026-11-23): the build stamps `version.json`'s timestamp with the
+  last data commit, so corrections and photos reach the native apps without a registry refresh
+  (they hadn't since 29 Oct).
+- **Roráty pass** (22–28 Nov): parish notices with a source per row (`data/corrections.json`, range
+  records); a notice that confirms a registry Mass adds no duplicate, and marks it (`r`) for the views.
 - **Christmas and roráty pages** (Pavol 2026-11-12, option A): `/vanoce/<town>/` (24–26 Dec,
   půlnoční first) and `/advent/<town>/` (roráty) for all 181 towns with 3+ churches, plus hubs.
   A town or church with nothing published says "rozpis zatím farnost nezveřejnila" with the
