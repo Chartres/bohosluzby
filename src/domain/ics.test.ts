@@ -39,6 +39,12 @@ describe('buildICS', () => {
     expect(ics).toContain('první neděle')
   })
 
+  it('the půlnoční (24:00 on 24 Dec) starts at midnight in the calendar: 00:00 on the 25th', () => {
+    const pulnocni: ExtraService = { date: '2026-12-24', time: '24:00', lang: 'česky', greek: false, type: 'mše sv.', note: 'půlnoční' }
+    const ics = buildICS(church, pulnocni, new Date('2026-12-20T12:00:00Z'))!
+    expect(ics).toContain('DTSTART;TZID=Europe/Prague:20261225T000000')
+  })
+
   it('past one-off yields null', () => {
     const past: ExtraService = { date: '2026-01-06', time: '18:00', lang: 'česky', greek: false, type: 'mše sv.', note: '' }
     expect(buildICS(church, past, now)).toBeNull()

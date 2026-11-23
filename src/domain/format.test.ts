@@ -116,3 +116,11 @@ describe('samePragueDay / fmtWeekdayShort (the map chip day check)', () => {
     expect(fmtWeekdayShort(new Date('2026-07-05T10:00:00Z'))).toBe('ne')
   })
 })
+
+describe('the půlnoční: 24:00 on 24 Dec (occurrences.ts, isMidnight)', () => {
+  const pulnocni = new Date('2026-12-24T22:59:59.999Z')
+  it('is shown as 24:00, on Štědrý den', () => {
+    expect(fmtTime(pulnocni)).toBe('24:00')
+    expect(dayLabel(new Date('2026-12-24T15:00:00Z'), pulnocni)).toBe('dnes')
+  })
+})

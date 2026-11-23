@@ -3,7 +3,7 @@
 // dated-only exclusions ("kromě D. M. YYYY") keep an open-ended RRULE with EXDATE only. Times are Prague wall clock
 // via TZID + an explicit VTIMEZONE so every client agrees across DST.
 import type { Church, ExtraService, Service } from './data'
-import { nextOccurrences, pragueToday, pragueMinutes } from './occurrences'
+import { isMidnight, nextOccurrences, pragueToday, pragueMinutes } from './occurrences'
 import { runsAt, hasDatedOnlyExclusions } from './notes'
 import { churchUrl } from './site'
 
@@ -101,7 +101,8 @@ export function buildICS(
 
   // M-3: derive hh/mm from the occurrence instant, not service.time string, to
   // avoid NaN when the registry stores times with a suffix ("10:00 pouze").
-  const local = (at: Date): string => {
+  const local = (raw: Date): string => {
+    const at = isMidnight(raw) ? new Date(raw.getTime() + 1) : raw // the půlnoční: 00:00 the next day
     const w = pragueToday(at)
     const totalMin = pragueMinutes(at)
     return `${w.y}${pad(w.m)}${pad(w.d)}T${pad(Math.floor(totalMin / 60))}${pad(totalMin % 60)}00`

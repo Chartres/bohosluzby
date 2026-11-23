@@ -10,8 +10,9 @@ Prepared 23 Nov 2026 so that the pass only fills data.
   24 Dec from 15:00, 25 and 26 Dec. A notice that confirms a weekly Mass (25 Dec 2026 is a
   Friday, so "25. 12. v 9:00" at a church with Friday 9:00 is common) is listed from the notice,
   with the notice as source (`season.ts`, `datedRows`).
-- **App:** a dated row at `24:00` counts as 00:00 the next day (`occurrences.ts`). Before this, the
-  app dropped it. **Apps older than the build that carries this change don't show a 24:00 row at
+- **App:** a dated row at `24:00` is listed on its own day, last, as "24:00" (the parishes'
+  convention; orchestrator default 23 Nov, Pavol may switch it to "00:00 zítra"). The calendar
+  export writes 00:00 the next day (`occurrences.ts` `isMidnight`). Before 23 Nov the app dropped it. **Apps older than the build that carries this change don't show a 24:00 row at
   all.** The change has to be in the build Pavol submits before Christmas.
 - **Checker:** `node --experimental-strip-types data/vanoce-check.mjs batch.json` (below).
 - **Site list:** `node --experimental-strip-types data/pass-sites.mjs --towns 30 --mark 'půlnoční|vánoč' > sites.json`
