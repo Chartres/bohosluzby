@@ -35,7 +35,7 @@ import { aggregateFor, churchHasTags, loadAggregates, resetLoadedIds, submitFeed
 import { dueCards, markAnswered, neverAsk, type LedgerEntry } from './lib/feedbackLedger'
 import { WITNESS_ENABLED } from './lib/flags'
 import { track, conversion, logError } from './analytics'
-import { RADEK, PROPOSAL, GlassGallery, GlassBand, seedOf, WreathStrip, NoticeBoard, DawnLine, skyGradient, Rubric, Ribbon, FooterSlots } from './proto/proposals'
+import { usePhotos, PhotoHero, WindowLight, CandleNight, beforeSunrise, RADEK, PROPOSAL, GlassGallery, GlassBand, seedOf, WreathStrip, NoticeBoard, DawnLine, skyGradient, Rubric, Ribbon, FooterSlots } from './proto/proposals'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
 import { isNative, platform } from './lib/native'
 import { pageViewContext } from './lib/telemetry'
@@ -268,6 +268,7 @@ export default function App() {
   // Tick every minute so time-sensitive memos (season, holy, rows) stay current.
   const [now, setNow] = useState(() => new Date())
   const season = useMemo(() => currentLiturgicalDay(now), [now])
+  const photos = usePhotos() // PROTOTYPE ?navrh=6
   const convertedRef = useRef(false)
   const [dueEntry, setDueEntry] = useState<LedgerEntry | null>(null)
   const [previewDismissed, setPreviewDismissed] = useState(false)
@@ -833,6 +834,8 @@ export default function App() {
           Negative margins bleed the paper background across the column padding.
           Exception: a church detail with a photo hero drops the masthead so the
           image bleeds full to the top, its back+help overlaid on the hero. */}
+      {PROPOSAL === 7 && !mapMode && <WindowLight seed={seedOf(now)} color={season.color} />}
+      <CandleNight on={PROPOSAL === 8 && !!origin && beforeSunrise(now, origin.lat, origin.lng)} />
       {!(route.view === 'church' && detailHero) && (
       <header
         className={
@@ -841,8 +844,8 @@ export default function App() {
             : 'sticky top-0 z-30 -mx-5 border-b-2 bg-paper px-5 pb-2 sm:-mx-8 sm:px-8'
         }
         style={{
-          borderColor: PROPOSAL === 3 ? 'transparent' : 'var(--season)',
-          ...(PROPOSAL === 3 ? { borderBottomWidth: 0 } : {}),
+          borderColor: PROPOSAL === 3 || PROPOSAL === 7 ? 'transparent' : 'var(--season)',
+          ...(PROPOSAL === 3 || PROPOSAL === 7 ? { borderBottomWidth: 0 } : {}),
           ...(PROPOSAL === 5 ? { position: 'sticky' } : {}),
           ...(PROPOSAL === 4 && origin && skyGradient(now, origin.lat, origin.lng) ? { background: skyGradient(now, origin.lat, origin.lng)!, color: '#fff8eb' } : {}),
           // sticky top-0 pins at the VIEWPORT top — on iOS that's under the
@@ -870,7 +873,7 @@ export default function App() {
         {PROPOSAL === 4 && origin && <DawnLine now={now} lat={origin.lat} lng={origin.lng} />}
         {PROPOSAL === 5 && !mapMode && <Rubric />}
         {PROPOSAL === 5 && <Ribbon />}
-        {PROPOSAL === 3 && <div className="-mx-5 mt-2 -mb-2 sm:-mx-8"><GlassBand seed={seedOf(now)} color={season.color} /></div>}
+        {(PROPOSAL === 3 || PROPOSAL === 7) && <div className="-mx-5 mt-2 -mb-2 sm:-mx-8"><GlassBand seed={seedOf(now)} color={season.color} /></div>}
       </header>
       )}
 
@@ -1120,7 +1123,7 @@ export default function App() {
                   budget, the map is a page. */}
               {!mapMode && <VerifyBanner now={now} />}
               {PROPOSAL === 2 && !mapMode && <NoticeBoard />}
-              {PROPOSAL === 6 && <GlassGallery />}
+              {PROPOSAL === 9 && <GlassGallery />}
             </div>
             {view === 'mapa' ? (
               online ? (
@@ -1163,8 +1166,18 @@ export default function App() {
               )
             ) : rows.length > 0 ? (
               <>
+                {PROPOSAL === 6 && rows[0] && (
+                  <PhotoHero
+                    photo={photos[rows[0].church.id]}
+                    time={fmtTime(rows[0].start)}
+                    until={fmtUntil(now, rows[0].start)}
+                    name={rows[0].church.name}
+                    meta={`${rows[0].church.city ? rows[0].church.city + ' · ' : ''}${fmtDistance(rows[0].distanceKm)}${rows[0].service.type ? ' · ' + rows[0].service.type : ''}`}
+                    onOpen={() => openChurch(rows[0].church.id, rows[0].start)}
+                  />
+                )}
                 <ServiceList
-                  rows={rows}
+                  rows={PROPOSAL === 6 && photos[rows[0]?.church.id] ? rows.slice(1) : rows}
                   feast={feast}
                   showUntil={!feastOn && (day === 'now' || day === 0)}
                   witnessChurches={witnessChurches}

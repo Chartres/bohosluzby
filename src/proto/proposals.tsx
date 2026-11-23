@@ -216,3 +216,104 @@ export function GlassGallery() {
     </div>
   )
 }
+
+// --- 6: the next Mass as a photograph of the church you'll walk into ----------------------
+// photos.json holds real Commons photos for ~1,450 churches; the first row gets one, full bleed.
+import { loadData } from '../lib/dataStore'
+import { useState } from 'react'
+type Photo = { url: string; credit: string; license: string }
+export function usePhotos() {
+  const [p, setP] = useState<Record<string, Photo>>({})
+  useEffect(() => {
+    loadData<Record<string, Photo>>('photos.json').then(setP).catch(() => {})
+  }, [])
+  return p
+}
+export function PhotoHero({ photo, time, until, name, meta, onOpen }: { photo?: Photo; time: string; until: string; name: string; meta: string; onOpen: () => void }) {
+  if (!photo) return null
+  const big = photo.url.replace(/\/\d+px-/, '/960px-')
+  return (
+    <button type="button" onClick={onOpen} className="relative -mx-5 mt-3 block w-[calc(100%+2.5rem)] overflow-hidden text-left sm:-mx-8 sm:w-[calc(100%+4rem)]">
+      <img src={big} alt="" className="block h-64 w-full object-cover" />
+      <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(20,16,12,.88) 0%, rgba(20,16,12,.6) 50%, rgba(20,16,12,0) 80%)' }} />
+      <span className="absolute inset-x-5 bottom-4 block text-[#fbf6ea] sm:inset-x-8">
+        <span className="block text-xs font-semibold tracking-[0.1em] uppercase opacity-80">nejbližší · {until}</span>
+        <span className="font-display block text-5xl font-semibold tabular-nums leading-none">{time}</span>
+        <span className="font-display mt-1 block text-lg leading-snug font-semibold">{name}</span>
+        <span className="block text-sm opacity-80">{meta}</span>
+      </span>
+      <span className="absolute top-2 right-3 text-[10px] text-white/70">foto {photo.credit} · {photo.license}</span>
+    </button>
+  )
+}
+
+// --- 7: light through the window: the day's glass falls on the page -----------------------
+export function WindowLight({ seed, color = 'violet' }: { seed: number; color?: GlassColor }) {
+  const ref = useRef<HTMLCanvasElement>(null)
+  useEffect(() => {
+    const c = ref.current
+    if (!c) return
+    const w = window.innerWidth
+    const h = Math.round(window.innerHeight * 0.9)
+    c.width = Math.round(w / 2)
+    c.height = Math.round(h / 2)
+    const ctx = c.getContext('2d')!
+    const r = rng(seed + 7)
+    const pal = glassPalette(color, seed)
+    // the window's panes fall on the page as one slanted patch, the way light from a high
+    // window lies on a church floor: a lancet (pointed arch) of panes, skewed and stretched
+    const cols = 6, rows = 9, pw = c.width * 0.11, ph = c.height * 0.075
+    ctx.save()
+    ctx.translate(c.width * 0.42, c.height * 0.02)
+    ctx.transform(1, 0, 0.62, 1, 0, 0) // the sun is low and to the left
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        // pointed arch at the top: the outer columns start lower
+        const arch = Math.abs(col - (cols - 1) / 2) / ((cols - 1) / 2)
+        if (row < Math.round(arch * arch * 3)) continue
+        const pick = r() < 0.16 ? pal.accents[Math.floor(r() * pal.accents.length)] : pal.glass[Math.floor(r() * pal.glass.length)]
+        ctx.globalAlpha = 0.85 * (1 - (row / rows) * 0.55)
+        ctx.fillStyle = pick
+        ctx.fillRect(col * pw + 1.2, row * ph + 1.2, pw - 2.4, ph - 2.4)
+      }
+    }
+    ctx.restore()
+  }, [seed, color])
+  return (
+    <canvas
+      ref={ref}
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-x-0 top-0 -z-0"
+      style={{ width: '100%', height: '90vh', filter: 'blur(7px) saturate(1.5)', opacity: 0.42, mixBlendMode: 'multiply' }}
+    />
+  )
+}
+
+// --- 8: roráty by candlelight: before sunrise the page is the dark church -----------------
+export function CandleNight({ on }: { on: boolean }) {
+  if (!on) return null
+  return (
+    <style>{`
+      :root { --color-paper:#16120d; --color-ink:#f1e6cf; --color-ink-faded:#a8987a; --color-hairline:#3a3024; --season:#b996e0 !important; }
+      body { background:#16120d; }
+      ol[data-testid="seznam"] li .font-display.text-2xl {
+        color:#ffe2a8;
+        text-shadow: 0 0 6px rgba(255,190,90,.55), 0 0 18px rgba(255,150,40,.35);
+        animation: flame 2.6s infinite alternate ease-in-out;
+      }
+      ol[data-testid="seznam"] li:nth-child(2n) .font-display.text-2xl { animation-duration: 3.1s; animation-delay: -.7s }
+      ol[data-testid="seznam"] li:nth-child(3n) .font-display.text-2xl { animation-duration: 2.2s; animation-delay: -1.3s }
+      @keyframes flame {
+        0% { text-shadow: 0 0 6px rgba(255,190,90,.55), 0 0 18px rgba(255,150,40,.35) }
+        35% { text-shadow: 0 0 5px rgba(255,190,90,.45), 0 0 14px rgba(255,150,40,.28) }
+        60% { text-shadow: 0 0 8px rgba(255,200,100,.65), 0 0 22px rgba(255,150,40,.42) }
+        100% { text-shadow: 0 0 6px rgba(255,185,85,.5), 0 0 17px rgba(255,150,40,.32) }
+      }
+      @media (prefers-reduced-motion: reduce) { ol[data-testid="seznam"] li .font-display.text-2xl { animation: none } }
+    `}</style>
+  )
+}
+export function beforeSunrise(now: Date, lat: number, lng: number) {
+  const sr = sunrise(now, lat, lng)
+  return !!sr && now < sr
+}
