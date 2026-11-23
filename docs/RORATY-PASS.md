@@ -67,9 +67,8 @@ checklist on 5 parishes (5 Nov, on last year's notices) is in
       appeared. This is data only, and it goes live over the air.
 
 ## Christmas (14–23 Dec)
-Same steps with a Christmas notice. The records are dated one-offs on 24 Dec (from 15:00), 25 Dec
-and 26 Dec. Midnight Mass is written as `24:00`. Add `'vanoce'` back to `SEASON_KINDS` in
-`scripts/prerender.mjs` when it ships.
+See [`VANOCE-PASS.md`](VANOCE-PASS.md): one record per church and day, its own checker
+(`data/vanoce-check.mjs`), the site list (`data/pass-sites.mjs`) and the Vánoce pill draft.
 
 ## Limits
 No store submissions, no emails or posts, no contact with parishes, no Supabase SQL. The wording
