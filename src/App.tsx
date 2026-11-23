@@ -35,6 +35,7 @@ import { aggregateFor, churchHasTags, loadAggregates, resetLoadedIds, submitFeed
 import { dueCards, markAnswered, neverAsk, type LedgerEntry } from './lib/feedbackLedger'
 import { WITNESS_ENABLED } from './lib/flags'
 import { track, conversion, logError } from './analytics'
+import { PROPOSAL, GlassBand, seedOf, WreathStrip, NoticeBoard, DawnLine, skyGradient, Rubric, Ribbon, FooterSlots } from './proto/proposals'
 import { getCurrentPosition, getPermissionState, type GeoFailure } from './lib/geo'
 import { isNative, platform } from './lib/native'
 import { pageViewContext } from './lib/telemetry'
@@ -840,7 +841,10 @@ export default function App() {
             : 'sticky top-0 z-30 -mx-5 border-b-2 bg-paper px-5 pb-2 sm:-mx-8 sm:px-8'
         }
         style={{
-          borderColor: 'var(--season)',
+          borderColor: PROPOSAL === 3 ? 'transparent' : 'var(--season)',
+          ...(PROPOSAL === 3 ? { borderBottomWidth: 0 } : {}),
+          ...(PROPOSAL === 5 ? { position: 'sticky' } : {}),
+          ...(PROPOSAL === 4 && origin && skyGradient(now, origin.lat, origin.lng) ? { background: skyGradient(now, origin.lat, origin.lng)!, color: '#fff8eb' } : {}),
           // sticky top-0 pins at the VIEWPORT top — on iOS that's under the
           // status bar/Dynamic Island. Pad by the safe area so the wordmark
           // never collides with the clock (env() is 0 on desktop web).
@@ -857,10 +861,16 @@ export default function App() {
             onClick={() => setIntroOpen(true)}
             aria-label={t('intro_help')}
             className="-my-2 shrink-0 px-1 py-2 text-xs font-semibold tracking-[0.08em] text-ink-faded uppercase hover:text-ink"
+            style={PROPOSAL === 4 && origin && skyGradient(now, origin.lat, origin.lng) ? { color: 'rgba(255,248,235,.75)' } : undefined}
           >
             ? {t('intro_help')}
           </button>
         </div>
+        {PROPOSAL === 1 && !mapMode && <WreathStrip now={now} />}
+        {PROPOSAL === 4 && origin && <DawnLine now={now} lat={origin.lat} lng={origin.lng} />}
+        {PROPOSAL === 5 && !mapMode && <Rubric />}
+        {PROPOSAL === 5 && <Ribbon />}
+        {PROPOSAL === 3 && <div className="-mx-5 mt-2 -mb-2 sm:-mx-8"><GlassBand seed={seedOf(now)} /></div>}
       </header>
       )}
 
@@ -1109,6 +1119,7 @@ export default function App() {
                   act on; a provenance year wasn't. Not in map mode: chrome
                   budget, the map is a page. */}
               {!mapMode && <VerifyBanner now={now} />}
+              {PROPOSAL === 2 && !mapMode && <NoticeBoard />}
             </div>
             {view === 'mapa' ? (
               online ? (
@@ -1200,6 +1211,7 @@ export default function App() {
             {t('footer_offline')}
           </p>
         )}
+        {PROPOSAL === 5 && <FooterSlots />}
         <FeedbackCard />
         <p className="mt-1">
           <span className="font-semibold" style={{ color: 'var(--season)' }}>
