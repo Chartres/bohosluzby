@@ -2,8 +2,9 @@
 #   Actions → Release iOS → Run workflow (lane: build = signed .ipa only, nothing
 #   uploaded — the safe test; beta = TestFlight, release = upload
 #   binary + metadata + screenshots, NOT submitted), or push a tag `ios-vX.Y.Z` (beta).
-# Runs the same lanes as a laptop (ios/App/fastlane/Fastfile). Never submits for
-# review: Pavol taps Submit after testing the TestFlight build on his phone.
+# Runs the same lanes as a laptop (ios/App/fastlane/Fastfile). build, beta and release
+# never submit. tour reads a version back. submit (with version + build) attaches an
+# uploaded build and submits it for review: run it only on Pavol's own word.
 #
 # One-time secrets (Settings → Secrets and variables → Actions):
 #   ASC_KEY_ID, ASC_ISSUER_ID   — App Store Connect API key ids (fastlane/.env on the mini)
@@ -22,10 +23,18 @@ on:
   workflow_dispatch:
     inputs:
       lane:
-        description: 'build = sign + build only, uploads nothing (test) · beta = TestFlight · release = upload + metadata (no submit)'
+        description: 'build = sign + build only, uploads nothing (test) · beta = TestFlight · release = upload + metadata (no submit) · tour = read-only check of a version · submit = Submit for Review (Pavol only)'
         type: choice
         default: beta
-        options: [build, beta, release]
+        options: [build, beta, release, tour, submit]
+      version:
+        description: 'tour / submit: the App Store version, e.g. 1.6'
+        required: false
+        default: ''
+      build:
+        description: 'tour / submit: the uploaded build number, e.g. 96'
+        required: false
+        default: ''
 
 concurrency:
   group: release-ios
@@ -132,6 +141,10 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           FASTLANE_SKIP_UPDATE_CHECK: '1'
           FASTLANE_HIDE_CHANGELOG: '1'
+          TOUR_VERSION: ${{ inputs.version }}
+          TOUR_BUILD: ${{ inputs.build }}
+          SUBMIT_VERSION: ${{ inputs.lane == 'submit' && inputs.version || '' }}
+          SUBMIT_BUILD: ${{ inputs.lane == 'submit' && inputs.build || '' }}
         run: |
           command -v fastlane >/dev/null || sudo gem install fastlane --no-document
           fastlane ios "$LANE"
