@@ -928,6 +928,23 @@ describe('Marie finds the nearest mass', () => {
     expect(seznam().queryByText(/^trasa$/i)).toBeNull()
   })
 
+  it("signature (Pavol, 24 Nov 2026): the masthead's season mark is the day's stained glass, and a ribbon marks the page", async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    const header = document.querySelector('header')!
+    // 3 Jul 2026: ordinary time, green glass; the day's date seeds the window
+    const glass = header.querySelector('[data-glass]')!
+    expect(glass.getAttribute('data-glass')).toBe('green')
+    expect(glass.getAttribute('data-seed')).toBe('20260703')
+    expect(glass).toHaveAttribute('aria-hidden', 'true')
+    expect(header.className).not.toMatch(/border-b-2/)
+    // the ribbon scrolls with the page (not sticky over the rows' icons) and says nothing to a screen reader
+    const ribbon = document.querySelector('main [data-ribbon]')!
+    expect(ribbon).toHaveAttribute('aria-hidden', 'true')
+    expect(header.contains(ribbon)).toBe(false)
+  })
+
   it('feasts: Sunday 5 Jul (Cyril a Metoděj) is highlighted in the picker and named in the header', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
@@ -975,6 +992,8 @@ describe('Marie finds the nearest mass', () => {
     const line = await screen.findByTestId('day-line')
     const bold = line.querySelector('.font-semibold')
     expect(bold?.textContent).toContain(time)
+    // the ribbon marks the list, not the church page (it would sit on the photo and the help link)
+    expect(document.querySelector('[data-ribbon]')).toBeNull()
   })
 
   it('detail: a provably-paused service row is muted with "nyní se nekoná"', async () => {
