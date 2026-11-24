@@ -48,8 +48,9 @@ export default defineConfig({
         globIgnores: ['mesto/**', 'kostel/**', 'embed/**', 'embed.js', '404.html'],
         navigateFallback: '/index.html',
         // /dusicky/ pages are static lists with no app route — a returning
-        // visitor's service worker must fetch them, not answer with the app shell
-        navigateFallbackDenylist: [/^\/dusicky\//, /^\/whats-new\//],
+        // visitor's service worker must fetch them, not answer with the app shell;
+        // /app/ is the poster's QR doorway (src/domain/appLink.ts) and must redirect
+        navigateFallbackDenylist: [/^\/dusicky\//, /^\/whats-new\//, /^\/app\//],
         cleanupOutdatedCaches: true,
         // Fonts are self-hosted (Fontsource) and precached via globPatterns
         // (woff2) — no Google Fonts runtime caching needed.
