@@ -10,10 +10,14 @@
 #   beta        — build → TestFlight
 #   release     — build → upload binary + metadata + screenshots, STOPS before
 #                 final submit (Pavol gates "Submit for Review" — see checklist §8)
+#   tour        — read-only report on a version: build, notes, description, shots, review
+#   submit      — attach an uploaded build, push metadata, tour, then Submit for Review.
+#                 Only on Pavol's own word: needs SUBMIT_VERSION and SUBMIT_BUILD set
 
 opt_out_usage # no fastlane telemetry
 default_platform(:ios)
 require_relative "screenshot_ops"
+require_relative "tour"
 
 APP_ID   = "org.dravec.bohosluzby"
 APP_NAME = "Bohoslužby: katolické mše"
@@ -162,6 +166,52 @@ platform :ios do
       app_identifier: APP_ID,
       skip_waiting_for_build_processing: true,
     )
+  end
+
+  desc "Read-only: is VERSION ready to submit with BUILD? (env TOUR_VERSION, TOUR_BUILD)"
+  lane :tour do
+    env, app_id = asc_env_and_app_id
+    tour!(env, app_id, ENV.fetch("TOUR_VERSION"), ENV.fetch("TOUR_BUILD"))
+  end
+
+  desc "Attach an uploaded build, push metadata from the repo, tour, then Submit for Review. Pavol's word only."
+  lane :submit do
+    version = ENV.fetch("SUBMIT_VERSION")
+    build_number = ENV.fetch("SUBMIT_BUILD")
+    UI.user_error!("SUBMIT_VERSION / SUBMIT_BUILD must be set") if version.empty? || build_number.empty?
+    env, app_id = asc_env_and_app_id
+    # 1. create or update the version, attach the build, push the repo's text (no binary, no shots)
+    upload_to_app_store(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      app_version: version,
+      build_number: build_number,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      submit_for_review: false,
+      automatic_release: false, # the repo's release type: Pavol releases by hand after approval
+      precheck_include_in_app_purchases: false,
+      force: true,
+    )
+    # 2. read back: anything missing stops here, before the submit
+    blockers = tour!(env, app_id, version, build_number)
+    UI.user_error!("not submitted: #{blockers.join('; ')}") unless blockers.empty?
+    # 3. submit
+    upload_to_app_store(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      app_version: version,
+      build_number: build_number,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      skip_metadata: true,
+      submit_for_review: true,
+      automatic_release: false,
+      submission_information: { export_compliance_uses_encryption: false, add_id_info_uses_idfa: false },
+      precheck_include_in_app_purchases: false,
+      force: true,
+    )
+    UI.success("submitted #{version} (#{build_number}) for review")
   end
 
   desc "Build → upload binary + metadata + screenshots (does NOT submit)"
