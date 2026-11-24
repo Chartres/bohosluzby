@@ -449,8 +449,10 @@ export function feastBeacon(supabaseUrl: string | undefined, key: string | undef
     `const rUID=()=>crypto.randomUUID?.()??Array.from({length:8},()=>Math.floor(Math.random()*0x10000).toString(16).padStart(4,'0')).join('-');` +
     `const id=(s,n)=>{try{let v=s.getItem(n);if(!v){v=rUID();s.setItem(n,v)}return v}catch(e){return rUID()}};` +
     `let ref=null;try{const b=h=>h.replace(/^www\\./,'');const h=b(new URL(document.referrer).hostname);if(h&&h!==b(location.host))ref=h}catch(e){}` +
+    // the page names itself by its first path segment: a feast section, or its own route (/app/, /opravy/)
+    `const sec=location.pathname.split('/')[1]||'';const fe=['dusicky','advent','vanoce'].indexOf(sec)>=0;` +
     `fetch(c.u,{method:'POST',keepalive:true,headers:{apikey:c.k,authorization:'Bearer '+c.k,'content-type':'application/json',prefer:'return=minimal'},` +
-    `body:JSON.stringify({app:'bohosluzby',event:'page_view',props:{route:'feast',feast:'dusicky',path:location.pathname,static:true,ref:ref,platform:'web'},` +
+    `body:JSON.stringify({app:'bohosluzby',event:'page_view',props:{route:fe?'feast':sec,feast:fe?sec:undefined,path:location.pathname,static:true,ref:ref,platform:'web'},` +
     `visitor_id:id(localStorage,'fw:vid'),session_id:id(sessionStorage,'fw:sid'),flywheel_uid:null,created_at:new Date().toISOString()})}).catch(()=>{})}catch(e){}})()</script>`
   )
 }
