@@ -19,9 +19,9 @@ Prepared 23 Nov 2026 so that the pass only fills data.
   gives the 30 largest towns, one entry per parish website with its churches (183 sites on 23 Nov).
   The 22 sites that showed a bot wall on 22 Nov (`data/pass-blocked.json`) are listed apart and
   never queued. Remove a site from that file only after it opens normally.
-- **Pill draft:** `data/views-drafts/vanoce.json`, label "Vánoce", shown 19–26 Dec, listing
-  24 Dec from 15:00, 25 and 26 Dec. It is **not live**: screenshots go to Pavol first, then it
-  moves into `public/data/views.json` (data only, over the air). The 1.6 app reads it.
+- **Vánoce pill:** live in `public/data/views.json` (Pavol's OK, 24 Nov), shown 21–26 Dec,
+  listing 24 Dec from 15:00, 25 and 26 Dec. The roráty pill ends 20 Dec, so the row never holds
+  two seasonal pills (FILTRY stays in view at 390 px; a test in `views.test.ts` checks it).
 
 ## Each day, 14–23 Dec (last merge the evening of 23 Dec)
 1. **Read.** Christmas programmes appear in the bulletins of the 3rd and 4th Sundays of Advent
@@ -63,8 +63,7 @@ and `report-<G>.json` (one object per site: `site`, `town`, `status` ok / not-ye
 blocked / error, `url_checked`, `note`); validate the JSON; reply with a five-line summary.
 
 ## Before 19 Dec
-- [ ] Screenshots of the Vánoce pill at 390 px (pill row, the list with it on) to Pavol.
-- [ ] On his OK, move the entry from `data/views-drafts/vanoce.json` into `public/data/views.json`.
+- [x] Vánoce pill: Pavol's OK on the shots (24 Nov); live in `views.json`.
 - [ ] The build Pavol submits carries the `24:00` fix (1.6 build 96 or later).
 
 ## Limits

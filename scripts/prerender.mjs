@@ -15,6 +15,7 @@ import { churchPage, cityItemList } from '../src/domain/churchPage.ts'
 import { embedData } from '../src/domain/embedData.ts'
 import { churchFeastSection, feastBeacon, feastCityPage, feastHubPage } from '../src/domain/feast.ts'
 import { SITE_ORIGIN as ORIGIN } from '../src/domain/site.ts'
+import { appLinkPage } from '../src/domain/appLink.ts'
 import { dioceseOfTown } from '../src/domain/diocese.ts'
 import { seasonCityPage, seasonHubPage } from '../src/domain/season.ts'
 import { loadCorrections } from '../data/corrections.mjs'
@@ -301,6 +302,12 @@ if (CHURCH_PAGES) {
   }
 }
 
+// /app/: the poster's one QR code (src/domain/appLink.ts). A doorway, not a page: noindex and
+// out of the sitemap.
+const appLink = appLinkPage()
+mkdirSync(`${root}dist/app`, { recursive: true })
+writeFileSync(`${root}dist/app/index.html`, staticPage(appLink).replace('</head>', '  <meta name="robots" content="noindex" />\n  </head>'))
+
 const urls = [
   ...['/', ...cities.map((c) => `/mesto/${c.slug}/`), ...feastUrls, '/cerstvost/', ...seasonUrls].map((u) => [u, today]),
   ...churchUrls,
@@ -322,5 +329,5 @@ console.log(
   `prerendered ${cities.length} city pages + ${feastUrls.length} Dušičky pages + ${seasonUrls.length} season pages with .md twins (twins kept out of the sitemap: no canonical on GitHub Pages)` +
     ` (with services — ${SEASON_KINDS.map((k) => `${k}: ${seasonStats[k]}`).join('; ')})` +
     (CHURCH_PAGES ? ` + ${churchUrls.length} church pages` : ' (church pages off — PRERENDER_CHURCHES=1 for the web deploy)') +
-    ' + sitemap.xml + 404.html',
+    ' + /app/ + sitemap.xml + 404.html',
 )

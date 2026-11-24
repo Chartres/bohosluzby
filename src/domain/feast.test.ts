@@ -377,7 +377,7 @@ describe('feastBeacon — the static pages count their own visit', () => {
   })
 
   // run the inline script against a stub browser; returns the posted body, or null
-  const run = (nav: { userAgent: string; webdriver?: boolean }) => {
+  const run = (nav: { userAgent: string; webdriver?: boolean }, pathname = '/dusicky/praha/') => {
     const js = feastBeacon('https://x.supabase.co', 'k').replace(/^<script>|<\/script>$/g, '')
     const store = () => {
       const m = new Map<string, string>()
@@ -386,7 +386,7 @@ describe('feastBeacon — the static pages count their own visit', () => {
     let body: string | null = null
     const fetch = (_u: string, init: { body: string }) => ((body = init.body), Promise.resolve())
     new Function('navigator', 'fetch', 'localStorage', 'sessionStorage', 'location', 'document', js)(
-      nav, fetch, store(), store(), { pathname: '/dusicky/praha/', host: 'bohosluzby.dravec.org' }, { referrer: '' },
+      nav, fetch, store(), store(), { pathname, host: 'bohosluzby.dravec.org' }, { referrer: '' },
     )
     return body ? JSON.parse(body) : null
   }
@@ -397,6 +397,16 @@ describe('feastBeacon — the static pages count their own visit', () => {
     const row = run({ userAgent: iphone })
     expect(row).toMatchObject({ app: 'bohosluzby', event: 'page_view', props: { path: '/dusicky/praha/', static: true } })
     expect(row.visitor_id).toBeTruthy()
+  })
+
+  // every static page used to report feast 'dusicky' (Advent, Christmas, the ledger, the poster's /app/)
+  it('names the page it was sent from: the feast by its section, any other page by its route', () => {
+    expect(run({ userAgent: iphone })!.props).toMatchObject({ route: 'feast', feast: 'dusicky' })
+    expect(run({ userAgent: iphone }, '/advent/brno/')!.props).toMatchObject({ route: 'feast', feast: 'advent' })
+    expect(run({ userAgent: iphone }, '/vanoce/')!.props).toMatchObject({ route: 'feast', feast: 'vanoce' })
+    const poster = run({ userAgent: iphone }, '/app/')!.props
+    expect(poster.route).toBe('app')
+    expect(poster.feast).toBeUndefined()
   })
 
   it('stays silent for crawlers and automated browsers', () => {

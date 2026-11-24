@@ -3,7 +3,6 @@
 // The roráty tests run against the real file, so a data edit that breaks them fails CI.
 import FILE from '../../public/data/views.json'
 import WHATS_NEW from '../../whats-new.json'
-import VANOCE_DRAFT from '../../data/views-drafts/vanoce.json'
 // @ts-expect-error a plain .mjs module
 import { VANOCE_WORDS } from '../../data/vanoce-check.mjs'
 import WHATS_NEW_EN from '../../whats-new.en.json'
@@ -55,11 +54,19 @@ describe('parseViews', () => {
 })
 
 describe('roráty (from views.json)', () => {
-  it('shows from Saturday 28 Nov to 24 Dec', () => {
+  it('shows from Saturday 28 Nov to Sunday 20 Dec, then the Vánoce pill takes its place', () => {
     expect(activeViews(VIEWS, at('2026-11-27', '12:00')).map((v) => v.id)).toEqual([])
     expect(activeViews(VIEWS, at('2026-11-28', '12:00')).map((v) => v.id)).toEqual(['roraty'])
-    expect(activeViews(VIEWS, at('2026-12-24', '12:00')).map((v) => v.id)).toEqual(['roraty'])
-    expect(activeViews(VIEWS, at('2026-12-25', '08:00'))).toEqual([])
+    expect(activeViews(VIEWS, at('2026-12-20', '12:00')).map((v) => v.id)).toEqual(['roraty'])
+    expect(activeViews(VIEWS, at('2026-12-21', '08:00')).map((v) => v.id)).toEqual(['vanoce'])
+    expect(activeViews(VIEWS, at('2026-12-27', '08:00'))).toEqual([])
+  })
+
+  // Pavol, 24 Nov 2026: two seasonal pills push FILTRY off the row at 390 px
+  it('never two seasonal pills on the same day: the row keeps FILTRY in view', () => {
+    for (let t = Date.parse('2026-11-01T12:00:00Z'); t <= Date.parse('2027-01-31T12:00:00Z'); t += 86_400_000) {
+      expect(activeViews(VIEWS, new Date(t)).length).toBeLessThanOrEqual(1)
+    }
   })
 
   it('lists the next 7 days', () => {
@@ -113,10 +120,10 @@ describe('a dated view (the shape Christmas will use)', () => {
   })
 })
 
-// The Christmas pill draft (data/views-drafts/vanoce.json, docs/VANOCE-PASS.md): goes live by moving
-// into views.json after Pavol's OK. It keeps what the Christmas notices give, never a weekly row.
-describe('the Vánoce pill draft', () => {
-  const [vanoce] = parseViews(VANOCE_DRAFT)
+// The Christmas pill (live in views.json since Pavol's OK, 24 Nov 2026; docs/VANOCE-PASS.md).
+// It keeps what the Christmas notices give, never a weekly row.
+describe('the Vánoce pill (views.json)', () => {
+  const vanoce = VIEWS.find((v) => v.id === 'vanoce')!
   it('is a valid entry, and matches the words every Christmas record must carry', () => {
     expect(vanoce?.id).toBe('vanoce')
     expect(vanoce.match.text).toEqual(VANOCE_WORDS)
@@ -134,8 +141,5 @@ describe('the Vánoce pill draft', () => {
     expect(viewLabel(vanoce, up(fri, '2026-12-25', '09:00'), svc())).toBeNull()
     const marked = svc([{ date: '2026-12-25', time: '9:00', note: 'slavnost Narození Páně' }])
     expect(viewLabel(vanoce, up(weekly('5', '09:00', 'mše sv.'), '2026-12-25', '09:00'), marked)).toBe('slavnost Narození Páně')
-  })
-  it('shows from 19 Dec, next to the roráty pill', () => {
-    expect(activeViews([...VIEWS, vanoce], at('2026-12-20', '12:00')).map((v) => v.id)).toEqual(['roraty', 'vanoce'])
   })
 })
