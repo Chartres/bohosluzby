@@ -3,14 +3,100 @@
   "views": [
     {
       "id": "roraty",
-      "label": { "cs": "roráty", "en": "roráty" },
-      "aria": { "cs": "Roráty v příštích sedmi dnech", "en": "Roráty (Advent dawn Masses) in the next seven days" },
-      "show": { "from": "2026-11-28", "to": "2026-12-24" },
-      "days": { "next": 7 },
+      "label": {
+        "cs": "roráty",
+        "en": "roráty"
+      },
+      "aria": {
+        "cs": "Roráty v příštích sedmi dnech",
+        "en": "Roráty (Advent dawn Masses) in the next seven days"
+      },
+      "show": {
+        "from": "2026-11-28",
+        "to": "2026-12-20"
+      },
+      "days": {
+        "next": 7
+      },
       "match": {
-        "text": ["rorát"],
-        "weekly": { "also": ["advent"], "skipWeekdays": [7], "skipDates": ["2026-12-08"], "skipPastYearNotes": true },
-        "mark": ["rorát"]
+        "text": [
+          "rorát"
+        ],
+        "weekly": {
+          "also": [
+            "advent"
+          ],
+          "skipWeekdays": [
+            7
+          ],
+          "skipDates": [
+            "2026-12-08"
+          ],
+          "skipPastYearNotes": true
+        },
+        "mark": [
+          "rorát"
+        ]
+      }
+    },
+    {
+      "id": "vanoce",
+      "label": {
+        "cs": "Vánoce",
+        "en": "Christmas"
+      },
+      "aria": {
+        "cs": "Půlnoční a vánoční mše podle ohlášek farností",
+        "en": "Midnight and Christmas Masses from parish notices"
+      },
+      "show": {
+        "from": "2026-12-21",
+        "to": "2026-12-26"
+      },
+      "days": {
+        "dates": [
+          {
+            "date": "2026-12-24",
+            "from": "15:00"
+          },
+          {
+            "date": "2026-12-25"
+          },
+          {
+            "date": "2026-12-26"
+          }
+        ]
+      },
+      "match": {
+        "text": [
+          "půlnoční",
+          "štědrovečer",
+          "vigili",
+          "narození páně",
+          "štěpán",
+          "jitřní",
+          "pastýřsk"
+        ],
+        "weekly": {
+          "skipWeekdays": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        "mark": [
+          "půlnoční",
+          "štědrovečer",
+          "vigili",
+          "narození páně",
+          "štěpán",
+          "jitřní",
+          "pastýřsk"
+        ]
       }
     }
   ]

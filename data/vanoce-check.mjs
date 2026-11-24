@@ -11,7 +11,7 @@ import { christmasOf, seasonSections } from '../src/domain/season.ts'
 
 const HERE = `${dirname(fileURLToPath(import.meta.url))}/`
 /** Words that name a Christmas Mass. The note of every add carries one, so the /vanoce/ page,
- * its calendar events and the Vánoce pill (data/views-drafts/vanoce.json) pick the row up. */
+ * its calendar events and the Vánoce pill (public/data/views.json, id vanoce) pick the row up. */
 export const VANOCE_WORDS = ['půlnoční', 'štědrovečer', 'vigili', 'narození páně', 'štěpán', 'jitřní', 'pastýřsk']
 const namesMass = (note) => VANOCE_WORDS.some((w) => (note ?? '').toLowerCase().includes(w))
 const toMin = (t) => {
