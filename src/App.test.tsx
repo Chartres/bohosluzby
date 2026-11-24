@@ -928,7 +928,7 @@ describe('Marie finds the nearest mass', () => {
     expect(seznam().queryByText(/^trasa$/i)).toBeNull()
   })
 
-  it("signature (Pavol, 24 Nov 2026): the masthead's season mark is the day's stained glass, and a ribbon marks the page", async () => {
+  it("signature (Pavol, 24 Nov 2026): the masthead carries the arch mark and the day's stained glass, no ribbon", async () => {
     stubGeolocation('granted')
     render(<App />)
     await screen.findByText(/Salvátora/)
@@ -939,10 +939,12 @@ describe('Marie finds the nearest mass', () => {
     expect(glass.getAttribute('data-seed')).toBe('20260703')
     expect(glass).toHaveAttribute('aria-hidden', 'true')
     expect(header.className).not.toMatch(/border-b-2/)
-    // the ribbon scrolls with the page (not sticky over the rows' icons) and says nothing to a screen reader
-    const ribbon = document.querySelector('main [data-ribbon]')!
-    expect(ribbon).toHaveAttribute('aria-hidden', 'true')
-    expect(header.contains(ribbon)).toBe(false)
+    // the logo (the app icon's arch) stands before the wordmark, decorative for screen readers
+    const mark = header.querySelector('h1 [data-mark]')!
+    expect(mark).toHaveAttribute('aria-hidden', 'true')
+    expect(header.querySelector('h1')!.textContent).toBe('Kam na mši')
+    // "a bookmark coming out of the stained glass doesn't make sense" (24 Nov): no ribbon
+    expect(document.querySelector('[data-ribbon]')).toBeNull()
   })
 
   it('feasts: Sunday 5 Jul (Cyril a Metoděj) is highlighted in the picker and named in the header', async () => {
@@ -992,8 +994,6 @@ describe('Marie finds the nearest mass', () => {
     const line = await screen.findByTestId('day-line')
     const bold = line.querySelector('.font-semibold')
     expect(bold?.textContent).toContain(time)
-    // the ribbon marks the list, not the church page (it would sit on the photo and the help link)
-    expect(document.querySelector('[data-ribbon]')).toBeNull()
   })
 
   it('detail: a provably-paused service row is muted with "nyní se nekoná"', async () => {

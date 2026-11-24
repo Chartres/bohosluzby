@@ -20,7 +20,7 @@ import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domai
 import { aggregateCities, cityLabel, findCity, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip } from './ChurchDetail'
-import { GlassBand, Ribbon } from './StainedGlass'
+import { ArchMark, GlassBand } from './StainedGlass'
 import { NavSheet, type NavTarget } from './NavSheet'
 import { IntroGuide } from './IntroGuide'
 import { SearchPicker } from './SearchPicker'
@@ -851,7 +851,10 @@ export default function App() {
             "nápověda" link is hidden in map mode (the default view), so the
             re-open lives in the masthead where it survives every view. */}
         <div className="flex items-baseline justify-between gap-3">
-          <h1 className="font-display text-xl font-bold tracking-tight">Kam na mši</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">
+            <ArchMark />
+            Kam na mši
+          </h1>
           <button
             type="button"
             onClick={() => setIntroOpen(true)}
@@ -868,8 +871,7 @@ export default function App() {
       </header>
       )}
 
-      <main className={mapMode ? 'flex min-h-0 flex-1 flex-col' : 'relative flex-1 pb-10'}>
-        {!mapMode && route.view !== 'church' && <Ribbon />}
+      <main className={mapMode ? 'flex min-h-0 flex-1 flex-col' : 'flex-1 pb-10'}>
         {dataError && (
           <p className="mt-10 text-ink-faded" role="alert">
             {t('data_error')}

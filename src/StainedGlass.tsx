@@ -1,5 +1,5 @@
 // The signature (Pavol, 24 Nov 2026): the masthead's season rule is a band of stained glass in
-// the day's liturgical colour, and a ribbon bookmark hangs at the top of the page, as in a missal.
+// the day's liturgical colour, under the arch mark and the wordmark.
 // Procedural, no images: panes are cut from a jittered grid (even sizes, no slivers), leaded by
 // a Voronoi edge, coloured by glassPalette (src/domain/glass.ts). The Prague date seeds the window,
 // so a day keeps its glass and the next day gets new glass. Nothing moves.
@@ -100,19 +100,15 @@ export function GlassBand({ seed, color, height = 10 }: { seed: number; color: G
   )
 }
 
-/** The missal's ribbon: hangs from the top of the page in the season colour, notched at the end. */
-export function Ribbon() {
+/** The app icon's arch (public/favicon.svg), set before the wordmark in the season's rubric red. */
+export function ArchMark({ size = 22 }: { size?: number }) {
   return (
-    <span
-      aria-hidden="true"
-      data-ribbon=""
-      className="pointer-events-none absolute top-0 right-6 z-10 block h-11 w-2 sm:right-10"
-      style={{
-        background:
-          'linear-gradient(90deg, color-mix(in srgb, var(--season) 78%, black), var(--season) 45%, color-mix(in srgb, var(--season) 72%, black))',
-        clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 86%, 0 100%)',
-        boxShadow: '0 1px 2px rgb(0 0 0 / 0.2)',
-      }}
-    />
+    <svg data-mark="" aria-hidden="true" viewBox="0 0 32 32" width={size} height={size} className="mr-1.5 inline-block align-[-0.12em]">
+      <path
+        fill="var(--color-rubric)"
+        fillRule="evenodd"
+        d="M8 28 L8 13 A13 13 0 0 1 16 3 A13 13 0 0 1 24 13 L24 28 Z M11.5 28 L11.5 13 A7.5 7.5 0 0 1 16 6.5 A7.5 7.5 0 0 1 20.5 13 L20.5 28 Z"
+      />
+    </svg>
   )
 }
