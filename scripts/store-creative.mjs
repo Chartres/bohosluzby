@@ -36,7 +36,7 @@ p { font-family: Sans; font-size: var(--lead); color: #655c4d; line-height: 1.25
 .phones .phone:nth-child(2) { transform: translateY(calc(var(--phone) * 0.06)); }
 `
 const MARK = `<svg class="mark" viewBox="0 0 32 32"><path fill="#9a2b1e" fill-rule="evenodd" d="M8 28 L8 13 A13 13 0 0 1 16 3 A13 13 0 0 1 24 13 L24 28 Z M11.5 28 L11.5 13 A7.5 7.5 0 0 1 16 6.5 A7.5 7.5 0 0 1 20.5 13 L20.5 28 Z"/></svg>`
-const words = (align) => `<div style="text-align:${align}">${MARK}<h1 style="margin-top:calc(var(--lead)*0.5)">Kam na mši</h1><div class="rule" style="${align === 'center' ? 'margin-inline:auto' : ''}"></div><p>Nejbližší mše svatá podle polohy.<br>Kterou dnes ještě stihnete.</p></div>`
+const words = (align) => `<div style="text-align:${align}">${MARK}<h1 style="margin-top:calc(var(--lead)*0.5)">Kam na mši</h1><div class="rule" style="${align === 'center' ? 'margin-inline:auto' : ''}"></div><p>Nejbližší mše svatá, kterou dnes ještě stihnete.</p></div>`
 const phones = `<div class="phones"><div class="phone"><img src="${shot('1-map')}"></div><div class="phone"><img src="${shot('3-detail')}"></div></div>`
 
 const ASSETS = [
