@@ -928,6 +928,25 @@ describe('Marie finds the nearest mass', () => {
     expect(seznam().queryByText(/^trasa$/i)).toBeNull()
   })
 
+  it("signature (Pavol, 24 Nov 2026): the masthead carries the arch mark and the day's stained glass, no ribbon", async () => {
+    stubGeolocation('granted')
+    render(<App />)
+    await screen.findByText(/Salvátora/)
+    const header = document.querySelector('header')!
+    // 3 Jul 2026: ordinary time, green glass; the day's date seeds the window
+    const glass = header.querySelector('[data-glass]')!
+    expect(glass.getAttribute('data-glass')).toBe('green')
+    expect(glass.getAttribute('data-seed')).toBe('20260703')
+    expect(glass).toHaveAttribute('aria-hidden', 'true')
+    expect(header.className).not.toMatch(/border-b-2/)
+    // the logo (the app icon's arch) stands before the wordmark, decorative for screen readers
+    const mark = header.querySelector('h1 [data-mark]')!
+    expect(mark).toHaveAttribute('aria-hidden', 'true')
+    expect(header.querySelector('h1')!.textContent).toBe('Kam na mši')
+    // "a bookmark coming out of the stained glass doesn't make sense" (24 Nov): no ribbon
+    expect(document.querySelector('[data-ribbon]')).toBeNull()
+  })
+
   it('feasts: Sunday 5 Jul (Cyril a Metoděj) is highlighted in the picker and named in the header', async () => {
     stubGeolocation('granted')
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })

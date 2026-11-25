@@ -20,6 +20,7 @@ import { fmtDistance, fmtTime, fmtUntil, dayLabel, samePragueDay } from './domai
 import { aggregateCities, cityLabel, findCity, type City } from './domain/cities'
 import { BANDS, bandFullyPast, bandLabel, halfHoursFrom, parseCas, resolveCasDay, type Band } from './domain/timeband'
 import { ChurchDetail, Chip } from './ChurchDetail'
+import { ArchMark, GlassBand } from './StainedGlass'
 import { NavSheet, type NavTarget } from './NavSheet'
 import { IntroGuide } from './IntroGuide'
 import { SearchPicker } from './SearchPicker'
@@ -836,11 +837,10 @@ export default function App() {
       <header
         className={
           mapMode
-            ? 'mx-auto w-full max-w-2xl border-b-2 px-5 pb-2 sm:px-8'
-            : 'sticky top-0 z-30 -mx-5 border-b-2 bg-paper px-5 pb-2 sm:-mx-8 sm:px-8'
+            ? 'mx-auto w-full max-w-2xl px-5 pb-2 sm:px-8'
+            : 'sticky top-0 z-30 -mx-5 bg-paper px-5 pb-2 sm:-mx-8 sm:px-8'
         }
         style={{
-          borderColor: 'var(--season)',
           // sticky top-0 pins at the VIEWPORT top — on iOS that's under the
           // status bar/Dynamic Island. Pad by the safe area so the wordmark
           // never collides with the clock (env() is 0 on desktop web).
@@ -851,7 +851,10 @@ export default function App() {
             "nápověda" link is hidden in map mode (the default view), so the
             re-open lives in the masthead where it survives every view. */}
         <div className="flex items-baseline justify-between gap-3">
-          <h1 className="font-display text-xl font-bold tracking-tight">Kam na mši</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">
+            <ArchMark />
+            Kam na mši
+          </h1>
           <button
             type="button"
             onClick={() => setIntroOpen(true)}
@@ -860,6 +863,10 @@ export default function App() {
           >
             ? {t('intro_help')}
           </button>
+        </div>
+        {/* the season mark: the day's stained glass in the liturgical colour (src/StainedGlass.tsx) */}
+        <div className="-mx-5 mt-2 -mb-2 sm:-mx-8">
+          <GlassBand seed={Number(pragueIsoDate(now).replaceAll('-', ''))} color={season.color} />
         </div>
       </header>
       )}
