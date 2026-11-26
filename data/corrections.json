@@ -2345,6 +2345,344 @@
    "source_date": "Ohlášky neděle 22. listopadu 2026",
    "quote": "během adventní doby budou středeční mše svaté u sv. Markéty v 6.30 se zpěvy rorát.",
    "checked": "2026-11-23"
+  },
+  {
+   "id": "80002154787703",
+   "church": "kostel farní sv. Václava",
+   "town": "brno",
+   "dates": [
+    "2026-12-05"
+   ],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnost-obrany.cz/",
+   "source_date": "Kalendář akcí ve farnosti pro adventní a vánoční období 2026/2027",
+   "quote": "5. 12. 2026 v 7,00 v kostele Mše svatá se zpěvem rorátů. Následuje společná snídaně ve farním centru.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "1000895",
+   "church": "kaple sv. Terezie z Kalkaty, Praha-Chodov",
+   "town": "praha",
+   "from": "2026-12-03",
+   "to": "2026-12-23",
+   "days": "45",
+   "add": [
+    [
+     "06:45",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.kcmt.cz/aktualni-temata/advent-a-vse-co-se-k-nemu-vztahuje/adventni-roraty-2026/",
+   "source_date": "Adventní roráty 2026 (22. 11. 2026)",
+   "quote": "Mše svaté jsou každý adventní týden ve čtvrtek a v pátek od 6:45 v KCMT. U svatého Františka se na roráty můžete těšit každou adventní sobotu v 8:00.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "1000100",
+   "church": "farní kostel sv. Františka z Assisi, Praha-Chodov",
+   "town": "praha",
+   "from": "2026-12-05",
+   "to": "2026-12-19",
+   "days": "6",
+   "add": [
+    [
+     "08:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.kcmt.cz/aktualni-temata/advent-a-vse-co-se-k-nemu-vztahuje/adventni-roraty-2026/",
+   "source_date": "Adventní roráty 2026 (22. 11. 2026)",
+   "quote": "Mše svaté jsou každý adventní týden ve čtvrtek a v pátek od 6:45 v KCMT. U svatého Františka se na roráty můžete těšit každou adventní sobotu v 8:00.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "100093",
+   "church": "filiální kostel Svaté Rodiny, Praha-Řepy",
+   "town": "praha",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "12345",
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnostrepy.cz/",
+   "source_date": "aktuality: po. 30. listopad 2026",
+   "quote": "Roráty v době adventní budou v kostele Sv. Rodiny od pondělí do pátku v 7:00, v sobotu pak v 7:30.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "100093",
+   "church": "filiální kostel Svaté Rodiny, Praha-Řepy",
+   "town": "praha",
+   "from": "2026-12-05",
+   "to": "2026-12-19",
+   "days": "6",
+   "add": [
+    [
+     "07:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnostrepy.cz/",
+   "source_date": "aktuality: po. 30. listopad 2026",
+   "quote": "Roráty v době adventní budou v kostele Sv. Rodiny od pondělí do pátku v 7:00, v sobotu pak v 7:30.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "80002289438838",
+   "church": "kostel farní sv. Jana Křtitele a sv. Jana Evangelisty",
+   "town": "brno",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "12345",
+   "except": [
+    "2026-12-08",
+    "2026-12-10"
+   ],
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty, staročeské"
+    ]
+   ],
+   "source": "https://brno.minorite.cz/roraty-7/",
+   "source_date": "Roráty, publikováno 25.11.2026",
+   "quote": "Srdečně vás zveme na rorátní mše svaté se staročeskými zpěvy, od pondělí do pátku v 6:30 hod. a v sobotu v 8:00 hod., kromě slavností. To znamená, že v úterý 8. a ve čtvrtek 10. prosince Roráty nebudou.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "80002289438838",
+   "church": "kostel farní sv. Jana Křtitele a sv. Jana Evangelisty",
+   "town": "brno",
+   "from": "2026-12-05",
+   "to": "2026-12-19",
+   "days": "6",
+   "add": [
+    [
+     "08:00",
+     "mše sv.",
+     "roráty, staročeské"
+    ]
+   ],
+   "source": "https://brno.minorite.cz/roraty-7/",
+   "source_date": "Roráty, publikováno 25.11.2026",
+   "quote": "Srdečně vás zveme na rorátní mše svaté se staročeskými zpěvy, od pondělí do pátku v 6:30 hod. a v sobotu v 8:00 hod., kromě slavností. To znamená, že v úterý 8. a ve čtvrtek 10. prosince Roráty nebudou.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "70003317187611",
+   "church": "farní kostel sv. Michala, archanděla",
+   "town": "olomouc",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "123456",
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "http://svatymichal.cz/cs/oznamenii.html",
+   "source_date": "Program v 34. týdnu liturgického mezidobí (Ne 22. 11. 2026)",
+   "quote": "V adventu budou Roráty – mše svaté od pondělí do soboty vždy 6:30 hodin kostele sv. Michala, které bude mít otec biskup Mons. Antonín Basler.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "100053",
+   "church": "farní kostel sv. Václava, Praha-Smíchov",
+   "town": "praha",
+   "dates": [
+    "2026-12-24"
+   ],
+   "add": [
+    [
+     "07:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnostsmichov.cz/blog_clanek/vanocni-bohosluzby-28252",
+   "source_date": "Vánoční bohoslužby, zveřejněno 23.11.2026",
+   "quote": "Zveme vás do baziliky sv. Václava na Smíchově na vánoční bohoslužby … Na Štědrý den 24. prosince budeme slavit rorátní mši svatou v 7:30",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "80001476711697",
+   "church": "kostel farní sv. Vavřince",
+   "town": "brno",
+   "dates": [
+    "2026-11-30"
+   ],
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://farnostreckovice.cz/farni-kalendar/",
+   "source_date": "farní kalendář, Pondělí 30. 11. 2026",
+   "quote": "Pondělí 30. 11. 2026 6:30 Mše svatá - roráty 7:15 Rorátní snídaně",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "80002633679889",
+   "church": "kostel farní sv. Jiljí",
+   "town": "brno",
+   "from": "2026-12-01",
+   "to": "2026-12-23",
+   "days": "2345",
+   "except": [],
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://farnostlisen.cz/",
+   "source_date": "Aktuality 22.11.2026 – Slavnost Ježíše Krista Krále",
+   "quote": "V adventní době nás budou čekat tradiční roráty, a to úterý až pátek v 6.30 v kostele sv. Jiljí a v sobotu v 6.30 na Kostelíčku.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "80003767518802",
+   "church": "kaple Panny Marie Pomocnice",
+   "town": "brno",
+   "from": "2026-12-05",
+   "to": "2026-12-19",
+   "days": "6",
+   "except": [],
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://farnostlisen.cz/",
+   "source_date": "Aktuality 22.11.2026 – Slavnost Ježíše Krista Krále",
+   "quote": "V adventní době nás budou čekat tradiční roráty, a to úterý až pátek v 6.30 v kostele sv. Jiljí a v sobotu v 6.30 na Kostelíčku.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "1000126",
+   "church": "filiální kostel sv. Rocha, Šebestiána a Rosálie, Praha-Žižkov",
+   "town": "praha",
+   "from": "2026-12-02",
+   "to": "2026-12-23",
+   "days": "35",
+   "except": [],
+   "add": [
+    [
+     "06:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "http://www.farnost-zizkov.cz/masses_calendar.php",
+   "source_date": "Kalendář bohoslužeb 2026 (st/pá 2.–23. 12. 2026; další strany ?page=2)",
+   "quote": "st 02.12. 06:00 Kostel sv. Rocha Mše svatá Rorátní mše sv. … pá 04.12. 06:00 Kostel sv. Rocha Mše sv. Rorátní mše sv.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "80004204845001",
+   "church": "kostel farní sv. Jana Nepomuckého",
+   "town": "brno",
+   "dates": [
+    "2026-12-05",
+    "2026-12-12",
+    "2026-12-19"
+   ],
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://www.farnostliskovec.cz/wp-content/uploads/2026/11/0001-3.jpg",
+   "source_date": "Johánek – novinky, neděle 22.11.2026 (scan on ohlášky page)",
+   "quote": "5.12. Rorátní mše svatá I. v 6:30 … 12.12. Rorátní mše svatá II. v 6:30 … 19.12. Rorátní mše svatá III. v 6:30",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "70003258982922",
+   "church": "farní kostel Povýšení svatého Kříže",
+   "town": "prostejov",
+   "from": "2026-11-30",
+   "to": "2026-12-23",
+   "days": "12345",
+   "except": [
+    "2026-12-17"
+   ],
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "http://povyseni.dpv.cz/akce/2026/roraty-2026",
+   "source_date": "Kalendář farnosti: Roráty 2026 (30. 11. 2026)",
+   "quote": "Roráty 2026 30. 11. 2026 Ve všední dny adventu v 6:30 v kostele Povýšení svatého Kříže, po mši snídaně na faře.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "1000124",
+   "church": "farní kostel sv. Vojtěcha, Praha-Na Balkáně",
+   "town": "praha",
+   "from": "2026-12-02",
+   "to": "2026-12-23",
+   "days": "3",
+   "except": [],
+   "add": [
+    [
+     "06:30",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "http://www.farnost-nabalkane.cz/",
+   "source_date": "úvodní stránka, oznámení k 1. adventní neděli 29. 11. 2026 (též Nedělní stránka 43/2026, 22. 11. 2026)",
+   "quote": "Příští neděli, 29. listopadu bude 1. adventní neděle. V průběhu adventu budou středeční mše ráno v 6:30 se zpěvem rorátů.",
+   "checked": "2026-11-26"
+  },
+  {
+   "id": "50001664090132",
+   "church": "farní kostel Svatého Ducha",
+   "town": "ostrava",
+   "dates": [
+    "2026-12-05",
+    "2026-12-12",
+    "2026-12-19"
+   ],
+   "add": [
+    [
+     "07:00",
+     "mše sv.",
+     "roráty"
+    ]
+   ],
+   "source": "https://farnostoz.cz/wp-content/uploads/2026/11/advent_vanoce_2026.pdf",
+   "source_date": "Advent a Vánoce 2026 (příspěvek 23. 11. 2026)",
+   "quote": "5. 12. sobota 7.00 RORÁTY, kostel Sv. Ducha; 12. 12. sobota 7.00 RORÁTY, kostel Sv. Ducha; 19. 12. sobota 7.00 RORÁTY, kostel Sv. Ducha",
+   "checked": "2026-11-26"
   }
  ]
 }

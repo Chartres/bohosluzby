@@ -1,0 +1,1025 @@
+{
+ "date": "2026-11-26",
+ "what": "Roráty pass day 2: re-read of 134 open sites (not-yet, held, error after 22–23 Nov). 17 records, independent review PASS on all; Rozdělov held (undated poster).",
+ "records": [
+  {
+   "id": "80002154787703",
+   "church": "kostel farní sv. Václava",
+   "town": "brno",
+   "source": "https://www.farnost-obrany.cz/"
+  },
+  {
+   "id": "1000895",
+   "church": "kaple sv. Terezie z Kalkaty, Praha-Chodov",
+   "town": "praha",
+   "source": "https://www.kcmt.cz/aktualni-temata/advent-a-vse-co-se-k-nemu-vztahuje/adventni-roraty-2026/"
+  },
+  {
+   "id": "1000100",
+   "church": "farní kostel sv. Františka z Assisi, Praha-Chodov",
+   "town": "praha",
+   "source": "https://www.kcmt.cz/aktualni-temata/advent-a-vse-co-se-k-nemu-vztahuje/adventni-roraty-2026/"
+  },
+  {
+   "id": "100093",
+   "church": "filiální kostel Svaté Rodiny, Praha-Řepy",
+   "town": "praha",
+   "source": "https://www.farnostrepy.cz/"
+  },
+  {
+   "id": "100093",
+   "church": "filiální kostel Svaté Rodiny, Praha-Řepy",
+   "town": "praha",
+   "source": "https://www.farnostrepy.cz/"
+  },
+  {
+   "id": "80002289438838",
+   "church": "kostel farní sv. Jana Křtitele a sv. Jana Evangelisty",
+   "town": "brno",
+   "source": "https://brno.minorite.cz/roraty-7/"
+  },
+  {
+   "id": "80002289438838",
+   "church": "kostel farní sv. Jana Křtitele a sv. Jana Evangelisty",
+   "town": "brno",
+   "source": "https://brno.minorite.cz/roraty-7/"
+  },
+  {
+   "id": "70003317187611",
+   "church": "farní kostel sv. Michala, archanděla",
+   "town": "olomouc",
+   "source": "http://svatymichal.cz/cs/oznamenii.html"
+  },
+  {
+   "id": "100053",
+   "church": "farní kostel sv. Václava, Praha-Smíchov",
+   "town": "praha",
+   "source": "https://www.farnostsmichov.cz/blog_clanek/vanocni-bohosluzby-28252"
+  },
+  {
+   "id": "80001476711697",
+   "church": "kostel farní sv. Vavřince",
+   "town": "brno",
+   "source": "https://farnostreckovice.cz/farni-kalendar/"
+  },
+  {
+   "id": "80002633679889",
+   "church": "kostel farní sv. Jiljí",
+   "town": "brno",
+   "source": "https://farnostlisen.cz/"
+  },
+  {
+   "id": "80003767518802",
+   "church": "kaple Panny Marie Pomocnice",
+   "town": "brno",
+   "source": "https://farnostlisen.cz/"
+  },
+  {
+   "id": "1000126",
+   "church": "filiální kostel sv. Rocha, Šebestiána a Rosálie, Praha-Žižkov",
+   "town": "praha",
+   "source": "http://www.farnost-zizkov.cz/masses_calendar.php"
+  },
+  {
+   "id": "80004204845001",
+   "church": "kostel farní sv. Jana Nepomuckého",
+   "town": "brno",
+   "source": "https://www.farnostliskovec.cz/wp-content/uploads/2026/11/0001-3.jpg"
+  },
+  {
+   "id": "70003258982922",
+   "church": "farní kostel Povýšení svatého Kříže",
+   "town": "prostejov",
+   "source": "http://povyseni.dpv.cz/akce/2026/roraty-2026"
+  },
+  {
+   "id": "1000124",
+   "church": "farní kostel sv. Vojtěcha, Praha-Na Balkáně",
+   "town": "praha",
+   "source": "http://www.farnost-nabalkane.cz/"
+  },
+  {
+   "id": "50001664090132",
+   "church": "farní kostel Svatého Ducha",
+   "town": "ostrava",
+   "source": "https://farnostoz.cz/wp-content/uploads/2026/11/advent_vanoce_2026.pdf"
+  }
+ ],
+ "review": [
+  {
+   "id": "80002154787703",
+   "church": "kostel farní sv. Václava",
+   "verdict": "PASS",
+   "reason": "Obřany parish calendar 'Kalendář akcí ... 2026/2027' lists '5. 12. 2026 v 7,00 v kostele Mše svatá se zpěvem rorátů'; single parish church sv. Václava."
+  },
+  {
+   "id": "1000895",
+   "church": "kaple sv. Terezie z Kalkaty, Praha-Chodov",
+   "verdict": "PASS",
+   "reason": "KCMT article 'Adventní roráty 2026' dated 22. 11. 2026: Thu+Fri 6:45 in KCMT (Háje, U Modré školy 1 = registry chapel coords; site calls it 'kaple KCMT'), matches Thu/Fri 3.–23. 12."
+  },
+  {
+   "id": "1000100",
+   "church": "farní kostel sv. Františka z Assisi, Praha-Chodov",
+   "verdict": "PASS",
+   "reason": "Same KCMT 'Adventní roráty 2026' (22. 11. 2026): 'U svatého Františka ... každou adventní sobotu v 8:00' = Sat 5/12/19 Dec 08:00."
+  },
+  {
+   "id": "100093",
+   "church": "filiální kostel Svaté Rodiny, Praha-Řepy",
+   "verdict": "PASS",
+   "reason": "Řepy aktuality 'po.30. listopad 2026': roráty in kostel Sv. Rodiny Mon–Fri 7:00, matches 30. 11.–23. 12. days 12345."
+  },
+  {
+   "id": "100093",
+   "church": "filiální kostel Svaté Rodiny, Praha-Řepy",
+   "verdict": "PASS",
+   "reason": "Řepy aktuality 'po.30. listopad 2026': Sv. Rodiny Saturdays 7:30, matches Sat 5–19 Dec."
+  },
+  {
+   "id": "80002289438838",
+   "church": "kostel farní sv. Jana Křtitele a sv. Jana Evangelisty",
+   "verdict": "PASS",
+   "reason": "Minorité post 'Roráty' 25.11.2026: Mon–Fri 6:30 except Tue 8. and Thu 10. prosince (Tue/Thu in 2026), matches record incl. except list."
+  },
+  {
+   "id": "80002289438838",
+   "church": "kostel farní sv. Jana Křtitele a sv. Jana Evangelisty",
+   "verdict": "PASS",
+   "reason": "Minorité post 25.11.2026: Saturday rorate 8:00, matches Sat 5–19 Dec."
+  },
+  {
+   "id": "70003317187611",
+   "church": "farní kostel sv. Michala, archanděla",
+   "verdict": "PASS",
+   "reason": "sv. Michal notice 'Program v 34. týdnu liturgického mezidobí' (Ne 22. 11. = Christ the King, a 2026 Sunday; page also lists 2026-2027): roráty Mon–Sat 6:30 in kostel sv. Michala; first fetch 503, retry 200."
+  },
+  {
+   "id": "100053",
+   "church": "farní kostel sv. Václava, Praha-Smíchov",
+   "verdict": "PASS",
+   "reason": "Smíchov 'Vánoční bohoslužby' published 23.11.2026 (program 24. 12. 2026–6. 1. 2027): rorátní mše on 24 Dec at 7:30 in the basilica sv. Václava."
+  },
+  {
+   "id": "80001476711697",
+   "church": "kostel farní sv. Vavřince",
+   "verdict": "PASS",
+   "reason": "Řečkovice farní kalendář 'Pondělí 30. 11. 2026 6:30 Mše svatá - roráty'; single parish church sv. Vavřince."
+  },
+  {
+   "id": "80002633679889",
+   "church": "kostel farní sv. Jiljí",
+   "verdict": "PASS",
+   "reason": "Líšeň aktuality '22.11.2026': roráty Tue–Fri 6:30 in kostel sv. Jiljí, matches 1.–23. 12. days 2345."
+  },
+  {
+   "id": "80003767518802",
+   "church": "kaple Panny Marie Pomocnice",
+   "verdict": "PASS",
+   "reason": "Líšeň aktuality '22.11.2026': Saturday 6:30 'na Kostelíčku'; parish history page names it 'poutní kaple Panny Marie na Kostelíčku' (Panny Marie Pomocné), matching kaple Panny Marie Pomocnice; Sat 5–19 Dec."
+  },
+  {
+   "id": "1000126",
+   "church": "filiální kostel sv. Rocha, Šebestiána a Rosálie, Praha-Žižkov",
+   "verdict": "PASS",
+   "reason": "Žižkov calendar 'Zobrazené období 26.11.2026–25.01.2027' pages 1–2: Rorátní mše 06:00 Kostel sv. Rocha on Wed/Fri 2,4,9,11,16,18,23 Dec."
+  },
+  {
+   "id": "80004204845001",
+   "church": "kostel farní sv. Jana Nepomuckého",
+   "verdict": "PASS",
+   "reason": "Lískovec scan 'Johánek – novinky, Neděle 22.11.2026' (parish u kostela sv. Jana Nepomuckého): Rorátní mše svatá I./II./III. v 6:30 on 5.12., 12.12., 19.12."
+  },
+  {
+   "id": "70003258982922",
+   "church": "farní kostel Povýšení svatého Kříže",
+   "verdict": "PASS",
+   "reason": "Prostějov 'Roráty 2026' event: weekdays 6:30 in kostel Povýšení sv. Kříže, dated list 30. 11.–23. 12. 2026 Mon–Fri with only čtvrtek 17. 12. missing."
+  },
+  {
+   "id": "1000124",
+   "church": "farní kostel sv. Vojtěcha, Praha-Na Balkáně",
+   "verdict": "PASS",
+   "reason": "Na Balkáně homepage (adjacent item dated 25. listopadu 2026; '29. listopadu' Sunday = 1st Advent 2026): Wednesday Masses 6:30 with roráty during Advent, matches Wed 2–23 Dec."
+  },
+  {
+   "id": "50001664090132",
+   "church": "farní kostel Svatého Ducha",
+   "verdict": "PASS",
+   "reason": "PDF 'ADVENT A VÁNOCE 2026': 7.00 RORÁTY, kostel Sv. Ducha on sobota 5. 12., 12. 12., 19. 12."
+  }
+ ],
+ "sites": [
+  {
+   "site": "http://www.svatyjindrich.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Ohlášky still the Krista Krále set (Advent wreaths, seminar weekends); no roráty."
+  },
+  {
+   "site": "http://www.srdcepane.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Latest oznámení still 22. 11. 2026 PDF (read before, no roráty); no newer notice."
+  },
+  {
+   "site": "http://www.farnostpetr.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Article 'Roráty' 29.11.2026 still title and date only, no days/time."
+  },
+  {
+   "site": "https://farnostnebusice.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Ohlášky still 1. 11. 2026; no roráty."
+  },
+  {
+   "site": "https://www.farnostprahapodoli.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Ohlášky 22.11.-29.11.2026 page has no roráty text."
+  },
+  {
+   "site": "http://www.svatyantonin.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Advent 2026 page: roráty only at Sunday 7:55 Masses ('ranní nedělní mše svaté začínají už v 7:55 za zpěvu rorátů') and a concert performance of roráty Tue 1. 12. at sv. Klimenta; no weekday roráty Mass (Sat 5. 12. 7:30 sv. Klimenta is 'ranní adventní mše svatá', not called roráty)."
+  },
+  {
+   "site": "http://www.trs-farnosti.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Latest ohlášky still 34. mezidobí PDF (read before, no roráty)."
+  },
+  {
+   "site": "http://www.opatstvibrno.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Ohlášky 22. listopadu 2026 still current; no roráty."
+  },
+  {
+   "site": "http://farnost-obrany.cz",
+   "town": "brno",
+   "status": "ok",
+   "note": "Advent/Christmas 2026/2027 calendar now lists Sat 5. 12. 2026 7:00 Mass with roráty singing (single-church parish). 1 record."
+  },
+  {
+   "site": "http://farnostkrenova.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Ohlášky 22. listopad 2026 still latest; no roráty."
+  },
+  {
+   "site": "https://opava.minorite.cz/",
+   "town": "opava",
+   "status": "not-yet",
+   "note": "Ohlášky Krista Krále 22. 11. 2026 now online; no roráty."
+  },
+  {
+   "site": "http://www.farnost-velke-hostice.cz",
+   "town": "opava",
+   "status": "error",
+   "note": "Domain still serves an unrelated shop page (HTTP 200 tonight); no parish content."
+  },
+  {
+   "site": "http://www.farnosttrebovice.cz",
+   "town": "ostrava",
+   "status": "not-yet",
+   "note": "Latest oznámení still Krista Krále (images, read before: only volunteers for breakfast after roráty, no days/time)."
+  },
+  {
+   "site": "http://www.farnostradvanice.cz",
+   "town": "ostrava",
+   "status": "not-yet",
+   "note": "Pořad 1.11.–31.12.2026 marks no roráty (weekday 17:05, some 7:00)."
+  },
+  {
+   "site": "http://svatykopecek.cz",
+   "town": "olomouc",
+   "status": "not-yet",
+   "note": "Oznámení page has no roráty."
+  },
+  {
+   "site": "http://www.rkfp.cz",
+   "town": "plzen",
+   "status": "error",
+   "note": "Connection reset by peer on both tries (curl 35); not a bot wall, no content read."
+  },
+  {
+   "site": "http://www.antonin.cz",
+   "town": "hradec-kralove",
+   "status": "not-yet",
+   "note": "Latest ohlášky still Krista Krále 22.11.2026 (read before, no roráty)."
+  },
+  {
+   "site": "http://petrpavel.dpv.cz",
+   "town": "prostejov",
+   "status": "not-yet",
+   "note": "Aktuality: no roráty mention."
+  },
+  {
+   "site": "http://farni-musle.cz",
+   "town": "prerov",
+   "status": "not-yet",
+   "note": "Ohlášky and aktuality: no roráty."
+  },
+  {
+   "site": "http://farnostkvasice.cz",
+   "town": "kromeriz",
+   "status": "not-yet",
+   "note": "Bohoslužby a ohlášky page renders no content without JS; no roráty found."
+  },
+  {
+   "site": "http://www.farnostfulnek.cz",
+   "town": "fulnek",
+   "status": "held",
+   "note": "Still no time in a 2026 roráty notice. Ohlášky 22. 11. give days only (Fulnek út+pá, Děrné st, Lukavec čt); article 'Roráty v naší farnosti' 22. 11. 2026 is about a paper-house activity, no time. Only the standing winter schedule PDF (děkanát Bílovec) gives weekday times; not counted. Church per place also unmapped."
+  },
+  {
+   "site": "http://www.farnosti-jaromer-josefov.cz",
+   "town": "jaromer",
+   "status": "not-yet",
+   "note": "Pages carry no roráty text (notices as images/PDF not linked from these pages)."
+  },
+  {
+   "site": "http://www.farnostodry.cz",
+   "town": "odry",
+   "status": "not-yet",
+   "note": "Only 'so.19. prosinec 2026 Roráty v Mankovicích' (no time, Mankovice not in this parish list). Nothing for Pohoř churches."
+  },
+  {
+   "site": "http://praha.op.cz",
+   "town": "praha",
+   "status": "held",
+   "note": "Adventní program 23. 11. 2026: 'Roráty - úterý 6:15 hod. – při svíčkách, schola mládeže' — church (sv. Jiljí vs sv. Bartoloměj) not named."
+  },
+  {
+   "site": "http://www.kcmt.cz",
+   "town": "praha",
+   "status": "ok",
+   "note": "Adventní roráty 2026: Thu+Fri 6:45 in KCMT (mapped to kaple sv. Terezie z Kalkaty), Sat 8:00 at sv. František. 2 records."
+  },
+  {
+   "site": "http://www.farnostsalvator.cz",
+   "town": "praha",
+   "status": "no-roraty",
+   "note": "Only 'Jazzové adventní roráty' at the Sunday Mass 29. 11. 2026 20:00 (Sunday, excluded); no weekday roráty announced."
+  },
+  {
+   "site": "https://www.farnostrepy.cz",
+   "town": "praha",
+   "status": "ok",
+   "note": "Sv. Rodiny Mon–Fri 7:00, Sat 7:30. 2 records."
+  },
+  {
+   "site": "http://www.farnoststrasnice.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Zpravodaj Vzkříšení č. 154 – Advent 2026 and latest ohlášky 22. 11.: no roráty."
+  },
+  {
+   "site": "http://www.farnostbohnice.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Latest ohlášky still 15.–22. 11. 2026; no roráty."
+  },
+  {
+   "site": "http://farnost-husovice.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Ohlášky 22.11.2026: advent items, no roráty. (First request hit a proxy upstream timeout 503; retry 200.)"
+  },
+  {
+   "site": "http://www.farnost-modrice.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Farní kalendář lists '19. 12.︱ Roráty' with no time; ohlášky to 29. 11. 2026 have no roráty."
+  },
+  {
+   "site": "http://brno.minorite.cz",
+   "town": "brno",
+   "status": "ok",
+   "note": "Roráty 25.11.2026: Mon–Fri 6:30, Sat 8:00, not on 8. and 10. 12. 2 records."
+  },
+  {
+   "site": "http://www.mari-magdalena.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Homepage schedule 23.–29. 11. 2026; no roráty."
+  },
+  {
+   "site": "http://www.farnostjaktar.cz",
+   "town": "opava",
+   "status": "not-yet",
+   "note": "Nothing newer than ohlášky Krista Krále 21.11.2026; no roráty."
+  },
+  {
+   "site": "http://www.rkfhostalkovice.cz",
+   "town": "ostrava",
+   "status": "not-yet",
+   "note": "Pořad 22.–29. 11. 2026: no roráty."
+  },
+  {
+   "site": "http://www.farnost-silherovice.cz/",
+   "town": "ostrava",
+   "status": "not-yet",
+   "note": "Still only farní oznámení 22.11.2026 (image, read 22–23 Nov); nothing new."
+  },
+  {
+   "site": "http://svatymichal.cz",
+   "town": "olomouc",
+   "status": "ok",
+   "note": "Program 34. týden (22.11.): roráty Mon–Sat 6:30 in sv. Michal. 1 record. (Site gave intermittent upstream-timeout 503s, then 200.)"
+  },
+  {
+   "site": "http://vkholomouc.cz",
+   "town": "olomouc",
+   "status": "not-yet",
+   "note": "Týdenní nabídky: no roráty."
+  },
+  {
+   "site": "http://plzen.op.cz",
+   "town": "plzen",
+   "status": "not-yet",
+   "note": "Latest ohlášky PDF 22. 11. 2026 (read before); nothing newer."
+  },
+  {
+   "site": "http://farnostlouka.cz",
+   "town": "znojmo",
+   "status": "not-yet",
+   "note": "Ohlášky image still 2026_11_22; no roráty."
+  },
+  {
+   "site": "http://www.farnost-usti.cz/",
+   "town": "usti-nad-labem",
+   "status": "not-yet",
+   "note": "No posts after 22. 11. 2026; no roráty."
+  },
+  {
+   "site": "http://farnosttroubky.cz",
+   "town": "prerov",
+   "status": "not-yet",
+   "note": "Still PDF 48. týden (22.–29.11.2026); no roráty."
+  },
+  {
+   "site": "http://www.sedlec.info",
+   "town": "kutna-hora",
+   "status": "not-yet",
+   "note": "Ohlášky 22.11.2026: advent wreaths, no roráty."
+  },
+  {
+   "site": "http://www.farnost-spalov.cz",
+   "town": "fulnek",
+   "status": "not-yet",
+   "note": "Still Ohlasky_2026-11-22.pdf (read before); nothing new."
+  },
+  {
+   "site": "http://www.farnostklatovy.cz",
+   "town": "klatovy",
+   "status": "not-yet",
+   "note": "Latest is still 34. týden v mezidobí; no roráty."
+  },
+  {
+   "site": "https://farnostodry.cz/",
+   "town": "odry",
+   "status": "not-yet",
+   "note": "Only 'Roráty v Mankovicích' 19. 12. (not Dobešov); nothing for Dobešov sv. Mikuláše."
+  },
+  {
+   "site": "http://www.farnostsmichov.cz",
+   "town": "praha",
+   "status": "ok",
+   "note": "Partial. Vánoční bohoslužby (23.11.2026) and Farní zpravodaj 11/2026: 'Čtvrtek 24. 12. 2026 – 7:30 rorátní mše sv.' recorded as single date. Weekday Advent roráty still held: zpravodaj says only 'Ráno se budou konat rorátní mše sv. v postranní lodi u Mariánského oltáře' without days/time; pořad 30.11 shows 07:30 'Mše svatá' unlabeled; ohlášky 22.11 are an image only."
+  },
+  {
+   "site": "http://www.farnostnusle.websnadno.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Newest ohlášky PDF still 202610; Aktualni-ohlasky link 404; zpravodaj stale (2021)."
+  },
+  {
+   "site": "http://farnoststrahov.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Newest ohlášky still 22. 11. 2026: only Sunday 29.11 staročeské roráty at the morning Mass (Sunday, not recorded)."
+  },
+  {
+   "site": "http://www.kkvys.cz",
+   "town": "praha",
+   "status": "error",
+   "note": "farnost.kkvys.cz (parish program) reset the connection twice; main and bazilika pages have no roráty."
+  },
+  {
+   "site": "http://uhrineveska.farnost.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Ohlášky 22.–29. 11. 2026 and kalendář: no roráty."
+  },
+  {
+   "site": "http://www.farnost-karlin.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Latest ohlášky linked: 33. neděle v mezidobí; pořad: no roráty."
+  },
+  {
+   "site": "http://farnost-krpole.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Farní oznámení pro neděli 22. 11. 2026 and pořad bohoslužeb: no roráty (attachments are webp images)."
+  },
+  {
+   "site": "http://farnostreckovice.cz",
+   "town": "brno",
+   "status": "ok",
+   "note": "Farní kalendář: 'Pondělí 30. 11. 2026 6:30 Mše svatá - roráty' (calendar shows only up to 30.11; later days not yet visible). Ohlášky 22.11 no roráty. Recorded 30.11 only."
+  },
+  {
+   "site": "http://ujezuitu.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Bohoslužby page: no roráty."
+  },
+  {
+   "site": "http://www.zabrdovice.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Latest ohlášky still 33. neděle, 15. 11. 2026; no roráty."
+  },
+  {
+   "site": "https://farnost-opava-komarov.cz/",
+   "town": "opava",
+   "status": "not-yet",
+   "note": "Informace z farnosti 22. 11. 2026 and the Advent–Christmas Mass list on homepage: no roráty."
+  },
+  {
+   "site": "http://www.farnosthermanice.cz",
+   "town": "ostrava",
+   "status": "not-yet",
+   "note": "Pořad 22.11.–6.12.2026: no roráty."
+  },
+  {
+   "site": "http://www.ostravahrabuvka.farnost.cz",
+   "town": "ostrava",
+   "status": "not-yet",
+   "note": "Ohlášky 22.11.2026 PDF: no roráty."
+  },
+  {
+   "site": "http://moric-olomouc.cz",
+   "town": "olomouc",
+   "status": "error",
+   "note": "Connection reset by peer on two attempts."
+  },
+  {
+   "site": "http://fma.cz/pcs",
+   "town": "plzen",
+   "status": "not-yet",
+   "note": "Ohlášky list still stale (2021 files)."
+  },
+  {
+   "site": "http://www.koinonia.cz",
+   "town": "plzen",
+   "status": "not-yet",
+   "note": "Only the Nov/Dec 2026 schedule image (previously read: no roráty); nothing new."
+  },
+  {
+   "site": "http://www.fatym.com",
+   "town": "znojmo",
+   "status": "not-yet",
+   "note": "Newest rozpis is 34. týden (22. 11. 2026); Přímětice út+pá 17.00, no roráty."
+  },
+  {
+   "site": "http://www.farnostskalice.cz",
+   "town": "frydek-mistek",
+   "status": "not-yet",
+   "note": "Bohoslužby ve Skalici: no roráty (only a vira.cz link 'Co jsou to roráty?')."
+  },
+  {
+   "site": "http://www.farnostnovybohumin.cz",
+   "town": "bohumin",
+   "status": "not-yet",
+   "note": "Newest ohlášky 22. listopadu 2026: no roráty."
+  },
+  {
+   "site": "http://www.svaty-stepan.cz",
+   "town": "litomerice",
+   "status": "not-yet",
+   "note": "Homepage notice for 1st Advent Sunday (věnce, obnova 5.12) and bohoslužby page: no roráty."
+  },
+  {
+   "site": "http://www.farnosthb.cz",
+   "town": "havlickuv-brod",
+   "status": "held",
+   "note": "Ohlášky 22. 11. 2026 on Pořad bohoslužeb: 'Roráty budou v sobotu 5., 12. a 19. 12. – mše sv. od 6:30 hod' — church not named (parish has several places; weekday Masses listed at Nanebevzetí Panny Marie)."
+  },
+  {
+   "site": "http://www.farnostplanice.cz",
+   "town": "klatovy",
+   "status": "not-yet",
+   "note": "No Advent 2026 notice; no roráty."
+  },
+  {
+   "site": "https://www.rkfliboc.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Advent page only encourages 'rorátní mši svatou' in general; no days, time or church."
+  },
+  {
+   "site": "http://farnost-sporilov.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Ohlášky link still Oznamy 22. 11. 2026 (read on 22–23 Nov, no roráty); nothing newer."
+  },
+  {
+   "site": "https://www.CentrumBarrandov.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Homepage and aktuality: Advent concert, wreath blessing; no roráty."
+  },
+  {
+   "site": "http://www.farnostbranik.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Advent 2026 program unchanged: roráty singing only at Sunday 29. 11. Masses (10:30, 18:00); Sunday excluded; no weekday roráty."
+  },
+  {
+   "site": "http://www.farnostvrsovice.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Latest Oznámení 22.–29. listopadu: no roráty."
+  },
+  {
+   "site": "http://www.terezicka.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Site search for roráty: no results."
+  },
+  {
+   "site": "http://www.katedrala-petrov.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Sitemap: latest farní ohlášky still 15-11-2026; nothing newer."
+  },
+  {
+   "site": "http://farnostlisen.cz",
+   "town": "brno",
+   "status": "ok",
+   "note": "Aktuality 22.11.2026: roráty Tue–Fri 6.30 sv. Jiljí, Sat 6.30 na Kostelíčku (= poutní kaple Panny Marie na Kostelíčku per historie page). 2 records."
+  },
+  {
+   "site": "http://svatymichalbrno.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Aktuality (Advent exhibition from 1. 12. 2026) and bohoslužby: no roráty."
+  },
+  {
+   "site": "http://farnostzidenice.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Pořad bohoslužeb up to 29.11.2026: no roráty."
+  },
+  {
+   "site": "http://www.farnostopava.cz",
+   "town": "opava",
+   "status": "not-yet",
+   "note": "Latest ohlášky still Krista Krále; no roráty."
+  },
+  {
+   "site": "http://www.farnostpustkovec.cz",
+   "town": "ostrava",
+   "status": "error",
+   "note": "Intermittent connection resets (curl 35). Pustkovec ohlášky page shows a schedule image (Por26-page-0011) that could not be downloaded after 2 tries; Krásné Pole page also reset. Unread."
+  },
+  {
+   "site": "http://www.fporuba.cz",
+   "town": "ostrava",
+   "status": "not-yet",
+   "note": "Latest ohlášky 22.11.2026: no roráty; roráty mentions on the page are from Advent 2025."
+  },
+  {
+   "site": "http://farnost-hnevotin.webnode.cz",
+   "town": "olomouc",
+   "status": "not-yet",
+   "note": "Homepage: no roráty; nothing for Advent 2026."
+  },
+  {
+   "site": "http://www.rkfpz.mozello.cz",
+   "town": "plzen",
+   "status": "not-yet",
+   "note": "Read without www (www host TLS mismatch). No roráty."
+  },
+  {
+   "site": "http://www.ctyrak.cz",
+   "town": "ceske-budejovice",
+   "status": "held",
+   "note": "Homepage 'Advent v naší farnosti': 'Od soboty 5. 12. 2026 srdečně zveme zvláště rodiny s dětmi na sobotní roráty, začátek v 7:00 hodin.' No church named (registry lists sv. Vojtěcha plus two seniors' homes). Likely sv. Vojtěcha, Saturdays 5.–19. 12., 07:00. First request returned 503, retry 200."
+  },
+  {
+   "site": "http://www.farnostznojmo.cz",
+   "town": "znojmo",
+   "status": "not-yet",
+   "note": "Homepage and bohoslužby: no roráty."
+  },
+  {
+   "site": "http://www.farnostmistek.cz",
+   "town": "frydek-mistek",
+   "status": "not-yet",
+   "note": "Ohlášky page still shows the same images (ohlasky-22-11-2026, pb-23-29-11-2026) read on 22–23 Nov; no newer notice."
+  },
+  {
+   "site": "http://www.rkf-starybohumin.cz/page.php?id=2",
+   "town": "bohumin",
+   "status": "not-yet",
+   "note": "Ohlášky/intence now list December Masses (e.g. Sat 8:00) but none labelled roráty."
+  },
+  {
+   "site": "http://www.farnost-litomerice.cz",
+   "town": "litomerice",
+   "status": "not-yet",
+   "note": "Ohlášky 22. listopadu 2026 now online: Advent obnova 5.12., no roráty. First request 503, retry 200."
+  },
+  {
+   "site": "http://farnostdrahotuse.cz",
+   "town": "hranice",
+   "status": "not-yet",
+   "note": "Latest infolist still 22.11.2026 (no roráty)."
+  },
+  {
+   "site": "http://rochlice.cz",
+   "town": "liberec",
+   "status": "not-yet",
+   "note": "Ohlášky 22. 11. 2026 now online: no roráty."
+  },
+  {
+   "site": "http://www.norbertstresovice.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Newest is still Informace k neděli 22. 11. 2026 (week to 29.11); no roráty."
+  },
+  {
+   "site": "http://www.augustiniani.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Newest Oznámení Sep 2026; search finds only a 2022 Advent post; parish page mentions staročeské roráty as a tradition, no 2026 times."
+  },
+  {
+   "site": "https://farnostkosire.webnode.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Ohlášky 22.11.2026 and KFL 11/2026: no roráty."
+  },
+  {
+   "site": "http://www.michlehabrovka.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Newest ohlášky 22. 11. 2026; site search 0 results for roráty."
+  },
+  {
+   "site": "http://www.farnost-zizkov.cz",
+   "town": "praha",
+   "status": "ok",
+   "note": "2026 mass calendar: 'Rorátní mše sv.' 06:00 kostel sv. Rocha on Wed+Fri 2.–23. 12. (2,4,9,11,16,18,23 Dec). Wed 30.12 06:00 not labelled roráty."
+  },
+  {
+   "site": "http://www.farnostkyje.cz",
+   "town": "praha",
+   "status": "held",
+   "note": "Same ohlášky as before: 'V období adventu, tj. v sobotu 5., 12., 19. prosince jste zváni na rorátní Mši svatou, která začíná v 7.00 hodin a navazuje na ní společná snídaně.' Church still not named; 2026/27 schedule PDF has no roráty."
+  },
+  {
+   "site": "http://svtomas.net",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Newest ohlášky 22. 11. 2026: services as usual; no roráty."
+  },
+  {
+   "site": "http://farnostzebetinkohoutovice.cz",
+   "town": "brno",
+   "status": "held",
+   "note": "Farní občasník č. 42 (listopad, prosinec 2026) calendar: 'pá 4. 12. roráty Ž' and 'pá 11. 12. roráty K' – church given (Ž = farní kostel Žebětín, K = kaple Kohoutovice) but no time. Ohlášky 22.11. no roráty."
+  },
+  {
+   "site": "http://www.svatyjakub.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "No Program v adventu 2026 yet; November program and search (old years only) give nothing for 2026."
+  },
+  {
+   "site": "http://www.farnostliskovec.cz",
+   "town": "brno",
+   "status": "ok",
+   "note": "Johánek – novinky 22.11.2026 (JPG scan, read visually): Rorátní mše svatá Sat 5., 12., 19. 12. v 6:30. Parish has one church."
+  },
+  {
+   "site": "http://farnost.pustapolom.cz/",
+   "town": "opava",
+   "status": "not-yet",
+   "note": "Ohlášky still 34. neděle (22.11.); intentions table for Advent lists normal Masses only, no roráty."
+  },
+  {
+   "site": "https://rkf-ostrava-michalkovice.webnode.cz/",
+   "town": "ostrava",
+   "status": "not-yet",
+   "note": "Site still not updated since 2013."
+  },
+  {
+   "site": "http://www.farnostsvinov.cz",
+   "town": "ostrava",
+   "status": "not-yet",
+   "note": "Ohlášky 22.11.2026 and Svinovníček 4/2026 'Adventní doba 2026' program: no roráty listed."
+  },
+  {
+   "site": "https://klasternihradisko.cz",
+   "town": "olomouc",
+   "status": "not-yet",
+   "note": "Only regular schedule; no posts."
+  },
+  {
+   "site": "http://frantiskani-plzen.farnost.cz",
+   "town": "plzen",
+   "status": "not-yet",
+   "note": "Homepage notices still 34. týden; Advent events listed, no roráty."
+  },
+  {
+   "site": "http://www.katedralahradec.cz",
+   "town": "hradec-kralove",
+   "status": "not-yet",
+   "note": "Pořad still 22.–29. 11. 2026; oznámení list has no roráty."
+  },
+  {
+   "site": "http://povyseni.dpv.cz",
+   "town": "prostejov",
+   "status": "ok",
+   "note": "Calendar event 'Roráty 2026': weekdays of Advent 6:30 in kostel Povýšení sv. Kříže; listed dates 30.11.–23.12. omit Thu 17.12."
+  },
+  {
+   "site": "https://farnost-pardubice.cz",
+   "town": "pardubice",
+   "status": "not-yet",
+   "note": "Ohlášky 22.–29. 11. 2026 and service list: no roráty."
+  },
+  {
+   "site": "http://www.farnostkladno.cz",
+   "town": "kladno",
+   "status": "not-yet",
+   "note": "Pořad 23.–29. 11. 2026 and oznámení: no roráty."
+  },
+  {
+   "site": "http://stipa.cz",
+   "town": "zlin",
+   "status": "not-yet",
+   "note": "Pořad 22112026.pdf covers to 29.11; no roráty."
+  },
+  {
+   "site": "http://farnost-hranice.cz",
+   "town": "hranice",
+   "status": "not-yet",
+   "note": "Pořad to 29. 11. 2026 and Advent blog posts: no roráty."
+  },
+  {
+   "site": "http://www.farnost-mkrumlov.cz",
+   "town": "moravsky-krumlov",
+   "status": "not-yet",
+   "note": "Newest 'Ohlášky na katolický silvestr' (34. týden): no roráty."
+  },
+  {
+   "site": "http://www.ludmilavinohrady.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Ohlášky 22. 11. 2026: only 'V 11 hodin zaznějí Jazzové roráty' on Sun 29.11 (Sunday, not recorded). No weekday roráty; Advent Dobrá zpráva not out yet."
+  },
+  {
+   "site": "http://www.pms.ofm.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Ohlášky and programme to 29.11 / December: Advent wreaths only, no roráty."
+  },
+  {
+   "site": "http://www.farnostbubenec.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Latest is still Ohlášky 47 (21. 11. 2026), no roráty. Homepage reset the connection on 2 of 3 requests."
+  },
+  {
+   "site": "http://www.modranskafarnost.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Newest roráty post is dated 30.11.2025 (Thu 6:00, Sat 8:00); nothing for 2026 yet."
+  },
+  {
+   "site": "http://www.farnost-nabalkane.cz",
+   "town": "praha",
+   "status": "ok",
+   "note": "Advent Wednesdays 6:30 with roráty (homepage + Nedělní stránka 22. 11. 2026)."
+  },
+  {
+   "site": "http://farnostprosek.cz",
+   "town": "praha",
+   "status": "not-yet",
+   "note": "Pořad 22.–29. 11. 2026: Advent wreaths only, no roráty."
+  },
+  {
+   "site": "http://www.farnost-komarov.cz",
+   "town": "brno",
+   "status": "error",
+   "note": "HTTP 503 'upstream connect error ... connection timeout' on 3 tries; site unreachable."
+  },
+  {
+   "site": "http://farnostlesna.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Ohlášky 22.–29. 11. 2026: Advent wreaths only, no roráty."
+  },
+  {
+   "site": "http://www.faby.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Latest ohlášky still 22. 11. 2026 (read before, no roráty); INFO page no roráty."
+  },
+  {
+   "site": "http://www.kapucini.cz",
+   "town": "brno",
+   "status": "not-yet",
+   "note": "Ohlášky Brno 22. 11. 2026: Advent wreaths, Průvodce adventem; no roráty."
+  },
+  {
+   "site": "https://farnostkylesovice.cz/",
+   "town": "opava",
+   "status": "not-yet",
+   "note": "Bohoslužby list runs to 6.12; Masses 2.–5.12 not labelled roráty."
+  },
+  {
+   "site": "http://www.farnostoz.cz",
+   "town": "ostrava",
+   "status": "ok",
+   "note": "Held resolved: 'Advent a Vánoce 2026' PDF names kostel Sv. Ducha, roráty Sat 5., 12., 19. 12. at 7.00."
+  },
+  {
+   "site": "http://ostravakuncicky.farnost.cz",
+   "town": "ostrava",
+   "status": "error",
+   "note": "Still a JavaScript-only app shell ('Načítám web..'); no readable content."
+  },
+  {
+   "site": "http://hodolany-farnost.cz",
+   "town": "olomouc",
+   "status": "not-yet",
+   "note": "Shared ohlášky 22.–29. 11. 2026: roráty only in the katedrála (Fri 6:30), not at Hodolany; HODOLANY section has no roráty."
+  },
+  {
+   "site": "http://www.sdbplzen.cz",
+   "town": "plzen",
+   "status": "held",
+   "note": "Still only 'Zveme na prosinec' (19. 11. 2026): '5. 12. 7:45 rorátní mše svatá' without the church (sv. Martina a Prokopa or sv. Jiří). Ohlášky 22.11 has no roráty."
+  },
+  {
+   "site": "https://pouchov.farnost.cz",
+   "town": "hradec-kralove",
+   "status": "not-yet",
+   "note": "Ohlášky 22. 11. 2026 and events to 5.12: no roráty."
+  },
+  {
+   "site": "http://zesov.dpv.cz",
+   "town": "prostejov",
+   "status": "error",
+   "note": "Still the 'se pracuje' under-construction page."
+  },
+  {
+   "site": "http://farnostprerov.cz",
+   "town": "prerov",
+   "status": "not-yet",
+   "note": "Ohlášky page last changed 21. 11. 2026 (read before, no roráty)."
+  },
+  {
+   "site": "http://www.farnostrozdelov.cz",
+   "town": "kladno",
+   "status": "ok",
+   "note": "Homepage poster (stored under images/stories/2026, shown with the 22.–29. 11. 2026 schedule): Staročeské roráty in kostel sv. Václava, Sat 5. 12. at 7:00. The poster has no year; 5 Dec is a Saturday in 2026."
+  },
+  {
+   "site": "http://falukov.cz",
+   "town": "zlin",
+   "status": "not-yet",
+   "note": "Pořad 22.–29. 11. 2026: no roráty."
+  },
+  {
+   "site": "http://www.reckokatolikkv.estranky.cz",
+   "town": "cheb",
+   "status": "not-yet",
+   "note": "Greek Catholic parish; no roráty or Advent 2026 notice on the site."
+  },
+  {
+   "site": "http://www.farnost-spalov.cz",
+   "town": "odry",
+   "status": "not-yet",
+   "note": "Latest ohlášky still Ohlasky_2026-11-22.pdf (no roráty)."
+  }
+ ],
+ "counts": {
+  "not-yet": 104,
+  "ok": 14,
+  "error": 8,
+  "held": 7,
+  "no-roraty": 1
+ }
+}
