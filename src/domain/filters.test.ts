@@ -1,5 +1,5 @@
 import type { ChurchServices, Service } from './data'
-import { NO_FILTERS, applyFilters, serviceMatches } from './filters'
+import { NO_FILTERS, applyFilters, isMass, serviceMatches } from './filters'
 
 const svc = (overrides: Partial<Service> = {}): Service => ({
   days: '7',
@@ -23,6 +23,15 @@ const cs = (regular: Service[]): ChurchServices => ({
 
 const byId = (map: Record<string, Service[]>): ReadonlyMap<string, ChurchServices> =>
   new Map(Object.entries(map).map(([id, svcs]) => [id, cs(svcs)]))
+
+describe('isMass', () => {
+  it('blank type = Mass (most village parishes)', () => expect(isMass('')).toBe(true))
+  it('whitespace-only type = Mass', () => expect(isMass('  ')).toBe(true))
+  it('"mše sv." = Mass', () => expect(isMass('mše sv.')).toBe(true))
+  it('"mše svatá" = Mass', () => expect(isMass('mše svatá')).toBe(true))
+  it('"bohoslužba slova" ≠ Mass', () => expect(isMass('bohoslužba slova')).toBe(false))
+  it('"svátost smíření" ≠ Mass', () => expect(isMass('svátost smíření')).toBe(false))
+})
 
 describe('serviceMatches', () => {
   it('empty filters: all services pass', () => {
@@ -48,6 +57,11 @@ describe('serviceMatches', () => {
     expect(serviceMatches(f)(svc({ type: '' }))).toBe(true)
     expect(serviceMatches(f)(svc({ type: 'nešpory' }))).toBe(false)
     expect(serviceMatches(f)(svc({ type: 'liturgie' }))).toBe(true)
+  })
+
+  it('cas filter: rejects services outside the time window', () => {
+    expect(serviceMatches(NO_FILTERS, '10:00')(svc({ time: '10:00' }))).toBe(true)
+    expect(serviceMatches(NO_FILTERS, '10:00')(svc({ time: '18:00' }))).toBe(false)
   })
 
   it('combined massOnly + lang: must satisfy both', () => {

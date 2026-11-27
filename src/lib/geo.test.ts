@@ -152,3 +152,68 @@ it('Android "Approximate only" counts as granted: coarse is all a low-accuracy f
     vi.resetModules()
   }
 })
+
+it('native: OS location services disabled → unavailable (not timeout)', async () => {
+  vi.useRealTimers()
+  vi.resetModules()
+  const perm = { location: 'granted', coarseLocation: 'granted' }
+  const Geolocation = {
+    checkPermissions: vi.fn(async () => perm),
+    requestPermissions: vi.fn(async () => perm),
+    getCurrentPosition: vi.fn(async () => { throw new Error('location disabled') }),
+  }
+  vi.doMock('./native', () => ({ isNative: true }))
+  vi.doMock('@capacitor/geolocation', () => ({ Geolocation }))
+  try {
+    const geo = await import('./geo')
+    await expect(geo.getCurrentPosition()).resolves.toEqual({ coords: null, error: 'unavailable' })
+  } finally {
+    vi.doUnmock('./native')
+    vi.doUnmock('@capacitor/geolocation')
+    vi.resetModules()
+  }
+})
+
+it('native: getCurrentPosition throws (non-disabled error) → timeout', async () => {
+  vi.useRealTimers()
+  vi.resetModules()
+  const perm = { location: 'granted', coarseLocation: 'granted' }
+  const Geolocation = {
+    checkPermissions: vi.fn(async () => perm),
+    requestPermissions: vi.fn(async () => perm),
+    getCurrentPosition: vi.fn(async () => { throw new Error('no fix available') }),
+  }
+  vi.doMock('./native', () => ({ isNative: true }))
+  vi.doMock('@capacitor/geolocation', () => ({ Geolocation }))
+  try {
+    const geo = await import('./geo')
+    await expect(geo.getCurrentPosition()).resolves.toEqual({ coords: null, error: 'timeout' })
+  } finally {
+    vi.doUnmock('./native')
+    vi.doUnmock('@capacitor/geolocation')
+    vi.resetModules()
+  }
+})
+
+it('native: requestPermissions denied → denied', async () => {
+  vi.useRealTimers()
+  vi.resetModules()
+  const permPrompt = { location: 'prompt', coarseLocation: 'prompt' }
+  const permDenied = { location: 'denied', coarseLocation: 'denied' }
+  const Geolocation = {
+    checkPermissions: vi.fn(async () => permPrompt),
+    requestPermissions: vi.fn(async () => permDenied),
+    getCurrentPosition: vi.fn(),
+  }
+  vi.doMock('./native', () => ({ isNative: true }))
+  vi.doMock('@capacitor/geolocation', () => ({ Geolocation }))
+  try {
+    const geo = await import('./geo')
+    await expect(geo.getCurrentPosition()).resolves.toEqual({ coords: null, error: 'denied' })
+    expect(Geolocation.getCurrentPosition).not.toHaveBeenCalled()
+  } finally {
+    vi.doUnmock('./native')
+    vi.doUnmock('@capacitor/geolocation')
+    vi.resetModules()
+  }
+})
