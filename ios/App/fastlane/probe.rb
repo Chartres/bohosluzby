@@ -22,4 +22,18 @@ def probe!(env, app_id)
   loc = locs['data'].first
   puts "probe: version localization #{loc.dig('attributes', 'locale')}"
   rel_names(loc).each { |l| puts "  #{l}" }
+  # stage 2 (28 Nov): the newer slots. GET only; print status and a short body.
+  [
+    "/v1/appStoreVersionLocalizations/#{loc['id']}/placements",
+    "/v1/apps/#{app_id}/assetLibrary",
+    "/v1/apps/#{app_id}/marketplaceSearchDetail",
+  ].each do |path|
+    begin
+      code, body = asc_request(env, 'GET', path)
+      puts "probe: GET #{path} → #{code}"
+      puts "  #{JSON.generate(body)[0, 3000]}"
+    rescue StandardError => e
+      puts "probe: GET #{path} failed: #{e.message[0, 600]}"
+    end
+  end
 end
