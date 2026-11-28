@@ -1,0 +1,106 @@
+{
+ "date": "2026-11-28",
+ "package": "Roráty pass 22–28 Nov 2026 (docs/RORATY-PASS.md)",
+ "records_total": 46,
+ "records_by_town": {
+  "praha": 20,
+  "ostrava": 6,
+  "olomouc": 3,
+  "plzen": 1,
+  "kutna-hora": 2,
+  "liberec": 1,
+  "strakonice": 1,
+  "brno": 9,
+  "prostejov": 1,
+  "prerov": 1,
+  "hradec-kralove": 1
+ },
+ "batches": [
+  {
+   "date": "2026-11-22",
+   "pr": 111,
+   "records": 21
+  },
+  {
+   "date": "2026-11-23",
+   "pr": 119,
+   "records": 3
+  },
+  {
+   "date": "2026-11-26",
+   "pr": 128,
+   "records": 17
+  },
+  {
+   "date": "2026-11-28",
+   "pr": "this",
+   "records": 5
+  }
+ ],
+ "site_status": {
+  "ok": 37,
+  "not-yet": 100,
+  "held": 5,
+  "no-roraty": 2,
+  "blocked": 23,
+  "error": 7
+ },
+ "held": [
+  {
+   "site": "https://www.rkfliboc.cz",
+   "town": "praha",
+   "note": "New article 'Roráty' (URL slug roraty-2026, poster image 261205_roraty.jpeg, no year on poster): 'PONDĚLÍ, STŘEDA A PÁTEK OD 6:00 V KAPLI NA FAŘE' and 'SOBOTA OD 7:30 V KAPLI NA FAŘE' (Saturday for ch"
+  },
+  {
+   "site": "http://www.farnostkyje.cz",
+   "town": "praha",
+   "note": "Unchanged: 'V období adventu, tj. v sobotu 5., 12., 19. prosince jste zváni na rorátní Mši svatou, která začíná v 7.00 hodin a navazuje na ní společná snídaně.' Church not named (3 churches)."
+  },
+  {
+   "site": "http://www.ctyrak.cz",
+   "town": "ceske-budejovice",
+   "note": "Unchanged: homepage 'Od soboty 5. 12. 2026 srdečně zveme zvláště rodiny s dětmi na sobotní roráty, začátek v 7:00 hodin.' No church named (registry: sv. Vojtěcha + two seniors' homes). Rozpis 22.–29. "
+  },
+  {
+   "site": "http://www.farnostmistek.cz",
+   "town": "frydek-mistek",
+   "note": "New poster 'RORÁTY ADVENT 2026 – tradičně v kostele sv. Jakuba – začínáme v pondělí 30. 11. 2026': 'pro děti od 6.30 hod. v pondělí, ve středu a v pátek … pro dospělé od 6.30 hod. v úterý a ve čtvrtek"
+  },
+  {
+   "site": "http://www.farnosthb.cz",
+   "town": "havlickuv-brod",
+   "note": "Unchanged: Pořad 22.–29. 11. 2026 ohlášky 'Roráty budou v sobotu 5., 12. a 19. 12. – mše sv. od 6:30 hod' — church not named; no newer notice."
+  }
+ ],
+ "blocked": [
+  "http://farnostbreznice.cz",
+  "http://farnostkromeriz.cz",
+  "http://farnostmalenovice.cz",
+  "http://farnostsdbzlin.cz",
+  "http://farnostsuchevrbne.cz",
+  "http://farnostzlin.cz",
+  "http://kbely.farnost.cz",
+  "http://privoz.farnost.cz",
+  "http://salesianizabovresky.cz/farnost",
+  "http://www.arcidekanstvi-lbc.cz",
+  "http://www.augustinbrno.cz",
+  "http://www.dekanstvicb.cz",
+  "http://www.farnostcheb.cz",
+  "http://www.farnostfrydek.cz",
+  "http://www.farnosthkpp.cz",
+  "http://www.farnosthloubetin.cz",
+  "http://www.farnostkomin.cz",
+  "http://www.farnostmostrava.cz",
+  "http://www.farnoststodulky.cz",
+  "http://www.jannepomuckycb.cz",
+  "http://www.lhoteckafarnost.cz",
+  "https://farnosthostivar.cz",
+  "https://www.farnostchlebovicestaric.cz"
+ ],
+ "live_check": "docs/review/shots/2026-11-28-roraty-live-390.png: app list (roráty pill in the row from 28 Nov), the pill on, /advent/ hub, /advent/praha/, /advent/prostejov/ (filled only by the pass)",
+ "next": [
+  "1 Dec: re-check sv. Vít (only 30 Nov listed)",
+  "Held sites wait for a notice that names the church; Bystrc and Olomouc sv. Mořic: re-review when reachable",
+  "14–23 Dec: Christmas pass (docs/VANOCE-PASS.md)"
+ ]
+}
