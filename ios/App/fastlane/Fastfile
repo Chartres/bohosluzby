@@ -18,6 +18,7 @@ opt_out_usage # no fastlane telemetry
 default_platform(:ios)
 require_relative "screenshot_ops"
 require_relative "tour"
+require_relative "probe"
 
 APP_ID   = "org.dravec.bohosluzby"
 APP_NAME = "Bohoslužby: katolické mše"
@@ -166,6 +167,12 @@ platform :ios do
       app_identifier: APP_ID,
       skip_waiting_for_build_processing: true,
     )
+  end
+
+  desc "Read-only: list the API's relationships for the app, its app info and latest version"
+  lane :probe do
+    env, app_id = asc_env_and_app_id
+    probe!(env, app_id)
   end
 
   desc "Read-only: is VERSION ready to submit with BUILD? (env TOUR_VERSION, TOUR_BUILD)"
