@@ -45,7 +45,14 @@ def upload_creative!(app_id, assets, req:, put:, read:, wait:, log: [])
   v = ok!(*req.call('GET', "/v1/apps/#{app_id}/appStoreVersions?limit=1"), 'versions')['data'].first
   log << "version #{v.dig('attributes', 'versionString')} #{v.dig('attributes', 'appStoreState')}"
   locs = ok!(*req.call('GET', "/v1/appStoreVersions/#{v['id']}/appStoreVersionLocalizations"), 'localizations')['data']
+  library = ok!(*req.call('GET', "/v1/appAssetLibraries/#{lib}/images?limit=200"), 'library images')['data']
   images = {}
+  assets.each do |a|
+    old = library.find { |i| i.dig('attributes', 'fileName') == a[:name] && i.dig('attributes', 'category') == 'CREATIVE_ASSETS' && !(%w[ARCHIVED] + FAILED_STATES).include?(i.dig('attributes', 'state')) }
+    next unless old
+    images[a[:path]] = old['id']
+    log << "#{a[:name]} already in the library: #{old.dig('attributes', 'state')}"
+  end
   locs.each do |loc|
     locale = loc.dig('attributes', 'locale')
     existing = ok!(*req.call('GET', "/v1/appStoreVersionLocalizations/#{loc['id']}/placements?limit=50"), 'placements')['data']

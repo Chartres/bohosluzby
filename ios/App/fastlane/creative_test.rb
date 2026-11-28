@@ -40,8 +40,9 @@ class CreativeTest < Minitest::Test
   # A fake ASC: records calls, answers like the API.
   class FakeAsc
     attr_reader :calls, :puts_done
-    def initialize(existing: [], image_states: %w[UPLOAD_COMPLETE PREPARE_FOR_SUBMISSION], placement_status: '201')
+    def initialize(library: [], existing: [], image_states: %w[UPLOAD_COMPLETE PREPARE_FOR_SUBMISSION], placement_status: '201')
       @existing = existing
+      @library = library
       @states = Hash.new { |h, k| h[k] = image_states.dup }
       @placement_status = placement_status
       @calls = []
@@ -55,6 +56,7 @@ class CreativeTest < Minitest::Test
       in ['GET', %r{/v1/apps/app/assetLibrary$}] then ['200', { 'data' => { 'id' => 'lib' } }]
       in ['GET', %r{/v1/apps/app/appStoreVersions}] then ['200', { 'data' => [{ 'id' => 'v', 'attributes' => { 'versionString' => '1.6', 'appStoreState' => 'READY_FOR_SALE' } }] }]
       in ['GET', %r{/v1/appStoreVersions/v/appStoreVersionLocalizations}] then ['200', { 'data' => [{ 'id' => 'loc', 'attributes' => { 'locale' => 'cs' } }] }]
+      in ['GET', %r{/v1/appAssetLibraries/lib/images}] then ['200', { 'data' => @library }]
       in ['GET', %r{/placements}] then ['200', { 'data' => @existing }]
       in ['POST', '/v1/appAssetLibraryImages']
         @n += 1
@@ -118,6 +120,14 @@ class CreativeTest < Minitest::Test
     fake = FakeAsc.new(image_states: %w[UPLOAD_COMPLETE FAILED])
     err = assert_raises(RuntimeError) { run_upload(fake, [HEADER]) }
     assert_match(/FAILED/, err.message)
+  end
+
+  def test_reuses_an_image_already_in_the_library
+    fake = FakeAsc.new(library: [{ 'id' => 'old', 'attributes' => { 'fileName' => 'header-3840x1646.png', 'category' => 'CREATIVE_ASSETS', 'state' => 'PREPARE_FOR_SUBMISSION' } }])
+    run_upload(fake, [HEADER])
+    refute fake.calls.any? { |m, p, _| m == 'POST' && p == '/v1/appAssetLibraryImages' }
+    placed = fake.calls.find { |m, p, _| p == '/v1/appAssetLibraryPlacements' }
+    assert_equal 'old', placed[2].dig('data', 'relationships', 'image', 'data', 'id')
   end
 
   def test_never_submits_for_review
