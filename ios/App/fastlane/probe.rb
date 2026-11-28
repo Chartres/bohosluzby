@@ -26,12 +26,13 @@ def probe!(env, app_id)
   [
     "/v1/appStoreVersionLocalizations/#{loc['id']}/placements",
     "/v1/apps/#{app_id}/assetLibrary",
-    "/v1/apps/#{app_id}/marketplaceSearchDetail",
+    "/v1/appAssetLibraryRefData",
+    "/v1/appAssetLibraries/#{app_id}/images?limit=2",
   ].each do |path|
     begin
       code, body = asc_request(env, 'GET', path)
       puts "probe: GET #{path} → #{code}"
-      puts "  #{JSON.generate(body)[0, 3000]}"
+      puts "  #{JSON.generate(body)[0, 6000]}"
     rescue StandardError => e
       puts "probe: GET #{path} failed: #{e.message[0, 600]}"
     end
