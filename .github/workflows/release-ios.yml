@@ -26,7 +26,7 @@ on:
         description: 'build = sign + build only, uploads nothing (test) · beta = TestFlight · release = upload + metadata (no submit) · tour = read-only check of a version · submit = Submit for Review (Pavol only)'
         type: choice
         default: beta
-        options: [build, beta, release, tour, submit, probe]
+        options: [build, beta, release, tour, submit, probe, creative]
       version:
         description: 'tour / submit: the App Store version, e.g. 1.6'
         required: false

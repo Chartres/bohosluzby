@@ -19,6 +19,7 @@ default_platform(:ios)
 require_relative "screenshot_ops"
 require_relative "tour"
 require_relative "probe"
+require_relative "creative"
 
 APP_ID   = "org.dravec.bohosluzby"
 APP_NAME = "Bohoslužby: katolické mše"
@@ -170,6 +171,12 @@ platform :ios do
   end
 
   desc "Read-only: list the API's relationships for the app, its app info and latest version"
+  desc "Upload the product page header and search results images (store-assets/ios/creative) and place them on the latest version. Never submits."
+  lane :creative do
+    env, app_id = asc_env_and_app_id
+    creative!(env, app_id, File.expand_path("../../../store-assets/ios/creative", __dir__)).each { |l| UI.message("creative: #{l}") }
+  end
+
   lane :probe do
     env, app_id = asc_env_and_app_id
     probe!(env, app_id)

@@ -43,7 +43,7 @@ jobs:
       - run: node scripts/check-whats-new.mjs whats-new.en.json --public public
       - run: node scripts/android-gates.mjs --gradle android/variables.gradle
       - name: Store screenshot check (fastlane helper self-test)
-        run: ruby ios/App/fastlane/screenshot_ops_test.rb
+        run: ruby ios/App/fastlane/screenshot_ops_test.rb && ruby ios/App/fastlane/creative_test.rb
       - name: Build
         run: npm run build
         env:
